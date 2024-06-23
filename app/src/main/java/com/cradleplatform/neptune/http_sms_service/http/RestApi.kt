@@ -3,6 +3,7 @@ package com.cradleplatform.neptune.http_sms_service.http
 import android.content.Context
 import android.content.IntentFilter
 import android.content.SharedPreferences
+import android.net.Network
 import android.util.Log
 import androidx.lifecycle.asFlow
 import com.cradleplatform.neptune.ext.jackson.forEachJackson
@@ -206,7 +207,7 @@ class RestApi constructor(
 
             when (protocol) {
                 Protocol.HTTP -> {
-                    return@withContext http.makeRequest(
+                    http.makeRequest(
                         method = method,
                         url = url,
                         headers = headers,
@@ -218,7 +219,7 @@ class RestApi constructor(
                 }
 
                 Protocol.SMS -> {
-                    return@withContext handleSmsRequest(
+                    handleSmsRequest(
                         method,
                         url,
                         headers,
@@ -302,7 +303,7 @@ class RestApi constructor(
                             for (patient in networkResult.value) {
                                 patientChannel.send(patient)
                             }
-                            return@withContext NetworkResult.Success<Unit>(
+                            NetworkResult.Success(
                                 Unit,
                                 networkResult.statusCode
                             )
@@ -310,7 +311,7 @@ class RestApi constructor(
 
                         is NetworkResult.Failure -> {
                             patientChannel.close(SyncException("failed to download all associated patients"))
-                            return@withContext NetworkResult.Failure<Unit>(
+                            NetworkResult.Failure(
                                 networkResult.body,
                                 networkResult.statusCode
                             )
@@ -318,13 +319,13 @@ class RestApi constructor(
 
                         is NetworkResult.NetworkException -> {
                             patientChannel.close(SyncException("failed to download all associated patients"))
-                            return@withContext NetworkResult.NetworkException<Unit>(networkResult.cause)
+                            NetworkResult.NetworkException(networkResult.cause)
                         }
                     }
                 } catch (e: Exception) {
                     val syncException = SyncException("failed to parse all associated patients")
                     patientChannel.close(syncException)
-                    return@withContext NetworkResult.NetworkException<Unit>(syncException)
+                    NetworkResult.NetworkException(syncException)
                 }
             }
         }
@@ -382,29 +383,29 @@ class RestApi constructor(
                             for (reading in networkResult.value) {
                                 readingChannel.send(reading)
                             }
-                            return@withContext NetworkResult.Success<Unit>(
+                            NetworkResult.Success(
                                 Unit,
                                 networkResult.statusCode
                             )
                         }
 
                         is NetworkResult.Failure -> {
-                            readingChannel.close(SyncException("failed to download all associated patients"))
-                            return@withContext NetworkResult.Failure<Unit>(
+                            readingChannel.close(SyncException("failed to download all associated readings"))
+                            NetworkResult.Failure(
                                 networkResult.body,
                                 networkResult.statusCode
                             )
                         }
 
                         is NetworkResult.NetworkException -> {
-                            readingChannel.close(SyncException("failed to download all associated patients"))
-                            return@withContext NetworkResult.NetworkException<Unit>(networkResult.cause)
+                            readingChannel.close(SyncException("failed to download all associated readings"))
+                            NetworkResult.NetworkException(networkResult.cause)
                         }
                     }
                 } catch (e: Exception) {
-                    val syncException = SyncException("failed to parse all associated patients")
+                    val syncException = SyncException("failed to parse all associated readings")
                     readingChannel.close(syncException)
-                    return@withContext NetworkResult.NetworkException<Unit>(syncException)
+                    NetworkResult.NetworkException(syncException)
                 }
             }
         }
@@ -462,29 +463,29 @@ class RestApi constructor(
                             for (referral in networkResult.value) {
                                 referralChannel.send(referral)
                             }
-                            return@withContext NetworkResult.Success<Unit>(
+                            NetworkResult.Success(
                                 Unit,
                                 networkResult.statusCode
                             )
                         }
 
                         is NetworkResult.Failure -> {
-                            referralChannel.close(SyncException("failed to download all associated patients"))
-                            return@withContext NetworkResult.Failure<Unit>(
+                            referralChannel.close(SyncException("failed to download all associated referrals"))
+                            NetworkResult.Failure(
                                 networkResult.body,
                                 networkResult.statusCode
                             )
                         }
 
                         is NetworkResult.NetworkException -> {
-                            referralChannel.close(SyncException("failed to download all associated patients"))
-                            return@withContext NetworkResult.NetworkException<Unit>(networkResult.cause)
+                            referralChannel.close(SyncException("failed to download all associated referrals"))
+                            NetworkResult.NetworkException(networkResult.cause)
                         }
                     }
                 } catch (e: Exception) {
-                    val syncException = SyncException("failed to parse all associated patients")
+                    val syncException = SyncException("failed to parse all associated referrals")
                     referralChannel.close(syncException)
-                    return@withContext NetworkResult.NetworkException<Unit>(syncException)
+                    NetworkResult.NetworkException(syncException)
                 }
             }
         }
@@ -542,29 +543,29 @@ class RestApi constructor(
                             for (assessment in networkResult.value) {
                                 assessmentChannel.send(assessment)
                             }
-                            return@withContext NetworkResult.Success<Unit>(
+                            NetworkResult.Success(
                                 Unit,
                                 networkResult.statusCode
                             )
                         }
 
                         is NetworkResult.Failure -> {
-                            assessmentChannel.close(SyncException("failed to download all associated patients"))
-                            return@withContext NetworkResult.Failure<Unit>(
+                            assessmentChannel.close(SyncException("failed to download all associated assessments"))
+                            NetworkResult.Failure(
                                 networkResult.body,
                                 networkResult.statusCode
                             )
                         }
 
                         is NetworkResult.NetworkException -> {
-                            assessmentChannel.close(SyncException("failed to download all associated patients"))
-                            return@withContext NetworkResult.NetworkException<Unit>(networkResult.cause)
+                            assessmentChannel.close(SyncException("failed to download all associated assessments"))
+                            NetworkResult.NetworkException(networkResult.cause)
                         }
                     }
                 } catch (e: Exception) {
-                    val syncException = SyncException("failed to parse all associated patients")
+                    val syncException = SyncException("failed to parse all associated assessments")
                     assessmentChannel.close(syncException)
-                    return@withContext NetworkResult.NetworkException<Unit>(syncException)
+                    NetworkResult.NetworkException(syncException)
                 }
             }
         }
@@ -585,7 +586,7 @@ class RestApi constructor(
 
             when (protocol) {
                 Protocol.HTTP -> {
-                    return@withContext http.makeRequest(
+                    http.makeRequest(
                         method = method,
                         url = url,
                         headers = headers,
@@ -594,7 +595,7 @@ class RestApi constructor(
                 }
 
                 Protocol.SMS -> {
-                    return@withContext handleSmsRequest<PatientAndReadings>(
+                    handleSmsRequest<PatientAndReadings>(
                         method,
                         url,
                         headers
@@ -619,7 +620,7 @@ class RestApi constructor(
 
             when (protocol) {
                 Protocol.HTTP -> {
-                    return@withContext http.makeRequest(
+                   http.makeRequest(
                         method = Http.Method.GET,
                         url = urlManager.getPatientInfo(id),
                         headers = headers,
@@ -628,7 +629,7 @@ class RestApi constructor(
                 }
 
                 Protocol.SMS -> {
-                    return@withContext handleSmsRequest<Patient>(
+                    handleSmsRequest<Patient>(
                         method,
                         url,
                         headers
@@ -656,7 +657,7 @@ class RestApi constructor(
 
             when (protocol) {
                 Protocol.HTTP -> {
-                    return@withContext http.makeRequest(
+                    http.makeRequest(
                         method = method,
                         url = url,
                         headers = headers,
@@ -667,7 +668,7 @@ class RestApi constructor(
                 }
 
                 Protocol.SMS -> {
-                    return@withContext handleSmsRequest<List<GlobalPatient>>(
+                    handleSmsRequest<List<GlobalPatient>>(
                         method,
                         url,
                         headers
@@ -690,7 +691,7 @@ class RestApi constructor(
 
             when (protocol) {
                 Protocol.HTTP -> {
-                    return@withContext http.makeRequest(
+                    http.makeRequest(
                         method = Http.Method.GET,
                         url = urlManager.getReading(id),
                         headers = headers,
@@ -699,7 +700,7 @@ class RestApi constructor(
                 }
 
                 Protocol.SMS -> {
-                    return@withContext handleSmsRequest<Reading>(
+                    handleSmsRequest<Reading>(
                         method,
                         url,
                         headers
@@ -722,7 +723,7 @@ class RestApi constructor(
 
             when (protocol) {
                 Protocol.HTTP -> {
-                    return@withContext http.makeRequest(
+                    http.makeRequest(
                         method = method,
                         url = url,
                         headers = headers,
@@ -733,7 +734,7 @@ class RestApi constructor(
                 }
 
                 Protocol.SMS -> {
-                    return@withContext handleSmsRequest<Assessment>(
+                    handleSmsRequest<Assessment>(
                         method,
                         url,
                         headers
@@ -763,7 +764,7 @@ class RestApi constructor(
 
             when (protocol) {
                 Protocol.HTTP -> {
-                    return@withContext http.makeRequest(
+                    http.makeRequest(
                         method = method,
                         url = url,
                         headers = headers,
@@ -772,7 +773,7 @@ class RestApi constructor(
                 }
 
                 Protocol.SMS -> {
-                    return@withContext handleSmsRequest<Statistics>(
+                    handleSmsRequest<Statistics>(
                         method,
                         url,
                         headers
@@ -802,7 +803,7 @@ class RestApi constructor(
 
             when (protocol) {
                 Protocol.HTTP -> {
-                    return@withContext http.makeRequest(
+                    http.makeRequest(
                         method = method,
                         url = url,
                         headers = headers,
@@ -811,7 +812,7 @@ class RestApi constructor(
                 }
 
                 Protocol.SMS -> {
-                    return@withContext handleSmsRequest<Statistics>(
+                    handleSmsRequest<Statistics>(
                         method,
                         url,
                         headers
@@ -840,7 +841,7 @@ class RestApi constructor(
 
             when (protocol) {
                 Protocol.HTTP -> {
-                    return@withContext http.makeRequest(
+                    http.makeRequest(
                         method = method,
                         url = url,
                         headers = headers,
@@ -849,7 +850,7 @@ class RestApi constructor(
                 }
 
                 Protocol.SMS -> {
-                    return@withContext handleSmsRequest<Statistics>(
+                    handleSmsRequest<Statistics>(
                         method,
                         url,
                         headers,
@@ -886,7 +887,7 @@ class RestApi constructor(
 
             when (protocol) {
                 Protocol.HTTP -> {
-                    return@withContext http.makeRequest(
+                    http.makeRequest(
                         method = method,
                         url = url,
                         headers = headers,
@@ -898,7 +899,7 @@ class RestApi constructor(
                 }
 
                 Protocol.SMS -> {
-                    return@withContext handleSmsRequest<PatientAndReadings>(
+                    handleSmsRequest<PatientAndReadings>(
                         method,
                         url,
                         headers,
@@ -938,7 +939,7 @@ class RestApi constructor(
 
             when (protocol) {
                 Protocol.HTTP -> {
-                    return@withContext http.makeRequest(
+                    http.makeRequest(
                         method = method,
                         url = url,
                         headers = headers,
@@ -950,7 +951,7 @@ class RestApi constructor(
                 }
 
                 Protocol.SMS -> {
-                    return@withContext handleSmsRequest(
+                    handleSmsRequest(
                         method,
                         url,
                         headers,
@@ -979,7 +980,7 @@ class RestApi constructor(
 
             when (protocol) {
                 Protocol.HTTP -> {
-                    return@withContext http.makeRequest(
+                    http.makeRequest(
                         method = method,
                         url = url,
                         headers = headers,
@@ -989,7 +990,7 @@ class RestApi constructor(
                 }
 
                 Protocol.SMS -> {
-                    return@withContext handleSmsRequest(
+                    handleSmsRequest(
                         method,
                         url,
                         headers,
@@ -1068,7 +1069,7 @@ class RestApi constructor(
 
             when (protocol) {
                 Protocol.HTTP -> {
-                    return@withContext http.makeRequest(
+                    http.makeRequest(
                         method = method,
                         url = url,
                         headers = headers,
@@ -1078,7 +1079,7 @@ class RestApi constructor(
                 }
 
                 Protocol.SMS -> {
-                    return@withContext handleSmsRequest(
+                    handleSmsRequest(
                         method,
                         url,
                         headers,
@@ -1103,7 +1104,7 @@ class RestApi constructor(
 
             when (protocol) {
                 Protocol.HTTP -> {
-                    return@withContext http.makeRequest(
+                    http.makeRequest(
                         method = method,
                         url = url,
                         headers = headers,
@@ -1113,7 +1114,7 @@ class RestApi constructor(
                 }
 
                 Protocol.SMS -> {
-                    return@withContext handleSmsRequest(
+                    handleSmsRequest(
                         method,
                         url,
                         headers,
@@ -1138,7 +1139,7 @@ class RestApi constructor(
 
             when (protocol) {
                 Protocol.HTTP -> {
-                    return@withContext http.makeRequest(
+                    http.makeRequest(
                         method = method,
                         url = url,
                         headers = headers,
@@ -1148,7 +1149,7 @@ class RestApi constructor(
                 }
 
                 Protocol.SMS -> {
-                    return@withContext handleSmsRequest(
+                    handleSmsRequest(
                         method,
                         url,
                         headers,
@@ -1173,7 +1174,7 @@ class RestApi constructor(
 
             when (protocol) {
                 Protocol.HTTP -> {
-                    return@withContext http.makeRequest(
+                    http.makeRequest(
                         method = method,
                         url = url,
                         headers = headers,
@@ -1183,7 +1184,7 @@ class RestApi constructor(
                 }
 
                 Protocol.SMS -> {
-                    return@withContext handleSmsRequest(
+                    handleSmsRequest(
                         method,
                         url,
                         headers,
@@ -1237,7 +1238,7 @@ class RestApi constructor(
 
             when (protocol) {
                 Protocol.HTTP -> {
-                    return@withContext http.makeRequest(
+                    http.makeRequest(
                         method = method,
                         url = url,
                         headers = headers,
@@ -1247,7 +1248,7 @@ class RestApi constructor(
                 }
 
                 Protocol.SMS -> {
-                    return@withContext handleSmsRequest(
+                    handleSmsRequest(
                         method,
                         url,
                         headers,
@@ -1274,7 +1275,7 @@ class RestApi constructor(
 
             when (protocol) {
                 Protocol.HTTP -> {
-                    return@withContext http.makeRequest(
+                    http.makeRequest(
                         method = method,
                         url = url,
                         headers = headers,
@@ -1284,7 +1285,7 @@ class RestApi constructor(
                 }
 
                 Protocol.SMS -> {
-                    return@withContext handleSmsRequest(
+                    handleSmsRequest(
                         method,
                         url,
                         headers,
@@ -1312,7 +1313,7 @@ class RestApi constructor(
 
             when (protocol) {
                 Protocol.HTTP -> {
-                    return@withContext http.makeRequest(
+                    http.makeRequest(
                         method = method,
                         url = url,
                         headers = headers,
@@ -1322,7 +1323,7 @@ class RestApi constructor(
                 }
 
                 Protocol.SMS -> {
-                    return@withContext handleSmsRequest(
+                    handleSmsRequest(
                         method,
                         url,
                         headers,
@@ -1339,7 +1340,7 @@ class RestApi constructor(
 
             when (protocol) {
                 Protocol.HTTP -> {
-                    return@withContext http.makeRequest(
+                    http.makeRequest(
                         method = method,
                         url = url,
                         headers = headers,
@@ -1348,7 +1349,7 @@ class RestApi constructor(
                 }
 
                 Protocol.SMS -> {
-                    return@withContext handleSmsRequest(
+                    handleSmsRequest(
                         method,
                         url,
                         headers
@@ -1364,7 +1365,7 @@ class RestApi constructor(
 
             when (protocol) {
                 Protocol.HTTP -> {
-                    return@withContext http.makeRequest(
+                    http.makeRequest(
                         method = method,
                         url = url,
                         headers = headers,
@@ -1373,7 +1374,7 @@ class RestApi constructor(
                 }
 
                 Protocol.SMS -> {
-                    return@withContext handleSmsRequest(
+                    handleSmsRequest(
                         method,
                         url,
                         headers
@@ -1396,7 +1397,7 @@ class RestApi constructor(
 
             when (protocol) {
                 Protocol.HTTP -> {
-                    return@withContext http.makeRequest(
+                    http.makeRequest(
                         method = method,
                         url = url,
                         headers = headers,
@@ -1406,7 +1407,7 @@ class RestApi constructor(
                 }
 
                 Protocol.SMS -> {
-                    return@withContext handleSmsRequest(
+                    handleSmsRequest(
                         method,
                         url,
                         headers,
@@ -1430,7 +1431,7 @@ class RestApi constructor(
 
             when (protocol) {
                 Protocol.HTTP -> {
-                    return@withContext http.makeRequest(
+                    http.makeRequest(
                         method = method,
                         url = url,
                         headers = headers,
@@ -1440,7 +1441,7 @@ class RestApi constructor(
                 }
 
                 Protocol.SMS -> {
-                    return@withContext handleSmsRequest(
+                    handleSmsRequest(
                         method,
                         url,
                         headers,
@@ -1550,62 +1551,119 @@ class RestApi constructor(
         lastSyncTimestamp: BigInteger = BigInteger.valueOf(1L),
         patientChannel: SendChannel<Patient>,
         reportProgressBlock: suspend (Int, Int) -> Unit,
+        protocol: Protocol
     ): PatientSyncResult =
         withContext(IO) {
             val body = createWriter<List<Patient>>().writeValueAsBytes(patientsToUpload)
+            val method = Http.Method.POST
+            val url = urlManager.getPatientsSync(lastSyncTimestamp)
+
             var totalPatientsDownloaded = 0
             var errors: String? = null
-            var failedParse = false
-            val networkResult = http.makeRequest(
-                method = Http.Method.POST,
-                url = urlManager.getPatientsSync(lastSyncTimestamp),
-                headers = headers,
-                requestBody = buildJsonRequestBody(body),
-            ) { inputStream ->
-                try {
-                    val reader = JacksonMapper.readerForPatient
-                    reader.createParser(inputStream).use { parser ->
-                        parser.parseObject {
-                            when (currentName) {
-                                PatientSyncField.PATIENTS.text -> {
-                                    parseObjectArray<Patient>(reader) {
-                                        patientChannel.send(it)
-                                        totalPatientsDownloaded++
-                                        reportProgressBlock(
-                                            totalPatientsDownloaded,
-                                            totalPatientsDownloaded
-                                        )
-                                    }
-                                    patientChannel.close()
-                                }
 
-                                PatientSyncField.ERRORS.text -> {
-                                    // TODO: Parse array of objects (refer to issue #62)
-                                    nextToken()
-                                    errors = readValueAsTree<JsonNode>().toPrettyString()
+            val result: NetworkResult<Unit> = when (protocol) {
+                Protocol.HTTP -> {
+                    var failedParse = false
+                    http.makeRequest(
+                        method = method,
+                        url = url,
+                        headers = headers,
+                        requestBody = buildJsonRequestBody(body),
+                    ) { inputStream ->
+                        try {
+                            val reader = JacksonMapper.readerForPatient
+                            reader.createParser(inputStream).use { parser ->
+                                parser.parseObject {
+                                    when (currentName) {
+                                        PatientSyncField.PATIENTS.text -> {
+                                            parseObjectArray<Patient>(reader) {
+                                                patientChannel.send(it)
+                                                totalPatientsDownloaded++
+                                                reportProgressBlock(
+                                                    totalPatientsDownloaded,
+                                                    totalPatientsDownloaded
+                                                )
+                                            }
+                                            patientChannel.close()
+                                        }
+
+                                        PatientSyncField.ERRORS.text -> {
+                                            // TODO: Parse array of objects (refer to issue #62)
+                                            nextToken()
+                                            errors = readValueAsTree<JsonNode>().toPrettyString()
+                                        }
+                                    }
                                 }
                             }
+                        } catch (e: Exception) {
+                            Log.e(TAG, e.toString())
+                            failedParse = true
+                        }
+                    }.also {
+                        if (it is NetworkResult.Success) {
+                            // In case we return early, this needs to be closed. These is an idempotent
+                            // operation, so it doesn't do anything on Successes where we don't return early
+                            if (failedParse) {
+                                patientChannel.close(SyncException("patient sync response parsing had failure(s)"))
+                            } else {
+                                patientChannel.close()
+                            }
+                        } else {
+                            // Fail the channel if not successful (note: idempotent operation).
+                            patientChannel.close(SyncException("patient download wasn't done properly"))
                         }
                     }
-                } catch (e: Exception) {
-                    Log.e(TAG, e.toString())
-                    failedParse = true
                 }
-            }.also {
-                if (it is NetworkResult.Success) {
-                    // In case we return early, this needs to be closed. These is an idempotent
-                    // operation, so it doesn't do anything on Successes where we don't return early
-                    if (failedParse) {
-                        patientChannel.close(SyncException("patient sync response parsing had failure(s)"))
-                    } else {
-                        patientChannel.close()
+
+                Protocol.SMS -> {
+                    try {
+                        val networkResult = handleSmsRequest<List<Patient>>(
+                            method,
+                            url,
+                            headers
+                        )
+
+                        val newNetworkResult: NetworkResult<Unit> = when (networkResult) {
+                            is NetworkResult.Success -> {
+                                for (patient in networkResult.value) {
+                                    totalPatientsDownloaded++
+                                    patientChannel.send(patient)
+                                }
+                                NetworkResult.Success(
+                                    Unit,
+                                    networkResult.statusCode
+                                )
+                            }
+
+                            is NetworkResult.Failure -> {
+                                errors = networkResult.body.toString()
+                                patientChannel.close(SyncException("failed to download all associated patients"))
+                                NetworkResult.Failure(
+                                    networkResult.body,
+                                    networkResult.statusCode
+                                )
+                            }
+
+                            is NetworkResult.NetworkException -> {
+                                errors = networkResult.cause.toString()
+                                patientChannel.close(SyncException("failed to download all associated patients"))
+                                NetworkResult.NetworkException(networkResult.cause)
+                            }
+                        }
+
+                        newNetworkResult
+                    } catch (e: Exception) {
+                        val syncException = SyncException("failed to parse all associated patients")
+                        errors = e.message
+
+                        patientChannel.close(syncException)
+
+                        NetworkResult.NetworkException(syncException)
                     }
-                } else {
-                    // Fail the channel if not successful (note: idempotent operation).
-                    patientChannel.close(SyncException("patient download wasn't done properly"))
                 }
             }
-            PatientSyncResult(networkResult, patientsToUpload.size, totalPatientsDownloaded, errors)
+
+            PatientSyncResult(result, patientsToUpload.size, totalPatientsDownloaded, errors)
         }
 
     /**
@@ -1641,68 +1699,119 @@ class RestApi constructor(
         lastSyncTimestamp: BigInteger = BigInteger.valueOf(1L),
         readingChannel: SendChannel<Reading>,
         reportProgressBlock: suspend (Int, Int) -> Unit,
+        protocol: Protocol
     ): ReadingSyncResult = withContext(IO) {
         val body = createWriter<List<Reading>>().writeValueAsBytes(readingsToUpload)
-        var totalReadingsDownloaded = 0
-        var failedParse = false
-        val networkResult = http.makeRequest(
-            method = Http.Method.POST,
-            url = urlManager.getReadingsSync(lastSyncTimestamp),
-            headers = headers,
-            requestBody = buildJsonRequestBody(body)
-        ) { inputStream ->
-            Log.d(TAG, "Parsing readings now")
+        val method = Http.Method.POST
+        val url = urlManager.getReadingsSync(lastSyncTimestamp)
 
-            try {
-                val readerForReading = JacksonMapper.createReader<Reading>()
-                readerForReading.createParser(inputStream).use { parser ->
-                    var totalDownloaded = 0
-                    var totalToDownload = 0
-                    parser.parseObject {
-                        when (currentName) {
-                            ReadingSyncField.READINGS.text -> {
-                                Log.d(TAG, "Starting to parse readings array")
-                                parseObjectArray<Reading>(readerForReading) {
-                                    readingChannel.send(it)
-                                    totalDownloaded++
-                                    totalReadingsDownloaded++
-                                    reportProgressBlock(totalDownloaded, totalToDownload)
+        var totalReadingsDownloaded = 0
+
+        val result: NetworkResult<Unit> = when (protocol) {
+            Protocol.HTTP -> {
+                var failedParse = false
+                http.makeRequest(
+                    method = method,
+                    url = url,
+                    headers = headers,
+                    requestBody = buildJsonRequestBody(body)
+                ) { inputStream ->
+                    Log.d(TAG, "Parsing readings now")
+
+                    try {
+                        val readerForReading = JacksonMapper.createReader<Reading>()
+                        readerForReading.createParser(inputStream).use { parser ->
+                            var totalDownloaded = 0
+                            parser.parseObject {
+                                when (currentName) {
+                                    ReadingSyncField.READINGS.text -> {
+                                        Log.d(TAG, "Starting to parse readings array")
+                                        parseObjectArray<Reading>(readerForReading) {
+                                            readingChannel.send(it)
+                                            totalDownloaded++
+                                            totalReadingsDownloaded++
+                                            reportProgressBlock(totalDownloaded, totalDownloaded)
+                                        }
+                                        readingChannel.close()
+                                    }
                                 }
-                                readingChannel.close()
                             }
                         }
+                    } catch (e: Exception) {
+                        Log.e(TAG, e.toString())
+                        failedParse = true
+                    }
+
+                    withContext(Dispatchers.Main) {
+                        Log.d(
+                            TAG,
+                            "DEBUG: Downloaded $totalReadingsDownloaded readings."
+                        )
+                    }
+                    Unit
+                }.also {
+                    if (it is NetworkResult.Success) {
+                        // In case we return early, these need to be closed. These are idempotent
+                        // operations, so it doesn't do anything on Successes where we don't return
+                        // early.
+                        if (failedParse) {
+                            readingChannel.close(SyncException("readings sync response parsing had failure(s)"))
+                        } else {
+                            readingChannel.close()
+                        }
+                    } else {
+                        // Fail these channels if not successful (note: idempotent operations)
+                        readingChannel.close(SyncException("failed to sync readings"))
                     }
                 }
-            } catch (e: Exception) {
-                Log.e(TAG, e.toString())
-                failedParse = true
             }
 
-            withContext(Dispatchers.Main) {
-                Log.d(
-                    TAG,
-                    "DEBUG: Downloaded $totalReadingsDownloaded readings."
-                )
-            }
-            Unit
-        }.also {
-            if (it is NetworkResult.Success) {
-                // In case we return early, these need to be closed. These are idempotent
-                // operations, so it doesn't do anything on Successes where we don't return
-                // early.
-                if (failedParse) {
-                    readingChannel.close(SyncException("readings sync response parsing had failure(s)"))
-                } else {
-                    readingChannel.close()
+            Protocol.SMS -> {
+                try {
+                    val networkResult = handleSmsRequest<List<Reading>>(
+                        method,
+                        url,
+                        headers
+                    )
+
+                    val newNetworkResult: NetworkResult<Unit> = when (networkResult) {
+                        is NetworkResult.Success -> {
+                            for (reading in networkResult.value) {
+                                totalReadingsDownloaded++
+                                readingChannel.send(reading)
+                            }
+                            NetworkResult.Success(
+                                Unit,
+                                networkResult.statusCode
+                            )
+                        }
+
+                        is NetworkResult.Failure -> {
+                            readingChannel.close(SyncException("failed to download all associated readings"))
+                            NetworkResult.Failure(
+                                networkResult.body,
+                                networkResult.statusCode
+                            )
+                        }
+
+                        is NetworkResult.NetworkException -> {
+                            NetworkResult.NetworkException(networkResult.cause)
+                        }
+                    }
+
+                    newNetworkResult
+                } catch (e: Exception) {
+                    val syncException = SyncException("failed to parse all associated readings")
+
+                    readingChannel.close(syncException)
+
+                    NetworkResult.NetworkException(syncException)
                 }
-            } else {
-                // Fail these channels if not successful (note: idempotent operations)
-                readingChannel.close(SyncException("failed to sync readings"))
             }
         }
 
         ReadingSyncResult(
-            networkResult,
+            result,
             readingsToUpload.size,
             totalReadingsDownloaded
         )
