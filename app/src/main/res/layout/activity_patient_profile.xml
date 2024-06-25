@@ -507,7 +507,7 @@
                 android:layout_marginTop="8dp"
                 android:background="@drawable/rounded_button"
                 android:text="@string/create_new_reading"
-                android:visibility="visible"
+                android:visibility="gone"
                 app:layout_constraintBottom_toTopOf="@+id/seeSavedFormsButton"
                 app:layout_constraintTop_toBottomOf="@+id/addToMyPatientButton"
                 tools:layout_editor_absoluteX="0dp" />
@@ -520,8 +520,18 @@
                 android:background="@drawable/rounded_button"
                 android:text="@string/see_saved_forms"
                 android:visibility="visible"
-                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/newPatientReadingButton" />
+
+            <Button
+                android:id="@+id/seeSubmittedFormsButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/reading_flow_previous_reading_item_margin"
+                android:background="@drawable/rounded_button"
+                android:text="@string/see_submitted_forms"
+                android:visibility="visible"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/seeSavedFormsButton" />
 
 
         </androidx.constraintlayout.widget.ConstraintLayout>

@@ -18,6 +18,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -122,6 +123,7 @@ open class PatientProfileActivity : AppCompatActivity() {
         setupCreatePatientReadingButton()
         lifecycleScope.launch {
             setupSeeSavedFormsButton()
+            setupSeeSubmittedFormsButton()
         }
         setupUpdateRecord()
         setupLineChart()
@@ -172,15 +174,17 @@ open class PatientProfileActivity : AppCompatActivity() {
         setupCreatePatientReadingButton()
     }
 
-    private fun changeAddReadingButtonColorIfNeeded() {
+    private fun changeAddReadingButtonColorIfNeeded(): Boolean {
         val button: Button = findViewById(R.id.newPatientReadingButton)
         if (patientReadings.isNotEmpty() && Util.isRecheckNeededNow(patientReadings[0].dateRecheckVitalsNeeded)) {
             button.backgroundTintList = ContextCompat.getColorStateList(this, R.color.redDown)
             button.text = getString(R.string.new_reading_is_required_now)
+            return true
         } else {
             button.backgroundTintList =
                 ContextCompat.getColorStateList(this, R.color.colorPrimaryLight)
             button.text = getString(R.string.create_new_reading)
+            return false
         }
     }
 
@@ -365,12 +369,15 @@ open class PatientProfileActivity : AppCompatActivity() {
         )
 
         sBPDataSet.color = R.color.purple
+        sBPDataSet.valueTextSize = 9.0f
         sBPDataSet.setCircleColor(R.color.purple)
 
         dBPDataSet.color = R.color.colorAccent
+        dBPDataSet.valueTextSize = 9.0f
         dBPDataSet.setCircleColor(R.color.colorAccent)
 
         bPMDataSet.color = R.color.orange
+        bPMDataSet.valueTextSize = 9.0f
         bPMDataSet.setCircleColor(R.color.orange)
 
         bPMDataSet.mode = LineDataSet.Mode.CUBIC_BEZIER
@@ -448,30 +455,50 @@ open class PatientProfileActivity : AppCompatActivity() {
     private fun setupCreatePatientReadingButton() {
         // TODO: this function has unclear dependency on setupReadingsRecyclerView,
         //  patientsReadings won't be loaded until it's called (refer to issue #50)
-        val createButton =
-            findViewById<Button>(R.id.newPatientReadingButton)
 
         if (patientReadings.isNotEmpty() && Util.isRecheckNeededNow(patientReadings[0].dateRecheckVitalsNeeded)) {
-            createButton.visibility = View.VISIBLE
-            changeAddReadingButtonColorIfNeeded()
-            createButton.setOnClickListener { _: View? ->
-                val readingId = patientReadings[0].id
-                val intent =
-                    makeIntentForRecheck(this@PatientProfileActivity, readingId)
-                startActivityForResult(intent, READING_ACTIVITY_DONE)
+            val createButton =
+                findViewById<Button>(R.id.newPatientReadingButton)
+            createButton.isVisible = false
+            if (changeAddReadingButtonColorIfNeeded()) {
+                createButton.visibility = View.VISIBLE
+                createButton.setOnClickListener { _: View? ->
+                    val readingId = patientReadings[0].id
+                    val intent =
+                        makeIntentForRecheck(this@PatientProfileActivity, readingId)
+                    startActivityForResult(intent, READING_ACTIVITY_DONE)
+                }
+            } else {
+                createButton.isVisible = false
             }
         }
     }
 
     private suspend fun setupSeeSavedFormsButton() {
         val createFormButton = findViewById<Button>(R.id.seeSavedFormsButton)
-        val responsesForPatient = formResponseManager.searchForFormResponseByPatientId(currPatient.id)
+        val responsesForPatient = formResponseManager.searchForDraftFormsByPatientId(currPatient.id)
         createFormButton.visibility = if (!responsesForPatient.isNullOrEmpty()) View.VISIBLE else View.GONE
         createFormButton.setOnClickListener {
             val intent = SavedFormsActivity.makeIntent(
                 this@PatientProfileActivity,
                 currPatient.id,
-                currPatient
+                currPatient,
+                true
+            )
+            startActivity(intent)
+        }
+    }
+
+    private suspend fun setupSeeSubmittedFormsButton() {
+        val createFormButton = findViewById<Button>(R.id.seeSubmittedFormsButton)
+        val responsesForPatient = formResponseManager.searchForSubmittedFormsByPatientId(currPatient.id)
+        createFormButton.visibility = if (!responsesForPatient.isNullOrEmpty()) View.VISIBLE else View.GONE
+        createFormButton.setOnClickListener {
+            val intent = SavedFormsActivity.makeIntent(
+                this@PatientProfileActivity,
+                currPatient.id,
+                currPatient,
+                false
             )
             startActivity(intent)
         }

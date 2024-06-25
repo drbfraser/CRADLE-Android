@@ -8,7 +8,6 @@ import androidx.core.content.ContextCompat.getDrawable
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.http_sms_service.DatabaseObject
 import com.cradleplatform.neptune.http_sms_service.HttpSmsService
@@ -28,7 +27,6 @@ import com.cradleplatform.neptune.utilities.connectivity.api24.ConnectivityOptio
 import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager
 import com.cradleplatform.neptune.view.FormRenderingActivity
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -210,11 +208,11 @@ class FormRenderingViewModel @Inject constructor(
         applicationContext: Context,
         formResponseId: Long?
     ) {
-        formResponseId?.let {
-            viewModelScope.launch {
-                removeFormResponseFromDatabaseById(it)
-            }
-        }
+//        formResponseId?.let {
+//            viewModelScope.launch {
+//                removeFormResponseFromDatabaseById(it)
+//            }
+//        }
 
         return if (currentFormTemplate != null) {
             addBlankQuestions(currentFormTemplate!!)
@@ -402,6 +400,7 @@ class FormRenderingViewModel @Inject constructor(
         patientId: String,
         selectedLanguage: String,
         formResponseId: Long?,
+        saveDraft: Boolean
     ) {
         return if (currentFormTemplate != null) {
             // If the FormTemplate's formClassName field is empty, grab it using formClass Id
@@ -421,7 +420,7 @@ class FormRenderingViewModel @Inject constructor(
                         formTemplate = currentFormTemplate!!,
                         language = selectedLanguage,
                         answers = currentAnswers,
-                        saveResponseToSendLater = true
+                        saveResponseToSendLater = saveDraft
                     )
 
                     false -> FormResponse(
@@ -429,7 +428,7 @@ class FormRenderingViewModel @Inject constructor(
                         formTemplate = currentFormTemplate!!,
                         language = selectedLanguage,
                         answers = currentAnswers,
-                        saveResponseToSendLater = true
+                        saveResponseToSendLater = saveDraft
                     )
                 }
             formResponseManager.updateOrInsertIfNotExistsFormResponse(formResponse)
