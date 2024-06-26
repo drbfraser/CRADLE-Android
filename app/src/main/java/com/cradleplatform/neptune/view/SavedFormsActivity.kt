@@ -32,7 +32,7 @@ class SavedFormsActivity : AppCompatActivity() {
 
     private var adapter: SavedFormAdapter? = null
     private var formList: MutableList<FormResponse>? = null
-    private var formMap: MutableMap<Patient,MutableList<FormResponse>>  =  mutableMapOf()
+    private var formMap: MutableMap<Patient, MutableList<FormResponse>> = mutableMapOf()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,33 +55,32 @@ class SavedFormsActivity : AppCompatActivity() {
                 if (patientId != "") {
                     formList = viewModel.searchForDraftFormsByPatientId(patientId!!)
                     patient = viewModel.getPatientByPatientId(patientId!!)
-                    patient?.let { formList?.let { it1 -> formMap?.put(it, it1) } }
+                    patient?.let { formList?.let { it1 -> formMap.put(it, it1) } }
                 } else {
                     formList = viewModel.searchForDraftForms()
                     formList?.forEach { formResponse ->
                         patient = viewModel.getPatientByPatientId(formResponse.patientId)
-                        if (formMap?.containsKey(patient) == true) {
-                            val prevList: MutableList<FormResponse>? = formMap!![patient]
+                        if (formMap.containsKey(patient)) {
+                            val prevList: MutableList<FormResponse>? = formMap[patient]
                             prevList?.add(formResponse)
                             patient?.let {
                                 if (prevList != null) {
-                                    formMap!![it] = prevList
+                                    formMap[it] = prevList
                                 }
                             }
                         } else {
-                            patient?.let { formMap?.put(it, mutableListOf(formResponse)) }
+                            patient?.let { formMap.put(it, mutableListOf(formResponse)) }
                         }
                     }
                 }
             } else {
                 formList = viewModel.searchForSubmittedFormsByPatientId(patientId!!)
                 patient = viewModel.getPatientByPatientId(patientId!!)
-                patient?.let { formList?.let { it1 -> formMap?.put(it, it1) } }
+                patient?.let { formList?.let { it1 -> formMap.put(it, it1) } }
             }
 
-            adapter = formMap?.let { SavedFormAdapter(it) }
+            adapter = SavedFormAdapter(formMap)
             recyclerView.adapter = adapter
-
         }
         val itemTouchHelper =
             ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
@@ -175,6 +174,7 @@ class SavedFormsActivity : AppCompatActivity() {
         supportActionBar?.title = getString(R.string.see_saved_forms)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
     }
+    @Suppress("DEPRECATION")
     override fun onSupportNavigateUp(): Boolean {
         onBackPressed()
         return true

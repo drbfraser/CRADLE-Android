@@ -18,6 +18,7 @@ import com.cradleplatform.neptune.viewmodel.FormSelectionViewModel
 import com.google.android.material.textfield.TextInputLayout
 import dagger.hilt.android.AndroidEntryPoint
 
+@Suppress("DEPRECATION")
 @AndroidEntryPoint
 class FormSelectionActivity : AppCompatActivity() {
 
@@ -29,6 +30,7 @@ class FormSelectionActivity : AppCompatActivity() {
 
     private var currentPatient: Patient? = null
 
+    @Suppress("DEPRECATION")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_form_selection)
@@ -117,6 +119,7 @@ class FormSelectionActivity : AppCompatActivity() {
     }
 
     override fun onSupportNavigateUp(): Boolean {
+        @Suppress("DEPRECATION")
         onBackPressed()
         return true
     }
@@ -135,8 +138,6 @@ class FormSelectionActivity : AppCompatActivity() {
 
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
-        //super.onBackPressed()
-
         val intent = currentID?.let {
             PatientProfileActivity.makeIntentForPatientId(
                 this@FormSelectionActivity,
@@ -147,5 +148,6 @@ class FormSelectionActivity : AppCompatActivity() {
         if (intent != null) {
             startActivity(intent)
         }
+        super.onBackPressed()
     }
 }

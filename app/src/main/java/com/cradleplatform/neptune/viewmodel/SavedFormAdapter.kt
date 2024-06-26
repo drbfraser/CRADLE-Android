@@ -43,7 +43,7 @@ class SavedFormAdapter(formMap: MutableMap<Patient, MutableList<FormResponse>>) 
         }
 
         @UiThread
-        fun bind(patient:Patient, formResponse: FormResponse) {
+        fun bind(patient: Patient, formResponse: FormResponse) {
             // Grab the FormResponse associated with the list item being bound
             Log.d("look", "binding ${formResponse.formClassificationId} ${patient.name}")
             binding.formResponse = formResponse
@@ -64,7 +64,7 @@ class SavedFormAdapter(formMap: MutableMap<Patient, MutableList<FormResponse>>) 
             false,
             dataBindingComponent
         )
-        Log.d("look", "creating view hoolder")
+        Log.d("look", "creating view holder")
         return SavedFormViewHolder(binding)
     }
     override fun getItemCount(): Int {
@@ -72,7 +72,6 @@ class SavedFormAdapter(formMap: MutableMap<Patient, MutableList<FormResponse>>) 
     }
     override fun onBindViewHolder(holder: SavedFormViewHolder, position: Int) {
         val (patient, formResponse) = flattenedList[position]
-        Log.d("look", "this is in bind view holder ${formResponse.patientId} ${patient.name} ${flattenedList}")
         holder.bind(patient, formResponse)
     }
     fun deleteItem(swipedPosition: Int) {
