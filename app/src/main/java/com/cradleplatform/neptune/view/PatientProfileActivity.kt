@@ -176,7 +176,8 @@ open class PatientProfileActivity : AppCompatActivity() {
 
     private fun changeAddReadingButtonColorIfNeeded(): Boolean {
         val button: Button = findViewById(R.id.newPatientReadingButton)
-        return if (patientReadings.isNotEmpty() && Util.isRecheckNeededNow(patientReadings[0].dateRecheckVitalsNeeded)) {
+        return if (patientReadings.isNotEmpty()
+            && Util.isRecheckNeededNow(patientReadings[0].dateRecheckVitalsNeeded)) {
             button.backgroundTintList = ContextCompat.getColorStateList(this, R.color.redDown)
             button.text = getString(R.string.new_reading_is_required_now)
             true

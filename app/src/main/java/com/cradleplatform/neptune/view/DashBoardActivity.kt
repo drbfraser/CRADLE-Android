@@ -18,12 +18,12 @@ import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
 import com.cradleplatform.neptune.manager.SmsKeyManager
 import com.cradleplatform.neptune.model.SmsKeyResponse
-import com.cradleplatform.neptune.utilities.CustomToast
-import com.cradleplatform.neptune.utilities.Util
-import com.cradleplatform.neptune.view.ui.settings.SettingsActivity.Companion.makeSettingsActivityLaunchIntent
 import com.cradleplatform.neptune.sync.SyncReminderHelper
 import com.cradleplatform.neptune.sync.views.SyncActivity
+import com.cradleplatform.neptune.utilities.CustomToast
+import com.cradleplatform.neptune.utilities.Util
 import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager
+import com.cradleplatform.neptune.view.ui.settings.SettingsActivity.Companion.makeSettingsActivityLaunchIntent
 import com.cradleplatform.neptune.viewmodel.UserViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -297,7 +297,7 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
                 intent.putExtra("The Patient object that the forms are saved for", "")
                 intent.putExtra("Boolean value indicating whether the forms are saved", true)
                 intent.putExtra("The previous page the backspace leads to", true)
-                    startActivity(intent) }
+                startActivity(intent) }
         }
     }
 
