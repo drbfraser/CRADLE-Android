@@ -2,9 +2,7 @@ package com.cradleplatform.neptune.viewmodel
 
 import android.util.Log
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.annotation.UiThread
 import androidx.databinding.DataBindingComponent
 import androidx.databinding.DataBindingUtil
@@ -39,16 +37,15 @@ class SavedFormAdapter(formMap: MutableMap<Patient, MutableList<FormResponse>>) 
                     }
                     // When the user clicks on a saved form, open the FormRenderingActivity
                     // using the saved form's questions and answers
-
                 }
             }
-            Log.d("look","building in the adapter")
+            Log.d("look", "building in the adapter")
         }
 
         @UiThread
         fun bind(patient:Patient, formResponse: FormResponse) {
             // Grab the FormResponse associated with the list item being bound
-            Log.d("look","binding ${formResponse.formClassificationId} ${patient.name}")
+            Log.d("look", "binding ${formResponse.formClassificationId} ${patient.name}")
             binding.formResponse = formResponse
             binding.patient = patient
             binding.listItemSavedFormDateCreatedTextView.text = Date(formResponse.dateEdited).toString()
@@ -67,10 +64,8 @@ class SavedFormAdapter(formMap: MutableMap<Patient, MutableList<FormResponse>>) 
             false,
             dataBindingComponent
         )
-        Log.d("look","creating view hoolder")
-//        return SavedFormViewHolder(view, binding, patient)
+        Log.d("look", "creating view hoolder")
         return SavedFormViewHolder(binding)
-
     }
     override fun getItemCount(): Int {
         return flattenedList.size

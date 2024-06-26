@@ -59,7 +59,7 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
             actionBar.title = ""
         }
 
-        userViewModel = ViewModelProvider(this).get(UserViewModel::class.java)
+        userViewModel = ViewModelProvider(this)[UserViewModel::class.java]
         userViewModel.getNewNumber().let {
             if (it.isNotEmpty()) {
                 showPhoneChangedDialog(it)
@@ -74,7 +74,6 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
 
     private fun networkCheck() {
         // Disable entering StatsActivity without network connectivity.
-
         val statView = findViewById<View>(R.id.statConstraintLayout)
         val statImg = statView.findViewById<ImageButton>(R.id.statImg)
         val statCardview: CardView = statView.findViewById(R.id.statCardView)
@@ -290,13 +289,13 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
             R.id.educationCardView, R.id.educationImg -> startActivity(Intent(this, EducationActivity::class.java))
 
             R.id.statCardView, R.id.statImg -> startActivity(Intent(this, StatsActivity::class.java))
-            R.id.formsCardView, R.id.formsImg ->
-            {   val intent = Intent(this, SavedFormsActivity::class.java)
-                intent.putExtra("Patient ID that the forms are saved for","")
-                intent.putExtra("The Patient object that the forms are saved for","")
-                intent.putExtra("Boolean value indicating whether the forms are saved",true)
-                intent.putExtra("The previous page the backspace leads to",true)
-                startActivity(intent)}
+            R.id.formsCardView, R.id.formsImg -> {
+                val intent = Intent(this, SavedFormsActivity::class.java)
+                    intent.putExtra("Patient ID that the forms are saved for", "")
+                    intent.putExtra("The Patient object that the forms are saved for", "")
+                    intent.putExtra("Boolean value indicating whether the forms are saved", true)
+                    intent.putExtra("The previous page the backspace leads to", true)
+                    startActivity(intent) }
         }
     }
 
