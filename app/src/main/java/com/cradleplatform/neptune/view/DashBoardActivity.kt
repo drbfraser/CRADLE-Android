@@ -18,12 +18,12 @@ import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
 import com.cradleplatform.neptune.manager.SmsKeyManager
 import com.cradleplatform.neptune.model.SmsKeyResponse
-import com.cradleplatform.neptune.utilities.CustomToast
-import com.cradleplatform.neptune.utilities.Util
-import com.cradleplatform.neptune.view.ui.settings.SettingsActivity.Companion.makeSettingsActivityLaunchIntent
 import com.cradleplatform.neptune.sync.SyncReminderHelper
 import com.cradleplatform.neptune.sync.views.SyncActivity
+import com.cradleplatform.neptune.utilities.CustomToast
+import com.cradleplatform.neptune.utilities.Util
 import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager
+import com.cradleplatform.neptune.view.ui.settings.SettingsActivity.Companion.makeSettingsActivityLaunchIntent
 import com.cradleplatform.neptune.viewmodel.UserViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -59,7 +59,7 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
             actionBar.title = ""
         }
 
-        userViewModel = ViewModelProvider(this).get(UserViewModel::class.java)
+        userViewModel = ViewModelProvider(this)[UserViewModel::class.java]
         userViewModel.getNewNumber().let {
             if (it.isNotEmpty()) {
                 showPhoneChangedDialog(it)
@@ -74,7 +74,6 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
 
     private fun networkCheck() {
         // Disable entering StatsActivity without network connectivity.
-
         val statView = findViewById<View>(R.id.statConstraintLayout)
         val statImg = statView.findViewById<ImageButton>(R.id.statImg)
         val statCardview: CardView = statView.findViewById(R.id.statCardView)
@@ -124,7 +123,7 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
                 }
             } else if (smsKeyStatus == SmsKeyManager.KeyState.WARN) {
                 // User's sms key is stale - Warn the user to refresh their SmsKey
-                val daysUntilExpiry = smsKeyManager.getDaysUntilExpiry(currentSmsKey!!)
+                val daysUntilExpiry = smsKeyManager.getDaysUntilExpiry(currentSmsKey)
                 showExpiryWarning(applicationContext, daysUntilExpiry)
             }
         }
@@ -267,6 +266,7 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
         val id = item.itemId
         if (id == R.id.action_settings) {
             val intent = makeSettingsActivityLaunchIntent(this)
+            @Suppress("DEPRECATION")
             startActivityForResult(
                 intent,
                 TabActivityBase.TAB_ACTIVITY_BASE_SETTINGS_DONE
@@ -280,6 +280,7 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
         when (v.id) {
             R.id.readingCardView, R.id.readingImg -> {
                 val intent = ReadingActivity.makeIntentForNewReading(this@DashBoardActivity)
+                @Suppress("DEPRECATION")
                 startActivityForResult(intent, READING_ACTIVITY_DONE)
             }
 
@@ -290,13 +291,13 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
             R.id.educationCardView, R.id.educationImg -> startActivity(Intent(this, EducationActivity::class.java))
 
             R.id.statCardView, R.id.statImg -> startActivity(Intent(this, StatsActivity::class.java))
-            R.id.formsCardView, R.id.formsImg ->
-            {   val intent = Intent(this, SavedFormsActivity::class.java)
-                intent.putExtra("Patient ID that the forms are saved for","")
-                intent.putExtra("The Patient object that the forms are saved for","")
-                intent.putExtra("Boolean value indicating whether the forms are saved",true)
-                intent.putExtra("The previous page the backspace leads to",true)
-                startActivity(intent)}
+            R.id.formsCardView, R.id.formsImg -> {
+                val intent = Intent(this, SavedFormsActivity::class.java)
+                intent.putExtra("Patient ID that the forms are saved for", "")
+                intent.putExtra("The Patient object that the forms are saved for", "")
+                intent.putExtra("Boolean value indicating whether the forms are saved", true)
+                intent.putExtra("The previous page the backspace leads to", true)
+                startActivity(intent) }
         }
     }
 
@@ -306,7 +307,10 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
         const val OPACITY_FULL = 1.0f
     }
 
-    @Deprecated("Deprecated in Java")
+    @Suppress("DEPRECATION")
+    @Deprecated("Deprecated in Java",
+        ReplaceWith("super.onBackPressed()", "androidx.appcompat.app.AppCompatActivity")
+    )
     override fun onBackPressed() {
         super.onBackPressed()
     }
