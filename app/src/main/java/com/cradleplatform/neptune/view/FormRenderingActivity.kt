@@ -64,9 +64,8 @@ class FormRenderingActivity : AppCompatActivity() {
         builder.setTitle(R.string.are_you_sure)
         builder.setMessage(R.string.exit_form_dialog)
 
-        //todo: fix this so that it returns to previous page
         builder.setPositiveButton(R.string.yes) { _, _ ->
-            returnToPatientProfile()
+            finish()
         }
 
         builder.setNegativeButton(R.string.no) { _, _ ->
