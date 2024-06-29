@@ -1358,32 +1358,20 @@ class RestApi constructor(
             }
         }
 
-    suspend fun getCurrentSmsKey(userID: Int, protocol: Protocol): NetworkResult<SmsKeyResponse> =
+    suspend fun getCurrentSmsKey(userID: Int): NetworkResult<SmsKeyResponse> =
         withContext(IO) {
             val method = Http.Method.GET
             val url = urlManager.smsKey(userID)
 
-            when (protocol) {
-                Protocol.HTTP -> {
-                    http.makeRequest(
-                        method = method,
-                        url = url,
-                        headers = headers,
-                        inputStreamReader = { JacksonMapper.readerSmsKey.readValue(it) }
-                    )
-                }
-
-                Protocol.SMS -> {
-                    handleSmsRequest(
-                        method,
-                        url,
-                        headers
-                    )
-                }
-            }
+            http.makeRequest(
+                method = method,
+                url = url,
+                headers = headers,
+                inputStreamReader = { JacksonMapper.readerSmsKey.readValue(it) }
+            )
         }
 
-    suspend fun refreshSmsKey(userID: Int, protocol: Protocol): NetworkResult<SmsKeyResponse> =
+    suspend fun refreshSmsKey(userID: Int): NetworkResult<SmsKeyResponse> =
         withContext(IO) {
             val jsonObject = JSONObject()
 
@@ -1391,33 +1379,19 @@ class RestApi constructor(
             val requestBody = jsonObject.toString().toRequestBody(mediaType)
             val buffer = okio.Buffer()
             requestBody.writeTo(buffer)
-            val body = buffer.readByteArray()
             val method = Http.Method.PUT
             val url = urlManager.smsKey(userID)
 
-            when (protocol) {
-                Protocol.HTTP -> {
-                    http.makeRequest(
-                        method = method,
-                        url = url,
-                        headers = headers,
-                        requestBody = requestBody,
-                        inputStreamReader = { JacksonMapper.readerSmsKey.readValue(it) }
-                    )
-                }
-
-                Protocol.SMS -> {
-                    handleSmsRequest(
-                        method,
-                        url,
-                        headers,
-                        body
-                    )
-                }
-            }
+            http.makeRequest(
+                method = method,
+                url = url,
+                headers = headers,
+                requestBody = requestBody,
+                inputStreamReader = { JacksonMapper.readerSmsKey.readValue(it) }
+            )
         }
 
-    suspend fun getNewSmsKey(userID: Int, protocol: Protocol): NetworkResult<SmsKeyResponse> =
+    suspend fun getNewSmsKey(userID: Int): NetworkResult<SmsKeyResponse> =
         withContext(IO) {
             val jsonObject = JSONObject()
 
@@ -1425,30 +1399,16 @@ class RestApi constructor(
             val requestBody = jsonObject.toString().toRequestBody(mediaType)
             val buffer = okio.Buffer()
             requestBody.writeTo(buffer)
-            val body = buffer.readByteArray()
             val method = Http.Method.POST
             val url = urlManager.smsKey(userID)
 
-            when (protocol) {
-                Protocol.HTTP -> {
-                    http.makeRequest(
-                        method = method,
-                        url = url,
-                        headers = headers,
-                        requestBody = requestBody,
-                        inputStreamReader = { JacksonMapper.readerSmsKey.readValue(it) }
-                    )
-                }
-
-                Protocol.SMS -> {
-                    handleSmsRequest(
-                        method,
-                        url,
-                        headers,
-                        body
-                    )
-                }
-            }
+            http.makeRequest(
+                method = method,
+                url = url,
+                headers = headers,
+                requestBody = requestBody,
+                inputStreamReader = { JacksonMapper.readerSmsKey.readValue(it) }
+            )
         }
 
     /**
