@@ -1,23 +1,32 @@
 package com.cradleplatform.neptune.view.ui.settings
+
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
+import android.widget.ArrayAdapter
+import android.widget.ListView
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.res.ResourcesCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import com.cradleplatform.neptune.CradleApplication
 import com.cradleplatform.neptune.R
+import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
+import com.cradleplatform.neptune.http_sms_service.http.RestApi
 import com.cradleplatform.neptune.manager.HealthFacilityManager
 import com.cradleplatform.neptune.manager.LoginManager
 import com.cradleplatform.neptune.manager.LoginManager.Companion.RELAY_PHONE_NUMBER
 import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.manager.ReadingManager
+import com.cradleplatform.neptune.model.RelayPhoneNumberResponse
 import com.cradleplatform.neptune.sync.PeriodicSyncer
+import com.cradleplatform.neptune.utilities.Protocol
 import com.cradleplatform.neptune.utilities.validateHostname
 import com.cradleplatform.neptune.utilities.validatePort
 import com.cradleplatform.neptune.view.LoginActivity
@@ -29,13 +38,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
-import android.widget.ArrayAdapter
-import android.widget.ListView
-import android.widget.Toast
-import androidx.core.content.res.ResourcesCompat
-import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
-import com.cradleplatform.neptune.http_sms_service.http.RestApi
-import com.cradleplatform.neptune.model.RelayPhoneNumberResponse
 
 @AndroidEntryPoint
 class SettingsActivity : AppCompatActivity() {
@@ -117,7 +119,8 @@ class SettingsFragment : PreferenceFragmentCompat() {
     @Inject
     lateinit var restApi: RestApi
 
-    private var selectedPosition = -1 // the index of the selected relay phone number in the list view
+    private var selectedPosition =
+        -1 // the index of the selected relay phone number in the list view
 
     override fun onResume() {
         super.onResume()
@@ -200,7 +203,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
         findPreference(R.string.key_change_relay_phone_number)?.withOnClickListener {
             lifecycleScope.launch {
-                val relayPhoneNumbers = restApi.getAllRelayPhoneNumbers()
+                val relayPhoneNumbers = restApi.getAllRelayPhoneNumbers(Protocol.HTTP)
                 handleRelayPhoneNumbersResult(relayPhoneNumbers)
             }
             true
@@ -243,7 +246,11 @@ class SettingsFragment : PreferenceFragmentCompat() {
             adapter.notifyDataSetChanged()
         }
 
-        listView.selector = ResourcesCompat.getDrawable(resources, R.drawable.list_item_selector_relay_numbers, null)
+        listView.selector = ResourcesCompat.getDrawable(
+            resources,
+            R.drawable.list_item_selector_relay_numbers,
+            null
+        )
         val numberToPreselect = sharedPreferences.getString(RELAY_PHONE_NUMBER, "")
         val preselectedIndex = phoneNumbers.indexOf(numberToPreselect)
         if (preselectedIndex != -1) {
@@ -262,7 +269,10 @@ class SettingsFragment : PreferenceFragmentCompat() {
      * @param phoneNumbers The list of relay phone numbers.
      * @return The AlertDialog instance.
      */
-    private fun createRelayPhoneNumberDialog(listView: ListView, phoneNumbers: List<String>): AlertDialog {
+    private fun createRelayPhoneNumberDialog(
+        listView: ListView,
+        phoneNumbers: List<String>
+    ): AlertDialog {
         return AlertDialog.Builder(requireActivity())
             .setTitle(R.string.select_relay_phone_number_title)
             .setView(listView)
@@ -270,7 +280,8 @@ class SettingsFragment : PreferenceFragmentCompat() {
             .setPositiveButton("Submit") { dialog, _ ->
                 if (selectedPosition != -1) {
                     val selectedPhoneNumber = phoneNumbers[selectedPosition]
-                    sharedPreferences.edit().putString(RELAY_PHONE_NUMBER, selectedPhoneNumber).apply()
+                    sharedPreferences.edit().putString(RELAY_PHONE_NUMBER, selectedPhoneNumber)
+                        .apply()
                     showToast("Successfully updated the relay phone number.")
                 } else {
                     showToast("Failed to update relay phone number. You need to select a phone number.")
@@ -336,10 +347,11 @@ class AdvancedSettingsFragment : PreferenceFragmentCompat() {
             }
             ?.withValidator(::validatePort)
 
-        val myPref = findPreference(R.string.key_periodic_sync_enabled)?.withValidator(::validatePort)
+        val myPref =
+            findPreference(R.string.key_periodic_sync_enabled)?.withValidator(::validatePort)
 
         myPref?.onPreferenceChangeListener =
-            // The callback is triggered whenever the switch preference is changed
+                // The callback is triggered whenever the switch preference is changed
             Preference.OnPreferenceChangeListener { pref, newValue ->
                 if (newValue == true) {
                     periodicSyncer.startPeriodicSync()

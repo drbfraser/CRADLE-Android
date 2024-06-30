@@ -1,4 +1,5 @@
 package com.cradleplatform.neptune.viewmodel
+
 import android.Manifest
 import android.app.Application
 import android.content.Context.TELEPHONY_SERVICE
@@ -10,6 +11,7 @@ import androidx.core.app.ActivityCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
+import com.cradleplatform.neptune.utilities.Protocol
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -32,10 +34,13 @@ class UserViewModel @Inject constructor(
     companion object {
         const val TOKEN_KEY = "token"
         const val EMAIL_KEY = "loginEmail"
+
         // A list of all phone numbers for the user
         const val PHONE_NUMBERS = "phoneNumbers"
+
         // The current phone number of the user - will be the source of SMS messages
         const val USER_PHONE_NUMBER = "currentUserPhoneNumbers"
+
         // The current relay phone number - default in settings.xml - changeable from the settings
         const val RELAY_PHONE_NUMBER = "currentRelayPhoneNumbers"
         const val USER_ID_KEY = "userId"
@@ -57,18 +62,26 @@ class UserViewModel @Inject constructor(
     fun getNewNumber(): String {
         if (ActivityCompat.checkSelfPermission(getApplication(), Manifest.permission.READ_SMS) ==
             PackageManager.PERMISSION_GRANTED
-            && ActivityCompat.checkSelfPermission(getApplication(), Manifest.permission.READ_PHONE_NUMBERS) ==
+            && ActivityCompat.checkSelfPermission(
+                getApplication(),
+                Manifest.permission.READ_PHONE_NUMBERS
+            ) ==
             PackageManager.PERMISSION_GRANTED
-            && ActivityCompat.checkSelfPermission(getApplication(), Manifest.permission.READ_PHONE_STATE) ==
+            && ActivityCompat.checkSelfPermission(
+                getApplication(),
+                Manifest.permission.READ_PHONE_STATE
+            ) ==
             PackageManager.PERMISSION_GRANTED
         ) {
-            val telManager = getApplication<Application>().getSystemService(TELEPHONY_SERVICE) as TelephonyManager
+            val telManager =
+                getApplication<Application>().getSystemService(TELEPHONY_SERVICE) as TelephonyManager
             val fetchedPhoneNumber = telManager.line1Number
             currentPhoneNumber = sharedPreferences.getString(USER_PHONE_NUMBER, "") ?: ""
 
             if (hasUserPhoneNumberChanged(fetchedPhoneNumber)) {
                 // Get the list of the user phone numbers that were fetched at login
-                val allPhoneNumbers = parsePhoneNumberString(sharedPreferences.getString(PHONE_NUMBERS, ""))
+                val allPhoneNumbers =
+                    parsePhoneNumberString(sharedPreferences.getString(PHONE_NUMBERS, ""))
                 // Check if fetchedPhoneNumber is in allPhoneNumbers
                 if (!allPhoneNumbers.contains(fetchedPhoneNumber)) {
                     return fetchedPhoneNumber
@@ -96,12 +109,12 @@ class UserViewModel @Inject constructor(
             val userId = sharedPreferences.getInt(USER_ID_KEY, -1)
             if (userId != -1) {
                 try {
-                    val result = restApi.postUserPhoneNumber(userId, newPhoneNumber)
+                    val result = restApi.postUserPhoneNumber(userId, newPhoneNumber, Protocol.HTTP)
                     if (result.failed) {
                         // Handle database update failure
                         val errorMessage = "Failed to update your phone number.\n" +
-                            "You are not able to send SMS messages.\n" +
-                            "Please contact your administrator."
+                                "You are not able to send SMS messages.\n" +
+                                "Please contact your administrator."
                         showToast(errorMessage, true)
                     } else {
                         // Handle database update success
@@ -110,12 +123,15 @@ class UserViewModel @Inject constructor(
                         val allPhoneNumbersList = parsePhoneNumberString(allPhoneNumbersString)
                         val mutablePhoneNumbersList = allPhoneNumbersList.toMutableList()
                         mutablePhoneNumbersList.add(newPhoneNumber)
-                        val updatedPhoneNumbersSerialized = mutablePhoneNumbersList.toList().joinToString(",")
-                        sharedPreferences.edit().putString(PHONE_NUMBERS, updatedPhoneNumbersSerialized).apply()
+                        val updatedPhoneNumbersSerialized =
+                            mutablePhoneNumbersList.toList().joinToString(",")
+                        sharedPreferences.edit()
+                            .putString(PHONE_NUMBERS, updatedPhoneNumbersSerialized).apply()
 
                         // sharedPreferences ==> USER_PHONE_NUMBER needs to be updated
                         // This number is the source of SMS and will be used to validate user
-                        sharedPreferences.edit().putString(USER_PHONE_NUMBER, newPhoneNumber).apply()
+                        sharedPreferences.edit().putString(USER_PHONE_NUMBER, newPhoneNumber)
+                            .apply()
 
                         val successMessage = "Successfully updated phone number."
                         showToast(successMessage, false)

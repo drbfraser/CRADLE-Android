@@ -1510,8 +1510,8 @@ class RestApi constructor(
         patientsToUpload: List<Patient>,
         lastSyncTimestamp: BigInteger = BigInteger.valueOf(1L),
         patientChannel: SendChannel<Patient>,
-        reportProgressBlock: suspend (Int, Int) -> Unit,
-        protocol: Protocol
+        protocol: Protocol,
+        reportProgressBlock: suspend (Int, Int) -> Unit
     ): PatientSyncResult =
         withContext(IO) {
             val body = createWriter<List<Patient>>().writeValueAsBytes(patientsToUpload)
@@ -1658,8 +1658,8 @@ class RestApi constructor(
         readingsToUpload: List<Reading>,
         lastSyncTimestamp: BigInteger = BigInteger.valueOf(1L),
         readingChannel: SendChannel<Reading>,
-        reportProgressBlock: suspend (Int, Int) -> Unit,
-        protocol: Protocol
+        protocol: Protocol,
+        reportProgressBlock: suspend (Int, Int) -> Unit
     ): ReadingSyncResult = withContext(IO) {
         val body = createWriter<List<Reading>>().writeValueAsBytes(readingsToUpload)
         val method = Http.Method.POST
@@ -1801,8 +1801,8 @@ class RestApi constructor(
         referralsToUpload: List<Referral>,
         lastSyncTimestamp: BigInteger = BigInteger.valueOf(1L),
         referralChannel: SendChannel<Referral>,
-        reportProgressBlock: suspend (Int, Int) -> Unit,
-        protocol: Protocol
+        protocol: Protocol,
+        reportProgressBlock: suspend (Int, Int) -> Unit
     ): ReferralSyncResult =
         withContext(IO) {
             val body = createWriter<List<Referral>>().writeValueAsBytes(referralsToUpload)
@@ -1942,8 +1942,8 @@ class RestApi constructor(
         assessmentsToUpload: List<Assessment>,
         lastSyncTimestamp: BigInteger = BigInteger.valueOf(1L),
         assessmentChannel: SendChannel<Assessment>,
-        reportProgressBlock: suspend (Int, Int) -> Unit,
-        protocol: Protocol
+        protocol: Protocol,
+        reportProgressBlock: suspend (Int, Int) -> Unit
     ): AssessmentSyncResult =
         withContext(IO) {
             val body = createWriter<List<Assessment>>().writeValueAsBytes(assessmentsToUpload)
@@ -2082,8 +2082,8 @@ class RestApi constructor(
     suspend fun syncHealthFacilities(
         healthFacilityChannel: SendChannel<HealthFacility>,
         lastSyncTimestamp: BigInteger = BigInteger.valueOf(1L),
-        reportProgressBlock: suspend (Int, Int) -> Unit,
-        protocol: Protocol
+        protocol: Protocol,
+        reportProgressBlock: suspend (Int, Int) -> Unit
     ): HealthFacilitySyncResult = withContext(IO) {
         val method = Http.Method.GET
         val url = urlManager.healthFacilities
@@ -2191,8 +2191,8 @@ class RestApi constructor(
      */
     suspend fun getAllFormTemplates(
         formChannel: SendChannel<FormClassification>,
-        reportProgressBlock: suspend (Int, Int) -> Unit,
-        protocol: Protocol
+        protocol: Protocol,
+        reportProgressBlock: suspend (Int, Int) -> Unit
     ): FormSyncResult = withContext(IO) {
         val method = Http.Method.GET
         val url = urlManager.getAllFormsAsSummary
