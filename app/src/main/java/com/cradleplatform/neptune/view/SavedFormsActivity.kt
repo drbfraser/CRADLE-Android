@@ -10,7 +10,6 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.cradleplatform.neptune.R
@@ -33,38 +32,58 @@ class SavedFormsActivity : AppCompatActivity() {
 
     private var adapter: SavedFormAdapter? = null
     private var formList: MutableList<FormResponse>? = null
+    private var formMap: MutableMap<Patient, MutableList<FormResponse>> = mutableMapOf()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_saved_forms)
 
-        //Getting the patient from the intent (ID and Patient Object)
-        patientId = intent.getStringExtra(EXTRA_PATIENT_ID)!!
-        patient = intent.getSerializableExtra(EXTRA_PATIENT_OBJECT) as Patient
-        savedAsDraft = intent.getBooleanExtra(EXTRA_SAVED_FORM, false)
+        patientId = intent.getStringExtra(EXTRA_PATIENT_ID)
+        savedAsDraft = intent.getBooleanExtra("Boolean value indicating whether the forms are saved", false)
 
         setUpSavedFormsRecyclerView()
         setUpActionBar()
     }
 
     private fun setUpSavedFormsRecyclerView() {
+        val recyclerView: RecyclerView = findViewById(R.id.recycler_view)
         lifecycleScope.launch {
-            // Remove any saved forms from database whose versions are out-of-date
             viewModel.purgeOutdatedFormResponses()
 
-            // Grab patient object
-            if (patient == null) {
-                patient = viewModel.getPatientByPatientId(patientId!!)
-            }
             // Find the list of saved forms for that patient, if any
             if (savedAsDraft == true) {
-                formList = viewModel.searchForDraftFormsByPatientId(patientId!!)
+                if (patientId != "") {
+                    formList = viewModel.searchForDraftFormsByPatientId(patientId!!)
+                    patient = viewModel.getPatientByPatientId(patientId!!)
+                    patient?.let { formList?.let { it1 -> formMap.put(it, it1) } }
+                } else {
+                    formList = viewModel.searchForDraftForms()
+                    formList?.forEach { formResponse ->
+                        patient = viewModel.getPatientByPatientId(formResponse.patientId)
+                        if (formMap.containsKey(patient)) {
+                            val prevList: MutableList<FormResponse>? = formMap[patient]
+                            prevList?.add(formResponse)
+                            patient?.let {
+                                if (prevList != null) {
+                                    formMap[it] = prevList
+                                }
+                            }
+                        } else {
+                            patient?.let { formMap.put(it, mutableListOf(formResponse)) }
+                        }
+                    }
+                }
             } else {
                 formList = viewModel.searchForSubmittedFormsByPatientId(patientId!!)
+                patient = viewModel.getPatientByPatientId(patientId!!)
+                patient?.let { formList?.let { it1 -> formMap.put(it, it1) } }
             }
 
-            adapter = formList?.let { patient?.let { it1 -> SavedFormAdapter(it, it1) } }
-            val itemTouchHelper = ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+            adapter = SavedFormAdapter(formMap)
+            recyclerView.adapter = adapter
+        }
+        val itemTouchHelper =
+            ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
                 override fun onMove(
                     recyclerView: RecyclerView,
                     source: RecyclerView.ViewHolder,
@@ -72,12 +91,14 @@ class SavedFormsActivity : AppCompatActivity() {
                 ): Boolean {
                     return false
                 }
+
                 override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                     val swipedPosition = viewHolder.absoluteAdapterPosition
                     val swipedFormResponse = formList?.get(swipedPosition)
                     // Show confirmation dialog before deletion
                     showDeleteConfirmationDialog(swipedFormResponse, swipedPosition)
                 }
+
                 override fun onChildDraw(
                     c: Canvas,
                     recyclerView: RecyclerView,
@@ -117,18 +138,11 @@ class SavedFormsActivity : AppCompatActivity() {
                     )
                 }
             })
-            // Populate the recyclerView with the list of saved forms, using SavedFormAdapter
-            val recyclerView: RecyclerView = findViewById(R.id.recycler_view)
-            itemTouchHelper.attachToRecyclerView(recyclerView)
-            // Add horizontal line between list items
-            recyclerView.apply {
-                addItemDecoration(
-                    DividerItemDecoration(this@SavedFormsActivity, DividerItemDecoration.VERTICAL)
-                )
-                this.adapter = formList?.let { patient?.let { it1 -> SavedFormAdapter(it, it1) } }
-            }
-        }
+        // Populate the recyclerView with the list of saved forms, using SavedFormAdapter
+
+        itemTouchHelper.attachToRecyclerView(recyclerView)
     }
+
     private fun showDeleteConfirmationDialog(swipedFormResponse: FormResponse?, swipedPosition: Int) {
         AlertDialog.Builder(this@SavedFormsActivity)
             .setTitle("Confirm Delete")
@@ -160,6 +174,7 @@ class SavedFormsActivity : AppCompatActivity() {
         supportActionBar?.title = getString(R.string.see_saved_forms)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
     }
+    @Suppress("DEPRECATION")
     override fun onSupportNavigateUp(): Boolean {
         onBackPressed()
         return true
