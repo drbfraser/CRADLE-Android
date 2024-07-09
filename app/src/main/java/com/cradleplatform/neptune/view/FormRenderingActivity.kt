@@ -29,6 +29,7 @@ import com.cradleplatform.neptune.model.FormResponse
 import com.cradleplatform.neptune.model.FormTemplate
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.Question
+import com.cradleplatform.neptune.utilities.Protocol
 import com.cradleplatform.neptune.view.adapters.FormViewAdapter
 import com.cradleplatform.neptune.viewmodel.FormRenderingViewModel
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -228,7 +229,7 @@ class FormRenderingActivity : AppCompatActivity() {
             }
         } else {
             builder.setPositiveButton(internetString) { _, _ ->
-                formSubmission(languageSelected, "HTTP")
+                formSubmission(languageSelected, Protocol.SMS)
                 returnToPatientProfile()
             }
         }
@@ -244,7 +245,7 @@ class FormRenderingActivity : AppCompatActivity() {
         }
 
         builder.setNegativeButton(R.string.SMS) { _, _ ->
-            formSubmission(languageSelected, "SMS")
+            formSubmission(languageSelected, Protocol.SMS)
             // SMSSender will finish this activity, so we don't need to do it here
         }
         builder.show()
@@ -257,7 +258,7 @@ class FormRenderingActivity : AppCompatActivity() {
         startActivity(intent)
     }
 
-    private fun formSubmission(languageSelected: String, submissionMode: String) {
+    private fun formSubmission(languageSelected: String, submissionMode: Protocol) {
         lifecycleScope.launch(Dispatchers.IO) {
             viewModel.submitForm(
                 patientId!!,

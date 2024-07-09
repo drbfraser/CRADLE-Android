@@ -4,14 +4,18 @@ import android.app.Activity
 import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.drawable.Drawable
+import android.os.Handler
+import android.os.Looper
+import android.util.Log
+import android.widget.Toast
 import androidx.core.content.ContextCompat.getDrawable
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cradleplatform.neptune.R
-import com.cradleplatform.neptune.http_sms_service.DatabaseObject
-import com.cradleplatform.neptune.http_sms_service.HttpSmsService
+import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
+import com.cradleplatform.neptune.http_sms_service.http.RestApi
 import com.cradleplatform.neptune.http_sms_service.sms.SMSReceiver
 import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
 import com.cradleplatform.neptune.http_sms_service.sms.SmsStateReporter
@@ -33,11 +37,11 @@ import javax.inject.Inject
 
 @HiltViewModel
 class FormRenderingViewModel @Inject constructor(
-    private val httpSmsService: HttpSmsService,
     private val networkStateManager: NetworkStateManager,
     private val smsSender: SMSSender,
     private val formResponseManager: FormResponseManager,
-    private val formManager: FormManager
+    private val formManager: FormManager,
+    private val restApi: RestApi
 ) : ViewModel() {
 
     //Raw form template
@@ -206,7 +210,7 @@ class FormRenderingViewModel @Inject constructor(
     suspend fun submitForm(
         patientId: String,
         selectedLanguage: String,
-        submissionMode: String,
+        protocol: Protocol,
         applicationContext: Context,
         formResponseId: Long?
     ) {
@@ -224,15 +228,43 @@ class FormRenderingViewModel @Inject constructor(
                 language = selectedLanguage,
                 answers = currentAnswers
             )
-            httpSmsService.upload(
-                DatabaseObject.FormResponseWrapper(
-                    formResponse,
-                    smsSender,
-                    Protocol.valueOf(submissionMode),
-                    applicationContext,
-                    smsDataProcessor
-                )
-            )
+
+            when (restApi.postFormResponse(formResponse, protocol)) {
+                is NetworkResult.Success -> {
+                    Log.d("HTTP_SMS_BRIDGE", "Form uploaded successfully")
+                    Handler(Looper.getMainLooper()).post {
+                        Toast.makeText(
+                            applicationContext,
+                            "Form submitted successfully",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+                }
+
+                is NetworkResult.Failure -> {
+                    Log.d("HTTP_SMS_BRIDGE", "Form upload failed")
+                    Handler(Looper.getMainLooper()).post {
+                        Toast.makeText(
+                            applicationContext,
+                            "Form submission failed",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+                }
+
+                is NetworkResult.NetworkException -> {
+                    Log.d("HTTP_SMS_BRIDGE", "Form upload failed")
+                    Handler(Looper.getMainLooper()).post {
+                        Toast.makeText(
+                            applicationContext,
+                            "Form submission failed",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+                }
+            }
+
+            Unit // Match return type of Unit
         } else {
             error("FormTemplate does not exist: Current displaying FormTemplate is null")
         }

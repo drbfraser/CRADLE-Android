@@ -20,6 +20,7 @@ import com.cradleplatform.neptune.http_sms_service.sms.SmsStateReporter
 import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.utilities.CustomToast
+import com.cradleplatform.neptune.utilities.Protocol
 import com.cradleplatform.neptune.viewmodel.PatientReferralViewModel
 import com.cradleplatform.neptune.viewmodel.UserViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -129,7 +130,7 @@ open class PatientReferralActivity : AppCompatActivity() {
             lifecycleScope.launch {
                 //Passing context to viewModel might not be the best idea,
                 // however, it is required as of now to resolve the strings
-                val unusedResult = viewModel.saveReferral("HTTP", currPatient, applicationContext)
+                val unusedResult = viewModel.saveReferral(Protocol.HTTP, currPatient)
                 CustomToast.shortToast(
                     applicationContext,
                     applicationContext.getString(R.string.referral_submitted)
@@ -144,7 +145,7 @@ open class PatientReferralActivity : AppCompatActivity() {
             lifecycleScope.launch {
                 //Passing context to viewModel might not be the best idea,
                 // however, it is required as of now to resolve the strings
-                val unusedResult = viewModel.saveReferral("SMS", currPatient, applicationContext)
+                val unusedResult = viewModel.saveReferral(Protocol.SMS, currPatient)
                 // TODO: Verify that the referral was successful
                 // This code is never executed, as mentioned in the comment on line 125.
                 // TODO: Remove the following code from the UI and move to a more appropriate place

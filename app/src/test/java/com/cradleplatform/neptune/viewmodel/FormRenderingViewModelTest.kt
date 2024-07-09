@@ -2,7 +2,7 @@ package com.cradleplatform.neptune.viewmodel
 
 import android.content.Context
 import com.cradleplatform.neptune.R
-import com.cradleplatform.neptune.http_sms_service.HttpSmsService
+import com.cradleplatform.neptune.http_sms_service.http.RestApi
 import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
 import com.cradleplatform.neptune.manager.FormManager
 import com.cradleplatform.neptune.manager.FormResponseManager
@@ -26,17 +26,17 @@ class FormRenderingViewModelTest {
 
     @BeforeAll
     fun initialize() {
-        val httpsSmsService = Mockito.mock(HttpSmsService::class.java)
         val networkStateManager = Mockito.mock(NetworkStateManager::class.java)
         val smsSender = Mockito.mock(SMSSender::class.java)
         val formResponseManager = Mockito.mock(FormResponseManager::class.java)
         val formManager = Mockito.mock(FormManager::class.java)
+        val restApi = Mockito.mock(RestApi::class.java)
         viewModel = FormRenderingViewModel(
-            httpsSmsService,
             networkStateManager,
             smsSender,
             formResponseManager,
-            formManager
+            formManager,
+            restApi
         )
     }
 
