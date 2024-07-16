@@ -3,7 +3,6 @@ package com.cradleplatform.neptune.http_sms_service.http
 import android.content.Context
 import android.content.IntentFilter
 import android.content.SharedPreferences
-import android.net.Network
 import android.util.Log
 import androidx.lifecycle.asFlow
 import com.cradleplatform.neptune.ext.jackson.forEachJackson
@@ -83,13 +82,7 @@ class RestApi constructor(
     private val smsSender: SMSSender,
     private val smsDataProcessor: SMSDataProcessor
 ) {
-    private val smsReceiver: SMSReceiver
-
-    init {
-        val phoneNumber = sharedPreferences.getString(UserViewModel.RELAY_PHONE_NUMBER, null)
-            ?: error("Invalid phone number")
-        smsReceiver = SMSReceiver(smsSender, phoneNumber, smsStateReporter)
-    }
+    private lateinit var smsReceiver: SMSReceiver
 
     companion object {
         private const val TAG = "RestApi"
@@ -98,6 +91,11 @@ class RestApi constructor(
     }
 
     private fun setupSmsReceiver() {
+        val phoneNumber = sharedPreferences.getString(UserViewModel.RELAY_PHONE_NUMBER, null)
+            ?: error("Invalid phone number")
+
+        smsReceiver = SMSReceiver(smsSender, phoneNumber, smsStateReporter)
+
         val intentFilter = IntentFilter()
         intentFilter.addAction("android.provider.Telephony.SMS_RECEIVED")
         intentFilter.priority = Int.MAX_VALUE
@@ -185,14 +183,12 @@ class RestApi constructor(
      *
      * @param email the user's email
      * @param password the user's password
-     * @param protocol the protocol being used for transmission over the network
      * @return if successful, the [LoginResponse] that was returned by the server
      *  which contains a bearer token to authenticate the user
      */
     suspend fun authenticate(
         email: String,
         password: String,
-        protocol: Protocol
     ): NetworkResult<LoginResponse> =
         withContext(IO) {
             val body = JSONObject()
@@ -205,28 +201,16 @@ class RestApi constructor(
             val url = urlManager.authentication
             val headers = mapOf<String, String>()
 
-            when (protocol) {
-                Protocol.HTTP -> {
-                    http.makeRequest(
-                        method = method,
-                        url = url,
-                        headers = headers,
-                        requestBody = buildJsonRequestBody(body),
-                        inputStreamReader = {
-                            JacksonMapper.createReader<LoginResponse>().readValue(it)
-                        }
-                    )
-                }
 
-                Protocol.SMS -> {
-                    handleSmsRequest(
-                        method,
-                        url,
-                        headers,
-                        body
-                    )
+            http.makeRequest(
+                method = method,
+                url = url,
+                headers = headers,
+                requestBody = buildJsonRequestBody(body),
+                inputStreamReader = {
+                    JacksonMapper.createReader<LoginResponse>().readValue(it)
                 }
-            }
+            )
         }
 
     /**
