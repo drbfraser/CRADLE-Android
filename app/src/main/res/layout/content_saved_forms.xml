@@ -18,15 +18,17 @@
             android:id="@+id/savedFormsRecyclerview"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:paddingBottom="0dp"
-            android:clipToPadding="false"
             android:background="@color/colorOffWhite"
+            android:clipToPadding="false"
+            android:paddingBottom="0dp"
             android:scrollbars="vertical"
             app:layoutManager="LinearLayoutManager"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.0"
             tools:listitem="@layout/list_item_saved_form">
 
         </androidx.recyclerview.widget.RecyclerView>

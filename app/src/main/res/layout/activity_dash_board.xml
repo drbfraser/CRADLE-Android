@@ -1,16 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
 
     android:background="@drawable/dashboard_background">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        tools:context=".view.DashBoardActivity">
+        android:layout_height="match_parent">
+
+        <TextView
+            android:id="@+id/mainTitleDashBoard"
+            style="@style/LargeTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/app_name"
+            android:textSize="55sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <androidx.cardview.widget.CardView
             android:id="@+id/notice_card_view"
@@ -34,7 +45,7 @@
 
                 <TextView
                     android:id="@+id/notice_text_view"
-                    android:layout_width="0dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/dashboard_notice_alpha_build_message"
                     android:textAlignment="center"
@@ -46,35 +57,24 @@
             </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.cardview.widget.CardView>
 
-        <TextView
-            android:id="@+id/mainTitleDashBoard"
-            style="@style/LargeTitle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
-            android:text="@string/app_name"
-            android:textSize="64sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/readingConstraintLayout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
             app:layout_constraintEnd_toStartOf="@+id/patientConstraintLayout"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/notice_card_view">
 
             <androidx.cardview.widget.CardView
-
                 android:id="@+id/readingCardView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"
                 android:clickable="true"
+                android:contentDescription="@string/activity_patients_title"
+                android:focusable="true"
                 android:foreground="?android:attr/selectableItemBackground"
                 app:cardBackgroundColor="@color/colorOffWhite"
                 app:cardCornerRadius="8dp"
@@ -82,12 +82,12 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                android:focusable="true">
+                app:layout_constraintTop_toTopOf="parent">
 
                 <ImageView
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:contentDescription="@string/dashboard_new_patient"
                     app:srcCompat="@drawable/card_36" />
             </androidx.cardview.widget.CardView>
 
@@ -97,6 +97,7 @@
                 android:layout_height="95dp"
                 android:adjustViewBounds="true"
                 android:background="@drawable/round_background"
+                android:contentDescription="@string/dashboard_new_patient"
                 android:cropToPadding="true"
                 android:elevation="4dp"
                 android:scaleType="fitXY"
@@ -131,11 +132,13 @@
             app:layout_constraintTop_toTopOf="@+id/readingConstraintLayout">
 
             <androidx.cardview.widget.CardView
-                android:id="@+id/patientCardview"
+                android:id="@+id/patientCardView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"
                 android:clickable="true"
+                android:contentDescription="@string/activity_patients_title"
+                android:focusable="true"
                 android:foreground="?android:attr/selectableItemBackground"
                 app:cardBackgroundColor="@color/colorOffWhite"
                 app:cardCornerRadius="8dp"
@@ -143,12 +146,12 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                android:focusable="true">
+                app:layout_constraintTop_toTopOf="parent">
 
                 <ImageView
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:contentDescription="@string/activity_patients_title"
                     app:srcCompat="@drawable/card_36" />
             </androidx.cardview.widget.CardView>
 
@@ -158,11 +161,12 @@
                 android:layout_height="95dp"
                 android:adjustViewBounds="true"
                 android:background="@drawable/round_background"
+                android:contentDescription="@string/activity_patients_title"
                 android:cropToPadding="true"
                 android:elevation="4dp"
                 android:scaleType="fitXY"
-                app:layout_constraintEnd_toEndOf="@+id/patientCardview"
-                app:layout_constraintStart_toStartOf="@+id/patientCardview"
+                app:layout_constraintEnd_toEndOf="@+id/patientCardView"
+                app:layout_constraintStart_toStartOf="@+id/patientCardView"
                 app:layout_constraintTop_toTopOf="parent"
                 app:srcCompat="@drawable/ic_patients" />
 
@@ -170,15 +174,15 @@
                 style="@style/DashboardCardText"
                 android:layout_marginBottom="8dp"
                 android:text="@string/patients"
-                app:layout_constraintBottom_toBottomOf="@+id/patientCardview"
-                app:layout_constraintEnd_toEndOf="@+id/patientCardview"
-                app:layout_constraintStart_toStartOf="@+id/patientCardview"
+                app:layout_constraintBottom_toBottomOf="@+id/patientCardView"
+                app:layout_constraintEnd_toEndOf="@+id/patientCardView"
+                app:layout_constraintStart_toStartOf="@+id/patientCardView"
                 app:layout_constraintTop_toBottomOf="@+id/patientImg" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/statconstraintLayout"
+            android:id="@+id/statConstraintLayout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
@@ -197,6 +201,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"
                 android:clickable="true"
+                android:contentDescription="@string/dashboard_statistics"
+                android:focusable="true"
                 android:foreground="?android:attr/selectableItemBackground"
                 app:cardBackgroundColor="@color/colorOffWhite"
                 app:cardCornerRadius="8dp"
@@ -204,12 +210,12 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                android:focusable="true">
+                app:layout_constraintTop_toTopOf="parent">
 
                 <ImageView
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:contentDescription="@string/dashboard_statistics"
                     app:srcCompat="@drawable/card_36" />
             </androidx.cardview.widget.CardView>
 
@@ -219,6 +225,7 @@
                 android:layout_height="95dp"
                 android:adjustViewBounds="true"
                 android:background="@drawable/round_background"
+                android:contentDescription="@string/dashboard_statistics"
                 android:cropToPadding="true"
                 android:elevation="4dp"
                 android:scaleType="fitXY"
@@ -247,16 +254,17 @@
             android:paddingRight="16dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toEndOf="@+id/statconstraintLayout"
-            app:layout_constraintTop_toTopOf="@+id/statconstraintLayout">
+            app:layout_constraintStart_toEndOf="@+id/statConstraintLayout"
+            app:layout_constraintTop_toTopOf="@+id/statConstraintLayout">
 
             <androidx.cardview.widget.CardView
-
                 android:id="@+id/syncCardView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"
                 android:clickable="true"
+                android:contentDescription="@string/dashboard_sync"
+                android:focusable="true"
                 android:foreground="?android:attr/selectableItemBackground"
                 app:cardBackgroundColor="@color/colorOffWhite"
                 app:cardCornerRadius="8dp"
@@ -264,12 +272,12 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                android:focusable="true">
+                app:layout_constraintTop_toTopOf="parent">
 
                 <ImageView
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
+                    android:contentDescription="@string/dashboard_sync"
                     app:srcCompat="@drawable/card_36" />
             </androidx.cardview.widget.CardView>
 
@@ -279,6 +287,7 @@
                 android:layout_height="95dp"
                 android:adjustViewBounds="true"
                 android:background="@drawable/round_background"
+                android:contentDescription="@string/dashboard_sync"
                 android:cropToPadding="true"
                 android:elevation="4dp"
                 android:scaleType="fitXY"
@@ -298,33 +307,131 @@
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/fabEducationDashboard"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
-            android:cropToPadding="false"
-            app:backgroundTint="@color/colorOffWhite"
-            app:elevation="8dp"
-            app:layout_constraintEnd_toEndOf="@+id/syncConstraintlayout"
-            app:layout_constraintTop_toBottomOf="@+id/syncConstraintlayout"
-            app:maxImageSize="48dp"
-            app:srcCompat="@drawable/ic_education"
-            app:tint="@color/colorPrimaryLight"
-            app:useCompatPadding="false" />
-
-        <TextView
-            android:id="@+id/textView30"
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/formsConstraintLayout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="@string/dashboard_education"
-            android:textColor="@color/colorOffWhite"
-            android:textSize="14sp"
-            android:textStyle="bold"
-            app:layout_constraintEnd_toEndOf="@+id/fabEducationDashboard"
-            app:layout_constraintStart_toStartOf="@+id/fabEducationDashboard"
-            app:layout_constraintTop_toBottomOf="@+id/fabEducationDashboard" />
+            android:padding="0dp"
+            android:paddingLeft="16dp"
+            android:paddingRight="16dp"
+            app:layout_constraintEnd_toStartOf="@+id/syncConstraintlayout"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/statConstraintLayout">
+
+            <androidx.cardview.widget.CardView
+
+                android:id="@+id/formsCardView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dp"
+                android:clickable="true"
+                android:contentDescription="@string/dashboard_forms"
+                android:focusable="true"
+                android:foreground="?android:attr/selectableItemBackground"
+                app:cardBackgroundColor="@color/colorOffWhite"
+                app:cardCornerRadius="8dp"
+                app:cardElevation="4dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:contentDescription="@string/dashboard_forms"
+                    app:srcCompat="@drawable/card_36" />
+            </androidx.cardview.widget.CardView>
+
+            <ImageButton
+                android:id="@+id/formsImg"
+                android:layout_width="95dp"
+                android:layout_height="95dp"
+                android:adjustViewBounds="true"
+                android:background="@drawable/round_background"
+                android:contentDescription="@string/dashboard_forms"
+                android:cropToPadding="true"
+                android:elevation="4dp"
+                android:scaleType="fitXY"
+                app:layout_constraintEnd_toEndOf="@+id/formsCardView"
+                app:layout_constraintStart_toStartOf="@+id/formsCardView"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/ic_forms" />
+
+            <TextView
+                style="@style/DashboardCardText"
+                android:layout_marginBottom="8dp"
+                android:text="@string/dashboard_forms"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/formsImg" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/educationConstraintLayout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:padding="0dp"
+            android:paddingLeft="16dp"
+            android:paddingRight="16dp"
+            app:layout_constraintStart_toStartOf="@+id/syncConstraintlayout"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintTop_toBottomOf="@+id/statConstraintLayout">
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/educationCardView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dp"
+                android:clickable="true"
+                android:contentDescription="@string/dashboard_forms"
+                android:focusable="true"
+                android:foreground="?android:attr/selectableItemBackground"
+                app:cardBackgroundColor="@color/colorOffWhite"
+                app:cardCornerRadius="8dp"
+                app:cardElevation="4dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:contentDescription="@string/dashboard_education"
+                    app:srcCompat="@drawable/card_36" />
+            </androidx.cardview.widget.CardView>
+
+            <ImageButton
+                android:id="@+id/educationImg"
+                android:layout_width="95dp"
+                android:layout_height="95dp"
+                android:adjustViewBounds="true"
+                android:background="@drawable/round_background"
+                android:contentDescription="@string/dashboard_education"
+                android:cropToPadding="true"
+                android:elevation="4dp"
+                android:scaleType="fitXY"
+                app:layout_constraintEnd_toEndOf="@+id/educationCardView"
+                app:layout_constraintStart_toStartOf="@+id/educationCardView"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/ic_education_reformat" />
+
+            <TextView
+                style="@style/DashboardCardText"
+                android:layout_marginBottom="8dp"
+                android:text="@string/dashboard_education"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/educationImg" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="wrap_content"
@@ -332,7 +439,7 @@
             android:layout_marginTop="64dp"
             android:layout_marginEnd="16dp"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textView30">
+            app:layout_constraintBottom_toBottomOf="parent">
 
             <TextView
                 android:id="@+id/versionTextView"
@@ -355,4 +462,4 @@
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-</ScrollView>
+</RelativeLayout>

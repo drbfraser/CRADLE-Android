@@ -127,6 +127,9 @@
     <string name="discard_dialog_new_patient">Discard this new patient?</string>
     <string name="discard_dialog_new_patient_and_reading">Discard this new patient and reading?</string>
     <string name="discard_dialog_title">Discard?</string>
+    <string name="save_patient_locally">Could not save with referral, patient will be saved locally instead</string>
+    <string name="save_locally_title">Save Patient and Reading?</string>
+    <string name="save_locally_positive_button">Save Locally</string>
 
     <!-- SMS Text Message Referral - SMS content-->
     <!-- NOTE: May not want to translate, as sent to doctors -->
@@ -246,6 +249,7 @@
     <string name="dashboard_sync">Sync</string>
     <string name="dashboard_education">Education</string>
     <string name="dashboard_statistics">Statistics</string>
+    <string name="dashboard_forms">Forms</string>
     <string name="education_activity_community_poster">Community poster</string>
     <string name="education_activity_watch_training_video">Watch training video</string>
     <string name="education_activity_clinic_poster">Clinic poster</string>
@@ -531,7 +535,7 @@
     <string name="arrow_blank">No arrow</string>
     <string name="error_too_long_over_n_chars"><![CDATA[> %1$d characters]]></string>
     <string name="login_error_with_status_code">Failed to login (%1$d status code from server)</string>
-
+    <string name="save_locally_toast">Referral has been saved locally</string>
     <string name="logout_due_to_error_dialog_title">Logged out</string>
     <string name="logout_due_to_error_dialog_message">You have been logged out due to an error. Please log in again.</string>
     <string name="logout_in_progress_dialog_title">Logging out</string>
@@ -662,7 +666,8 @@
     <string name="warn_no_form_template_selected">Please Select a form</string>
     <string name="war_no_form_language_selected">Please Select a Language</string>
     <string name="create_new_form">Create New Form</string>
-    <string name="see_saved_forms">See Form Drafts</string>
+    <string name="see_saved_forms">See Draft Forms</string>
+    <string name="see_submitted_forms">See Submitted Forms</string>
     <string name="form_selection_hint">Form*</string>
     <string name="form_language_hint">Language*</string>
     <string name="fetch_form_button_text">Fetch Form</string>

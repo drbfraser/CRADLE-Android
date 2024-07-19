@@ -235,7 +235,7 @@ class FormRenderingActivity : AppCompatActivity() {
         }
 
         builder.setNeutralButton("SAVE AND SEND LATER") { _, _ ->
-            saveForm(languageSelected)
+            saveForm(languageSelected, true)
             Toast.makeText(
                 applicationContext,
                 R.string.saved_form_success_dialog,
@@ -270,9 +270,9 @@ class FormRenderingActivity : AppCompatActivity() {
         }
     }
 
-    private fun saveForm(languageSelected: String) {
+    private fun saveForm(languageSelected: String, saveDraft: Boolean) {
         lifecycleScope.launch(Dispatchers.IO) {
-            viewModel.saveFormResponseToDatabase(patientId!!, languageSelected, formResponseId)
+            viewModel.saveFormResponseToDatabase(patientId!!, languageSelected, formResponseId, saveDraft)
         }
     }
 
