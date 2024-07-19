@@ -60,18 +60,13 @@ class UserViewModel @Inject constructor(
      * @return The new phone number if different from the database, otherwise an empty string.
      */
     fun getNewNumber(): String {
-        if (ActivityCompat.checkSelfPermission(getApplication(), Manifest.permission.READ_SMS) ==
-            PackageManager.PERMISSION_GRANTED
-            && ActivityCompat.checkSelfPermission(
-                getApplication(),
-                Manifest.permission.READ_PHONE_NUMBERS
-            ) ==
-            PackageManager.PERMISSION_GRANTED
-            && ActivityCompat.checkSelfPermission(
-                getApplication(),
-                Manifest.permission.READ_PHONE_STATE
-            ) ==
-            PackageManager.PERMISSION_GRANTED
+        if (ActivityCompat.checkSelfPermission(
+                getApplication(), Manifest.permission.READ_SMS
+            ) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                getApplication(), Manifest.permission.READ_PHONE_NUMBERS
+            ) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                getApplication(), Manifest.permission.READ_PHONE_STATE
+            ) == PackageManager.PERMISSION_GRANTED
         ) {
             val telManager =
                 getApplication<Application>().getSystemService(TELEPHONY_SERVICE) as TelephonyManager
@@ -112,9 +107,8 @@ class UserViewModel @Inject constructor(
                     val result = restApi.postUserPhoneNumber(userId, newPhoneNumber, Protocol.HTTP)
                     if (result.failed) {
                         // Handle database update failure
-                        val errorMessage = "Failed to update your phone number.\n" +
-                                "You are not able to send SMS messages.\n" +
-                                "Please contact your administrator."
+                        val errorMessage =
+                            "Failed to update your phone number.\n" + "You are not able to send SMS messages.\n" + "Please contact your administrator."
                         showToast(errorMessage, true)
                     } else {
                         // Handle database update success

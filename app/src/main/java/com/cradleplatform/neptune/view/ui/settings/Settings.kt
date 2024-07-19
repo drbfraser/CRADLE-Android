@@ -55,15 +55,11 @@ class SettingsActivity : AppCompatActivity() {
         val launchAdvancedSettings: Boolean = intent.getBooleanExtra(ADVANCED_SETTINGS_KEY, false)
 
         if (launchAdvancedSettings) {
-            supportFragmentManager
-                .beginTransaction()
-                .replace(android.R.id.content, AdvancedSettingsFragment())
-                .commit()
+            supportFragmentManager.beginTransaction()
+                .replace(android.R.id.content, AdvancedSettingsFragment()).commit()
         } else {
-            supportFragmentManager
-                .beginTransaction()
-                .replace(android.R.id.content, SettingsFragment())
-                .commit()
+            supportFragmentManager.beginTransaction()
+                .replace(android.R.id.content, SettingsFragment()).commit()
         }
 
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
@@ -133,9 +129,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 // need to update UI by main thread
                 withContext(Dispatchers.Main) {
                     summary = resources.getQuantityString(
-                        R.plurals.settings_n_configured_health_facilities,
-                        hcCount,
-                        hcCount
+                        R.plurals.settings_n_configured_health_facilities, hcCount, hcCount
                     )
                 }
             }
@@ -145,61 +139,53 @@ class SettingsFragment : PreferenceFragmentCompat() {
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.preferences, rootKey)
 
-        findPreference(R.string.key_health_facilities_settings_button)
-            ?.withLaunchActivityOnClick(this, HealthFacilitiesActivity::class.java)
+        findPreference(R.string.key_health_facilities_settings_button)?.withLaunchActivityOnClick(
+            this, HealthFacilitiesActivity::class.java
+        )
 
-        findPreference(R.string.key_advanced_settings_settings_button)
-            ?.withOnClickListener {
-                parentFragmentManager
-                    .beginTransaction()
-                    .replace(android.R.id.content, AdvancedSettingsFragment())
-                    .addToBackStack(AdvancedSettingsFragment::class.qualifiedName) // add to back stack with name
-                    .commit()
-                true
-            }
+        findPreference(R.string.key_advanced_settings_settings_button)?.withOnClickListener {
+            parentFragmentManager.beginTransaction()
+                .replace(android.R.id.content, AdvancedSettingsFragment())
+                .addToBackStack(AdvancedSettingsFragment::class.qualifiedName) // add to back stack with name
+                .commit()
+            true
+        }
 
-        findPreference(R.string.key_change_pin)
-            ?.withOnClickListener {
-                val intent = Intent(activity, PinPassActivity::class.java)
-                intent.putExtra("isChangePin", true)
-                startActivity(intent)
-                requireActivity().finishAffinity()
-                true
-            }
+        findPreference(R.string.key_change_pin)?.withOnClickListener {
+            val intent = Intent(activity, PinPassActivity::class.java)
+            intent.putExtra("isChangePin", true)
+            startActivity(intent)
+            requireActivity().finishAffinity()
+            true
+        }
 
-        findPreference(R.string.key_sign_out)
-            ?.withOnClickListener {
-                lifecycleScope.launch(Dispatchers.IO) {
-                    val unUploadedReadings = readingManager.getUnUploadedReadings()
-                    val description = if (unUploadedReadings.isEmpty()) {
-                        getString(R.string.normal_signout_message)
-                    } else {
-                        resources.getQuantityString(
-                            R.plurals.unuploaded_reading_signout_message,
-                            unUploadedReadings.size,
-                            unUploadedReadings.size
-                        )
-                    }
-                    // need to switch the context to main thread since ui is always created on main thread
-                    withContext(Dispatchers.Main) {
-                        MaterialAlertDialogBuilder(requireActivity())
-                            .setTitle(getString(R.string.sign_out_question))
-                            .setMessage(description)
-                            .setPositiveButton(R.string.sign_out_dialog_yes_button) { _, _ ->
-                                LoggingOutDialogFragment().show(
-                                    childFragmentManager,
-                                    TAG_LOG_OUT_DIALOG
-                                )
-                                onSignOut()
-                            }
-                            .setNegativeButton(android.R.string.no, null)
-                            .setIcon(R.drawable.ic_sync)
-                            .create()
-                            .show()
-                    }
+        findPreference(R.string.key_sign_out)?.withOnClickListener {
+            lifecycleScope.launch(Dispatchers.IO) {
+                val unUploadedReadings = readingManager.getUnUploadedReadings()
+                val description = if (unUploadedReadings.isEmpty()) {
+                    getString(R.string.normal_signout_message)
+                } else {
+                    resources.getQuantityString(
+                        R.plurals.unuploaded_reading_signout_message,
+                        unUploadedReadings.size,
+                        unUploadedReadings.size
+                    )
                 }
-                true
+                // need to switch the context to main thread since ui is always created on main thread
+                withContext(Dispatchers.Main) {
+                    MaterialAlertDialogBuilder(requireActivity()).setTitle(getString(R.string.sign_out_question))
+                        .setMessage(description)
+                        .setPositiveButton(R.string.sign_out_dialog_yes_button) { _, _ ->
+                            LoggingOutDialogFragment().show(
+                                childFragmentManager, TAG_LOG_OUT_DIALOG
+                            )
+                            onSignOut()
+                        }.setNegativeButton(android.R.string.no, null).setIcon(R.drawable.ic_sync)
+                        .create().show()
+                }
             }
+            true
+        }
 
         findPreference(R.string.key_change_relay_phone_number)?.withOnClickListener {
             lifecycleScope.launch {
@@ -209,14 +195,11 @@ class SettingsFragment : PreferenceFragmentCompat() {
             true
         }
 
-        findPreference(R.string.key_vht_name)
-            ?.useDynamicSummary()
+        findPreference(R.string.key_vht_name)?.useDynamicSummary()
 
-        findPreference(R.string.key_role)
-            ?.useDynamicSummary()
+        findPreference(R.string.key_role)?.useDynamicSummary()
 
-        findPreference(R.string.key_region)
-            ?.useDynamicSummary()
+        findPreference(R.string.key_region)?.useDynamicSummary()
     }
 
     /**
@@ -247,9 +230,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }
 
         listView.selector = ResourcesCompat.getDrawable(
-            resources,
-            R.drawable.list_item_selector_relay_numbers,
-            null
+            resources, R.drawable.list_item_selector_relay_numbers, null
         )
         val numberToPreselect = sharedPreferences.getString(RELAY_PHONE_NUMBER, "")
         val preselectedIndex = phoneNumbers.indexOf(numberToPreselect)
@@ -270,12 +251,10 @@ class SettingsFragment : PreferenceFragmentCompat() {
      * @return The AlertDialog instance.
      */
     private fun createRelayPhoneNumberDialog(
-        listView: ListView,
-        phoneNumbers: List<String>
+        listView: ListView, phoneNumbers: List<String>
     ): AlertDialog {
         return AlertDialog.Builder(requireActivity())
-            .setTitle(R.string.select_relay_phone_number_title)
-            .setView(listView)
+            .setTitle(R.string.select_relay_phone_number_title).setView(listView)
             .setNegativeButton("Cancel") { dialog, _ -> dialog.dismiss() }
             .setPositiveButton("Submit") { dialog, _ ->
                 if (selectedPosition != -1) {
@@ -287,9 +266,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
                     showToast("Failed to update relay phone number. You need to select a phone number.")
                 }
                 dialog.dismiss()
-            }
-            .setIcon(R.drawable.ic_edit_24)
-            .create()
+            }.setIcon(R.drawable.ic_edit_24).create()
     }
 
     /**
@@ -333,19 +310,16 @@ class AdvancedSettingsFragment : PreferenceFragmentCompat() {
         Log.v(this::class.simpleName, "Loading advanced settings from resource")
         setPreferencesFromResource(R.xml.advanced_preferences, rootKey)
 
-        findPreference(R.string.key_server_hostname)
-            ?.useDynamicSummary()
+        findPreference(R.string.key_server_hostname)?.useDynamicSummary()
             ?.withValidator(::validateHostname)
 
-        findPreference(R.string.key_server_port)
-            ?.useDynamicSummary { v ->
-                if (v.isNullOrEmpty()) {
-                    getString(R.string.default_settings)
-                } else {
-                    v
-                }
+        findPreference(R.string.key_server_port)?.useDynamicSummary { v ->
+            if (v.isNullOrEmpty()) {
+                getString(R.string.default_settings)
+            } else {
+                v
             }
-            ?.withValidator(::validatePort)
+        }?.withValidator(::validatePort)
 
         val myPref =
             findPreference(R.string.key_periodic_sync_enabled)?.withValidator(::validatePort)

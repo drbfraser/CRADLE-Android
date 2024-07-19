@@ -71,13 +71,10 @@ class SyncAllWorker @AssistedInject constructor(
 ) : CoroutineWorker(context, params) {
 
     enum class State {
-        AFK,
-        STARTING,
+        AFK, STARTING,
 
         /** Checking the server for patients by uploading an empty list */
-        CHECKING_SERVER_PATIENTS,
-        UPLOADING_PATIENTS,
-        DOWNLOADING_PATIENTS,
+        CHECKING_SERVER_PATIENTS, UPLOADING_PATIENTS, DOWNLOADING_PATIENTS,
 
         /**
          * Downloading the full health facility list from server
@@ -87,23 +84,17 @@ class SyncAllWorker @AssistedInject constructor(
         /**
          * Checking the server for new readings, referrals, assessments by uploading an empty list
          */
-        CHECKING_SERVER_READINGS,
-        UPLOADING_READINGS,
-        DOWNLOADING_READINGS,
+        CHECKING_SERVER_READINGS, UPLOADING_READINGS, DOWNLOADING_READINGS,
 
         /**
          * Checking the server for new referrals by uploading an empty list
          */
-        CHECKING_SERVER_REFERRALS,
-        UPLOADING_REFERRALS,
-        DOWNLOADING_REFERRALS,
+        CHECKING_SERVER_REFERRALS, UPLOADING_REFERRALS, DOWNLOADING_REFERRALS,
 
         /**
          * Checking the server for new assessments by uploading an empty list
          */
-        CHECKING_SERVER_ASSESSMENTS,
-        UPLOADING_ASSESSMENTS,
-        DOWNLOADING_ASSESSMENTS,
+        CHECKING_SERVER_ASSESSMENTS, UPLOADING_ASSESSMENTS, DOWNLOADING_ASSESSMENTS,
 
         /**
          * Downloading Form Tempalates from server
@@ -151,9 +142,9 @@ class SyncAllWorker @AssistedInject constructor(
          * Given a [WorkInfo] instance from WorkManager's getWorkInfo* methods for observing
          * intermediate progress, it gets the current syncing state.
          */
-        fun getState(workInfo: WorkInfo) = workInfo
-            .progress
-            .getString(PROGRESS_CURRENT_STATE)?.let { State.valueOf(it) } ?: State.AFK
+        fun getState(workInfo: WorkInfo) =
+            workInfo.progress.getString(PROGRESS_CURRENT_STATE)?.let { State.valueOf(it) }
+                ?: State.AFK
 
         /**
          * Get the progress for the current state in the [workInfo]'s progress.
@@ -169,9 +160,7 @@ class SyncAllWorker @AssistedInject constructor(
         fun getProgress(workInfo: WorkInfo): Pair<Int, Int>? {
             val progress = workInfo.progress.getInt(PROGRESS_NUMBER_SO_FAR, -1)
             val total = workInfo.progress.getInt(PROGRESS_TOTAL_NUMBER, -1)
-            @Suppress("ComplexCondition")
-            return if (
-                (progress == -1 && total == -1) ||
+            @Suppress("ComplexCondition") return if ((progress == -1 && total == -1) ||
                 // Don't bother showing progress if there's nothing to download.
                 (progress == 0 && total == 0)
             ) {
@@ -203,8 +192,7 @@ class SyncAllWorker @AssistedInject constructor(
 
         val lastPatientSyncTime = BigInteger(
             sharedPreferences.getString(
-                LAST_PATIENT_SYNC,
-                LAST_SYNC_DEFAULT
+                LAST_PATIENT_SYNC, LAST_SYNC_DEFAULT
             )!!
         )
         // We only use the timestamp right before the internet call is made.
@@ -237,19 +225,16 @@ class SyncAllWorker @AssistedInject constructor(
         // a foreign key in referral in the schema
         val lastHealthFacilitiesDownloadTime = BigInteger(
             sharedPreferences.getString(
-                LAST_HEALTH_FACILITIES_SYNC,
-                LAST_SYNC_DEFAULT
+                LAST_HEALTH_FACILITIES_SYNC, LAST_SYNC_DEFAULT
             )!!
         )
         val healthFacilitiesResult = syncHealthFacilities(
-            healthFacilityManager.getAllFacilities(),
-            lastHealthFacilitiesDownloadTime
+            healthFacilityManager.getAllFacilities(), lastHealthFacilitiesDownloadTime
         )
 
         val lastReadingSyncTime = BigInteger(
             sharedPreferences.getString(
-                LAST_READING_SYNC,
-                LAST_SYNC_DEFAULT
+                LAST_READING_SYNC, LAST_SYNC_DEFAULT
             )!!
         )
         val readingsToUpload = readingManager.getUnUploadedReadings()
@@ -259,8 +244,7 @@ class SyncAllWorker @AssistedInject constructor(
             readingResult.totalReadingsUploaded -= readingsLeftToUpload
 
             Log.wtf(
-                TAG,
-                "There are $readingsLeftToUpload readings left to upload"
+                TAG, "There are $readingsLeftToUpload readings left to upload"
             )
             if (readingResult.networkResult is NetworkResult.Success) {
                 Log.wtf(TAG, "successful reading sync but still readings left unsynced")
@@ -289,8 +273,7 @@ class SyncAllWorker @AssistedInject constructor(
         // for referrals
         val lastReferralSyncTime = BigInteger(
             sharedPreferences.getString(
-                LAST_REFERRAL_SYNC,
-                LAST_SYNC_DEFAULT
+                LAST_REFERRAL_SYNC, LAST_SYNC_DEFAULT
             )!!
         )
 
@@ -301,8 +284,7 @@ class SyncAllWorker @AssistedInject constructor(
             referralResult.totalReferralsUploaded -= referralsLeftToUpload
 
             Log.wtf(
-                TAG,
-                "There are $referralsLeftToUpload referrals left to upload"
+                TAG, "There are $referralsLeftToUpload referrals left to upload"
             )
         }
 
@@ -319,8 +301,7 @@ class SyncAllWorker @AssistedInject constructor(
         // for assessments
         val lastAssessmentSyncTime = BigInteger(
             sharedPreferences.getString(
-                LAST_ASSESSMENT_SYNC,
-                LAST_SYNC_DEFAULT
+                LAST_ASSESSMENT_SYNC, LAST_SYNC_DEFAULT
             )!!
         )
         val assessmentsToUpload = assessmentManager.getAssessmentsToUpload()
@@ -330,8 +311,7 @@ class SyncAllWorker @AssistedInject constructor(
             assessmentResult.totalAssessmentsUploaded -= assessmentsLeftToUpload
 
             Log.wtf(
-                TAG,
-                "There are $assessmentsLeftToUpload assessments left to upload"
+                TAG, "There are $assessmentsLeftToUpload assessments left to upload"
             )
         }
 
@@ -353,15 +333,14 @@ class SyncAllWorker @AssistedInject constructor(
         }
 
         val syncResult = workDataOf(
-            RESULT_MESSAGE to
-                    getResultSuccessMessage(
-                        patientResult,
-                        healthFacilitiesResult,
-                        readingResult,
-                        referralResult,
-                        assessmentResult,
-                        formTemplateResult
-                    )
+            RESULT_MESSAGE to getResultSuccessMessage(
+                patientResult,
+                healthFacilitiesResult,
+                readingResult,
+                referralResult,
+                assessmentResult,
+                formTemplateResult
+            )
         )
 
         sharedPreferences.edit(commit = true) {
@@ -374,8 +353,7 @@ class SyncAllWorker @AssistedInject constructor(
     }
 
     private suspend fun syncPatients(
-        patientsToUpload: List<Patient>,
-        lastSyncTime: BigInteger
+        patientsToUpload: List<Patient>, lastSyncTime: BigInteger
     ): PatientSyncResult = withContext(Dispatchers.Default) {
         setProgress(
             if (patientsToUpload.isEmpty()) {
@@ -417,8 +395,7 @@ class SyncAllWorker @AssistedInject constructor(
     }
 
     private suspend fun syncReadings(
-        readingsToUpload: List<Reading>,
-        lastSyncTime: BigInteger
+        readingsToUpload: List<Reading>, lastSyncTime: BigInteger
     ): ReadingSyncResult = withContext(Dispatchers.Default) {
         Log.d(TAG, "preparing to upload ${readingsToUpload.size} readings")
         setProgress(
@@ -447,10 +424,7 @@ class SyncAllWorker @AssistedInject constructor(
         }
 
         restApi.syncReadings(
-            readingsToUpload,
-            lastSyncTimestamp = lastSyncTime,
-            readingChannel,
-            Protocol.HTTP
+            readingsToUpload, lastSyncTimestamp = lastSyncTime, readingChannel, Protocol.HTTP
         ) { current, total ->
             reportProgress(
                 State.DOWNLOADING_READINGS,
@@ -461,8 +435,7 @@ class SyncAllWorker @AssistedInject constructor(
     }
 
     private suspend fun syncReferrals(
-        referralsToUpload: List<Referral>,
-        lastSyncTime: BigInteger
+        referralsToUpload: List<Referral>, lastSyncTime: BigInteger
     ): ReferralSyncResult = withContext(Dispatchers.Default) {
         setProgress(
             if (referralsToUpload.isEmpty()) {
@@ -504,8 +477,7 @@ class SyncAllWorker @AssistedInject constructor(
     }
 
     private suspend fun syncAssessments(
-        assessmentsToUpload: List<Assessment>,
-        lastSyncTime: BigInteger
+        assessmentsToUpload: List<Assessment>, lastSyncTime: BigInteger
     ): AssessmentSyncResult = withContext(Dispatchers.Default) {
         setProgress(
             if (assessmentsToUpload.isEmpty()) {
@@ -547,8 +519,7 @@ class SyncAllWorker @AssistedInject constructor(
     }
 
     private suspend fun syncHealthFacilities(
-        currentHealthFacilities: List<HealthFacility>,
-        lastSyncTime: BigInteger
+        currentHealthFacilities: List<HealthFacility>, lastSyncTime: BigInteger
     ): HealthFacilitySyncResult = withContext(Dispatchers.Default) {
 
         val currentHealthFacilitiesNames = currentHealthFacilities.map { it.name }
@@ -574,9 +545,7 @@ class SyncAllWorker @AssistedInject constructor(
         }
 
         restApi.syncHealthFacilities(
-            channel,
-            lastSyncTime,
-            Protocol.HTTP
+            channel, lastSyncTime, Protocol.HTTP
         ) { current, total ->
             reportProgress(
                 state = State.DOWNLOADING_HEALTH_FACILITIES,
@@ -586,36 +555,32 @@ class SyncAllWorker @AssistedInject constructor(
         }
     }
 
-    private suspend fun syncFormTemplates(): FormSyncResult =
-        withContext(Dispatchers.Default) {
-            val channel = Channel<FormClassification>()
-            launch {
-                try {
-                    database.withTransaction {
-                        for (formClassification in channel) {
-                            formManager.addFormByClassification(formClassification)
-                        }
+    private suspend fun syncFormTemplates(): FormSyncResult = withContext(Dispatchers.Default) {
+        val channel = Channel<FormClassification>()
+        launch {
+            try {
+                database.withTransaction {
+                    for (formClassification in channel) {
+                        formManager.addFormByClassification(formClassification)
                     }
-                } catch (e: SyncException) {
-                    Log.e(TAG, "Failed to add form template during Sync, with error:\n $e")
                 }
-                withContext(Dispatchers.Main) { Log.d(TAG, "form template sync job is done") }
+            } catch (e: SyncException) {
+                Log.e(TAG, "Failed to add form template during Sync, with error:\n $e")
             }
-
-            restApi.getAllFormTemplates(channel, Protocol.HTTP) { current, total ->
-                reportProgress(
-                    state = State.DOWNLOADING_HEALTH_FACILITIES,
-                    progress = current,
-                    total = total,
-                )
-            }
+            withContext(Dispatchers.Main) { Log.d(TAG, "form template sync job is done") }
         }
 
+        restApi.getAllFormTemplates(channel, Protocol.HTTP) { current, total ->
+            reportProgress(
+                state = State.DOWNLOADING_HEALTH_FACILITIES,
+                progress = current,
+                total = total,
+            )
+        }
+    }
+
     private suspend fun reportProgress(
-        state: State,
-        progress: Int,
-        total: Int,
-        bypassRateLimit: Boolean = false
+        state: State, progress: Int, total: Int, bypassRateLimit: Boolean = false
     ) {
         if (bypassRateLimit) {
             setProgress(
@@ -701,38 +666,22 @@ class SyncAllWorker @AssistedInject constructor(
         )
 
         val errors = patientSyncResult.errors.let { if (it != "[ ]") "\nErrors:\n$it" else "" }
-        return "$success\n" +
-                "$totalPatientsUploaded\n" +
-                "$totalPatientsDownloaded\n" +
-                "$totalHealthFacilitiesDownloaded\n" +
-                "$totalReadingsUploaded\n" +
-                "$totalReadingsDownloaded\n" +
-                "$totalReferralsUploaded\n" +
-                "$totalReferralsDownloaded\n" +
-                "$totalAssessmentsUploaded\n" +
-                "$totalAssessmentsDownloaded\n" +
-                "$totalFormsDownloaded\n" +
-                errors
+        return "$success\n" + "$totalPatientsUploaded\n" + "$totalPatientsDownloaded\n" + "$totalHealthFacilitiesDownloaded\n" + "$totalReadingsUploaded\n" + "$totalReadingsDownloaded\n" + "$totalReferralsUploaded\n" + "$totalReferralsDownloaded\n" + "$totalAssessmentsUploaded\n" + "$totalAssessmentsDownloaded\n" + "$totalFormsDownloaded\n" + errors
     }
 }
 
 enum class PatientSyncField(override val text: String) : Field {
-    PATIENTS("patients"),
-    ERRORS("errors"),
+    PATIENTS("patients"), ERRORS("errors"),
 }
 
 enum class ReadingSyncField(override val text: String) : Field {
-    READINGS("readings"),
-    NEW_REFERRALS("newReferrals"),
-    NEW_FOLLOW_UPS("newFollowups"),
+    READINGS("readings"), NEW_REFERRALS("newReferrals"), NEW_FOLLOW_UPS("newFollowups"),
 }
 
 enum class ReferralSyncField(override val text: String) : Field {
-    REFERRALS("referrals"),
-    ERRORS("errors")
+    REFERRALS("referrals"), ERRORS("errors")
 }
 
 enum class AssessmentSyncField(override val text: String) : Field {
-    ASSESSMENTS("assessments"),
-    ERRORS("errors")
+    ASSESSMENTS("assessments"), ERRORS("errors")
 }

@@ -13,7 +13,6 @@ import com.cradleplatform.neptune.database.daos.ReadingDao
 import com.cradleplatform.neptune.database.daos.ReferralDao
 import com.cradleplatform.neptune.http_sms_service.http.Http
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
-import com.cradleplatform.neptune.http_sms_service.sms.SMSReceiver
 import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
 import com.cradleplatform.neptune.http_sms_service.sms.SmsStateReporter
 import com.cradleplatform.neptune.http_sms_service.sms.utils.SMSDataProcessor
@@ -24,7 +23,6 @@ import com.cradleplatform.neptune.manager.HealthFacilityManager
 import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.manager.ReadingManager
 import com.cradleplatform.neptune.manager.ReferralManager
-import com.cradleplatform.neptune.manager.SmsKeyManager
 import com.cradleplatform.neptune.manager.UrlManager
 import com.cradleplatform.neptune.model.Settings
 import dagger.Module
@@ -44,48 +42,37 @@ class DataModule {
     @Provides
     @Singleton
     fun providePatientManager(
-        database: CradleDatabase,
-        patientDao: PatientDao,
-        readingDao: ReadingDao,
-        restApi: RestApi
+        database: CradleDatabase, patientDao: PatientDao, readingDao: ReadingDao, restApi: RestApi
     ) = PatientManager(database, patientDao, readingDao, restApi)
 
     @Provides
     @Singleton
     fun provideReadingManager(
-        database: CradleDatabase,
-        readingDao: ReadingDao,
-        restApi: RestApi
+        database: CradleDatabase, readingDao: ReadingDao, restApi: RestApi
     ) = ReadingManager(database, readingDao, restApi)
 
     @Provides
     @Singleton
     fun provideReferralManager(
-        database: CradleDatabase,
-        referralDao: ReferralDao,
-        restApi: RestApi
+        database: CradleDatabase, referralDao: ReferralDao, restApi: RestApi
     ) = ReferralManager(database, referralDao, restApi)
 
     @Provides
     @Singleton
     fun provideAssessmentManager(
-        database: CradleDatabase,
-        assessmentDao: AssessmentDao,
-        restApi: RestApi
+        database: CradleDatabase, assessmentDao: AssessmentDao, restApi: RestApi
     ) = AssessmentManager(database, assessmentDao, restApi)
 
     @Provides
     @Singleton
     fun provideFormManager(
-        restApi: RestApi,
-        formClassificationDao: FormClassificationDao
+        restApi: RestApi, formClassificationDao: FormClassificationDao
     ) = FormManager(restApi, formClassificationDao)
 
     @Provides
     @Singleton
     fun provideFormResponseManager(
-        formResponseDao: FormResponseDao,
-        formClassificationDao: FormClassificationDao
+        formResponseDao: FormResponseDao, formClassificationDao: FormClassificationDao
     ) = FormResponseManager(formResponseDao, formClassificationDao)
 
     @Provides
@@ -93,24 +80,20 @@ class DataModule {
     fun provideDatabase(@ApplicationContext context: Context) = CradleDatabase.getInstance(context)
 
     @Provides
-    fun providePatientDao(database: CradleDatabase): PatientDao =
-        database.patientDao()
+    fun providePatientDao(database: CradleDatabase): PatientDao = database.patientDao()
 
     @Provides
-    fun provideReadingDao(database: CradleDatabase): ReadingDao =
-        database.readingDao()
+    fun provideReadingDao(database: CradleDatabase): ReadingDao = database.readingDao()
 
     @Provides
     fun provideHealthFacilityDao(database: CradleDatabase): HealthFacilityDao =
         database.healthFacility()
 
     @Provides
-    fun provideReferralDao(database: CradleDatabase): ReferralDao =
-        database.referralDao()
+    fun provideReferralDao(database: CradleDatabase): ReferralDao = database.referralDao()
 
     @Provides
-    fun provideAssessmentDao(database: CradleDatabase): AssessmentDao =
-        database.assessmentDao()
+    fun provideAssessmentDao(database: CradleDatabase): AssessmentDao = database.assessmentDao()
 
     @Provides
     fun provideFormClassificationDao(database: CradleDatabase): FormClassificationDao =
@@ -147,13 +130,7 @@ class DataModule {
         smsSender: SMSSender,
         smsDataProcessor: SMSDataProcessor,
     ) = RestApi(
-        context,
-        sharedPreferences,
-        urlManager,
-        http,
-        smsStateReporter,
-        smsSender,
-        smsDataProcessor
+        context, sharedPreferences, urlManager, http, smsStateReporter, smsSender, smsDataProcessor
     )
 
     @Provides
@@ -163,7 +140,6 @@ class DataModule {
     @Provides
     @Singleton
     fun provideSettings(
-        sharedPreferences: SharedPreferences,
-        @ApplicationContext context: Context
+        sharedPreferences: SharedPreferences, @ApplicationContext context: Context
     ) = Settings(sharedPreferences, context)
 }
