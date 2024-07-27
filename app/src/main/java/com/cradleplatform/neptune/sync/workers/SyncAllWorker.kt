@@ -353,7 +353,8 @@ class SyncAllWorker @AssistedInject constructor(
     }
 
     private suspend fun syncPatients(
-        patientsToUpload: List<Patient>, lastSyncTime: BigInteger
+        patientsToUpload: List<Patient>,
+        lastSyncTime: BigInteger
     ): PatientSyncResult = withContext(Dispatchers.Default) {
         setProgress(
             if (patientsToUpload.isEmpty()) {
@@ -395,7 +396,8 @@ class SyncAllWorker @AssistedInject constructor(
     }
 
     private suspend fun syncReadings(
-        readingsToUpload: List<Reading>, lastSyncTime: BigInteger
+        readingsToUpload: List<Reading>,
+        lastSyncTime: BigInteger
     ): ReadingSyncResult = withContext(Dispatchers.Default) {
         Log.d(TAG, "preparing to upload ${readingsToUpload.size} readings")
         setProgress(
@@ -435,7 +437,8 @@ class SyncAllWorker @AssistedInject constructor(
     }
 
     private suspend fun syncReferrals(
-        referralsToUpload: List<Referral>, lastSyncTime: BigInteger
+        referralsToUpload: List<Referral>,
+        lastSyncTime: BigInteger
     ): ReferralSyncResult = withContext(Dispatchers.Default) {
         setProgress(
             if (referralsToUpload.isEmpty()) {
@@ -477,7 +480,8 @@ class SyncAllWorker @AssistedInject constructor(
     }
 
     private suspend fun syncAssessments(
-        assessmentsToUpload: List<Assessment>, lastSyncTime: BigInteger
+        assessmentsToUpload: List<Assessment>,
+        lastSyncTime: BigInteger
     ): AssessmentSyncResult = withContext(Dispatchers.Default) {
         setProgress(
             if (assessmentsToUpload.isEmpty()) {
@@ -519,7 +523,8 @@ class SyncAllWorker @AssistedInject constructor(
     }
 
     private suspend fun syncHealthFacilities(
-        currentHealthFacilities: List<HealthFacility>, lastSyncTime: BigInteger
+        currentHealthFacilities: List<HealthFacility>,
+        lastSyncTime: BigInteger
     ): HealthFacilitySyncResult = withContext(Dispatchers.Default) {
 
         val currentHealthFacilitiesNames = currentHealthFacilities.map { it.name }
@@ -580,7 +585,10 @@ class SyncAllWorker @AssistedInject constructor(
     }
 
     private suspend fun reportProgress(
-        state: State, progress: Int, total: Int, bypassRateLimit: Boolean = false
+        state: State,
+        progress: Int,
+        total: Int,
+        bypassRateLimit: Boolean = false
     ) {
         if (bypassRateLimit) {
             setProgress(
@@ -666,7 +674,21 @@ class SyncAllWorker @AssistedInject constructor(
         )
 
         val errors = patientSyncResult.errors.let { if (it != "[ ]") "\nErrors:\n$it" else "" }
-        return "$success\n" + "$totalPatientsUploaded\n" + "$totalPatientsDownloaded\n" + "$totalHealthFacilitiesDownloaded\n" + "$totalReadingsUploaded\n" + "$totalReadingsDownloaded\n" + "$totalReferralsUploaded\n" + "$totalReferralsDownloaded\n" + "$totalAssessmentsUploaded\n" + "$totalAssessmentsDownloaded\n" + "$totalFormsDownloaded\n" + errors
+
+        return """
+            $success
+            $totalPatientsUploaded
+            $totalPatientsDownloaded
+            $totalHealthFacilitiesDownloaded
+            $totalReadingsUploaded
+            $totalReadingsDownloaded
+            $totalReferralsUploaded
+            $totalReferralsDownloaded
+            $totalAssessmentsUploaded
+            $totalAssessmentsDownloaded
+            $totalFormsDownloaded
+            $errors
+        """.trimIndent()
     }
 }
 

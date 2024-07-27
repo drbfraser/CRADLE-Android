@@ -107,8 +107,11 @@ class UserViewModel @Inject constructor(
                     val result = restApi.postUserPhoneNumber(userId, newPhoneNumber, Protocol.HTTP)
                     if (result.failed) {
                         // Handle database update failure
-                        val errorMessage =
-                            "Failed to update your phone number.\n" + "You are not able to send SMS messages.\n" + "Please contact your administrator."
+                        val errorMessage = """
+                            Failed to update your phone number.
+                            You are not able to send SMS messages.
+                            Please contact your administrator.
+                        """.trimIndent()
                         showToast(errorMessage, true)
                     } else {
                         // Handle database update success

@@ -42,37 +42,48 @@ class DataModule {
     @Provides
     @Singleton
     fun providePatientManager(
-        database: CradleDatabase, patientDao: PatientDao, readingDao: ReadingDao, restApi: RestApi
+        database: CradleDatabase,
+        patientDao: PatientDao,
+        readingDao: ReadingDao,
+        restApi: RestApi
     ) = PatientManager(database, patientDao, readingDao, restApi)
 
     @Provides
     @Singleton
     fun provideReadingManager(
-        database: CradleDatabase, readingDao: ReadingDao, restApi: RestApi
+        database: CradleDatabase,
+        readingDao: ReadingDao,
+        restApi: RestApi
     ) = ReadingManager(database, readingDao, restApi)
 
     @Provides
     @Singleton
     fun provideReferralManager(
-        database: CradleDatabase, referralDao: ReferralDao, restApi: RestApi
+        database: CradleDatabase,
+        referralDao: ReferralDao,
+        restApi: RestApi
     ) = ReferralManager(database, referralDao, restApi)
 
     @Provides
     @Singleton
     fun provideAssessmentManager(
-        database: CradleDatabase, assessmentDao: AssessmentDao, restApi: RestApi
+        database: CradleDatabase,
+        assessmentDao: AssessmentDao,
+        restApi: RestApi
     ) = AssessmentManager(database, assessmentDao, restApi)
 
     @Provides
     @Singleton
     fun provideFormManager(
-        restApi: RestApi, formClassificationDao: FormClassificationDao
+        restApi: RestApi,
+        formClassificationDao: FormClassificationDao
     ) = FormManager(restApi, formClassificationDao)
 
     @Provides
     @Singleton
     fun provideFormResponseManager(
-        formResponseDao: FormResponseDao, formClassificationDao: FormClassificationDao
+        formResponseDao: FormResponseDao,
+        formClassificationDao: FormClassificationDao
     ) = FormResponseManager(formResponseDao, formClassificationDao)
 
     @Provides
@@ -140,6 +151,7 @@ class DataModule {
     @Provides
     @Singleton
     fun provideSettings(
-        sharedPreferences: SharedPreferences, @ApplicationContext context: Context
+        sharedPreferences: SharedPreferences,
+        @ApplicationContext context: Context
     ) = Settings(sharedPreferences, context)
 }

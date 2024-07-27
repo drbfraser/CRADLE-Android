@@ -251,7 +251,8 @@ class SettingsFragment : PreferenceFragmentCompat() {
      * @return The AlertDialog instance.
      */
     private fun createRelayPhoneNumberDialog(
-        listView: ListView, phoneNumbers: List<String>
+        listView: ListView,
+        phoneNumbers: List<String>
     ): AlertDialog {
         return AlertDialog.Builder(requireActivity())
             .setTitle(R.string.select_relay_phone_number_title).setView(listView)
@@ -325,7 +326,7 @@ class AdvancedSettingsFragment : PreferenceFragmentCompat() {
             findPreference(R.string.key_periodic_sync_enabled)?.withValidator(::validatePort)
 
         myPref?.onPreferenceChangeListener =
-                // The callback is triggered whenever the switch preference is changed
+            // The callback is triggered whenever the switch preference is changed
             Preference.OnPreferenceChangeListener { pref, newValue ->
                 if (newValue == true) {
                     periodicSyncer.startPeriodicSync()

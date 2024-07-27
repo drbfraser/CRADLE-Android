@@ -73,7 +73,7 @@ import javax.inject.Singleton
  * A timeout is one such cause of an exception for example.
  */
 @Singleton
-class RestApi constructor(
+class RestApi(
     private val context: Context,
     private val sharedPreferences: SharedPreferences,
     private val urlManager: UrlManager,
@@ -193,7 +193,6 @@ class RestApi constructor(
         val url = urlManager.authentication
         val headers = mapOf<String, String>()
 
-
         http.makeRequest(method = method,
             url = url,
             headers = headers,
@@ -223,7 +222,8 @@ class RestApi constructor(
      * parsing or the connection fails.
      */
     suspend fun getAllPatients(
-        patientChannel: SendChannel<Patient>, protocol: Protocol
+        patientChannel: SendChannel<Patient>,
+        protocol: Protocol
     ): NetworkResult<Unit> = withContext(IO) {
         val method = Http.Method.GET
         val url = urlManager.getAllPatients
@@ -299,7 +299,8 @@ class RestApi constructor(
     }
 
     suspend fun getAllReadings(
-        readingChannel: SendChannel<Reading>, protocol: Protocol
+        readingChannel: SendChannel<Reading>,
+        protocol: Protocol
     ): NetworkResult<Unit> = withContext(IO) {
         val method = Http.Method.GET
         val url = urlManager.getAllReadings
@@ -372,7 +373,8 @@ class RestApi constructor(
     }
 
     suspend fun getAllReferrals(
-        referralChannel: SendChannel<Referral>, protocol: Protocol
+        referralChannel: SendChannel<Referral>,
+        protocol: Protocol
     ): NetworkResult<Unit> = withContext(IO) {
         val method = Http.Method.GET
         val url = urlManager.getAllReferrals
@@ -445,7 +447,8 @@ class RestApi constructor(
     }
 
     suspend fun getAllAssessments(
-        assessmentChannel: SendChannel<Assessment>, protocol: Protocol
+        assessmentChannel: SendChannel<Assessment>,
+        protocol: Protocol
     ): NetworkResult<Unit> = withContext(IO) {
         val method = Http.Method.GET
         val url = urlManager.getAllAssessments
@@ -586,7 +589,8 @@ class RestApi constructor(
      * @return a list of patients which match the query
      */
     suspend fun searchForPatient(
-        searchString: String, protocol: Protocol
+        searchString: String,
+        protocol: Protocol
     ): NetworkResult<List<GlobalPatient>> = withContext(IO) {
         val method = Http.Method.GET
         val url = urlManager.getGlobalPatientSearch(searchString)
@@ -677,7 +681,10 @@ class RestApi constructor(
      * @return Statistics object for the requested dates
      */
     suspend fun getStatisticsForFacilityBetween(
-        date1: BigInteger, date2: BigInteger, filterFacility: HealthFacility, protocol: Protocol
+        date1: BigInteger,
+        date2: BigInteger,
+        filterFacility: HealthFacility,
+        protocol: Protocol
     ): NetworkResult<Statistics> = withContext(IO) {
         val method = Http.Method.GET
         val url = urlManager.getStatisticsForFacilityBetween(date1, date2, filterFacility.name)
@@ -708,7 +715,10 @@ class RestApi constructor(
      * @return Statistics object for the requested dates
      */
     suspend fun getStatisticsForUserBetween(
-        date1: BigInteger, date2: BigInteger, userID: Int, protocol: Protocol
+        date1: BigInteger,
+        date2: BigInteger,
+        userID: Int,
+        protocol: Protocol
     ): NetworkResult<Statistics> = withContext(IO) {
         val method = Http.Method.GET
         val url = urlManager.getStatisticsForUserBetween(date1, date2, userID)
@@ -739,7 +749,9 @@ class RestApi constructor(
      */
 
     suspend fun getAllStatisticsBetween(
-        date1: BigInteger, date2: BigInteger, protocol: Protocol
+        date1: BigInteger,
+        date2: BigInteger,
+        protocol: Protocol
     ): NetworkResult<Statistics> = withContext(IO) {
         val method = Http.Method.GET
         val url = urlManager.getAllStatisticsBetween(date1, date2)
@@ -760,7 +772,6 @@ class RestApi constructor(
                 )
             }
         }
-
     }
 
     /**
@@ -780,7 +791,8 @@ class RestApi constructor(
      * @return the server's version of the uploaded patient and readings
      */
     suspend fun postPatient(
-        patient: PatientAndReadings, protocol: Protocol
+        patient: PatientAndReadings,
+        protocol: Protocol
     ): NetworkResult<PatientAndReadings> = withContext(IO) {
         val body = createWriter<PatientAndReadings>().writeValueAsBytes(patient)
         val method = Http.Method.POST
@@ -827,7 +839,8 @@ class RestApi constructor(
      * @return the server's version of the uploaded patient and referrals
      */
     suspend fun postPatient(
-        patient: PatientAndReferrals, protocol: Protocol
+        patient: PatientAndReferrals,
+        protocol: Protocol
     ): NetworkResult<PatientAndReferrals> = withContext(IO) {
         val body = createWriter<PatientAndReferrals>().writeValueAsBytes(patient)
         val method = Http.Method.POST
@@ -862,7 +875,8 @@ class RestApi constructor(
      * @return whether the request was successful or not
      */
     suspend fun postFormResponse(
-        mFormResponse: FormResponse, protocol: Protocol
+        mFormResponse: FormResponse,
+        protocol: Protocol
     ): NetworkResult<Unit> = withContext(IO) {
         val gson = GsonBuilder().excludeFieldsWithoutExposeAnnotation().create()
         val body = gson.toJson(mFormResponse).toByteArray()
@@ -931,7 +945,9 @@ class RestApi constructor(
      * @return whether the request was successful or not
      */
     suspend fun postMedicalRecord(
-        patient: Patient, isDrugRecord: Boolean, protocol: Protocol
+        patient: Patient,
+        isDrugRecord: Boolean,
+        protocol: Protocol
     ): NetworkResult<Unit> = withContext(IO) {
         val jsonObject = JSONObject()
 
@@ -1012,7 +1028,8 @@ class RestApi constructor(
      * @return the server's version of the uploaded assessment
      */
     suspend fun postAssessment(
-        assessment: Assessment, protocol: Protocol
+        assessment: Assessment,
+        protocol: Protocol
     ): NetworkResult<Assessment> = withContext(IO) {
         val body = JacksonMapper.writerForAssessment.writeValueAsBytes(assessment)
         val method = Http.Method.POST
@@ -1097,7 +1114,8 @@ class RestApi constructor(
      * @return whether the request was successful or not and response from server
      */
     suspend fun postPregnancy(
-        patient: Patient, protocol: Protocol
+        patient: Patient,
+        protocol: Protocol
     ): NetworkResult<PregnancyResponse> = withContext(IO) {
         val jsonObject = JSONObject()
 
@@ -1138,7 +1156,8 @@ class RestApi constructor(
     }
 
     suspend fun putPregnancy(
-        patient: Patient, protocol: Protocol
+        patient: Patient,
+        protocol: Protocol
     ): NetworkResult<PregnancyResponse> = withContext(IO) {
         val jsonObject = JSONObject()
 
@@ -1171,7 +1190,9 @@ class RestApi constructor(
     }
 
     suspend fun postUserPhoneNumber(
-        userID: Int, phoneNumber: String, protocol: Protocol
+        userID: Int,
+        phoneNumber: String,
+        protocol: Protocol
     ): NetworkResult<Unit> = withContext(IO) {
         val jsonObject = JSONObject()
 
@@ -1950,7 +1971,9 @@ class RestApi constructor(
                 ).also {
                     if (it is NetworkResult.Success) {
                         if (failedParse) {
-                            healthFacilityChannel.close(SyncException("Failed to parse all Health Facilities during Sync"))
+                            healthFacilityChannel.close(
+                                SyncException("Failed to parse all Health Facilities during Sync")
+                            )
                         } else {
                             healthFacilityChannel.close()
                         }
@@ -1978,14 +2001,18 @@ class RestApi constructor(
                         }
 
                         is NetworkResult.Failure -> {
-                            healthFacilityChannel.close(SyncException("failed to download all associated health facilities"))
+                            healthFacilityChannel.close(
+                                SyncException("failed to download all associated health facilities")
+                            )
                             NetworkResult.Failure(
                                 networkResult.body, networkResult.statusCode
                             )
                         }
 
                         is NetworkResult.NetworkException -> {
-                            healthFacilityChannel.close(SyncException("failed to download all associated health facilities"))
+                            healthFacilityChannel.close(
+                                SyncException("failed to download all associated health facilities")
+                            )
                             NetworkResult.NetworkException(networkResult.cause)
                         }
                     }
@@ -2058,7 +2085,6 @@ class RestApi constructor(
                             Log.e(TAG, e.toString())
                             failedParse = true
                         }
-                        Unit
                     }).also {
                     if (it is NetworkResult.Success) {
                         if (failedParse) {
