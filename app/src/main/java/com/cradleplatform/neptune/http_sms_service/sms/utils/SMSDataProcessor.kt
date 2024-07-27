@@ -3,18 +3,7 @@ package com.cradleplatform.neptune.http_sms_service.sms.utils
 import android.net.Uri
 import com.cradleplatform.neptune.http_sms_service.http.Http
 import com.cradleplatform.neptune.manager.UrlManager
-import com.cradleplatform.neptune.model.Assessment
-import com.cradleplatform.neptune.model.FormResponse
-import com.cradleplatform.neptune.model.FormTemplate
-import com.cradleplatform.neptune.model.HealthFacility
-import com.cradleplatform.neptune.model.Patient
-import com.cradleplatform.neptune.model.PatientAndReadings
-import com.cradleplatform.neptune.model.PatientAndReferrals
-import com.cradleplatform.neptune.model.Reading
-import com.cradleplatform.neptune.model.Referral
-import com.cradleplatform.neptune.model.SmsReadingWithReferral
 import com.cradleplatform.neptune.utilities.jackson.JacksonMapper
-import com.google.gson.GsonBuilder
 import javax.inject.Inject
 import javax.inject.Singleton
 
