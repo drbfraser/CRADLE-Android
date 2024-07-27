@@ -20,9 +20,9 @@ import androidx.lifecycle.lifecycleScope
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.binding.FragmentDataBindingComponent
 import com.cradleplatform.neptune.databinding.ReferralDialogBinding
-import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
-import com.cradleplatform.neptune.http_sms_service.sms.utils.SMSDataProcessor
+import com.cradleplatform.neptune.http_sms_service.http.RestApi
 import com.cradleplatform.neptune.manager.SmsKeyManager
+import com.cradleplatform.neptune.utilities.Protocol
 import com.cradleplatform.neptune.view.ReadingActivity
 import com.cradleplatform.neptune.viewmodel.PatientReadingViewModel
 import com.cradleplatform.neptune.viewmodel.ReadingFlowSaveResult
@@ -59,10 +59,8 @@ class ReferralDialogFragment : DialogFragment() {
     lateinit var sharedPreferences: SharedPreferences
 
     @Inject
-    lateinit var smsSender: SMSSender
+    lateinit var restApi: RestApi
 
-    @Inject
-    lateinit var smsDataProcessor: SMSDataProcessor
     override fun onAttach(context: Context) {
         super.onAttach(context)
         check(context is ReadingActivity)
@@ -166,13 +164,12 @@ class ReferralDialogFragment : DialogFragment() {
             when (roomDbSaveResult) {
                 is ReadingFlowSaveResult.SaveSuccessful.ReferralSmsNeeded -> {
                     showStatusToast(view.context, roomDbSaveResult, ReferralOption.SMS)
-                    val json = smsDataProcessor.processPatientAndReadingsToJSON(
-                        roomDbSaveResult.patientInfoForReferral)
-                    smsSender.queueRelayContent(json).let { enqueueSuccessful ->
-                        if (enqueueSuccessful) {
-                            smsSender.sendSmsMessage(false)
-                        }
+                    if (roomDbSaveResult.patientInfoForReferral.patient.lastServerUpdate == null) {
+                        restApi.postPatient(roomDbSaveResult.patientInfoForReferral, Protocol.SMS)
+                    } else {
+                        restApi.postReading(roomDbSaveResult.patientInfoForReferral.readings[0], Protocol.SMS)
                     }
+
                     // TODO: Remove the following code from the UI and move to a more appropriate place
                     // This should not be in the UI and should be moved to a place where the server
                     // response is being parsed
