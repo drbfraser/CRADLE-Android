@@ -255,7 +255,7 @@ class FormRenderingViewModel @Inject constructor(
                     Handler(Looper.getMainLooper()).post {
                         Toast.makeText(
                             applicationContext,
-                            "Form submission failed",
+                            "Form submission failed due to unexpected network exception",
                             Toast.LENGTH_LONG
                         ).show()
                     }
