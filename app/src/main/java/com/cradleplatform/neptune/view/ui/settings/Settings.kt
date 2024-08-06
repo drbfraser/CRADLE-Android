@@ -4,6 +4,7 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
+import android.view.LayoutInflater
 import android.view.MenuItem
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -31,6 +32,7 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import android.widget.ArrayAdapter
 import android.widget.ListView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.res.ResourcesCompat
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
@@ -155,6 +157,14 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 true
             }
 
+        findPreference(R.string.key_connection_preference)
+            ?.withOnClickListener {
+                lifecycleScope.launch {
+                    showConnectionPreferenceDialog()
+                }
+                true
+            }
+
         findPreference(R.string.key_change_pin)
             ?.withOnClickListener {
                 val intent = Intent(activity, PinPassActivity::class.java)
@@ -254,6 +264,39 @@ class SettingsFragment : PreferenceFragmentCompat() {
         val dialog = createRelayPhoneNumberDialog(listView, phoneNumbers)
         dialog.show()
     }
+
+
+    private fun showConnectionPreferenceDialog() {
+        val dialogView = LayoutInflater.from(context).inflate(R.layout.fragment_connection_preference, null)
+        val messageTextView = dialogView.findViewById<TextView>(R.id.textViewMessage)
+        val listView = dialogView.findViewById<ListView>(R.id.listViewOptions)
+
+        val items = arrayOf("Mobile Data", "SMS")
+        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_single_choice, items)
+        listView.adapter = adapter
+        listView.choiceMode = ListView.CHOICE_MODE_SINGLE
+
+        val builder = AlertDialog.Builder(requireContext())
+        builder.setTitle("Set Preferences")
+        builder.setView(dialogView)
+
+        // Default selection
+        listView.setItemChecked(0, true)
+
+        builder.setPositiveButton("SELECT") { dialog, which ->
+            val selectedItemPosition = listView.checkedItemPosition
+            val selectedItem = items[selectedItemPosition]
+
+        }
+
+        builder.setNegativeButton("CANCEL") { dialog, which ->
+
+        }
+
+        val dialog = builder.create()
+        dialog.show()
+    }
+
 
     /**
      * Creates an AlertDialog for selecting a relay phone number from the list.
