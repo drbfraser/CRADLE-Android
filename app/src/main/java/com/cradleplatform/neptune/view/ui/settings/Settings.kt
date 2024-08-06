@@ -268,7 +268,6 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
     private fun showConnectionPreferenceDialog() {
         val dialogView = LayoutInflater.from(context).inflate(R.layout.fragment_connection_preference, null)
-        val messageTextView = dialogView.findViewById<TextView>(R.id.textViewMessage)
         val listView = dialogView.findViewById<ListView>(R.id.listViewOptions)
 
         val items = arrayOf("Mobile Data", "SMS")
@@ -286,11 +285,15 @@ class SettingsFragment : PreferenceFragmentCompat() {
         builder.setPositiveButton("SELECT") { dialog, which ->
             val selectedItemPosition = listView.checkedItemPosition
             val selectedItem = items[selectedItemPosition]
-
+            with(sharedPreferences.edit()) {
+                putString("selectedProtocol", selectedItem)
+                apply()
+            }
+            showToast("Successfully set the connection protocol")
         }
 
         builder.setNegativeButton("CANCEL") { dialog, which ->
-
+            dialog.dismiss();
         }
 
         val dialog = builder.create()
