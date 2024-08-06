@@ -24,6 +24,7 @@ import com.cradleplatform.neptune.databinding.ReferralDialogBinding
 import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
 import com.cradleplatform.neptune.http_sms_service.sms.utils.SMSDataProcessor
 import com.cradleplatform.neptune.manager.SmsKeyManager
+import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager
 import com.cradleplatform.neptune.view.ReadingActivity
 import com.cradleplatform.neptune.viewmodel.PatientReadingViewModel
 import com.cradleplatform.neptune.viewmodel.ReadingFlowSaveResult
@@ -64,6 +65,9 @@ class ReferralDialogFragment : DialogFragment() {
 
     @Inject
     lateinit var smsDataProcessor: SMSDataProcessor
+
+    @Inject
+    lateinit var networkStateManager: NetworkStateManager
     override fun onAttach(context: Context) {
         super.onAttach(context)
         check(context is ReadingActivity)
@@ -145,8 +149,7 @@ class ReferralDialogFragment : DialogFragment() {
         }
 
         view.findViewById<Button>(R.id.send_sms_button).setOnClickListener {
-            val isTest: Boolean = true
-            if (isTest) {
+            if (networkStateManager.getInternetConnectivityStatus().value == true) {
                 showBetterConnectivityDialog(sendWebButton) { continueWithSMS ->
                     if (continueWithSMS) {
                         sendViaSMS()
