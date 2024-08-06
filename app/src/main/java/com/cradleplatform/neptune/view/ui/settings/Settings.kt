@@ -282,7 +282,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         // Default selection
         listView.setItemChecked(0, true)
 
-        builder.setPositiveButton("SELECT") { dialog, which ->
+        builder.setPositiveButton("Select") { dialog, which ->
             val selectedItemPosition = listView.checkedItemPosition
             val selectedItem = items[selectedItemPosition]
             with(sharedPreferences.edit()) {
@@ -292,7 +292,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
             showToast("Successfully set the connection protocol")
         }
 
-        builder.setNegativeButton("CANCEL") { dialog, which ->
+        builder.setNegativeButton("Cancel") { dialog, which ->
             dialog.dismiss();
         }
 

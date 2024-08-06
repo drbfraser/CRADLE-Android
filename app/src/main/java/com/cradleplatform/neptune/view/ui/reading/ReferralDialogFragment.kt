@@ -168,10 +168,10 @@ class ReferralDialogFragment : DialogFragment() {
             .setMessage("It seems that your current internet connection is stronger than the SMS network.\n" + "\n" +
                     "Would you like to send the request via data instead to ensure faster and more reliable delivery?")
             .setTitle("Better Connectivity Available")
-            .setPositiveButton("CONTINUE WITH SMS") { dialog, which ->
+            .setPositiveButton("Continue with SMS") { dialog, which ->
                 onDialogClosed(true)
             }
-            .setNegativeButton("SEND VIA DATA") { dialog, which ->
+            .setNegativeButton("Send via DATA") { dialog, which ->
                 sendWebButton.performClick()
                 onDialogClosed(false)
             }
