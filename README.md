@@ -41,6 +41,8 @@ Before you log in you must open app settings and change the following:
    * Hostname: 10.0.2.2
    * Port: 5000
 
+Please set up git pre-commit hooks by running `scripts/setup-git-hooks.sh`. If this fails due to not being executable, you can run `chmod +x scripts/setup-git-hooks.sh`. Notice that these commands are bring run from the root of the repository.
+
 # Architecture
 
 We use various components from [Android Jetpack](https://developer.android.com/jetpack) and other
