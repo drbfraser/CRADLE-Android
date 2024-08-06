@@ -123,8 +123,7 @@ class ReferralDialogFragment : DialogFragment() {
             }
         }
 
-        view.findViewById<Button>(R.id.send_sms_button).setOnClickListener {
-//            showBetterConnectivityDialog(sendWebButton)
+        fun sendViaSMS () {
             if (referralDialogViewModel.isSelectedHealthFacilityValid() &&
                 referralDialogViewModel.isSending.value != true
             ) {
@@ -139,9 +138,22 @@ class ReferralDialogFragment : DialogFragment() {
                     // SmsKey is invalid or expired ==> cannot send SMS
                     // Display a TOAST message to inform the user about the invalid or expired SMS key
                     val toastMessage = "Your SMS key has expired\n" +
-                        "Unable to send SMS. Ensure internet connectivity and refresh your SMS key in the settings."
+                            "Unable to send SMS. Ensure internet connectivity and refresh your SMS key in the settings."
                     Toast.makeText(requireContext(), toastMessage, Toast.LENGTH_LONG).show()
                 }
+            }
+        }
+
+        view.findViewById<Button>(R.id.send_sms_button).setOnClickListener {
+            val isTest: Boolean = true
+            if (isTest) {
+                showBetterConnectivityDialog(sendWebButton) { continueWithSMS ->
+                    if (continueWithSMS) {
+                        sendViaSMS()
+                    }
+                }
+            } else {
+                sendViaSMS()
             }
         }
 
@@ -150,17 +162,18 @@ class ReferralDialogFragment : DialogFragment() {
         }
     }
 
-    private fun showBetterConnectivityDialog(sendWebButton: Button) {
+    private fun showBetterConnectivityDialog(sendWebButton: Button, onDialogClosed: (Boolean) -> Unit) {
         val builder: AlertDialog.Builder = AlertDialog.Builder(context)
         builder
             .setMessage("It seems that your current internet connection is stronger than the SMS network.\n" + "\n" +
                     "Would you like to send the request via data instead to ensure faster and more reliable delivery?")
             .setTitle("Better Connectivity Available")
             .setPositiveButton("CONTINUE WITH SMS") { dialog, which ->
-
+                onDialogClosed(true)
             }
             .setNegativeButton("SEND VIA DATA") { dialog, which ->
                 sendWebButton.performClick()
+                onDialogClosed(false)
             }
 
         val dialog: AlertDialog = builder.create()
