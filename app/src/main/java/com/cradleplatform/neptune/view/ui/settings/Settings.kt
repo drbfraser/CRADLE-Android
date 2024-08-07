@@ -32,7 +32,6 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import android.widget.ArrayAdapter
 import android.widget.ListView
-import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.res.ResourcesCompat
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
@@ -265,7 +264,6 @@ class SettingsFragment : PreferenceFragmentCompat() {
         dialog.show()
     }
 
-
     private fun showConnectionPreferenceDialog() {
         val dialogView = LayoutInflater.from(context).inflate(R.layout.fragment_connection_preference, null)
         val listView = dialogView.findViewById<ListView>(R.id.listViewOptions)
@@ -295,13 +293,12 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }
 
         builder.setNegativeButton("Cancel") { dialog, which ->
-            dialog.dismiss();
+            dialog.dismiss()
         }
 
         val dialog = builder.create()
         dialog.show()
     }
-
 
     /**
      * Creates an AlertDialog for selecting a relay phone number from the list.

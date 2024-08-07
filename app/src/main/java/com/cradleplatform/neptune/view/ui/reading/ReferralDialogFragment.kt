@@ -127,7 +127,7 @@ class ReferralDialogFragment : DialogFragment() {
             }
         }
 
-        fun sendViaSMS () {
+        fun sendViaSMS() {
             if (referralDialogViewModel.isSelectedHealthFacilityValid() &&
                 referralDialogViewModel.isSending.value != true
             ) {
@@ -142,7 +142,7 @@ class ReferralDialogFragment : DialogFragment() {
                     // SmsKey is invalid or expired ==> cannot send SMS
                     // Display a TOAST message to inform the user about the invalid or expired SMS key
                     val toastMessage = "Your SMS key has expired\n" +
-                            "Unable to send SMS. Ensure internet connectivity and refresh your SMS key in the settings."
+                        "Unable to send SMS. Ensure internet connectivity and refresh your SMS key in the settings."
                     Toast.makeText(requireContext(), toastMessage, Toast.LENGTH_LONG).show()
                 }
             }
@@ -169,7 +169,7 @@ class ReferralDialogFragment : DialogFragment() {
         val builder: AlertDialog.Builder = AlertDialog.Builder(context)
         builder
             .setMessage("It seems that your current internet connection is stronger than the SMS network.\n" + "\n" +
-                    "Would you like to send the request via data instead to ensure faster and more reliable delivery?")
+                "Would you like to send the request via data instead to ensure faster and more reliable delivery?")
             .setTitle("Better Connectivity Available")
             .setPositiveButton("Continue with SMS") { dialog, which ->
                 onDialogClosed(true)
