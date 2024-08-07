@@ -275,12 +275,14 @@ class SettingsFragment : PreferenceFragmentCompat() {
         listView.adapter = adapter
         listView.choiceMode = ListView.CHOICE_MODE_SINGLE
 
+        val lastSelectedItem = sharedPreferences.getString("selectedProtocol", "Mobile Data")
+        val selectedIndex = items.indexOf(lastSelectedItem).takeIf { it >= 0 } ?: 0
+
         val builder = AlertDialog.Builder(requireContext())
         builder.setTitle("Set Preferences")
         builder.setView(dialogView)
 
-        // Default selection
-        listView.setItemChecked(0, true)
+        listView.setItemChecked(selectedIndex, true)
 
         builder.setPositiveButton("Select") { dialog, which ->
             val selectedItemPosition = listView.checkedItemPosition

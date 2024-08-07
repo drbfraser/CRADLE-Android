@@ -9,7 +9,7 @@
         android:id="@+id/textViewMessage"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Set your preferred method of sending requests to the server"
+        android:text="@string/change_connection_message"
         android:paddingBottom="16dp"/>
 
     <ListView
