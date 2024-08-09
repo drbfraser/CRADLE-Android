@@ -51,7 +51,6 @@ class FormRenderingActivityTest{
                 ),
                 "test-language",
                 "test-id",
-                Patient("test-patient")
             )
             ContextCompat.startActivity(activity, intent, null)
             val sharedPref = activity?.getPreferences(Context.MODE_PRIVATE) ?: return@onActivity
