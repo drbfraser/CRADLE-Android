@@ -1,5 +1,6 @@
 package com.cradleplatform.neptune.view.ui.reading
 
+import android.app.AlertDialog
 import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
@@ -23,6 +24,7 @@ import com.cradleplatform.neptune.databinding.ReferralDialogBinding
 import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
 import com.cradleplatform.neptune.http_sms_service.sms.utils.SMSDataProcessor
 import com.cradleplatform.neptune.manager.SmsKeyManager
+import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager
 import com.cradleplatform.neptune.view.ReadingActivity
 import com.cradleplatform.neptune.viewmodel.PatientReadingViewModel
 import com.cradleplatform.neptune.viewmodel.ReadingFlowSaveResult
@@ -63,6 +65,9 @@ class ReferralDialogFragment : DialogFragment() {
 
     @Inject
     lateinit var smsDataProcessor: SMSDataProcessor
+
+    @Inject
+    lateinit var networkStateManager: NetworkStateManager
     override fun onAttach(context: Context) {
         super.onAttach(context)
         check(context is ReadingActivity)
@@ -112,7 +117,17 @@ class ReferralDialogFragment : DialogFragment() {
             title = getString(R.string.referral_dialog_title)
         }
 
-        view.findViewById<Button>(R.id.send_sms_button).setOnClickListener {
+        val sendWebButton = view.findViewById<Button>(R.id.send_web_button)
+        sendWebButton.setOnClickListener {
+            if (referralDialogViewModel.isSelectedHealthFacilityValid() &&
+                referralDialogViewModel.isSending.value != true
+            ) {
+                referralDialogViewModel.isSending.value = true
+                lifecycleScope.launch { handleWebReferralSend(view) }
+            }
+        }
+
+        fun sendViaSMS() {
             if (referralDialogViewModel.isSelectedHealthFacilityValid() &&
                 referralDialogViewModel.isSending.value != true
             ) {
@@ -133,18 +148,39 @@ class ReferralDialogFragment : DialogFragment() {
             }
         }
 
-        view.findViewById<Button>(R.id.send_web_button).setOnClickListener {
-            if (referralDialogViewModel.isSelectedHealthFacilityValid() &&
-                referralDialogViewModel.isSending.value != true
-            ) {
-                referralDialogViewModel.isSending.value = true
-                lifecycleScope.launch { handleWebReferralSend(view) }
+        view.findViewById<Button>(R.id.send_sms_button).setOnClickListener {
+            if (networkStateManager.getInternetConnectivityStatus().value == true) {
+                showBetterConnectivityDialog(sendWebButton) { continueWithSMS ->
+                    if (continueWithSMS) {
+                        sendViaSMS()
+                    }
+                }
+            } else {
+                sendViaSMS()
             }
         }
 
         if (viewModel.isInitialized.value != true) {
             dismiss()
         }
+    }
+
+    private fun showBetterConnectivityDialog(sendWebButton: Button, onDialogClosed: (Boolean) -> Unit) {
+        val builder: AlertDialog.Builder = AlertDialog.Builder(context)
+        builder
+            .setMessage("It seems that your current internet connection is stronger than the SMS network.\n" + "\n" +
+                "Would you like to send the request via data instead to ensure faster and more reliable delivery?")
+            .setTitle("Better Connectivity Available")
+            .setPositiveButton("Continue with SMS") { dialog, which ->
+                onDialogClosed(true)
+            }
+            .setNegativeButton("Send via DATA") { dialog, which ->
+                sendWebButton.performClick()
+                onDialogClosed(false)
+            }
+
+        val dialog: AlertDialog = builder.create()
+        dialog.show()
     }
 
     private suspend fun handleSmsReferralSend(view: View) {

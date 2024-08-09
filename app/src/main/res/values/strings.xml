@@ -690,6 +690,8 @@
     <string name="mc_unsupported">Multiple Choice does not support -> %s</string>
     <string name="change_pin_message">Set up or change PIN, PIN entry is required when more than thirty minutes has elapsed</string>
     <string name="change_pin_title">Set or Change PIN</string>
+    <string name="change_connection_method">Connection Preference</string>
+    <string name="change_connection_message">Set your preferred method of sending and receiving requests to the server</string>
     <string name="change_relay_phone_number_title">Change relay phone number</string>
     <string name="select_relay_phone_number_title">Select a relay phone number:</string>
     <string name="ask_user_to_enter_their_phone_number">Enter the new phone here</string>

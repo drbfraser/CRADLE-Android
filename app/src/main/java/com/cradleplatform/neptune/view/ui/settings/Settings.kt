@@ -4,6 +4,7 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
+import android.view.LayoutInflater
 import android.view.MenuItem
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -155,6 +156,14 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 true
             }
 
+        findPreference(R.string.key_connection_preference)
+            ?.withOnClickListener {
+                lifecycleScope.launch {
+                    showConnectionPreferenceDialog()
+                }
+                true
+            }
+
         findPreference(R.string.key_change_pin)
             ?.withOnClickListener {
                 val intent = Intent(activity, PinPassActivity::class.java)
@@ -252,6 +261,42 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }
 
         val dialog = createRelayPhoneNumberDialog(listView, phoneNumbers)
+        dialog.show()
+    }
+
+    private fun showConnectionPreferenceDialog() {
+        val dialogView = LayoutInflater.from(context).inflate(R.layout.fragment_connection_preference, null)
+        val listView = dialogView.findViewById<ListView>(R.id.listViewOptions)
+
+        val items = arrayOf("Mobile Data", "SMS")
+        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_single_choice, items)
+        listView.adapter = adapter
+        listView.choiceMode = ListView.CHOICE_MODE_SINGLE
+
+        val lastSelectedItem = sharedPreferences.getString("selectedProtocol", "Mobile Data")
+        val selectedIndex = items.indexOf(lastSelectedItem).takeIf { it >= 0 } ?: 0
+
+        val builder = AlertDialog.Builder(requireContext())
+        builder.setTitle("Set Preferences")
+        builder.setView(dialogView)
+
+        listView.setItemChecked(selectedIndex, true)
+
+        builder.setPositiveButton("Select") { dialog, which ->
+            val selectedItemPosition = listView.checkedItemPosition
+            val selectedItem = items[selectedItemPosition]
+            with(sharedPreferences.edit()) {
+                putString("selectedProtocol", selectedItem)
+                apply()
+            }
+            showToast("Successfully set the connection protocol")
+        }
+
+        builder.setNegativeButton("Cancel") { dialog, which ->
+            dialog.dismiss()
+        }
+
+        val dialog = builder.create()
         dialog.show()
     }
 
