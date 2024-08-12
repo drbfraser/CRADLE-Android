@@ -118,6 +118,7 @@ class RestApi(
     ): NetworkResult<T> {
         val channel = Channel<NetworkResult<T>>()
         setupSmsReceiver()
+        Log.d("test","in handle sms req $url $method")
 
         try {
             val json = smsDataProcessor.processRequestDataToJSON(
@@ -812,6 +813,7 @@ class RestApi(
             }
 
             Protocol.HTTP -> {
+                Log.d("test", "calling sms in post patient")
                 handleSmsRequest<PatientAndReadings>(
                     method, url, headers, body
                 )
@@ -916,6 +918,8 @@ class RestApi(
             val body = JacksonMapper.writerForPatient.writeValueAsBytes(patient)
             val method = Http.Method.PUT
             val url = urlManager.getPatientInfoOnly(patient.id)
+            Log.d("test", "calling sms in put patient")
+            
 
             when (protocol) {
                 Protocol.SMS -> {
@@ -929,6 +933,7 @@ class RestApi(
                 }
 
                 Protocol.HTTP -> {
+                    Log.d("test", "calling sms in put patient")
                     return@withContext handleSmsRequest(
                         method, url, headers, body
                     )
