@@ -286,6 +286,8 @@ class ReadingActivity : AppCompatActivity(), ReferralDialogFragment.OnReadingSen
 
             // See the comments on these enums for descriptions of where these errors occur
             // (CTRL + Q on them).
+            Log.d("Reading Activity", "onNextButtonClicked")
+
             when (error) {
                 ReadingFlowError.NO_ERROR -> onNextButtonClickedWithNoErrors(navController)
                 ReadingFlowError.ERROR_PATIENT_ID_IN_USE_LOCAL -> {
@@ -319,6 +321,7 @@ class ReadingActivity : AppCompatActivity(), ReferralDialogFragment.OnReadingSen
     }
 
     private fun onNextButtonClickedWithNoErrors(navController: NavController) {
+        Log.d("Reading Activity", "on next button clicked with no errors")
         when (navController.currentDestination?.id) {
             R.id.loadingFragment, null -> return
             R.id.patientInfoFragment -> {

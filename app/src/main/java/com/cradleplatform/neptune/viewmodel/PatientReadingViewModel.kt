@@ -978,10 +978,11 @@ class PatientReadingViewModel @Inject constructor(
                             return@withContext ReadingFlowError.ERROR_PATIENT_ID_IN_USE_ON_SERVER to
                                 existingOnServer.value
                         }
+                        Log.d(TAG,"the patient doesnt exist")
                     } else {
                         Log.d(TAG, "skipping patient ID on server check due to no internet")
                     }
-
+                    Log.d(TAG,"setting no error to null")
                     return@withContext ReadingFlowError.NO_ERROR to null
                 }
                 R.id.symptomsFragment -> {
