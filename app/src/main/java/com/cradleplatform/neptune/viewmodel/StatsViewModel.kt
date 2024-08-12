@@ -2,11 +2,12 @@ package com.cradleplatform.neptune.viewmodel
 
 import android.content.SharedPreferences
 import androidx.lifecycle.ViewModel
+import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
+import com.cradleplatform.neptune.http_sms_service.http.RestApi
 import com.cradleplatform.neptune.manager.HealthFacilityManager
 import com.cradleplatform.neptune.model.HealthFacility
 import com.cradleplatform.neptune.model.Statistics
-import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
-import com.cradleplatform.neptune.http_sms_service.http.RestApi
+import com.cradleplatform.neptune.utilities.Protocol
 import com.cradleplatform.neptune.utilities.UnixTimestamp
 import com.cradleplatform.neptune.view.StatisticsFilterOptions
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -24,7 +25,8 @@ class StatsViewModel @Inject constructor(
     private var savedStatsData: NetworkResult<Statistics>? = null
     var savedEndTime: BigInteger = UnixTimestamp.now
         private set
-    var savedStartTime: BigInteger = savedEndTime - TimeUnit.DAYS.toSeconds(DEFAULT_NUM_DAYS).toBigInteger()
+    var savedStartTime: BigInteger =
+        savedEndTime - TimeUnit.DAYS.toSeconds(DEFAULT_NUM_DAYS).toBigInteger()
         private set
     var savedHealthFacility: HealthFacility? = null
         private set
@@ -58,8 +60,9 @@ class StatsViewModel @Inject constructor(
         when (filterOption) {
             StatisticsFilterOptions.ALL -> {
                 // Get all stats:
-                savedStatsData = restApi.getAllStatisticsBetween(startTime, endTime)
+                savedStatsData = restApi.getAllStatisticsBetween(startTime, endTime, Protocol.HTTP)
             }
+
             StatisticsFilterOptions.JUSTME -> {
                 // Get stats for the current user ID:
                 // TODO: Determine a sane failure value for USER_ID_KEY (refer to issue #35)
@@ -69,13 +72,15 @@ class StatsViewModel @Inject constructor(
                     sharedPreferences.getInt(
                         UserViewModel.USER_ID_KEY,
                         -1
-                    )
+                    ),
+                    Protocol.HTTP
                 )
             }
+
             StatisticsFilterOptions.BYFACILITY -> {
                 // Get stats for the current Facility:
                 savedStatsData = newFacility?.let {
-                    restApi.getStatisticsForFacilityBetween(startTime, endTime, it)
+                    restApi.getStatisticsForFacilityBetween(startTime, endTime, it, Protocol.HTTP)
                 }
                 // If savedFacility is null, we return a null statsData value
                 // Which will cause the UI to display an error.

@@ -4,12 +4,13 @@ import androidx.room.withTransaction
 import com.cradleplatform.neptune.database.CradleDatabase
 import com.cradleplatform.neptune.database.daos.PatientDao
 import com.cradleplatform.neptune.database.daos.ReadingDao
-import com.cradleplatform.neptune.model.Patient
-import com.cradleplatform.neptune.model.PatientAndReadings
-import com.cradleplatform.neptune.model.Reading
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
 import com.cradleplatform.neptune.http_sms_service.http.map
+import com.cradleplatform.neptune.model.Patient
+import com.cradleplatform.neptune.model.PatientAndReadings
+import com.cradleplatform.neptune.model.Reading
+import com.cradleplatform.neptune.utilities.Protocol
 import kotlinx.coroutines.yield
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -107,7 +108,7 @@ class PatientManager @Inject constructor(
      * @return whether the upload succeeded or not
      */
     suspend fun uploadNewPatient(patientAndReadings: PatientAndReadings): NetworkResult<Unit> {
-        val result = restApi.postPatient(patientAndReadings)
+        val result = restApi.postPatient(patientAndReadings, Protocol.HTTP)
         if (result is NetworkResult.Success) {
             // Update the patient's `base` field if successfully uploaded
             val patient = patientAndReadings.patient
@@ -119,7 +120,7 @@ class PatientManager @Inject constructor(
     }
 
     suspend fun addPregnancyOnServerSaveOnSuccess(patient: Patient): NetworkResult<Unit> {
-        val result = restApi.postPregnancy(patient)
+        val result = restApi.postPregnancy(patient, Protocol.HTTP)
 
         if (result is NetworkResult.Success) {
             // Have to set the pregnancyId on db to id returned from server to link this record
@@ -132,7 +133,7 @@ class PatientManager @Inject constructor(
     }
 
     suspend fun pushAndSaveEndPregnancy(patient: Patient): NetworkResult<Unit> {
-        val result = restApi.putPregnancy(patient)
+        val result = restApi.putPregnancy(patient, Protocol.HTTP)
 
         if (result is NetworkResult.Success) {
             // Ensure all info is cleared and clear end dates
@@ -154,7 +155,7 @@ class PatientManager @Inject constructor(
      * @return whether the upload succeeded or not
      */
     suspend fun updatePatientOnServerAndSave(patient: Patient): NetworkResult<Unit> {
-        val result = restApi.putPatient(patient)
+        val result = restApi.putPatient(patient, Protocol.HTTP)
         if (result is NetworkResult.Success) {
             patient.lastServerUpdate = patient.lastEdited
         }
@@ -175,8 +176,11 @@ class PatientManager @Inject constructor(
      * @param isDrugRecord if it is a drug/medical record
      * @return whether the upload succeeded or not
      */
-    suspend fun updatePatientMedicalRecord(patient: Patient, isDrugRecord: Boolean): NetworkResult<Unit> {
-        val result = restApi.postMedicalRecord(patient, isDrugRecord)
+    suspend fun updatePatientMedicalRecord(
+        patient: Patient,
+        isDrugRecord: Boolean
+    ): NetworkResult<Unit> {
+        val result = restApi.postMedicalRecord(patient, isDrugRecord, Protocol.HTTP)
         if (result is NetworkResult.Success) {
             if (isDrugRecord) patient.drugLastEdited = null
             else patient.medicalLastEdited = null
@@ -186,7 +190,7 @@ class PatientManager @Inject constructor(
     }
 
     suspend fun downloadEditedPatientInfoFromServer(patientId: String): NetworkResult<Unit> {
-        val result = restApi.getPatientInfo(patientId)
+        val result = restApi.getPatientInfo(patientId, Protocol.HTTP)
         if (result is NetworkResult.Success) {
             add(result.value)
         }
@@ -198,7 +202,7 @@ class PatientManager @Inject constructor(
      * the server. No associated readings will be downloaded.
      */
     suspend fun downloadPatientInfoFromServer(patientId: String): NetworkResult<Patient> =
-        restApi.getPatientInfo(patientId)
+        restApi.getPatientInfo(patientId, Protocol.HTTP)
 
     /**
      * Downloads all the information for a patient from the server.
@@ -206,7 +210,7 @@ class PatientManager @Inject constructor(
      * @param id id of the patient to download
      */
     suspend fun downloadPatientAndReading(id: String): NetworkResult<PatientAndReadings> =
-        restApi.getPatient(id)
+        restApi.getPatient(id, Protocol.HTTP)
 
     /**
      * Associates a given patient to the active user.
@@ -217,7 +221,7 @@ class PatientManager @Inject constructor(
      * @param id id of the patient to associate
      */
     suspend fun associatePatientWithUser(id: String): NetworkResult<Unit> =
-        restApi.associatePatientToUser(id)
+        restApi.associatePatientToUser(id, Protocol.HTTP)
 
     /**
      * Downloads patient information and readings for the given [patientId], associates the patient

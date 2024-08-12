@@ -13,6 +13,9 @@ import com.cradleplatform.neptune.database.daos.ReadingDao
 import com.cradleplatform.neptune.database.daos.ReferralDao
 import com.cradleplatform.neptune.http_sms_service.http.Http
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
+import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
+import com.cradleplatform.neptune.http_sms_service.sms.SmsStateReporter
+import com.cradleplatform.neptune.http_sms_service.sms.utils.SMSDataProcessor
 import com.cradleplatform.neptune.manager.AssessmentManager
 import com.cradleplatform.neptune.manager.FormManager
 import com.cradleplatform.neptune.manager.FormResponseManager
@@ -88,24 +91,20 @@ class DataModule {
     fun provideDatabase(@ApplicationContext context: Context) = CradleDatabase.getInstance(context)
 
     @Provides
-    fun providePatientDao(database: CradleDatabase): PatientDao =
-        database.patientDao()
+    fun providePatientDao(database: CradleDatabase): PatientDao = database.patientDao()
 
     @Provides
-    fun provideReadingDao(database: CradleDatabase): ReadingDao =
-        database.readingDao()
+    fun provideReadingDao(database: CradleDatabase): ReadingDao = database.readingDao()
 
     @Provides
     fun provideHealthFacilityDao(database: CradleDatabase): HealthFacilityDao =
         database.healthFacility()
 
     @Provides
-    fun provideReferralDao(database: CradleDatabase): ReferralDao =
-        database.referralDao()
+    fun provideReferralDao(database: CradleDatabase): ReferralDao = database.referralDao()
 
     @Provides
-    fun provideAssessmentDao(database: CradleDatabase): AssessmentDao =
-        database.assessmentDao()
+    fun provideAssessmentDao(database: CradleDatabase): AssessmentDao = database.assessmentDao()
 
     @Provides
     fun provideFormClassificationDao(database: CradleDatabase): FormClassificationDao =
@@ -134,10 +133,16 @@ class DataModule {
     @Provides
     @Singleton
     fun provideRestApi(
+        @ApplicationContext context: Context,
         sharedPreferences: SharedPreferences,
         urlManager: UrlManager,
-        http: Http
-    ) = RestApi(sharedPreferences, urlManager, http)
+        http: Http,
+        smsStateReporter: SmsStateReporter,
+        smsSender: SMSSender,
+        smsDataProcessor: SMSDataProcessor,
+    ) = RestApi(
+        context, sharedPreferences, urlManager, http, smsStateReporter, smsSender, smsDataProcessor
+    )
 
     @Provides
     @Singleton

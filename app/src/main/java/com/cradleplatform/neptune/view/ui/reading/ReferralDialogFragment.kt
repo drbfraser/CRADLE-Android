@@ -21,10 +21,10 @@ import androidx.lifecycle.lifecycleScope
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.binding.FragmentDataBindingComponent
 import com.cradleplatform.neptune.databinding.ReferralDialogBinding
-import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
-import com.cradleplatform.neptune.http_sms_service.sms.utils.SMSDataProcessor
+import com.cradleplatform.neptune.http_sms_service.http.RestApi
 import com.cradleplatform.neptune.manager.SmsKeyManager
 import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager
+import com.cradleplatform.neptune.utilities.Protocol
 import com.cradleplatform.neptune.view.ReadingActivity
 import com.cradleplatform.neptune.viewmodel.PatientReadingViewModel
 import com.cradleplatform.neptune.viewmodel.ReadingFlowSaveResult
@@ -61,10 +61,7 @@ class ReferralDialogFragment : DialogFragment() {
     lateinit var sharedPreferences: SharedPreferences
 
     @Inject
-    lateinit var smsSender: SMSSender
-
-    @Inject
-    lateinit var smsDataProcessor: SMSDataProcessor
+    lateinit var restApi: RestApi
 
     @Inject
     lateinit var networkStateManager: NetworkStateManager
@@ -132,6 +129,8 @@ class ReferralDialogFragment : DialogFragment() {
                 referralDialogViewModel.isSending.value != true
             ) {
                 // Retrieve and validate the locally stored smsKey - allow user to send SMS if the smsKey is valid
+                // TODO: Investigate and document why smsKeyManager is used here but not used
+                //  anywhere else where SMS functionality is enabled
                 val currentSmsKey = smsKeyManager.retrieveSmsKey()
                 val keyStatus: SmsKeyManager.KeyState = smsKeyManager.validateSmsKey(currentSmsKey)
                 if (keyStatus == SmsKeyManager.KeyState.NORMAL || keyStatus == SmsKeyManager.KeyState.WARN) {
@@ -200,13 +199,12 @@ class ReferralDialogFragment : DialogFragment() {
             when (roomDbSaveResult) {
                 is ReadingFlowSaveResult.SaveSuccessful.ReferralSmsNeeded -> {
                     showStatusToast(view.context, roomDbSaveResult, ReferralOption.SMS)
-                    val json = smsDataProcessor.processPatientAndReadingsToJSON(
-                        roomDbSaveResult.patientInfoForReferral)
-                    smsSender.queueRelayContent(json).let { enqueuSuccessful ->
-                        if (enqueuSuccessful) {
-                            smsSender.sendSmsMessage(false)
-                        }
+                    if (roomDbSaveResult.patientInfoForReferral.patient.lastServerUpdate == null) {
+                        restApi.postPatient(roomDbSaveResult.patientInfoForReferral, Protocol.SMS)
+                    } else {
+                        restApi.postReading(roomDbSaveResult.patientInfoForReferral.readings[0], Protocol.SMS)
                     }
+
                     // TODO: Remove the following code from the UI and move to a more appropriate place
                     // This should not be in the UI and should be moved to a place where the server
                     // response is being parsed

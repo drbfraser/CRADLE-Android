@@ -23,6 +23,8 @@ class SmsStateReporter @Inject constructor(
     val totalReceived = MutableLiveData<Int>(0)
     val errorCode = MutableLiveData<Int>(0)
     val errorMsg = MutableLiveData<String>("")
+    val decryptedMsgLiveData = MutableLiveData("")
+
     val milliseconds = 1000
     var totalToBeSent = 0
     var totalToBeReceived = 0
@@ -72,14 +74,16 @@ class SmsStateReporter @Inject constructor(
 
     fun handleResponse(msg: String, errCode: Int?) {
         if (errCode != null) {
-            errorCode.postValue(errCode)
+            errorCode.postValue(errCode!!)
             errorMsg.postValue(msg)
             Log.d("SmsStateReporter", "Error Code: $errCode Error Msg: $msg")
+            state.postValue(SmsTransmissionStates.EXCEPTION)
         } else {
             val secretKey = smsKeyManager.retrieveSmsKey()
             SMSFormatter.decodeMsg(msg, secretKey)
                 .let {
                     decryptedMsg = it
+                    decryptedMsgLiveData.postValue(it)
 //                val mappedJson = JSONObject(decryptedMsg)
                     // TODO: Do something with the JSON object sent back. As for now, it is the same
                     //  data that was sent out. Compare and make sure everything was correct?

@@ -12,7 +12,7 @@ buildscript {
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:8.2.1'
-        classpath "de.mannodermaus.gradle.plugins:android-junit5:1.6.2.0"
+        classpath "de.mannodermaus.gradle.plugins:android-junit5:1.10.2.0"
         // TODO: Before this is ever used in production with real patient data, we need to evaluate
         //       Google's privacy policy for these things, since we're going to be dealing with
         //       personal and medical data. Likely better to just remove it entirely.

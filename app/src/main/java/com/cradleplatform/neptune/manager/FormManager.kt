@@ -1,12 +1,13 @@
 package com.cradleplatform.neptune.manager
 
-import com.cradleplatform.neptune.model.FormTemplate
-import com.cradleplatform.neptune.http_sms_service.http.RestApi
 import androidx.lifecycle.LiveData
 import com.cradleplatform.neptune.database.daos.FormClassificationDao
+import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
+import com.cradleplatform.neptune.http_sms_service.http.RestApi
 import com.cradleplatform.neptune.model.FormClassification
 import com.cradleplatform.neptune.model.FormResponse
-import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
+import com.cradleplatform.neptune.model.FormTemplate
+import com.cradleplatform.neptune.utilities.Protocol
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -22,8 +23,11 @@ class FormManager @Inject constructor(
     private val mRestApi: RestApi,
     private val formClassDao: FormClassificationDao
 ) {
-    suspend fun submitFormToWebAsResponse(formResponse: FormResponse): NetworkResult<Unit> {
-        return mRestApi.postFormResponse(formResponse)
+    suspend fun submitFormToWebAsResponse(
+        formResponse: FormResponse,
+        protocol: Protocol
+    ): NetworkResult<Unit> {
+        return mRestApi.postFormResponse(formResponse, protocol)
     }
 
     suspend fun searchForFormTemplateWithName(formClassName: String): List<FormTemplate> =

@@ -1,6 +1,5 @@
 package com.cradleplatform.neptune.viewmodel
 
-import android.content.Context
 import android.content.SharedPreferences
 import androidx.annotation.MainThread
 import androidx.lifecycle.LiveData
@@ -9,37 +8,32 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
 import com.cradleplatform.neptune.ext.getIntOrNull
-import com.cradleplatform.neptune.http_sms_service.http.DatabaseObject
-import com.cradleplatform.neptune.http_sms_service.http.HttpSmsService
-import com.cradleplatform.neptune.http_sms_service.http.Protocol
-import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
+import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
+import com.cradleplatform.neptune.http_sms_service.http.RestApi
 import com.cradleplatform.neptune.http_sms_service.sms.utils.SMSDataProcessor
 import com.cradleplatform.neptune.manager.HealthFacilityManager
 import com.cradleplatform.neptune.manager.ReferralManager
-import com.cradleplatform.neptune.manager.ReferralUploadManager
 import com.cradleplatform.neptune.model.HealthFacility
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.PatientAndReferrals
 import com.cradleplatform.neptune.model.Referral
+import com.cradleplatform.neptune.utilities.Protocol
 import com.cradleplatform.neptune.utilities.UnixTimestamp
 import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.net.HttpURLConnection
 import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
 class PatientReferralViewModel @Inject constructor(
-    private val httpSmsService: HttpSmsService,
     private val referralManager: ReferralManager, //for the internal database
-    private val referralUploadManager: ReferralUploadManager, //for the backend database
-    private val networkStateManager: NetworkStateManager,
+    networkStateManager: NetworkStateManager,
     private val sharedPreferences: SharedPreferences,
     healthFacilityManager: HealthFacilityManager,
-    private val smsSender: SMSSender,
-    @ApplicationContext private val app: Context
+    private val restApi: RestApi
 ) : ViewModel() {
 
     @Inject
@@ -106,10 +100,8 @@ class PatientReferralViewModel @Inject constructor(
     private fun isHealthCentreStringValid(healthFacility: String?) = !healthFacility.isNullOrBlank()
 
     suspend fun saveReferral(
-        //referralOption: ReferralOption,
-        submissionMode: String,
+        protocol: Protocol,
         patient: Patient,
-        applicationContext: Context
     ): ReferralFlowSaveResult = withContext(Dispatchers.Default) {
         val currentTime = UnixTimestamp.now.toLong()
         //create a referral object
@@ -131,17 +123,22 @@ class PatientReferralViewModel @Inject constructor(
                 lastEdited = currentTime
             )
 
-        /** we are redirected all transactions to the sms service **/
-        var patientAndReferrals = PatientAndReferrals(patient, listOf(referral))
-        httpSmsService.upload(
-            DatabaseObject.ReferralWrapper(
-                patient,
-                referral,
-                smsSender,
-                Protocol.valueOf(submissionMode),
-                smsDataProcessor
-            )
-        )
+        val patientExists: Boolean =
+            when (val result = restApi.getPatientInfo(patient.id, protocol)) {
+                is NetworkResult.Success -> true
+                is NetworkResult.Failure -> if (result.statusCode == HttpURLConnection.HTTP_NOT_FOUND) {
+                    false
+                } else {
+                    return@withContext ReferralFlowSaveResult.ErrorUploadingReferral
+                }
+                is NetworkResult.NetworkException -> return@withContext ReferralFlowSaveResult.ErrorUploadingReferral
+            }
+
+        if (patientExists) {
+            restApi.postReferral(referral, protocol)
+        } else {
+            restApi.postPatient(PatientAndReferrals(patient, listOf(referral)), protocol)
+        }
 
         // saves the data in internal db
         handleStoringReferralFromBuilders(referral)
@@ -154,37 +151,6 @@ class PatientReferralViewModel @Inject constructor(
          * handling all sms / http transactions #refer to issue #111
          */
         return@withContext ReferralFlowSaveResult.SaveSuccessful.NoSmsNeeded
-
-        /**
-         * This is the previous implementation, now its upto the sms service to divide http and sms
-         * ViewModels will only be responsible for requesting the service for upload
-         */
-
-        //Upload using the defined method ( Web or Sms)
-        // when (referralOption) {
-        //     ReferralOption.HTTP -> {
-        //         val result = referralUploadManager.uploadReferralViaWeb(patient, referral)
-        //
-        //         if (result is NetworkResult.Success) {
-        //             // Store the referral object into internal DB
-        //             handleStoringReferralFromBuilders(referral)
-        //             return@withContext ReferralFlowSaveResult.SaveSuccessful.NoSmsNeeded
-        //         }
-        //         else {
-        //             return@withContext ReferralFlowSaveResult.ErrorUploadingReferral
-        //         }
-        //     }
-        //     ReferralOption.SMS -> {
-        //         // Store the referral object into internal DB
-        //         handleStoringReferralFromBuilders(referral)
-        //
-        //         // Pass a PatientAndReferrals object for the SMS message.
-        //         return@withContext ReferralFlowSaveResult.SaveSuccessful.ReferralSmsNeeded(
-        //             PatientAndReferrals(patient, listOf(referral))
-        //         )
-        //     }
-        //     else -> error("unreachable")
-        // }
     }
 
     /**

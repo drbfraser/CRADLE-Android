@@ -2,10 +2,11 @@ package com.cradleplatform.neptune.manager
 
 import com.cradleplatform.neptune.database.CradleDatabase
 import com.cradleplatform.neptune.database.daos.AssessmentDao
-import com.cradleplatform.neptune.model.Assessment
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
 import com.cradleplatform.neptune.http_sms_service.http.map
+import com.cradleplatform.neptune.model.Assessment
+import com.cradleplatform.neptune.utilities.Protocol
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -80,7 +81,7 @@ class AssessmentManager @Inject constructor(
      * @return whether the upload succeeded or not
      */
     suspend fun updateAssessmentOnServerAndSave(assessment: Assessment): NetworkResult<Unit> {
-        val result = restApi.postAssessment(assessment)
+        val result = restApi.postAssessment(assessment, Protocol.HTTP)
         if (result is NetworkResult.Success) {
             assessment.lastServerUpdate = assessment.lastEdited
         }

@@ -1,5 +1,6 @@
 package com.cradleplatform.neptune.testutils
 
+import android.content.Context
 import android.content.SharedPreferences
 import com.cradleplatform.neptune.manager.UrlManager
 import com.cradleplatform.neptune.model.CommonPatientReadingJsons
@@ -7,12 +8,16 @@ import com.cradleplatform.neptune.model.CommonReadingJsons
 import com.cradleplatform.neptune.model.Settings
 import com.cradleplatform.neptune.http_sms_service.http.Http
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
+import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
+import com.cradleplatform.neptune.http_sms_service.sms.SmsStateReporter
+import com.cradleplatform.neptune.http_sms_service.sms.utils.SMSDataProcessor
 import io.mockk.every
 import io.mockk.mockk
 import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import okhttp3.mockwebserver.RecordedRequest
+import org.mockito.Mockito.mock
 
 object MockWebServerUtils {
     /**
@@ -38,10 +43,20 @@ object MockWebServerUtils {
 
         val fakeUrlManager = UrlManager(mockSettings)
 
+        val mockContext = mock(Context::class.java)
+
+        val mockSmsStateReporter = mock(SmsStateReporter::class.java)
+        val mockSmsSender = mock(SMSSender::class.java)
+        val mockSmsDataProcessor = mock(SMSDataProcessor::class.java)
+
         val restApi = RestApi(
+            mockContext,
             sharedPreferences = mockSharedPrefs,
             urlManager = fakeUrlManager,
-            http = Http()
+            http = Http(),
+            mockSmsStateReporter,
+            mockSmsSender,
+            mockSmsDataProcessor
         )
 
         return restApi to mockServer
