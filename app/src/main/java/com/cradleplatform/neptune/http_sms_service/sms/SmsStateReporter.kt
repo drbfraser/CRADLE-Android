@@ -18,11 +18,14 @@ class SmsStateReporter @Inject constructor(
     private var smsFormatter: SMSFormatter = SMSFormatter()
     private lateinit var smsSender: SMSSender
     val state = MutableLiveData<SmsTransmissionStates>(SmsTransmissionStates.GETTING_READY_TO_SEND)
+    val stateToCollect = MutableLiveData(SmsTransmissionStates.GETTING_READY_TO_SEND)
     private var timeoutThread: Thread? = null
     val totalSent = MutableLiveData<Int>(0)
     val totalReceived = MutableLiveData<Int>(0)
     val errorCode = MutableLiveData<Int>(0)
+    val errorCodeToCollect = MutableLiveData(0)
     val errorMsg = MutableLiveData<String>("")
+    val errorMessageToCollect = MutableLiveData("")
     val decryptedMsgLiveData = MutableLiveData("")
 
     val milliseconds = 1000
@@ -76,8 +79,11 @@ class SmsStateReporter @Inject constructor(
         if (errCode != null) {
             errorCode.postValue(errCode!!)
             errorMsg.postValue(msg)
+            errorCodeToCollect.postValue(errCode!!)
+            errorMessageToCollect.postValue(msg)
             Log.d("SmsStateReporter", "Error Code: $errCode Error Msg: $msg")
             state.postValue(SmsTransmissionStates.EXCEPTION)
+            stateToCollect.postValue(SmsTransmissionStates.EXCEPTION)
         } else {
             val secretKey = smsKeyManager.retrieveSmsKey()
             SMSFormatter.decodeMsg(msg, secretKey)
@@ -91,6 +97,7 @@ class SmsStateReporter @Inject constructor(
                     // if failed, post exception instead of
                     // else it's DONE
                     state.postValue(SmsTransmissionStates.DONE)
+                    stateToCollect.postValue(SmsTransmissionStates.DONE)
                 }
         }
     }

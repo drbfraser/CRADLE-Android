@@ -129,7 +129,7 @@ class RestApi(
                 }
             }
 
-            smsStateReporter.state.asFlow().collect { state ->
+            smsStateReporter.stateToCollect.asFlow().collect { state ->
                 when (state) {
                     SmsTransmissionStates.DONE -> {
                         val response =
@@ -146,8 +146,8 @@ class RestApi(
                     SmsTransmissionStates.EXCEPTION -> {
                         channel.send(
                             NetworkResult.Failure(
-                                smsStateReporter.errorMsg.value!!.toByteArray(),
-                                smsStateReporter.errorCode.value!!
+                                smsStateReporter.errorMessageToCollect.value!!.toByteArray(),
+                                smsStateReporter.errorCodeToCollect.value!!
                             )
                         )
                     }
@@ -170,6 +170,9 @@ class RestApi(
             return NetworkResult.NetworkException(e)
         } finally {
             channel.close()
+            smsStateReporter.stateToCollect.postValue(SmsTransmissionStates.GETTING_READY_TO_SEND)
+            smsStateReporter.errorMessageToCollect.postValue("")
+            smsStateReporter.errorCodeToCollect.postValue(0)
             teardownSmsReceiver()
         }
     }
