@@ -19,9 +19,11 @@ class SmsStateReporter @Inject constructor(
     private lateinit var smsSender: SMSSender
     val state = MutableLiveData<SmsTransmissionStates>(SmsTransmissionStates.GETTING_READY_TO_SEND)
 
-    // For "ToCollect" variables, see: https://developer.android.com/reference/android/arch/lifecycle/MutableLiveData#postValue(T)
-    // There is a possibility for the normal variables to be overwritten on the main thread before they are registered, so these
-    // "ToCollect" variables preserve the values until the values are successfully listened to/collected and processed.
+    // For "ToCollect" variables, see:
+    // https://developer.android.com/reference/android/arch/lifecycle/MutableLiveData#postValue(T)
+    // There is a possibility for the normal variables to be overwritten on the main thread before
+    // they are registered, so these "ToCollect" variables preserve the values until the values are
+    // successfully listened to/collected and processed.
     val stateToCollect = MutableLiveData(SmsTransmissionStates.GETTING_READY_TO_SEND)
     private var timeoutThread: Thread? = null
     val totalSent = MutableLiveData<Int>(0)
