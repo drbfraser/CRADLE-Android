@@ -18,11 +18,22 @@ class SmsStateReporter @Inject constructor(
     private var smsFormatter: SMSFormatter = SMSFormatter()
     private lateinit var smsSender: SMSSender
     val state = MutableLiveData<SmsTransmissionStates>(SmsTransmissionStates.GETTING_READY_TO_SEND)
+
+    // For "ToCollect" variables, see:
+    // https://developer.android.com/reference/android/arch/lifecycle/MutableLiveData#postValue(T)
+    // There is a possibility for the normal variables to be overwritten on the main thread before
+    // they are registered, so these "ToCollect" variables preserve the values until the values are
+    // successfully listened to/collected and processed.
+    val stateToCollect = MutableLiveData(SmsTransmissionStates.GETTING_READY_TO_SEND)
     private var timeoutThread: Thread? = null
     val totalSent = MutableLiveData<Int>(0)
     val totalReceived = MutableLiveData<Int>(0)
     val errorCode = MutableLiveData<Int>(0)
+    val errorCodeToCollect = MutableLiveData(0)
     val errorMsg = MutableLiveData<String>("")
+    val errorMessageToCollect = MutableLiveData("")
+    val decryptedMsgLiveData = MutableLiveData("")
+
     val milliseconds = 1000
     var totalToBeSent = 0
     var totalToBeReceived = 0
@@ -72,14 +83,19 @@ class SmsStateReporter @Inject constructor(
 
     fun handleResponse(msg: String, errCode: Int?) {
         if (errCode != null) {
-            errorCode.postValue(errCode)
+            errorCode.postValue(errCode!!)
             errorMsg.postValue(msg)
+            errorCodeToCollect.postValue(errCode!!)
+            errorMessageToCollect.postValue(msg)
             Log.d("SmsStateReporter", "Error Code: $errCode Error Msg: $msg")
+            state.postValue(SmsTransmissionStates.EXCEPTION)
+            stateToCollect.postValue(SmsTransmissionStates.EXCEPTION)
         } else {
             val secretKey = smsKeyManager.retrieveSmsKey()
             SMSFormatter.decodeMsg(msg, secretKey)
                 .let {
                     decryptedMsg = it
+                    decryptedMsgLiveData.postValue(it)
 //                val mappedJson = JSONObject(decryptedMsg)
                     // TODO: Do something with the JSON object sent back. As for now, it is the same
                     //  data that was sent out. Compare and make sure everything was correct?
@@ -87,6 +103,7 @@ class SmsStateReporter @Inject constructor(
                     // if failed, post exception instead of
                     // else it's DONE
                     state.postValue(SmsTransmissionStates.DONE)
+                    stateToCollect.postValue(SmsTransmissionStates.DONE)
                 }
         }
     }

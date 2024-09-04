@@ -19,11 +19,12 @@ import androidx.recyclerview.widget.RecyclerView
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.ext.hideKeyboard
 import com.cradleplatform.neptune.ext.isConnected
+import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
+import com.cradleplatform.neptune.http_sms_service.http.RestApi
 import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.manager.ReadingManager
 import com.cradleplatform.neptune.model.GlobalPatient
-import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
-import com.cradleplatform.neptune.http_sms_service.http.RestApi
+import com.cradleplatform.neptune.utilities.Protocol
 import com.cradleplatform.neptune.viewmodel.GlobalPatientAdapter
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
@@ -114,7 +115,7 @@ class GlobalPatientSearchActivity : AppCompatActivity() {
         progressDialog.show()
 
         lifecycleScope.launch {
-            val result = restApi.searchForPatient(searchUrl)
+            val result = restApi.searchForPatient(searchUrl, Protocol.HTTP)
             progressDialog.cancel()
             searchView.hideKeyboard()
             if (result is NetworkResult.Success) {

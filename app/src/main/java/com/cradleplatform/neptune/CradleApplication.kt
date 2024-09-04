@@ -14,6 +14,7 @@ import android.os.Bundle
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import androidx.work.WorkManager
+import com.cradleplatform.neptune.http_sms_service.DataTransmissionState
 import com.cradleplatform.neptune.http_sms_service.sms.RelayRequestCounter
 import com.cradleplatform.neptune.manager.LoginManager
 import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkMonitoringUtil
@@ -115,6 +116,7 @@ class CradleApplication : Application(), Configuration.Provider {
 
         // Initiate SMS Relay Request Counter object
         RelayRequestCounter.init(this)
+        DataTransmissionState.init(this)
 
         // Disable rotation
         // source: https://stackoverflow.com/questions/6745797/how-to-set-entire-application-in-portrait-mode-only/9784269#9784269

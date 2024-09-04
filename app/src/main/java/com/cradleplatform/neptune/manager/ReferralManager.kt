@@ -6,6 +6,7 @@ import com.cradleplatform.neptune.model.Referral
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
 import com.cradleplatform.neptune.http_sms_service.http.map
+import com.cradleplatform.neptune.utilities.Protocol
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -80,7 +81,7 @@ class ReferralManager @Inject constructor(
      * @return whether the upload succeeded or not
      */
     suspend fun updateReferralOnServerAndSave(referral: Referral): NetworkResult<Unit> {
-        val result = restApi.postReferral(referral)
+        val result = restApi.postReferral(referral, Protocol.HTTP)
         if (result is NetworkResult.Success) {
             referral.lastServerUpdate = referral.lastEdited
         }

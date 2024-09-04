@@ -1,10 +1,18 @@
 package com.cradleplatform.neptune.http_sms_service.http
 
+import android.content.Context
+import android.content.IntentFilter
 import android.content.SharedPreferences
 import android.util.Log
+import androidx.lifecycle.asFlow
 import com.cradleplatform.neptune.ext.jackson.forEachJackson
 import com.cradleplatform.neptune.ext.jackson.parseObject
 import com.cradleplatform.neptune.ext.jackson.parseObjectArray
+import com.cradleplatform.neptune.http_sms_service.sms.SMSReceiver
+import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
+import com.cradleplatform.neptune.http_sms_service.sms.SmsStateReporter
+import com.cradleplatform.neptune.http_sms_service.sms.SmsTransmissionStates
+import com.cradleplatform.neptune.http_sms_service.sms.utils.SMSDataProcessor
 import com.cradleplatform.neptune.manager.LoginResponse
 import com.cradleplatform.neptune.manager.UrlManager
 import com.cradleplatform.neptune.model.Assessment
@@ -27,14 +35,18 @@ import com.cradleplatform.neptune.sync.workers.PatientSyncField
 import com.cradleplatform.neptune.sync.workers.ReadingSyncField
 import com.cradleplatform.neptune.sync.workers.ReferralSyncField
 import com.cradleplatform.neptune.sync.workers.SyncAllWorker
+import com.cradleplatform.neptune.utilities.Protocol
 import com.cradleplatform.neptune.utilities.jackson.JacksonMapper
 import com.cradleplatform.neptune.utilities.jackson.JacksonMapper.createWriter
 import com.cradleplatform.neptune.viewmodel.UserViewModel
+import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
@@ -43,6 +55,7 @@ import org.json.JSONObject
 import java.io.IOException
 import java.io.InputStream
 import java.math.BigInteger
+import java.net.HttpURLConnection
 import javax.inject.Singleton
 
 /**
@@ -60,15 +73,108 @@ import javax.inject.Singleton
  * A timeout is one such cause of an exception for example.
  */
 @Singleton
-class RestApi constructor(
+class RestApi(
+    private val context: Context,
     private val sharedPreferences: SharedPreferences,
     private val urlManager: UrlManager,
-    private val http: Http
+    private val http: Http,
+    private val smsStateReporter: SmsStateReporter,
+    private val smsSender: SMSSender,
+    private val smsDataProcessor: SMSDataProcessor
 ) {
+    private lateinit var smsReceiver: SMSReceiver
+
     companion object {
         private const val TAG = "RestApi"
         private const val UNIT_VALUE_WEEKS = "WEEKS"
         private const val UNIT_VALUE_MONTHS = "MONTHS"
+    }
+
+    private fun setupSmsReceiver() {
+        val phoneNumber = sharedPreferences.getString(UserViewModel.RELAY_PHONE_NUMBER, null)
+            ?: error("Invalid phone number")
+
+        smsReceiver = SMSReceiver(smsSender, phoneNumber, smsStateReporter)
+
+        val intentFilter = IntentFilter()
+        intentFilter.addAction("android.provider.Telephony.SMS_RECEIVED")
+        intentFilter.priority = Int.MAX_VALUE
+
+        context.registerReceiver(smsReceiver, intentFilter)
+    }
+
+    private fun teardownSmsReceiver() {
+        context.unregisterReceiver(smsReceiver)
+    }
+
+    // TODO: This only handles the case for endpoints that return status code 200 when successful.
+    //       Additional logic is necessary for if an endpoint has multiple successful status codes
+    //       (e.g. 200 and 201)
+    private suspend inline fun <reified T> handleSmsRequest(
+        method: Http.Method,
+        url: String,
+        headers: Map<String, String>,
+        body: ByteArray = Gson().toJson(JsonObject()).toByteArray(),
+    ): NetworkResult<T> {
+        val channel = Channel<NetworkResult<T>>()
+        setupSmsReceiver()
+
+        try {
+            val json = smsDataProcessor.processRequestDataToJSON(
+                method, url, Gson().toJson(headers), body
+            )
+            smsSender.queueRelayContent(json).let { enqueueSuccessful ->
+                if (enqueueSuccessful) {
+                    smsSender.sendSmsMessage(false)
+                }
+            }
+
+            smsStateReporter.stateToCollect.asFlow().collect { state ->
+                when (state) {
+                    SmsTransmissionStates.DONE -> {
+                        val response =
+                            JacksonMapper.mapper.readValue(smsStateReporter.decryptedMsgLiveData.value,
+                                object : TypeReference<T>() {})
+
+                        channel.send(
+                            NetworkResult.Success(
+                                response, HttpURLConnection.HTTP_OK
+                            )
+                        )
+                    }
+
+                    SmsTransmissionStates.EXCEPTION -> {
+                        channel.send(
+                            NetworkResult.Failure(
+                                smsStateReporter.errorMessageToCollect.value!!.toByteArray(),
+                                smsStateReporter.errorCodeToCollect.value!!
+                            )
+                        )
+                    }
+
+                    SmsTransmissionStates.TIME_OUT -> {
+                        channel.send(
+                            NetworkResult.NetworkException(
+                                SMSTimeoutException(
+                                    "SMS has timed out"
+                                )
+                            )
+                        )
+                    }
+
+                    else -> {}
+                }
+            }
+            return channel.receive()
+        } catch (e: IOException) {
+            return NetworkResult.NetworkException(e)
+        } finally {
+            channel.close()
+            smsStateReporter.stateToCollect.postValue(SmsTransmissionStates.GETTING_READY_TO_SEND)
+            smsStateReporter.errorMessageToCollect.postValue("")
+            smsStateReporter.errorCodeToCollect.postValue(0)
+            teardownSmsReceiver()
+        }
     }
 
     /**
@@ -79,23 +185,25 @@ class RestApi constructor(
      * @return if successful, the [LoginResponse] that was returned by the server
      *  which contains a bearer token to authenticate the user
      */
-    suspend fun authenticate(email: String, password: String): NetworkResult<LoginResponse> =
-        withContext(IO) {
-            val body = JSONObject()
-                .put("email", email)
-                .put("password", password)
-                .toString()
-                .encodeToByteArray()
-            val requestBody = buildJsonRequestBody(body)
+    suspend fun authenticate(
+        email: String,
+        password: String,
+    ): NetworkResult<LoginResponse> = withContext(IO) {
+        val body = JSONObject().put("email", email).put("password", password).toString()
+            .encodeToByteArray()
 
-            return@withContext http.makeRequest(
-                method = Http.Method.POST,
-                url = urlManager.authentication,
-                headers = mapOf(),
-                requestBody = requestBody,
-                inputStreamReader = { JacksonMapper.createReader<LoginResponse>().readValue(it) }
-            )
-        }
+        val method = Http.Method.POST
+        val url = urlManager.authentication
+        val headers = mapOf<String, String>()
+
+        http.makeRequest(method = method,
+            url = url,
+            headers = headers,
+            requestBody = buildJsonRequestBody(body),
+            inputStreamReader = {
+                JacksonMapper.createReader<LoginResponse>().readValue(it)
+            })
+    }
 
     /**
      * Gets all patients and associated readings for the current user
@@ -117,136 +225,300 @@ class RestApi constructor(
      * parsing or the connection fails.
      */
     suspend fun getAllPatients(
-        patientChannel: SendChannel<Patient>
+        patientChannel: SendChannel<Patient>,
+        protocol: Protocol
     ): NetworkResult<Unit> = withContext(IO) {
-        var failedParse = false
-        http.makeRequest(
-            method = Http.Method.GET,
-            url = urlManager.getAllPatients,
-            headers = headers,
-            inputStreamReader = { inputStream ->
-                // Parse JSON strings directly from the input stream to avoid dealing with a
-                // ByteArray of an entire JSON array in memory and trying to convert that into a
-                // String.
+        val method = Http.Method.GET
+        val url = urlManager.getAllPatients
+
+        when (protocol) {
+            Protocol.HTTP -> {
+                var failedParse = false
+
+                return@withContext http.makeRequest(method = method,
+                    url = url,
+                    headers = headers,
+                    inputStreamReader = { inputStream ->
+                        // Parse JSON strings directly from the input stream to avoid dealing with a
+                        // ByteArray of an entire JSON array in memory and trying to convert that into a
+                        // String.
+                        try {
+                            val reader = JacksonMapper.readerForPatient
+                            reader.readValues<Patient>(inputStream).use { iterator ->
+                                iterator.forEachJackson { patientChannel.send(it) }
+                            }
+                        } catch (e: Exception) {
+                            Log.e(TAG, e.toString())
+                            failedParse = true
+                        }
+                    }).also {
+                    if (it is NetworkResult.Success) {
+                        if (failedParse) {
+                            patientChannel.close(SyncException("failed to parse all associated patients"))
+                        } else {
+                            patientChannel.close()
+                        }
+                    } else {
+                        patientChannel.close(SyncException("failed to download all associated patients"))
+                    }
+                }
+            }
+
+            Protocol.SMS -> {
                 try {
-                    val reader = JacksonMapper.readerForPatient
-                    reader.readValues<Patient>(inputStream).use { iterator ->
-                        iterator.forEachJackson { patientChannel.send(it) }
+                    val networkResult = handleSmsRequest<List<Patient>>(
+                        method, url, headers
+                    )
+
+                    when (networkResult) {
+                        is NetworkResult.Success -> {
+                            for (patient in networkResult.value) {
+                                patientChannel.send(patient)
+                            }
+                            NetworkResult.Success(
+                                Unit, networkResult.statusCode
+                            )
+                        }
+
+                        is NetworkResult.Failure -> {
+                            patientChannel.close(SyncException("failed to download all associated patients"))
+                            NetworkResult.Failure(
+                                networkResult.body, networkResult.statusCode
+                            )
+                        }
+
+                        is NetworkResult.NetworkException -> {
+                            patientChannel.close(SyncException("failed to download all associated patients"))
+                            NetworkResult.NetworkException(networkResult.cause)
+                        }
                     }
                 } catch (e: Exception) {
-                    Log.e(TAG, e.toString())
-                    failedParse = true
+                    val syncException = SyncException("failed to parse all associated patients")
+                    patientChannel.close(syncException)
+                    NetworkResult.NetworkException(syncException)
                 }
-                Unit
-            }
-        ).also {
-            if (it is NetworkResult.Success) {
-                if (failedParse) {
-                    patientChannel.close(SyncException("failed to parse all associated patients"))
-                } else {
-                    patientChannel.close()
-                }
-            } else {
-                patientChannel.close(SyncException("failed to download all associated patients"))
             }
         }
     }
 
     suspend fun getAllReadings(
-        readingChannel: SendChannel<Reading>
+        readingChannel: SendChannel<Reading>,
+        protocol: Protocol
     ): NetworkResult<Unit> = withContext(IO) {
-        var failedParse = false
-        http.makeRequest(
-            method = Http.Method.GET,
-            url = urlManager.getAllReadings,
-            headers = headers,
-            inputStreamReader = { inputStream ->
+        val method = Http.Method.GET
+        val url = urlManager.getAllReadings
+
+        when (protocol) {
+            Protocol.HTTP -> {
+                var failedParse = false
+
+                http.makeRequest(method = method,
+                    url = url,
+                    headers = headers,
+                    inputStreamReader = { inputStream ->
+                        try {
+                            val reader = JacksonMapper.readerForReading
+                            reader.readValues<Reading>(inputStream).use { iterator ->
+                                iterator.forEachJackson { readingChannel.send(it) }
+                            }
+                        } catch (e: Exception) {
+                            Log.e(TAG, e.toString())
+                            failedParse = true
+                        }
+                    }).also {
+                    if (it is NetworkResult.Success) {
+                        if (failedParse) {
+                            readingChannel.close(SyncException("failed to parse all associated readings"))
+                        } else {
+                            readingChannel.close()
+                        }
+                    } else {
+                        readingChannel.close(SyncException("failed to download all associated readings"))
+                    }
+                }
+            }
+
+            Protocol.SMS -> {
                 try {
-                    val reader = JacksonMapper.readerForReading
-                    reader.readValues<Reading>(inputStream).use { iterator ->
-                        iterator.forEachJackson { readingChannel.send(it) }
+                    val networkResult = handleSmsRequest<List<Reading>>(
+                        method, url, headers
+                    )
+
+                    when (networkResult) {
+                        is NetworkResult.Success -> {
+                            for (reading in networkResult.value) {
+                                readingChannel.send(reading)
+                            }
+                            NetworkResult.Success(
+                                Unit, networkResult.statusCode
+                            )
+                        }
+
+                        is NetworkResult.Failure -> {
+                            readingChannel.close(SyncException("failed to download all associated readings"))
+                            NetworkResult.Failure(
+                                networkResult.body, networkResult.statusCode
+                            )
+                        }
+
+                        is NetworkResult.NetworkException -> {
+                            readingChannel.close(SyncException("failed to download all associated readings"))
+                            NetworkResult.NetworkException(networkResult.cause)
+                        }
                     }
                 } catch (e: Exception) {
-                    Log.e(TAG, e.toString())
-                    failedParse = true
+                    val syncException = SyncException("failed to parse all associated readings")
+                    readingChannel.close(syncException)
+                    NetworkResult.NetworkException(syncException)
                 }
-                Unit
-            }
-        ).also {
-            if (it is NetworkResult.Success) {
-                if (failedParse) {
-                    readingChannel.close(SyncException("failed to parse all associated readings"))
-                } else {
-                    readingChannel.close()
-                }
-            } else {
-                readingChannel.close(SyncException("failed to download all associated readings"))
             }
         }
     }
 
     suspend fun getAllReferrals(
-        referralChannel: SendChannel<Referral>
+        referralChannel: SendChannel<Referral>,
+        protocol: Protocol
     ): NetworkResult<Unit> = withContext(IO) {
-        var failedParse = false
-        http.makeRequest(
-            method = Http.Method.GET,
-            url = urlManager.getAllReferrals,
-            headers = headers,
-            inputStreamReader = { inputStream ->
+        val method = Http.Method.GET
+        val url = urlManager.getAllReferrals
+
+        when (protocol) {
+            Protocol.HTTP -> {
+                var failedParse = false
+
+                http.makeRequest(method = method,
+                    url = url,
+                    headers = headers,
+                    inputStreamReader = { inputStream ->
+                        try {
+                            val reader = JacksonMapper.readerForReferral
+                            reader.readValues<Referral>(inputStream).use { iterator ->
+                                iterator.forEachJackson { referralChannel.send(it) }
+                            }
+                        } catch (e: Exception) {
+                            Log.e(TAG, e.toString())
+                            failedParse = true
+                        }
+                    }).also {
+                    if (it is NetworkResult.Success) {
+                        if (failedParse) {
+                            referralChannel.close(SyncException("failed to parse all associated referrals"))
+                        } else {
+                            referralChannel.close()
+                        }
+                    } else {
+                        referralChannel.close(SyncException("failed to download all associated referrals"))
+                    }
+                }
+            }
+
+            Protocol.SMS -> {
                 try {
-                    val reader = JacksonMapper.readerForReferral
-                    reader.readValues<Referral>(inputStream).use { iterator ->
-                        iterator.forEachJackson { referralChannel.send(it) }
+                    val networkResult = handleSmsRequest<List<Referral>>(
+                        method, url, headers
+                    )
+
+                    when (networkResult) {
+                        is NetworkResult.Success -> {
+                            for (referral in networkResult.value) {
+                                referralChannel.send(referral)
+                            }
+                            NetworkResult.Success(
+                                Unit, networkResult.statusCode
+                            )
+                        }
+
+                        is NetworkResult.Failure -> {
+                            referralChannel.close(SyncException("failed to download all associated referrals"))
+                            NetworkResult.Failure(
+                                networkResult.body, networkResult.statusCode
+                            )
+                        }
+
+                        is NetworkResult.NetworkException -> {
+                            referralChannel.close(SyncException("failed to download all associated referrals"))
+                            NetworkResult.NetworkException(networkResult.cause)
+                        }
                     }
                 } catch (e: Exception) {
-                    Log.e(TAG, e.toString())
-                    failedParse = true
+                    val syncException = SyncException("failed to parse all associated referrals")
+                    referralChannel.close(syncException)
+                    NetworkResult.NetworkException(syncException)
                 }
-                Unit
-            }
-        ).also {
-            if (it is NetworkResult.Success) {
-                if (failedParse) {
-                    referralChannel.close(SyncException("failed to parse all associated referrals"))
-                } else {
-                    referralChannel.close()
-                }
-            } else {
-                referralChannel.close(SyncException("failed to download all associated referrals"))
             }
         }
     }
 
     suspend fun getAllAssessments(
-        assessmentChannel: SendChannel<Assessment>
+        assessmentChannel: SendChannel<Assessment>,
+        protocol: Protocol
     ): NetworkResult<Unit> = withContext(IO) {
-        var failedParse = false
-        http.makeRequest(
-            method = Http.Method.GET,
-            url = urlManager.getAllAssessments,
-            headers = headers,
-            inputStreamReader = { inputStream ->
+        val method = Http.Method.GET
+        val url = urlManager.getAllAssessments
+
+        when (protocol) {
+            Protocol.HTTP -> {
+                var failedParse = false
+
+                http.makeRequest(method = method,
+                    url = url,
+                    headers = headers,
+                    inputStreamReader = { inputStream ->
+                        try {
+                            val reader = JacksonMapper.readerForAssessment
+                            reader.readValues<Assessment>(inputStream).use { iterator ->
+                                iterator.forEachJackson { assessmentChannel.send(it) }
+                            }
+                        } catch (e: Exception) {
+                            Log.e(TAG, e.toString())
+                            failedParse = true
+                        }
+                    }).also {
+                    if (it is NetworkResult.Success) {
+                        if (failedParse) {
+                            assessmentChannel.close(SyncException("failed to parse all associated assessments"))
+                        } else {
+                            assessmentChannel.close()
+                        }
+                    } else {
+                        assessmentChannel.close(SyncException("failed to download all associated assessments"))
+                    }
+                }
+            }
+
+            Protocol.SMS -> {
                 try {
-                    val reader = JacksonMapper.readerForAssessment
-                    reader.readValues<Assessment>(inputStream).use { iterator ->
-                        iterator.forEachJackson { assessmentChannel.send(it) }
+                    val networkResult = handleSmsRequest<List<Assessment>>(
+                        method, url, headers
+                    )
+
+                    when (networkResult) {
+                        is NetworkResult.Success -> {
+                            for (assessment in networkResult.value) {
+                                assessmentChannel.send(assessment)
+                            }
+                            NetworkResult.Success(
+                                Unit, networkResult.statusCode
+                            )
+                        }
+
+                        is NetworkResult.Failure -> {
+                            assessmentChannel.close(SyncException("failed to download all associated assessments"))
+                            NetworkResult.Failure(
+                                networkResult.body, networkResult.statusCode
+                            )
+                        }
+
+                        is NetworkResult.NetworkException -> {
+                            assessmentChannel.close(SyncException("failed to download all associated assessments"))
+                            NetworkResult.NetworkException(networkResult.cause)
+                        }
                     }
                 } catch (e: Exception) {
-                    Log.e(TAG, e.toString())
-                    failedParse = true
+                    val syncException = SyncException("failed to parse all associated assessments")
+                    assessmentChannel.close(syncException)
+                    NetworkResult.NetworkException(syncException)
                 }
-                Unit
-            }
-        ).also {
-            if (it is NetworkResult.Success) {
-                if (failedParse) {
-                    assessmentChannel.close(SyncException("failed to parse all associated assessments"))
-                } else {
-                    assessmentChannel.close()
-                }
-            } else {
-                assessmentChannel.close(SyncException("failed to download all associated assessments"))
             }
         }
     }
@@ -256,16 +528,28 @@ class RestApi constructor(
      * with a given [id].
      *
      * @param id patient id to get information for
+     * @param protocol the protocol being used for transmission over the network
      * @return a patient and its associated readings
      */
-    suspend fun getPatient(id: String): NetworkResult<PatientAndReadings> =
+    suspend fun getPatient(id: String, protocol: Protocol): NetworkResult<PatientAndReadings> =
         withContext(IO) {
-            http.makeRequest(
-                method = Http.Method.GET,
-                url = urlManager.getPatient(id),
-                headers = headers,
-                inputStreamReader = { JacksonMapper.readerForPatientAndReadings.readValue(it) }
-            )
+            val method = Http.Method.GET
+            val url = urlManager.getPatient(id)
+
+            when (protocol) {
+                Protocol.HTTP -> {
+                    http.makeRequest(method = method,
+                        url = url,
+                        headers = headers,
+                        inputStreamReader = { JacksonMapper.readerForPatientAndReadings.readValue(it) })
+                }
+
+                Protocol.SMS -> {
+                    handleSmsRequest<PatientAndReadings>(
+                        method, url, headers
+                    )
+                }
+            }
         }
 
     /**
@@ -274,16 +558,28 @@ class RestApi constructor(
      * would return.
      *
      * @param id patient id to get information for
+     * @param protocol the protocol being used for transmission over the network
      * @return just the demographic information for a patient
      */
-    suspend fun getPatientInfo(id: String): NetworkResult<Patient> =
+    suspend fun getPatientInfo(id: String, protocol: Protocol): NetworkResult<Patient> =
         withContext(IO) {
-            http.makeRequest(
-                method = Http.Method.GET,
-                url = urlManager.getPatientInfo(id),
-                headers = headers,
-                inputStreamReader = { JacksonMapper.readerForPatient.readValue(it) }
-            )
+            val method = Http.Method.GET
+            val url = urlManager.getPatientInfo(id)
+
+            when (protocol) {
+                Protocol.HTTP -> {
+                    http.makeRequest(method = Http.Method.GET,
+                        url = urlManager.getPatientInfo(id),
+                        headers = headers,
+                        inputStreamReader = { JacksonMapper.readerForPatient.readValue(it) })
+                }
+
+                Protocol.SMS -> {
+                    handleSmsRequest<Patient>(
+                        method, url, headers
+                    )
+                }
+            }
         }
 
     /**
@@ -292,50 +588,90 @@ class RestApi constructor(
      *
      * @param searchString a case-insensitive partial patient name or id to used
      *  as a query
+     * @param protocol the protocol being used for transmission over the network
      * @return a list of patients which match the query
      */
-    suspend fun searchForPatient(searchString: String): NetworkResult<List<GlobalPatient>> =
-        withContext(IO) {
-            http.makeRequest(
-                method = Http.Method.GET,
-                url = urlManager.getGlobalPatientSearch(searchString),
-                headers = headers,
-                inputStreamReader = {
-                    JacksonMapper.createGlobalPatientsListReader().readValue(it)
-                }
-            )
+    suspend fun searchForPatient(
+        searchString: String,
+        protocol: Protocol
+    ): NetworkResult<List<GlobalPatient>> = withContext(IO) {
+        val method = Http.Method.GET
+        val url = urlManager.getGlobalPatientSearch(searchString)
+
+        when (protocol) {
+            Protocol.HTTP -> {
+                http.makeRequest(method = method,
+                    url = url,
+                    headers = headers,
+                    inputStreamReader = {
+                        JacksonMapper.createGlobalPatientsListReader().readValue(it)
+                    })
+            }
+
+            Protocol.SMS -> {
+                handleSmsRequest<List<GlobalPatient>>(
+                    method, url, headers
+                )
+            }
         }
+    }
 
     /**
      * Requests a specific reading with a given [id] from the server.
      *
      * @param id id of the reading to request
+     * @param protocol the protocol being used for transmission over the network
      * @return the requested reading
      */
-    suspend fun getReading(id: String): NetworkResult<Reading> =
+    suspend fun getReading(id: String, protocol: Protocol): NetworkResult<Reading> =
         withContext(IO) {
-            http.makeRequest(
-                method = Http.Method.GET,
-                url = urlManager.getReading(id),
-                headers = headers,
-                inputStreamReader = { JacksonMapper.readerForReading.readValue(it) }
-            )
+            val method = Http.Method.GET
+            val url = urlManager.getReading(id)
+
+            when (protocol) {
+                Protocol.HTTP -> {
+                    http.makeRequest(method = Http.Method.GET,
+                        url = urlManager.getReading(id),
+                        headers = headers,
+                        inputStreamReader = { JacksonMapper.readerForReading.readValue(it) })
+                }
+
+                Protocol.SMS -> {
+                    handleSmsRequest<Reading>(
+                        method, url, headers
+                    )
+                }
+            }
         }
 
     /**
      * Requests a specific assessment (aka. followup) from the server.
      *
      * @param id id of the assessment to request
+     * @param protocol the protocol being used for transmission over the network
      * @return the requested assessment
      */
-    suspend fun getAssessment(id: String): NetworkResult<Assessment> =
+    suspend fun getAssessment(id: String, protocol: Protocol): NetworkResult<Assessment> =
         withContext(IO) {
-            http.makeRequest(
-                method = Http.Method.GET,
-                url = urlManager.getAssessmentById(id),
-                headers = headers,
-                inputStreamReader = { JacksonMapper.createReader<Assessment>().readValue(it) }
-            )
+            val method = Http.Method.GET
+            val url = urlManager.getAssessmentById(id)
+
+            when (protocol) {
+                Protocol.HTTP -> {
+                    http.makeRequest(method = method,
+                        url = url,
+                        headers = headers,
+                        inputStreamReader = {
+                            JacksonMapper.createReader<Assessment>().readValue(it)
+                        })
+                }
+
+                Protocol.SMS -> {
+                    handleSmsRequest<Assessment>(
+                        method, url, headers
+                    )
+                }
+            }
         }
 
     /**
@@ -344,22 +680,33 @@ class RestApi constructor(
      * @param date1 UNIX timestamp of the beginning cutoff
      * @param date2 UNIX timestamp of the end cutoff
      * @param filterFacility input health facility to get statistics for
+     * @param protocol the protocol being used for transmission over the network
      * @return Statistics object for the requested dates
      */
-
     suspend fun getStatisticsForFacilityBetween(
         date1: BigInteger,
         date2: BigInteger,
-        filterFacility: HealthFacility
-    ): NetworkResult<Statistics> =
-        withContext(IO) {
-            http.makeRequest(
-                method = Http.Method.GET,
-                url = urlManager.getStatisticsForFacilityBetween(date1, date2, filterFacility.name),
-                headers = headers,
-                inputStreamReader = { JacksonMapper.mapper.readValue(it) }
-            )
+        filterFacility: HealthFacility,
+        protocol: Protocol
+    ): NetworkResult<Statistics> = withContext(IO) {
+        val method = Http.Method.GET
+        val url = urlManager.getStatisticsForFacilityBetween(date1, date2, filterFacility.name)
+
+        when (protocol) {
+            Protocol.HTTP -> {
+                http.makeRequest(method = method,
+                    url = url,
+                    headers = headers,
+                    inputStreamReader = { JacksonMapper.mapper.readValue(it) })
+            }
+
+            Protocol.SMS -> {
+                handleSmsRequest<Statistics>(
+                    method, url, headers
+                )
+            }
         }
+    }
 
     /**
      * Requests all statistics between two input UNIX timestamps, for a given user ID.
@@ -367,43 +714,68 @@ class RestApi constructor(
      * @param date1 UNIX timestamp of the beginning cutoff
      * @param date2 UNIX timestamp of the end cutoff
      * @param userID the integer representation of user to get statistics for
+     * @param protocol the protocol being used for transmission over the network
      * @return Statistics object for the requested dates
      */
-
     suspend fun getStatisticsForUserBetween(
         date1: BigInteger,
         date2: BigInteger,
-        userID: Int
-    ): NetworkResult<Statistics> =
-        withContext(IO) {
-            http.makeRequest(
-                method = Http.Method.GET,
-                url = urlManager.getStatisticsForUserBetween(date1, date2, userID),
-                headers = headers,
-                inputStreamReader = { JacksonMapper.mapper.readValue(it) }
-            )
+        userID: Int,
+        protocol: Protocol
+    ): NetworkResult<Statistics> = withContext(IO) {
+        val method = Http.Method.GET
+        val url = urlManager.getStatisticsForUserBetween(date1, date2, userID)
+
+        when (protocol) {
+            Protocol.HTTP -> {
+                http.makeRequest(method = method,
+                    url = url,
+                    headers = headers,
+                    inputStreamReader = { JacksonMapper.mapper.readValue(it) })
+            }
+
+            Protocol.SMS -> {
+                handleSmsRequest<Statistics>(
+                    method, url, headers
+                )
+            }
         }
+    }
 
     /**
      * Requests all statistics between two input UNIX timestamps, for all facilities and users.
      *
      * @param date1 UNIX timestamp of the beginning cutoff
      * @param date2 UNIX timestamp of the end cutoff
+     * @param protocol the protocol being used for transmission over the network
      * @return Statistics object for the requested dates
      */
 
     suspend fun getAllStatisticsBetween(
         date1: BigInteger,
-        date2: BigInteger
-    ): NetworkResult<Statistics> =
-        withContext(IO) {
-            http.makeRequest(
-                method = Http.Method.GET,
-                url = urlManager.getAllStatisticsBetween(date1, date2),
-                headers = headers,
-                inputStreamReader = { JacksonMapper.mapper.readValue(it) }
-            )
+        date2: BigInteger,
+        protocol: Protocol
+    ): NetworkResult<Statistics> = withContext(IO) {
+        val method = Http.Method.GET
+        val url = urlManager.getAllStatisticsBetween(date1, date2)
+
+        when (protocol) {
+            Protocol.HTTP -> {
+                http.makeRequest(method = method,
+                    url = url,
+                    headers = headers,
+                    inputStreamReader = { JacksonMapper.mapper.readValue(it) })
+            }
+
+            Protocol.SMS -> {
+                handleSmsRequest<Statistics>(
+                    method,
+                    url,
+                    headers,
+                )
+            }
         }
+    }
 
     /**
      * Uploads a new patient along with associated readings to the server.
@@ -418,21 +790,37 @@ class RestApi constructor(
      * copy and use the server's version instead when working with this method.
      **
      * @param patient the patient to upload
+     * @param protocol the protocol being used for transmission over the network
      * @return the server's version of the uploaded patient and readings
      */
-    suspend fun postPatient(patient: PatientAndReadings): NetworkResult<PatientAndReadings> =
-        withContext(IO) {
-            val body = JacksonMapper.createWriter<PatientAndReadings>().writeValueAsBytes(patient)
-            http.makeRequest(
-                method = Http.Method.POST,
-                url = urlManager.postPatient,
-                headers = headers,
-                requestBody = buildJsonRequestBody(body),
-                inputStreamReader = { input ->
-                    JacksonMapper.readerForPatientAndReadings.readValue(input)
-                },
-            )
+    suspend fun postPatient(
+        patient: PatientAndReadings,
+        protocol: Protocol
+    ): NetworkResult<PatientAndReadings> = withContext(IO) {
+        val body = createWriter<PatientAndReadings>().writeValueAsBytes(patient)
+        val method = Http.Method.POST
+        val url = urlManager.postPatient
+
+        when (protocol) {
+            Protocol.HTTP -> {
+                http.makeRequest(
+                    method = method,
+                    url = url,
+                    headers = headers,
+                    requestBody = buildJsonRequestBody(body),
+                    inputStreamReader = { input ->
+                        JacksonMapper.readerForPatientAndReadings.readValue(input)
+                    },
+                )
+            }
+
+            Protocol.SMS -> {
+                handleSmsRequest<PatientAndReadings>(
+                    method, url, headers, body
+                )
+            }
         }
+    }
 
     /**
      * Uploads a new patient along with associated referrals to the server.
@@ -450,58 +838,105 @@ class RestApi constructor(
      * copy and use the server's version instead when working with this method.
      **
      * @param patient the patient to upload
+     * @param protocol the protocol being used for transmission over the network
      * @return the server's version of the uploaded patient and referrals
      */
-    suspend fun postPatient(patient: PatientAndReferrals): NetworkResult<PatientAndReferrals> =
-        withContext(IO) {
-            val body = JacksonMapper.createWriter<PatientAndReferrals>().writeValueAsBytes(patient)
-            http.makeRequest(
-                method = Http.Method.POST,
-                url = urlManager.postPatient,
-                headers = headers,
-                requestBody = buildJsonRequestBody(body),
-                inputStreamReader = { input ->
-                    JacksonMapper.readerForPatientAndReferrals.readValue(input)
-                },
-            )
+    suspend fun postPatient(
+        patient: PatientAndReferrals,
+        protocol: Protocol
+    ): NetworkResult<PatientAndReferrals> = withContext(IO) {
+        val body = createWriter<PatientAndReferrals>().writeValueAsBytes(patient)
+        val method = Http.Method.POST
+        val url = urlManager.postPatient
+
+        when (protocol) {
+            Protocol.HTTP -> {
+                http.makeRequest(
+                    method = method,
+                    url = url,
+                    headers = headers,
+                    requestBody = buildJsonRequestBody(body),
+                    inputStreamReader = { input ->
+                        JacksonMapper.readerForPatientAndReferrals.readValue(input)
+                    },
+                )
+            }
+
+            Protocol.SMS -> {
+                handleSmsRequest(
+                    method, url, headers, body
+                )
+            }
         }
+    }
 
     /**
      * Uploads form template with user's answers
      **
      * @param mFormTemplate : the form object to upload
+     * @param protocol the protocol being used for transmission over the network
      * @return whether the request was successful or not
      */
-    suspend fun postFormResponse(mFormResponse: FormResponse): NetworkResult<Unit> =
-        withContext(IO) {
-            val gson = GsonBuilder().excludeFieldsWithoutExposeAnnotation().create()
-            val body = gson.toJson(mFormResponse).toByteArray()
-            http.makeRequest(
-                method = Http.Method.POST,
-                url = urlManager.uploadFormResponse,
-                headers = headers,
-                requestBody = buildJsonRequestBody(body),
-                inputStreamReader = {},
-            )
+    suspend fun postFormResponse(
+        mFormResponse: FormResponse,
+        protocol: Protocol
+    ): NetworkResult<Unit> = withContext(IO) {
+        val gson = GsonBuilder().excludeFieldsWithoutExposeAnnotation().create()
+        val body = gson.toJson(mFormResponse).toByteArray()
+        val method = Http.Method.POST
+        val url = urlManager.uploadFormResponse
+
+        when (protocol) {
+            Protocol.HTTP -> {
+                http.makeRequest(
+                    method = method,
+                    url = url,
+                    headers = headers,
+                    requestBody = buildJsonRequestBody(body),
+                    inputStreamReader = {},
+                )
+            }
+
+            Protocol.SMS -> {
+                handleSmsRequest(
+                    method, url, headers, body
+                )
+            }
         }
+    }
+
     /**
      * Uploads a patient's demographic information with the intent of modifying
      * an existing patient already on the server. To upload a new patient
      * use [postPatient].
      **
      * @param patient the patient to upload
+     * @param protocol the protocol being used for transmission over the network
      * @return whether the request was successful or not
      */
-    suspend fun putPatient(patient: Patient): NetworkResult<Unit> =
+    suspend fun putPatient(patient: Patient, protocol: Protocol): NetworkResult<Unit> =
         withContext(IO) {
             val body = JacksonMapper.writerForPatient.writeValueAsBytes(patient)
-            http.makeRequest(
-                method = Http.Method.PUT,
-                url = urlManager.getPatientInfoOnly(patient.id),
-                headers = headers,
-                requestBody = buildJsonRequestBody(body),
-                inputStreamReader = {},
-            )
+            val method = Http.Method.PUT
+            val url = urlManager.getPatientInfoOnly(patient.id)
+
+            when (protocol) {
+                Protocol.HTTP -> {
+                    return@withContext http.makeRequest(
+                        method = method,
+                        url = url,
+                        headers = headers,
+                        requestBody = buildJsonRequestBody(body),
+                        inputStreamReader = {},
+                    )
+                }
+
+                Protocol.SMS -> {
+                    return@withContext handleSmsRequest(
+                        method, url, headers, body
+                    )
+                }
+            }
         }
 
     /**
@@ -509,89 +944,159 @@ class RestApi constructor(
      *
      * @param patient contains the record to be uploaded and the id for the url
      * @param isDrugRecord if it is a drug/medical record
+     * @param protocol the protocol being used for transmission over the network
      * @return whether the request was successful or not
      */
-    suspend fun postMedicalRecord(patient: Patient, isDrugRecord: Boolean): NetworkResult<Unit> =
-        withContext(IO) {
-            val jsonObject = JSONObject()
-            if (isDrugRecord) {
-                jsonObject.put("drugHistory", patient.drugHistory)
-            } else {
-                jsonObject.put("medicalHistory", patient.medicalHistory)
-            }
-            val mediaType = "application/json; charset=utf-8".toMediaType()
-            val requestBody = jsonObject.toString().toRequestBody(mediaType)
-            http.makeRequest(
-                method = Http.Method.POST,
-                url = urlManager.postMedicalRecord(patient.id),
-                headers = headers,
-                requestBody = requestBody,
-                inputStreamReader = {},
-            )
+    suspend fun postMedicalRecord(
+        patient: Patient,
+        isDrugRecord: Boolean,
+        protocol: Protocol
+    ): NetworkResult<Unit> = withContext(IO) {
+        val jsonObject = JSONObject()
+
+        if (isDrugRecord) {
+            jsonObject.put("drugHistory", patient.drugHistory)
+        } else {
+            jsonObject.put("medicalHistory", patient.medicalHistory)
         }
+
+        val mediaType = "application/json; charset=utf-8".toMediaType()
+        val requestBody = jsonObject.toString().toRequestBody(mediaType)
+        val buffer = okio.Buffer()
+        requestBody.writeTo(buffer)
+        val body = buffer.readByteArray()
+        val method = Http.Method.POST
+        val url = urlManager.postMedicalRecord(patient.id)
+
+        when (protocol) {
+            Protocol.HTTP -> {
+                http.makeRequest(
+                    method = method,
+                    url = url,
+                    headers = headers,
+                    requestBody = requestBody,
+                    inputStreamReader = {},
+                )
+            }
+
+            Protocol.SMS -> {
+                handleSmsRequest(
+                    method, url, headers, body
+                )
+            }
+        }
+    }
 
     /**
      * Uploads a new reading for a patient which already exists on the server.
      *
      * @param reading the reading to upload
+     * @param protocol the protocol being used for transmission over the network
      * @return the server's version of the uploaded reading
      */
-    suspend fun postReading(reading: Reading): NetworkResult<Reading> =
+    suspend fun postReading(reading: Reading, protocol: Protocol): NetworkResult<Reading> =
         withContext(IO) {
-            val readingAsBytes = JacksonMapper.writerForReading.writeValueAsBytes(reading)
-            http.makeRequest(
-                method = Http.Method.POST,
-                url = urlManager.postReading,
-                headers = headers,
-                requestBody = buildJsonRequestBody(readingAsBytes),
-                inputStreamReader = { input -> JacksonMapper.readerForReading.readValue(input) },
-            )
+            val body = JacksonMapper.writerForReading.writeValueAsBytes(reading)
+            val method = Http.Method.POST
+            val url = urlManager.postReading
+
+            when (protocol) {
+                Protocol.HTTP -> {
+                    http.makeRequest(
+                        method = method,
+                        url = url,
+                        headers = headers,
+                        requestBody = buildJsonRequestBody(body),
+                        inputStreamReader = { input ->
+                            JacksonMapper.readerForReading.readValue(
+                                input
+                            )
+                        },
+                    )
+                }
+
+                Protocol.SMS -> {
+                    handleSmsRequest(
+                        method, url, headers, body
+                    )
+                }
+            }
         }
 
     /**
      * Uploads a new assessment for a patient which already exists on the server.
      *
      * @param assessment the referral to upload
+     * @param protocol the protocol being used for transmission over the network
      * @return the server's version of the uploaded assessment
      */
-    suspend fun postAssessment(assessment: Assessment): NetworkResult<Assessment> =
-        withContext(IO) {
-            val assessmentAsBytes = JacksonMapper.writerForAssessment.writeValueAsBytes(assessment)
-            http.makeRequest(
-                method = Http.Method.POST,
-                url = urlManager.postAssessment,
-                headers = headers,
-                requestBody = buildJsonRequestBody(assessmentAsBytes),
-                inputStreamReader = { input -> JacksonMapper.readerForAssessment.readValue(input) },
-            )
+    suspend fun postAssessment(
+        assessment: Assessment,
+        protocol: Protocol
+    ): NetworkResult<Assessment> = withContext(IO) {
+        val body = JacksonMapper.writerForAssessment.writeValueAsBytes(assessment)
+        val method = Http.Method.POST
+        val url = urlManager.postAssessment
+
+        when (protocol) {
+            Protocol.HTTP -> {
+                http.makeRequest(
+                    method = method,
+                    url = url,
+                    headers = headers,
+                    requestBody = buildJsonRequestBody(body),
+                    inputStreamReader = { input ->
+                        JacksonMapper.readerForAssessment.readValue(
+                            input
+                        )
+                    },
+                )
+            }
+
+            Protocol.SMS -> {
+                handleSmsRequest(
+                    method, url, headers, body
+                )
+            }
         }
+    }
 
     /**
      * Uploads a new referral for a patient which already exists on the server.
      *
      * @param referral the referral to upload
+     * @param protocol the protocol being used for transmission over the network
      * @return the server's version of the uploaded referral
      */
-    suspend fun postReferral(referral: Referral): NetworkResult<Referral> =
+    suspend fun postReferral(referral: Referral, protocol: Protocol): NetworkResult<Referral> =
         withContext(IO) {
-            val referralAsBytes = JacksonMapper.writerForReferral.writeValueAsBytes(referral)
-            http.makeRequest(
-                method = Http.Method.POST,
-                url = urlManager.postReferral,
-                headers = headers,
-                requestBody = buildJsonRequestBody(referralAsBytes),
-                inputStreamReader = { input -> JacksonMapper.readerForReferral.readValue(input) },
-            )
+            val body = JacksonMapper.writerForReferral.writeValueAsBytes(referral)
+            val method = Http.Method.POST
+            val url = urlManager.postReferral
+
+            when (protocol) {
+                Protocol.HTTP -> {
+                    http.makeRequest(
+                        method = method,
+                        url = url,
+                        headers = headers,
+                        requestBody = buildJsonRequestBody(body),
+                        inputStreamReader = { input ->
+                            JacksonMapper.readerForReferral.readValue(
+                                input
+                            )
+                        },
+                    )
+                }
+
+                Protocol.SMS -> {
+                    handleSmsRequest(
+                        method, url, headers, body
+                    )
+                }
+            }
         }
 
-    /**
-     * Sends info for creating a pregnancy record for specific patient
-     * Has the ability to send record with pregnancy start AND end date if full record is being
-     * sent to server.
-     *
-     * @param patient the patient for gestationalAge, and id, and in some cases the end date
-     * @return whether the request was successful or not and response from server
-     */
     object PregnancyResponse {
         var id: Int? = null
         var gestationalAgeUnit: String? = null
@@ -602,115 +1107,195 @@ class RestApi constructor(
         var pregnancyStartDate: Int? = null
     }
 
-    suspend fun postPregnancy(patient: Patient): NetworkResult<PregnancyResponse> =
-        withContext(IO) {
-            val jsonObject = JSONObject()
+    /**
+     * Sends info for creating a pregnancy record for specific patient
+     * Has the ability to send record with pregnancy start AND end date if full record is being
+     * sent to server.
+     *
+     * @param patient the patient for gestationalAge, and id, and in some cases the end date
+     * @param protocol the protocol being used for transmission over the network
+     * @return whether the request was successful or not and response from server
+     */
+    suspend fun postPregnancy(
+        patient: Patient,
+        protocol: Protocol
+    ): NetworkResult<PregnancyResponse> = withContext(IO) {
+        val jsonObject = JSONObject()
 
-            val units = if (patient.gestationalAge is GestationalAgeMonths) {
-                UNIT_VALUE_MONTHS
-            } else {
-                UNIT_VALUE_WEEKS
+        val units = if (patient.gestationalAge is GestationalAgeMonths) {
+            UNIT_VALUE_MONTHS
+        } else {
+            UNIT_VALUE_WEEKS
+        }
+
+        val startDate = patient.gestationalAge?.timestamp.toString()
+
+        jsonObject.put("gestationalAgeUnit", units)
+        jsonObject.put("pregnancyStartDate", startDate)
+
+        val mediaType = "application/json; charset=utf-8".toMediaType()
+        val requestBody = jsonObject.toString().toRequestBody(mediaType)
+        val buffer = okio.Buffer()
+        requestBody.writeTo(buffer)
+        val body = buffer.readByteArray()
+        val method = Http.Method.POST
+        val url = urlManager.postPregnancy(patient.id)
+
+        when (protocol) {
+            Protocol.HTTP -> {
+                http.makeRequest(method = method,
+                    url = url,
+                    headers = headers,
+                    requestBody = requestBody,
+                    inputStreamReader = { JacksonMapper.mapper.readValue(it) })
             }
 
-            val startDate = patient.gestationalAge?.timestamp.toString()
-            jsonObject.put("gestationalAgeUnit", units)
-            jsonObject.put("pregnancyStartDate", startDate)
-
-            val mediaType = "application/json; charset=utf-8".toMediaType()
-            val requestBody = jsonObject.toString().toRequestBody(mediaType)
-
-            http.makeRequest(
-                method = Http.Method.POST,
-                url = urlManager.postPregnancy(patient.id),
-                headers = headers,
-                requestBody = requestBody,
-                inputStreamReader = { JacksonMapper.mapper.readValue(it) }
-            )
+            Protocol.SMS -> {
+                handleSmsRequest(
+                    method, url, headers, body
+                )
+            }
         }
+    }
 
-    suspend fun putPregnancy(patient: Patient): NetworkResult<PregnancyResponse> =
+    suspend fun putPregnancy(
+        patient: Patient,
+        protocol: Protocol
+    ): NetworkResult<PregnancyResponse> = withContext(IO) {
+        val jsonObject = JSONObject()
+
+        jsonObject.put("pregnancyEndDate", patient.prevPregnancyEndDate.toString())
+        jsonObject.put("pregnancyOutcome", patient.prevPregnancyOutcome ?: "")
+
+        val mediaType = "application/json; charset=utf-8".toMediaType()
+        val requestBody = jsonObject.toString().toRequestBody(mediaType)
+        val buffer = okio.Buffer()
+        requestBody.writeTo(buffer)
+        val body = buffer.readByteArray()
+        val method = Http.Method.PUT
+        val url = urlManager.putPregnancy(patient.pregnancyId.toString())
+
+        when (protocol) {
+            Protocol.HTTP -> {
+                http.makeRequest(method = method,
+                    url = url,
+                    headers = headers,
+                    requestBody = requestBody,
+                    inputStreamReader = { JacksonMapper.mapper.readValue(it) })
+            }
+
+            Protocol.SMS -> {
+                handleSmsRequest(
+                    method, url, headers, body
+                )
+            }
+        }
+    }
+
+    suspend fun postUserPhoneNumber(
+        userID: Int,
+        phoneNumber: String,
+        protocol: Protocol
+    ): NetworkResult<Unit> = withContext(IO) {
+        val jsonObject = JSONObject()
+
+        jsonObject.put("newPhoneNumber", phoneNumber)
+        jsonObject.put("currentPhoneNumber", "")
+        jsonObject.put("oldPhoneNumber", "")
+
+        val mediaType = "application/json; charset=utf-8".toMediaType()
+        val requestBody = jsonObject.toString().toRequestBody(mediaType)
+        val buffer = okio.Buffer()
+        requestBody.writeTo(buffer)
+        val body = buffer.readByteArray()
+        val method = Http.Method.POST
+        val url = urlManager.postUserPhoneNumber(userID)
+
+        when (protocol) {
+            Protocol.HTTP -> {
+                http.makeRequest(method = method,
+                    url = url,
+                    headers = headers,
+                    requestBody = requestBody,
+                    inputStreamReader = {})
+            }
+
+            Protocol.SMS -> {
+                handleSmsRequest(
+                    method, url, headers, body
+                )
+            }
+        }
+    }
+
+    suspend fun getAllRelayPhoneNumbers(protocol: Protocol): NetworkResult<RelayPhoneNumberResponse> =
         withContext(IO) {
-            val jsonObject = JSONObject()
+            val method = Http.Method.GET
+            val url = urlManager.getAllRelayPhoneNumbers()
 
-            jsonObject.put("pregnancyEndDate", patient.prevPregnancyEndDate.toString())
-            jsonObject.put("pregnancyOutcome", patient.prevPregnancyOutcome ?: "")
+            when (protocol) {
+                Protocol.HTTP -> {
+                    http.makeRequest(method = method,
+                        url = url,
+                        headers = headers,
+                        inputStreamReader = {
+                            JacksonMapper.readerForRelayPhoneNumberResponse.readValue(
+                                it
+                            )
+                        })
+                }
 
-            val mediaType = "application/json; charset=utf-8".toMediaType()
-            val requestBody = jsonObject.toString().toRequestBody(mediaType)
-
-            http.makeRequest(
-                method = Http.Method.PUT,
-                url = urlManager.putPregnancy(patient.pregnancyId.toString()),
-                headers = headers,
-                requestBody = requestBody,
-                inputStreamReader = { JacksonMapper.mapper.readValue(it) }
-            )
+                Protocol.SMS -> {
+                    handleSmsRequest(
+                        method, url, headers
+                    )
+                }
+            }
         }
 
-    suspend fun postUserPhoneNumber(userID: Int, phoneNumber: String): NetworkResult<Unit> =
-        withContext(IO) {
-            val jsonObject = JSONObject()
-            jsonObject.put("newPhoneNumber", phoneNumber)
-            jsonObject.put("currentPhoneNumber", "")
-            jsonObject.put("oldPhoneNumber", "")
-            val mediaType = "application/json; charset=utf-8".toMediaType()
-            val requestBody = jsonObject.toString().toRequestBody(mediaType)
-            http.makeRequest(
-                method = Http.Method.POST,
-                url = urlManager.postUserPhoneNumber(userID),
-                headers = headers,
-                requestBody = requestBody,
-                inputStreamReader = {}
-            )
-        }
+    suspend fun getCurrentSmsKey(userID: Int): NetworkResult<SmsKeyResponse> = withContext(IO) {
+        val method = Http.Method.GET
+        val url = urlManager.smsKey(userID)
 
-    suspend fun getAllRelayPhoneNumbers(): NetworkResult<RelayPhoneNumberResponse> =
-        withContext(IO) {
-            http.makeRequest(
-                method = Http.Method.GET,
-                url = urlManager.getAllRelayPhoneNumbers(),
-                headers = headers,
-                inputStreamReader = { JacksonMapper.readerForRelayPhoneNumberResponse.readValue(it) }
-            )
-        }
+        http.makeRequest(method = method,
+            url = url,
+            headers = headers,
+            inputStreamReader = { JacksonMapper.readerSmsKey.readValue(it) })
+    }
 
-    suspend fun getCurrentSmsKey(userID: Int): NetworkResult<SmsKeyResponse> =
-        withContext(IO) {
-            http.makeRequest(
-                method = Http.Method.GET,
-                url = urlManager.smsKey(userID),
-                headers = headers,
-                inputStreamReader = { JacksonMapper.readerSmsKey.readValue(it) }
-            )
-        }
+    suspend fun refreshSmsKey(userID: Int): NetworkResult<SmsKeyResponse> = withContext(IO) {
+        val jsonObject = JSONObject()
 
-    suspend fun refreshSmsKey(userID: Int): NetworkResult<SmsKeyResponse> =
-        withContext(IO) {
-            val jsonObject = JSONObject()
-            val mediaType = "application/json; charset=utf-8".toMediaType()
-            val requestBody = jsonObject.toString().toRequestBody(mediaType)
-            http.makeRequest(
-                method = Http.Method.PUT,
-                url = urlManager.smsKey(userID),
-                headers = headers,
-                requestBody = requestBody,
-                inputStreamReader = { JacksonMapper.readerSmsKey.readValue(it) }
-            )
-        }
+        val mediaType = "application/json; charset=utf-8".toMediaType()
+        val requestBody = jsonObject.toString().toRequestBody(mediaType)
+        val buffer = okio.Buffer()
+        requestBody.writeTo(buffer)
+        val method = Http.Method.PUT
+        val url = urlManager.smsKey(userID)
 
-    suspend fun getNewSmsKey(userID: Int): NetworkResult<SmsKeyResponse> =
-        withContext(IO) {
-            val jsonObject = JSONObject()
-            val mediaType = "application/json; charset=utf-8".toMediaType()
-            val requestBody = jsonObject.toString().toRequestBody(mediaType)
-            http.makeRequest(
-                method = Http.Method.POST,
-                url = urlManager.smsKey(userID),
-                headers = headers,
-                requestBody = requestBody,
-                inputStreamReader = { JacksonMapper.readerSmsKey.readValue(it) }
-            )
-        }
+        http.makeRequest(method = method,
+            url = url,
+            headers = headers,
+            requestBody = requestBody,
+            inputStreamReader = { JacksonMapper.readerSmsKey.readValue(it) })
+    }
+
+    suspend fun getNewSmsKey(userID: Int): NetworkResult<SmsKeyResponse> = withContext(IO) {
+        val jsonObject = JSONObject()
+
+        val mediaType = "application/json; charset=utf-8".toMediaType()
+        val requestBody = jsonObject.toString().toRequestBody(mediaType)
+        val buffer = okio.Buffer()
+        requestBody.writeTo(buffer)
+        val method = Http.Method.POST
+        val url = urlManager.smsKey(userID)
+
+        http.makeRequest(method = method,
+            url = url,
+            headers = headers,
+            requestBody = requestBody,
+            inputStreamReader = { JacksonMapper.readerSmsKey.readValue(it) })
+    }
 
     /**
      * Sends a request to the server to associate the patient with a given [id]
@@ -721,19 +1306,33 @@ class RestApi constructor(
      * the [getAllPatients] method.
      *
      * @param id id of the patient to associate
+     * @param protocol the protocol being used for transmission over the network
      * @return whether the request was successful or not
      */
-    suspend fun associatePatientToUser(patientId: String): NetworkResult<Unit> =
+    suspend fun associatePatientToUser(patientId: String, protocol: Protocol): NetworkResult<Unit> =
         withContext(IO) {
             // more efficient to just construct the bytes directly
             val body = "{\"patientId\":\"$patientId\"}".encodeToByteArray()
-            http.makeRequest(
-                method = Http.Method.POST,
-                url = urlManager.userPatientAssociation,
-                headers = headers,
-                requestBody = buildJsonRequestBody(body),
-                inputStreamReader = {},
-            ).map { }
+            val method = Http.Method.POST
+            val url = urlManager.userPatientAssociation
+
+            when (protocol) {
+                Protocol.HTTP -> {
+                    return@withContext http.makeRequest(
+                        method = method,
+                        url = url,
+                        headers = headers,
+                        requestBody = buildJsonRequestBody(body),
+                        inputStreamReader = {},
+                    ).map { }
+                }
+
+                Protocol.SMS -> {
+                    return@withContext handleSmsRequest(
+                        method, url, headers, body
+                    )
+                }
+            }
         }
 
     /**
@@ -794,63 +1393,115 @@ class RestApi constructor(
         patientsToUpload: List<Patient>,
         lastSyncTimestamp: BigInteger = BigInteger.valueOf(1L),
         patientChannel: SendChannel<Patient>,
-        reportProgressBlock: suspend (Int, Int) -> Unit,
-    ): PatientSyncResult =
-        withContext(IO) {
-            val body = createWriter<List<Patient>>().writeValueAsBytes(patientsToUpload)
-            var totalPatientsDownloaded = 0
-            var errors: String? = null
-            var failedParse = false
-            val networkResult = http.makeRequest(
-                method = Http.Method.POST,
-                url = urlManager.getPatientsSync(lastSyncTimestamp),
-                headers = headers,
-                requestBody = buildJsonRequestBody(body),
-            ) { inputStream ->
-                try {
-                    val reader = JacksonMapper.readerForPatient
-                    reader.createParser(inputStream).use { parser ->
-                        parser.parseObject {
-                            when (currentName) {
-                                PatientSyncField.PATIENTS.text -> {
-                                    parseObjectArray<Patient>(reader) {
-                                        patientChannel.send(it)
-                                        totalPatientsDownloaded++
-                                        reportProgressBlock(
-                                            totalPatientsDownloaded,
-                                            totalPatientsDownloaded
-                                        )
+        protocol: Protocol,
+        reportProgressBlock: suspend (Int, Int) -> Unit
+    ): PatientSyncResult = withContext(IO) {
+        val body = createWriter<List<Patient>>().writeValueAsBytes(patientsToUpload)
+        val method = Http.Method.POST
+        val url = urlManager.getPatientsSync(lastSyncTimestamp)
+
+        var totalPatientsDownloaded = 0
+        var errors: String? = null
+
+        val result = when (protocol) {
+            Protocol.HTTP -> {
+                var failedParse = false
+                http.makeRequest(
+                    method = method,
+                    url = url,
+                    headers = headers,
+                    requestBody = buildJsonRequestBody(body),
+                ) { inputStream ->
+                    try {
+                        val reader = JacksonMapper.readerForPatient
+                        reader.createParser(inputStream).use { parser ->
+                            parser.parseObject {
+                                when (currentName) {
+                                    PatientSyncField.PATIENTS.text -> {
+                                        parseObjectArray<Patient>(reader) {
+                                            patientChannel.send(it)
+                                            totalPatientsDownloaded++
+                                            reportProgressBlock(
+                                                totalPatientsDownloaded, totalPatientsDownloaded
+                                            )
+                                        }
+                                        patientChannel.close()
                                     }
-                                    patientChannel.close()
-                                }
-                                PatientSyncField.ERRORS.text -> {
-                                    // TODO: Parse array of objects (refer to issue #62)
-                                    nextToken()
-                                    errors = readValueAsTree<JsonNode>().toPrettyString()
+
+                                    PatientSyncField.ERRORS.text -> {
+                                        // TODO: Parse array of objects (refer to issue #62)
+                                        nextToken()
+                                        errors = readValueAsTree<JsonNode>().toPrettyString()
+                                    }
                                 }
                             }
                         }
+                    } catch (e: Exception) {
+                        Log.e(TAG, e.toString())
+                        failedParse = true
                     }
-                } catch (e: Exception) {
-                    Log.e(TAG, e.toString())
-                    failedParse = true
-                }
-            }.also {
-                if (it is NetworkResult.Success) {
-                    // In case we return early, this needs to be closed. These is an idempotent
-                    // operation, so it doesn't do anything on Successes where we don't return early
-                    if (failedParse) {
-                        patientChannel.close(SyncException("patient sync response parsing had failure(s)"))
+                }.also {
+                    if (it is NetworkResult.Success) {
+                        // In case we return early, this needs to be closed. These is an idempotent
+                        // operation, so it doesn't do anything on Successes where we don't return early
+                        if (failedParse) {
+                            patientChannel.close(SyncException("patient sync response parsing had failure(s)"))
+                        } else {
+                            patientChannel.close()
+                        }
                     } else {
-                        patientChannel.close()
+                        // Fail the channel if not successful (note: idempotent operation).
+                        patientChannel.close(SyncException("patient download wasn't done properly"))
                     }
-                } else {
-                    // Fail the channel if not successful (note: idempotent operation).
-                    patientChannel.close(SyncException("patient download wasn't done properly"))
                 }
             }
-            PatientSyncResult(networkResult, patientsToUpload.size, totalPatientsDownloaded, errors)
+
+            Protocol.SMS -> {
+                try {
+                    val networkResult = handleSmsRequest<List<Patient>>(
+                        method, url, headers
+                    )
+
+                    val newNetworkResult: NetworkResult<Unit> = when (networkResult) {
+                        is NetworkResult.Success -> {
+                            for (patient in networkResult.value) {
+                                totalPatientsDownloaded++
+                                patientChannel.send(patient)
+                            }
+                            NetworkResult.Success(
+                                Unit, networkResult.statusCode
+                            )
+                        }
+
+                        is NetworkResult.Failure -> {
+                            errors = networkResult.body.toString()
+                            patientChannel.close(SyncException("failed to download all associated patients"))
+                            NetworkResult.Failure(
+                                networkResult.body, networkResult.statusCode
+                            )
+                        }
+
+                        is NetworkResult.NetworkException -> {
+                            errors = networkResult.cause.toString()
+                            patientChannel.close(SyncException("failed to download all associated patients"))
+                            NetworkResult.NetworkException(networkResult.cause)
+                        }
+                    }
+
+                    newNetworkResult
+                } catch (e: Exception) {
+                    val syncException = SyncException("failed to parse all associated patients")
+                    errors = e.message
+
+                    patientChannel.close(syncException)
+
+                    NetworkResult.NetworkException(syncException)
+                }
+            }
         }
+
+        PatientSyncResult(result, patientsToUpload.size, totalPatientsDownloaded, errors)
+    }
 
     /**
      * Syncs the readings on the device with the server, where [lastSyncTimestamp] is the last time
@@ -884,71 +1535,115 @@ class RestApi constructor(
         readingsToUpload: List<Reading>,
         lastSyncTimestamp: BigInteger = BigInteger.valueOf(1L),
         readingChannel: SendChannel<Reading>,
-        reportProgressBlock: suspend (Int, Int) -> Unit,
+        protocol: Protocol,
+        reportProgressBlock: suspend (Int, Int) -> Unit
     ): ReadingSyncResult = withContext(IO) {
         val body = createWriter<List<Reading>>().writeValueAsBytes(readingsToUpload)
-        var totalReadingsDownloaded = 0
-        var failedParse = false
-        val networkResult = http.makeRequest(
-            method = Http.Method.POST,
-            url = urlManager.getReadingsSync(lastSyncTimestamp),
-            headers = headers,
-            requestBody = buildJsonRequestBody(body)
-        ) { inputStream ->
-            Log.d(TAG, "Parsing readings now")
+        val method = Http.Method.POST
+        val url = urlManager.getReadingsSync(lastSyncTimestamp)
 
-            try {
-                val readerForReading = JacksonMapper.createReader<Reading>()
-                readerForReading.createParser(inputStream).use { parser ->
-                    var totalDownloaded = 0
-                    var totalToDownload = 0
-                    parser.parseObject {
-                        when (currentName) {
-                            ReadingSyncField.READINGS.text -> {
-                                Log.d(TAG, "Starting to parse readings array")
-                                parseObjectArray<Reading>(readerForReading) {
-                                    readingChannel.send(it)
-                                    totalDownloaded++
-                                    totalReadingsDownloaded++
-                                    reportProgressBlock(totalDownloaded, totalToDownload)
+        var totalReadingsDownloaded = 0
+
+        val result = when (protocol) {
+            Protocol.HTTP -> {
+                var failedParse = false
+                http.makeRequest(
+                    method = method,
+                    url = url,
+                    headers = headers,
+                    requestBody = buildJsonRequestBody(body)
+                ) { inputStream ->
+                    Log.d(TAG, "Parsing readings now")
+
+                    try {
+                        val readerForReading = JacksonMapper.createReader<Reading>()
+                        readerForReading.createParser(inputStream).use { parser ->
+                            var totalDownloaded = 0
+                            parser.parseObject {
+                                when (currentName) {
+                                    ReadingSyncField.READINGS.text -> {
+                                        Log.d(TAG, "Starting to parse readings array")
+                                        parseObjectArray<Reading>(readerForReading) {
+                                            readingChannel.send(it)
+                                            totalDownloaded++
+                                            totalReadingsDownloaded++
+                                            reportProgressBlock(totalDownloaded, totalDownloaded)
+                                        }
+                                        readingChannel.close()
+                                    }
                                 }
-                                readingChannel.close()
                             }
                         }
+                    } catch (e: Exception) {
+                        Log.e(TAG, e.toString())
+                        failedParse = true
+                    }
+
+                    withContext(Dispatchers.Main) {
+                        Log.d(
+                            TAG, "DEBUG: Downloaded $totalReadingsDownloaded readings."
+                        )
+                    }
+                    Unit
+                }.also {
+                    if (it is NetworkResult.Success) {
+                        // In case we return early, these need to be closed. These are idempotent
+                        // operations, so it doesn't do anything on Successes where we don't return
+                        // early.
+                        if (failedParse) {
+                            readingChannel.close(SyncException("readings sync response parsing had failure(s)"))
+                        } else {
+                            readingChannel.close()
+                        }
+                    } else {
+                        // Fail these channels if not successful (note: idempotent operations)
+                        readingChannel.close(SyncException("failed to sync readings"))
                     }
                 }
-            } catch (e: Exception) {
-                Log.e(TAG, e.toString())
-                failedParse = true
             }
 
-            withContext(Dispatchers.Main) {
-                Log.d(
-                    TAG,
-                    "DEBUG: Downloaded $totalReadingsDownloaded readings."
-                )
-            }
-            Unit
-        }.also {
-            if (it is NetworkResult.Success) {
-                // In case we return early, these need to be closed. These are idempotent
-                // operations, so it doesn't do anything on Successes where we don't return
-                // early.
-                if (failedParse) {
-                    readingChannel.close(SyncException("readings sync response parsing had failure(s)"))
-                } else {
-                    readingChannel.close()
+            Protocol.SMS -> {
+                try {
+                    val networkResult = handleSmsRequest<List<Reading>>(
+                        method, url, headers
+                    )
+
+                    val newNetworkResult: NetworkResult<Unit> = when (networkResult) {
+                        is NetworkResult.Success -> {
+                            for (reading in networkResult.value) {
+                                totalReadingsDownloaded++
+                                readingChannel.send(reading)
+                            }
+                            NetworkResult.Success(
+                                Unit, networkResult.statusCode
+                            )
+                        }
+
+                        is NetworkResult.Failure -> {
+                            readingChannel.close(SyncException("failed to download all associated readings"))
+                            NetworkResult.Failure(
+                                networkResult.body, networkResult.statusCode
+                            )
+                        }
+
+                        is NetworkResult.NetworkException -> {
+                            NetworkResult.NetworkException(networkResult.cause)
+                        }
+                    }
+
+                    newNetworkResult
+                } catch (e: Exception) {
+                    val syncException = SyncException("failed to parse all associated readings")
+
+                    readingChannel.close(syncException)
+
+                    NetworkResult.NetworkException(syncException)
                 }
-            } else {
-                // Fail these channels if not successful (note: idempotent operations)
-                readingChannel.close(SyncException("failed to sync readings"))
             }
         }
 
         ReadingSyncResult(
-            networkResult,
-            readingsToUpload.size,
-            totalReadingsDownloaded
+            result, readingsToUpload.size, totalReadingsDownloaded
         )
     }
 
@@ -976,69 +1671,116 @@ class RestApi constructor(
         referralsToUpload: List<Referral>,
         lastSyncTimestamp: BigInteger = BigInteger.valueOf(1L),
         referralChannel: SendChannel<Referral>,
-        reportProgressBlock: suspend (Int, Int) -> Unit,
-    ): ReferralSyncResult =
-        withContext(IO) {
-            val body = createWriter<List<Referral>>().writeValueAsBytes(referralsToUpload)
-            var totalReferralsDownloaded = 0
-            var errors: String? = null
-            var failedParse = false
-            val networkResult = http.makeRequest(
-                method = Http.Method.POST,
-                url = urlManager.getReferralsSync(lastSyncTimestamp),
-                headers = headers,
-                requestBody = buildJsonRequestBody(body),
-            ) { inputStream ->
+        protocol: Protocol,
+        reportProgressBlock: suspend (Int, Int) -> Unit
+    ): ReferralSyncResult = withContext(IO) {
+        val body = createWriter<List<Referral>>().writeValueAsBytes(referralsToUpload)
+        val method = Http.Method.POST
+        val url = urlManager.getReferralsSync(lastSyncTimestamp)
 
-                try {
-                    val reader = JacksonMapper.readerForReferral
-                    reader.createParser(inputStream).use { parser ->
-                        parser.parseObject {
-                            when (currentName) {
-                                ReferralSyncField.REFERRALS.text -> {
-                                    parseObjectArray<Referral>(reader) {
-                                        referralChannel.send(it)
-                                        totalReferralsDownloaded++
-                                        reportProgressBlock(
-                                            totalReferralsDownloaded,
-                                            totalReferralsDownloaded
-                                        )
+        var totalReferralsDownloaded = 0
+        var errors: String? = null
+
+        val result = when (protocol) {
+            Protocol.HTTP -> {
+                var failedParse = false
+                http.makeRequest(
+                    method = method,
+                    url = url,
+                    headers = headers,
+                    requestBody = buildJsonRequestBody(body),
+                ) { inputStream ->
+
+                    try {
+                        val reader = JacksonMapper.readerForReferral
+                        reader.createParser(inputStream).use { parser ->
+                            parser.parseObject {
+                                when (currentName) {
+                                    ReferralSyncField.REFERRALS.text -> {
+                                        parseObjectArray<Referral>(reader) {
+                                            referralChannel.send(it)
+                                            totalReferralsDownloaded++
+                                            reportProgressBlock(
+                                                totalReferralsDownloaded, totalReferralsDownloaded
+                                            )
+                                        }
+                                        referralChannel.close()
                                     }
-                                    referralChannel.close()
-                                }
-                                ReferralSyncField.ERRORS.text -> {
-                                    // TODO: Parse array of objects (refer to issue #62)
-                                    nextToken()
-                                    errors = readValueAsTree<JsonNode>().toPrettyString()
+
+                                    ReferralSyncField.ERRORS.text -> {
+                                        // TODO: Parse array of objects (refer to issue #62)
+                                        nextToken()
+                                        errors = readValueAsTree<JsonNode>().toPrettyString()
+                                    }
                                 }
                             }
                         }
+                    } catch (e: Exception) {
+                        Log.e(TAG, e.toString())
+                        failedParse = true
                     }
-                } catch (e: Exception) {
-                    Log.e(TAG, e.toString())
-                    failedParse = true
-                }
-            }.also {
-                if (it is NetworkResult.Success) {
-                    // In case we return early, this needs to be closed. These is an idempotent
-                    // operation, so it doesn't do anything on Successes where we don't return early
-                    if (failedParse) {
-                        referralChannel.close(SyncException("referrals sync response parsing had failure(s)"))
+                }.also {
+                    if (it is NetworkResult.Success) {
+                        // In case we return early, this needs to be closed. These is an idempotent
+                        // operation, so it doesn't do anything on Successes where we don't return early
+                        if (failedParse) {
+                            referralChannel.close(SyncException("referrals sync response parsing had failure(s)"))
+                        } else {
+                            referralChannel.close()
+                        }
                     } else {
-                        referralChannel.close()
+                        // Fail the channel if not successful (note: idempotent operation).
+                        referralChannel.close(SyncException("referral download wasn't done properly"))
                     }
-                } else {
-                    // Fail the channel if not successful (note: idempotent operation).
-                    referralChannel.close(SyncException("referral download wasn't done properly"))
                 }
             }
-            ReferralSyncResult(
-                networkResult,
-                referralsToUpload.size,
-                totalReferralsDownloaded,
-                errors
-            )
+
+            Protocol.SMS -> {
+                try {
+                    val networkResult = handleSmsRequest<List<Referral>>(
+                        method, url, headers
+                    )
+
+                    val newNetworkResult: NetworkResult<Unit> = when (networkResult) {
+                        is NetworkResult.Success -> {
+                            for (referral in networkResult.value) {
+                                totalReferralsDownloaded++
+                                referralChannel.send(referral)
+                            }
+                            NetworkResult.Success(
+                                Unit, networkResult.statusCode
+                            )
+                        }
+
+                        is NetworkResult.Failure -> {
+                            errors = networkResult.body.toString()
+                            referralChannel.close(SyncException("failed to download all associated referrals"))
+                            NetworkResult.Failure(
+                                networkResult.body, networkResult.statusCode
+                            )
+                        }
+
+                        is NetworkResult.NetworkException -> {
+                            errors = networkResult.cause.toString()
+                            referralChannel.close(SyncException("failed to download all associated referrals"))
+                            NetworkResult.NetworkException(networkResult.cause)
+                        }
+                    }
+
+                    newNetworkResult
+                } catch (e: Exception) {
+                    val syncException = SyncException("failed to parse all associated referrals")
+                    errors = e.message
+
+                    referralChannel.close(syncException)
+
+                    NetworkResult.NetworkException(syncException)
+                }
+            }
         }
+
+        ReferralSyncResult(result, referralsToUpload.size, totalReferralsDownloaded, errors)
+    }
 
     /**
      * Syncs the assessments on the device with the server, where [lastSyncTimestamp] is the last time
@@ -1064,69 +1806,119 @@ class RestApi constructor(
         assessmentsToUpload: List<Assessment>,
         lastSyncTimestamp: BigInteger = BigInteger.valueOf(1L),
         assessmentChannel: SendChannel<Assessment>,
-        reportProgressBlock: suspend (Int, Int) -> Unit,
-    ): AssessmentSyncResult =
-        withContext(IO) {
-            val body = createWriter<List<Assessment>>().writeValueAsBytes(assessmentsToUpload)
-            var totalAssessmentsDownloaded = 0
-            var errors: String? = null
-            var failedParse = false
-            val networkResult = http.makeRequest(
-                method = Http.Method.POST,
-                url = urlManager.getAssessmentsSync(lastSyncTimestamp),
-                headers = headers,
-                requestBody = buildJsonRequestBody(body),
-            ) { inputStream ->
+        protocol: Protocol,
+        reportProgressBlock: suspend (Int, Int) -> Unit
+    ): AssessmentSyncResult = withContext(IO) {
+        val body = createWriter<List<Assessment>>().writeValueAsBytes(assessmentsToUpload)
+        val method = Http.Method.POST
+        val url = urlManager.getAssessmentsSync(lastSyncTimestamp)
 
-                try {
-                    val reader = JacksonMapper.readerForAssessment
-                    reader.createParser(inputStream).use { parser ->
-                        parser.parseObject {
-                            when (currentName) {
-                                AssessmentSyncField.ASSESSMENTS.text -> {
-                                    parseObjectArray<Assessment>(reader) {
-                                        assessmentChannel.send(it)
-                                        totalAssessmentsDownloaded++
-                                        reportProgressBlock(
-                                            totalAssessmentsDownloaded,
-                                            totalAssessmentsDownloaded
-                                        )
+        var totalAssessmentsDownloaded = 0
+        var errors: String? = null
+
+        val result = when (protocol) {
+            Protocol.HTTP -> {
+                var failedParse = false
+                http.makeRequest(
+                    method = method,
+                    url = url,
+                    headers = headers,
+                    requestBody = buildJsonRequestBody(body),
+                ) { inputStream ->
+
+                    try {
+                        val reader = JacksonMapper.readerForAssessment
+                        reader.createParser(inputStream).use { parser ->
+                            parser.parseObject {
+                                when (currentName) {
+                                    AssessmentSyncField.ASSESSMENTS.text -> {
+                                        parseObjectArray<Assessment>(reader) {
+                                            assessmentChannel.send(it)
+                                            totalAssessmentsDownloaded++
+                                            reportProgressBlock(
+                                                totalAssessmentsDownloaded,
+                                                totalAssessmentsDownloaded
+                                            )
+                                        }
+                                        assessmentChannel.close()
                                     }
-                                    assessmentChannel.close()
-                                }
-                                AssessmentSyncField.ERRORS.text -> {
-                                    // TODO: Parse array of objects (refer to issue #62)
-                                    nextToken()
-                                    errors = readValueAsTree<JsonNode>().toPrettyString()
+
+                                    AssessmentSyncField.ERRORS.text -> {
+                                        // TODO: Parse array of objects (refer to issue #62)
+                                        nextToken()
+                                        errors = readValueAsTree<JsonNode>().toPrettyString()
+                                    }
                                 }
                             }
                         }
+                    } catch (e: Exception) {
+                        Log.e(TAG, e.toString())
+                        failedParse = true
                     }
-                } catch (e: Exception) {
-                    Log.e(TAG, e.toString())
-                    failedParse = true
-                }
-            }.also {
-                if (it is NetworkResult.Success) {
-                    // In case we return early, this needs to be closed. These is an idempotent
-                    // operation, so it doesn't do anything on Successes where we don't return early
-                    if (failedParse) {
-                        assessmentChannel.close(SyncException("assessments sync response parsing had failure(s)"))
+                }.also {
+                    if (it is NetworkResult.Success) {
+                        // In case we return early, this needs to be closed. These is an idempotent
+                        // operation, so it doesn't do anything on Successes where we don't return early
+                        if (failedParse) {
+                            assessmentChannel.close(SyncException("assessments sync response parsing had failure(s)"))
+                        } else {
+                            assessmentChannel.close()
+                        }
                     } else {
-                        assessmentChannel.close()
+                        // Fail the channel if not successful (note: idempotent operation).
+                        assessmentChannel.close(SyncException("assessment download wasn't done properly"))
                     }
-                } else {
-                    // Fail the channel if not successful (note: idempotent operation).
-                    assessmentChannel.close(SyncException("assessment download wasn't done properly"))
                 }
             }
-            AssessmentSyncResult(
-                networkResult,
-                assessmentsToUpload.size,
-                totalAssessmentsDownloaded,
-                errors
-            )
+
+            Protocol.SMS -> {
+                try {
+                    val networkResult = handleSmsRequest<List<Assessment>>(
+                        method, url, headers
+                    )
+
+                    val newNetworkResult: NetworkResult<Unit> = when (networkResult) {
+                        is NetworkResult.Success -> {
+                            for (assessment in networkResult.value) {
+                                totalAssessmentsDownloaded++
+                                assessmentChannel.send(assessment)
+                            }
+                            NetworkResult.Success(
+                                Unit, networkResult.statusCode
+                            )
+                        }
+
+                        is NetworkResult.Failure -> {
+                            errors = networkResult.body.toString()
+                            assessmentChannel.close(SyncException("failed to download all associated assessments"))
+                            NetworkResult.Failure(
+                                networkResult.body, networkResult.statusCode
+                            )
+                        }
+
+                        is NetworkResult.NetworkException -> {
+                            errors = networkResult.cause.toString()
+                            assessmentChannel.close(SyncException("failed to download all associated assessments"))
+                            NetworkResult.NetworkException(networkResult.cause)
+                        }
+                    }
+
+                    newNetworkResult
+                } catch (e: Exception) {
+                    val syncException = SyncException("failed to parse all associated assessments")
+                    errors = e.message
+
+                    assessmentChannel.close(syncException)
+
+                    NetworkResult.NetworkException(syncException)
+                }
+            }
         }
+
+        AssessmentSyncResult(
+            result, assessmentsToUpload.size, totalAssessmentsDownloaded, errors
+        )
+    }
 
     /**
      * Get all and sync Health Facilities from the server with.
@@ -1146,44 +1938,100 @@ class RestApi constructor(
     suspend fun syncHealthFacilities(
         healthFacilityChannel: SendChannel<HealthFacility>,
         lastSyncTimestamp: BigInteger = BigInteger.valueOf(1L),
-        reportProgressBlock: suspend (Int, Int) -> Unit,
+        protocol: Protocol,
+        reportProgressBlock: suspend (Int, Int) -> Unit
     ): HealthFacilitySyncResult = withContext(IO) {
+        val method = Http.Method.GET
+        val url = urlManager.healthFacilities
+
         var totalHealthFacilitiesDownloaded = 0
-        var failedParse = false
-        val networkResult = http.makeRequest(
-            method = Http.Method.GET,
-            url = urlManager.healthFacilities,
-            headers = headers,
-            inputStreamReader = { inputStream ->
+
+        val result = when (protocol) {
+            Protocol.HTTP -> {
+                var failedParse = false
+                http.makeRequest(
+                    method = method,
+                    url = url,
+                    headers = headers,
+                    inputStreamReader = { inputStream ->
+                        try {
+                            val reader = JacksonMapper.readerForHealthFacility
+                            reader.readValues<HealthFacility>(inputStream).use { iterator ->
+                                iterator.forEachJackson {
+                                    healthFacilityChannel.send(it)
+                                    totalHealthFacilitiesDownloaded++
+                                    reportProgressBlock(
+                                        totalHealthFacilitiesDownloaded,
+                                        totalHealthFacilitiesDownloaded
+                                    )
+                                }
+                            }
+                        } catch (e: Exception) {
+                            Log.e(TAG, e.toString())
+                            failedParse = true
+                        }
+                    },
+                ).also {
+                    if (it is NetworkResult.Success) {
+                        if (failedParse) {
+                            healthFacilityChannel.close(
+                                SyncException("Failed to parse all Health Facilities during Sync")
+                            )
+                        } else {
+                            healthFacilityChannel.close()
+                        }
+                    } else {
+                        healthFacilityChannel.close(SyncException("health facility download failed"))
+                    }
+                }
+            }
+
+            Protocol.SMS -> {
                 try {
-                    val reader = JacksonMapper.readerForHealthFacility
-                    reader.readValues<HealthFacility>(inputStream).use { iterator ->
-                        iterator.forEachJackson {
-                            healthFacilityChannel.send(it)
-                            totalHealthFacilitiesDownloaded++
-                            reportProgressBlock(
-                                totalHealthFacilitiesDownloaded,
-                                totalHealthFacilitiesDownloaded
+                    val networkResult = handleSmsRequest<List<HealthFacility>>(
+                        method, url, headers
+                    )
+
+                    val newNetworkResult: NetworkResult<Unit> = when (networkResult) {
+                        is NetworkResult.Success -> {
+                            for (healthFacility in networkResult.value) {
+                                totalHealthFacilitiesDownloaded++
+                                healthFacilityChannel.send(healthFacility)
+                            }
+                            NetworkResult.Success(
+                                Unit, networkResult.statusCode
                             )
                         }
+
+                        is NetworkResult.Failure -> {
+                            healthFacilityChannel.close(
+                                SyncException("failed to download all associated health facilities")
+                            )
+                            NetworkResult.Failure(
+                                networkResult.body, networkResult.statusCode
+                            )
+                        }
+
+                        is NetworkResult.NetworkException -> {
+                            healthFacilityChannel.close(
+                                SyncException("failed to download all associated health facilities")
+                            )
+                            NetworkResult.NetworkException(networkResult.cause)
+                        }
                     }
+
+                    newNetworkResult
                 } catch (e: Exception) {
-                    Log.e(TAG, e.toString())
-                    failedParse = true
+                    val syncException = SyncException("failed to parse all associated referrals")
+
+                    healthFacilityChannel.close(syncException)
+
+                    NetworkResult.NetworkException(syncException)
                 }
-            },
-        ).also {
-            if (it is NetworkResult.Success) {
-                if (failedParse) {
-                    healthFacilityChannel.close(SyncException("Failed to parse all Health Facilities during Sync"))
-                } else {
-                    healthFacilityChannel.close()
-                }
-            } else {
-                healthFacilityChannel.close(SyncException("health facility download failed"))
             }
         }
-        HealthFacilitySyncResult(networkResult, totalHealthFacilitiesDownloaded)
+
+        HealthFacilitySyncResult(result, totalHealthFacilitiesDownloaded)
     }
 
     /**
@@ -1201,54 +2049,97 @@ class RestApi constructor(
      */
     suspend fun getAllFormTemplates(
         formChannel: SendChannel<FormClassification>,
-        reportProgressBlock: suspend (Int, Int) -> Unit,
+        protocol: Protocol,
+        reportProgressBlock: suspend (Int, Int) -> Unit
     ): FormSyncResult = withContext(IO) {
+        val method = Http.Method.GET
+        val url = urlManager.getAllFormsAsSummary
 
-        var failedParse = false
         var totalClassifications = 0
 
-        val result = http.makeRequest(
-            method = Http.Method.GET,
-            url = urlManager.getAllFormsAsSummary,
-            headers = headers,
-            inputStreamReader = { inputStream ->
+        val result = when (protocol) {
+            Protocol.HTTP -> {
+                var failedParse = false
+                http.makeRequest(method = method,
+                    url = url,
+                    headers = headers,
+                    inputStreamReader = { inputStream ->
 
-                try {
-                    // Create Gson instance with custom deserializer
-                    val customGson = GsonBuilder()
-                        .registerTypeAdapter(
-                            FormClassification::class.java,
-                            FormClassification.DeserializerFromFormTemplateStream()
-                        ).create()
+                        try {
+                            // Create Gson instance with custom deserializer
+                            val customGson = GsonBuilder().registerTypeAdapter(
+                                FormClassification::class.java,
+                                FormClassification.DeserializerFromFormTemplateStream()
+                            ).create()
 
-                    val reader = customGson.newJsonReader(inputStream.bufferedReader())
-                    reader.beginArray()
-                    while (reader.hasNext()) {
-                        val form = customGson.fromJson<FormClassification>(
-                            reader,
-                            FormClassification::class.java
-                        )
-                        formChannel.send(form)
-                        totalClassifications++
-                        reportProgressBlock(totalClassifications, totalClassifications)
+                            val reader = customGson.newJsonReader(inputStream.bufferedReader())
+                            reader.beginArray()
+                            while (reader.hasNext()) {
+                                val form = customGson.fromJson<FormClassification>(
+                                    reader, FormClassification::class.java
+                                )
+                                formChannel.send(form)
+                                totalClassifications++
+                                reportProgressBlock(totalClassifications, totalClassifications)
+                            }
+                            reader.endArray()
+                            reader.close()
+                        } catch (e: Exception) {
+                            Log.e(TAG, e.toString())
+                            failedParse = true
+                        }
+                    }).also {
+                    if (it is NetworkResult.Success) {
+                        if (failedParse) {
+                            formChannel.close(SyncException("failed to parse all FormTemplates"))
+                        } else {
+                            formChannel.close()
+                        }
+                    } else {
+                        formChannel.close(SyncException("failed to download all FormTemplates"))
                     }
-                    reader.endArray()
-                    reader.close()
-                } catch (e: Exception) {
-                    Log.e(TAG, e.toString())
-                    failedParse = true
                 }
-                Unit
             }
-        ).also {
-            if (it is NetworkResult.Success) {
-                if (failedParse) {
-                    formChannel.close(SyncException("failed to parse all FormTemplates"))
-                } else {
-                    formChannel.close()
+
+            Protocol.SMS -> {
+                try {
+                    val networkResult = handleSmsRequest<List<FormClassification>>(
+                        method, url, headers
+                    )
+
+                    val newNetworkResult: NetworkResult<Unit> = when (networkResult) {
+                        is NetworkResult.Success -> {
+                            for (formClassification in networkResult.value) {
+                                totalClassifications++
+                                formChannel.send(formClassification)
+                            }
+                            NetworkResult.Success(
+                                Unit, networkResult.statusCode
+                            )
+                        }
+
+                        is NetworkResult.Failure -> {
+                            formChannel.close(SyncException("failed to download all associated form classifications"))
+                            NetworkResult.Failure(
+                                networkResult.body, networkResult.statusCode
+                            )
+                        }
+
+                        is NetworkResult.NetworkException -> {
+                            formChannel.close(SyncException("failed to download all associated form classifications"))
+                            NetworkResult.NetworkException(networkResult.cause)
+                        }
+                    }
+
+                    newNetworkResult
+                } catch (e: Exception) {
+                    val syncException =
+                        SyncException("failed to parse all associated form classifications")
+
+                    formChannel.close(syncException)
+
+                    NetworkResult.NetworkException(syncException)
                 }
-            } else {
-                formChannel.close(SyncException("failed to download all FormTemplates"))
             }
         }
 
@@ -1274,3 +2165,5 @@ class RestApi constructor(
 }
 
 class SyncException(message: String) : IOException(message)
+
+class SMSTimeoutException(message: String) : IOException(message)

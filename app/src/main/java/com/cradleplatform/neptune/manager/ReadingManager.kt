@@ -8,6 +8,7 @@ import com.cradleplatform.neptune.model.RetestGroup
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
 import com.cradleplatform.neptune.http_sms_service.http.map
+import com.cradleplatform.neptune.utilities.Protocol
 import kotlinx.coroutines.Dispatchers.Default
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -106,7 +107,7 @@ class ReadingManager @Inject constructor(
      * @return upload result
      */
     suspend fun uploadNewReadingToServer(reading: Reading): NetworkResult<Unit> {
-        val result = restApi.postReading(reading)
+        val result = restApi.postReading(reading, Protocol.HTTP)
         if (result is NetworkResult.Success) {
             reading.isUploadedToServer = true
             readingDao.update(reading)
@@ -119,7 +120,7 @@ class ReadingManager @Inject constructor(
      * @return upload result.
      */
     suspend fun downloadNewReadingFromServer(id: String): NetworkResult<Unit> {
-        val result = restApi.getReading(id)
+        val result = restApi.getReading(id, Protocol.HTTP)
         if (result is NetworkResult.Success) {
             addReading(result.value, isReadingFromServer = true)
         }

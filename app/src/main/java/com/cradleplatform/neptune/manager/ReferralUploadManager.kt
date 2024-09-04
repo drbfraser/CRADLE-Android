@@ -1,13 +1,14 @@
 package com.cradleplatform.neptune.manager
 
+import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
+import com.cradleplatform.neptune.http_sms_service.http.RestApi
+import com.cradleplatform.neptune.http_sms_service.http.map
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.PatientAndReadings
 import com.cradleplatform.neptune.model.PatientAndReferrals
 import com.cradleplatform.neptune.model.Reading
 import com.cradleplatform.neptune.model.Referral
-import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
-import com.cradleplatform.neptune.http_sms_service.http.RestApi
-import com.cradleplatform.neptune.http_sms_service.http.map
+import com.cradleplatform.neptune.utilities.Protocol
 import java.net.HttpURLConnection.HTTP_NOT_FOUND
 import javax.inject.Inject
 
@@ -41,13 +42,14 @@ class ReferralUploadManager @Inject constructor(private val restApi: RestApi) {
         // First check to see if the patient exists. We don't have an explicit
         // API for this so we use the response code of the get patient info
         // API to determine whether the patient exists or not.
-        val patientExists = when (val result = restApi.getPatientInfo(patient.id)) {
+        val patientExists = when (val result = restApi.getPatientInfo(patient.id, Protocol.HTTP)) {
             is NetworkResult.Failure ->
                 if (result.statusCode == HTTP_NOT_FOUND) {
                     false
                 } else {
                     return result.cast()
                 }
+
             is NetworkResult.Success -> true
             is NetworkResult.NetworkException -> return result.cast()
         }
@@ -55,9 +57,10 @@ class ReferralUploadManager @Inject constructor(private val restApi: RestApi) {
         // If the patient exists we only need to upload the reading, if not
         // then we need to upload the whole patient as well.
         return if (patientExists) {
-            restApi.postReading(reading).map { PatientAndReadings(patient, listOf(it)) }
+            restApi.postReading(reading, Protocol.HTTP)
+                .map { PatientAndReadings(patient, listOf(it)) }
         } else {
-            restApi.postPatient(PatientAndReadings(patient, listOf(reading)))
+            restApi.postPatient(PatientAndReadings(patient, listOf(reading)), Protocol.HTTP)
         }
     }
 
@@ -79,13 +82,14 @@ class ReferralUploadManager @Inject constructor(private val restApi: RestApi) {
         // First check to see if the patient exists. We don't have an explicit
         // API for this so we use the response code of the get patient info
         // API to determine whether the patient exists or not.
-        val patientExists = when (val result = restApi.getPatientInfo(patient.id)) {
+        val patientExists = when (val result = restApi.getPatientInfo(patient.id, Protocol.HTTP)) {
             is NetworkResult.Failure ->
                 if (result.statusCode == HTTP_NOT_FOUND) {
                     false
                 } else {
                     return result.cast()
                 }
+
             is NetworkResult.Success -> true
             is NetworkResult.NetworkException -> return result.cast()
         }
@@ -93,9 +97,10 @@ class ReferralUploadManager @Inject constructor(private val restApi: RestApi) {
         // If the patient exists we only need to upload the reading, if not
         // then we need to upload the whole patient as well.
         return if (patientExists) {
-            restApi.postReferral(referral).map { PatientAndReferrals(patient, listOf(it)) }
+            restApi.postReferral(referral, Protocol.HTTP)
+                .map { PatientAndReferrals(patient, listOf(it)) }
         } else {
-            restApi.postPatient(PatientAndReferrals(patient, listOf(referral)))
+            restApi.postPatient(PatientAndReferrals(patient, listOf(referral)), Protocol.HTTP)
         }
     }
 }
