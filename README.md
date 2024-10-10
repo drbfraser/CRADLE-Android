@@ -13,39 +13,46 @@ synchronization over either internet or SMS (text message).
 
 ## Setup
 
+### First-time setup
+
 1. Set up and run the [Cradle Platform](https://github.sfu.ca/bfraser/415-Cradle-Platform/blob/main/docs/development.md) project. The Docker image must be running to provide a back-end for this app.
     * Be sure to seed at least `seed_test_data`
 1. Download and install [Android Studio](https://developer.android.com/studio/).
 1. Clone [this repo](https://github.sfu.ca/cradle-project/Cradle-Mobile) to your computer.
-1. Open the Git repository from Android Studio.
-1. Edit gradle version in Android Studio
+1. Open the Git repository in Android Studio.
+1. Edit the gradle version in Android Studio
     * File -> Project Structure -> Project
         * Android Gradle Plugin Version: `8.2.1`
         * Gradle Version: `8.2`
-1. Edit JDK version in Android Studio
+1. Edit the JDK version in Android Studio
     * File -> Settings -> Build, Execution, Deployment -> Build Tools -> Gradle
         * Gradle JDK: `JetBrains Runtime version 17`
         * If it's not one of the options, click on "Download JDK" and select the appropriate version
-1. Run the app in the emulator. The first build may take several minutes.
+
+### Running the app in an emulator
+
+1. Select an emulator from the list of options and choose one.  Wait for it to start up.
+1. Run the app (green arrow at the top of the screen). The first build may take several minutes.
 1. Connect the app to the (running) Cradle Platform from the login settings (top right):
     * Hostname: 10.0.2.2
     * Port: 5000
     * Use HTTPS: OFF
     > INFO:  
-    > IP 10.0.2.2 is a special IP address in Android Studio to access the local machine that the emulator isrunning on.  
-    > Port 5000 is the port that the Flask container deploys to.
+    > * IP 10.0.2.2 is the address that Android Studio forwards to the emulator in place of localhost.  
+    > * Port 5000 is the port that the Flask container deploys to.
 1. Log in with a [default username and password](https://github.sfu.ca/cradle-project/Cradle-Platform#default-usernames--passwords).  Admin provides the most access.
 
-## Running the app on a physical Android phone
+### Running the app on a physical Android phone
 
 1. Enable Developer Settings on your phone.
 1. Enable USB debugging and connect your phone among the "Running devices" in Android Studio.
-1. Build the app to your phone. 
 1. Open a terminal and run `ipconfig` to find your computer's IPv4 IP address (something like 192.168.x.x).
+1. Run the app (green arrow at the top of the screen). The first build may take several minutes. 
 1. Connect the app to the (running) Cradle Platform from the login settings (top right):
     * Hostname: <<your_computer_IP>>
     * Port: 5000
     * Use HTTPS: OFF
+1. Log in with a [default username and password](https://github.sfu.ca/cradle-project/Cradle-Platform#default-usernames--passwords).  Admin provides the most access.
 
 ### Useful Documentation
 * Cradle Mobile Onboarding
@@ -55,7 +62,7 @@ synchronization over either internet or SMS (text message).
 
 ### Troubleshooting
 
-* Building may be disrupted in there is an external JDK installed.  Uninstall that JDK, delete the repo, and begin again at step 1. above.
+* Building may be disrupted in there is an external JDK installed.  Uninstall that JDK, delete the repo, and begin again with the First-time setup.
 * Installing may be flaky with emulators lacking a Play Store.  Try an emulator with a Play Store.
 
 ## Architecture
@@ -112,9 +119,9 @@ Or, for PowerShell, run the following command as an Admin
 ### Verify the setup
 
 After setting up the Git pre-push hook, try to push a commit via the command line / terminal:
-`git push`. You shouuld see the static code analysis and unit tests displayed in the window
+`git push`. You should see the static code analysis and unit tests displayed in the window
 before pushing. Android Studio's Git push interface will also run these hooks, but it is not as 
-verbose unless there's a failure.
+verbose unless there is a failure.
 
 ## Tests
 
@@ -127,11 +134,11 @@ or the command `./gradlew test`.
 It is likely to fail the first pass. If there are issues after a second run, then manual edits will 
 be required. 
 
-NOTE: Google doc suggested that these should be manually run before each push, but that may be part 
-of the automatic pre-push hooks. Delete or incorporate this note once clarified. There is also 
-reference to running detekt in a more verbose mode. Does that refer to running in the command line
-(as opposed to via Android Studio push), or to a specific flag?  I did not find a flag that increases
-verbosity in the [detekt help page](https://detekt.dev/docs/gettingstarted/cli#use-the-cli).
+> NOTE: 
+> * Google doc suggested that these should be manually run before each push, but that may be part of the automatic pre-push hooks. 
+>     * Delete or incorporate this note once clarified. 
+> * There is reference to running detekt in a more verbose mode. Does that refer to running in the command line (as opposed to via Android Studio push), or to a specific flag?  I did not find a flag that increases verbosity in the [detekt help page](https://detekt.dev/docs/gettingstarted/cli#use-the-cli).
+>     * Delete or incorporate this note once clarified. 
 
 These unit tests are run by the GitHub CI pipelines to verify merge requests and commits on master. They're
 useful in ensuring there haven't been any regressions. Make sure the hooks from above are setup to
@@ -148,19 +155,15 @@ flows automatically. These should be run often (at least once before a new relea
 
 ### UI tests
 
-The UI tests need special setup on the device to be run.
+The UI tests use [espresso](https://developer.android.com/training/testing/espresso/setup), and need special setup on the device to be run.
 
-1. Follow the _Set up your test environment_ instructions outlined in
-   https://developer.android.com/training/testing/espresso/setup#set-up-environment:
-
-   > To avoid flakiness, we highly recommend that you turn off system animations on the virtual or
-   > physical devices used for testing. On your device, under Settings > Developer options, disable
-   > the following 3 settings
-   > * Window animation scale
-   > * Transition animation scale
-   > * Animator duration scale
-
-2. Uninstall or log out of the app if it's already installed. The UI tests LoginActivity, and those
+1. To avoid flakiness, we highly recommend that you turn off system animations on the virtual or
+   physical devices used for testing. On your device, under Settings > Developer options, disable
+   the following 3 settings:
+    * Window animation scale
+    * Transition animation scale
+    * Animator duration scale
+1. Uninstall or log out of the app if it's already installed. The UI tests LoginActivity, and those
    tests can fail if already logged in.
 
 ## Pinning TLS certificate public keys
