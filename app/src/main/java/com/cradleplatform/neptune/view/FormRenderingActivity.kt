@@ -442,7 +442,8 @@ class FormRenderingActivity : AppCompatActivity() {
             context: Context,
             formTemplate: FormTemplate,
             formLanguage: String,
-            patientId: String
+            patientId: String,
+            patient: Patient
         ): Intent {
             val bundle = Bundle()
             bundle.putSerializable(EXTRA_FORM_TEMPLATE, formTemplate)
@@ -450,6 +451,7 @@ class FormRenderingActivity : AppCompatActivity() {
             return Intent(context, FormRenderingActivity::class.java).apply {
                 this.putExtra(EXTRA_PATIENT_ID, patientId)
                 this.putExtra(EXTRA_LANGUAGE_SELECTED, formLanguage)
+                this.putExtra(EXTRA_PATIENT_OBJECT, patient)
                 this.putExtras(bundle)
             }
         }

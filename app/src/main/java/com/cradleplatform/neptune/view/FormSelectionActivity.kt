@@ -105,7 +105,8 @@ class FormSelectionActivity : AppCompatActivity() {
                     this@FormSelectionActivity,
                     formTemplate,
                     formLanguage,
-                    intent.getStringExtra(EXTRA_PATIENT_ID)!!
+                    intent.getStringExtra(EXTRA_PATIENT_ID)!!,
+                    currentPatient!!
                 )
 
                 startActivity(intent)
