@@ -27,6 +27,7 @@ import androidx.navigation.navOptions
 import androidx.test.espresso.IdlingResource
 import androidx.test.espresso.idling.CountingIdlingResource
 import com.cradleplatform.neptune.R
+import com.cradleplatform.neptune.activities.dashboard.DashBoardActivity
 import com.cradleplatform.neptune.databinding.ActivityReadingBinding
 import com.cradleplatform.neptune.ext.hideKeyboard
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
