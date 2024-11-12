@@ -17,8 +17,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.cradleplatform.neptune.R;
 import com.cradleplatform.neptune.model.HealthFacility;
-import com.cradleplatform.neptune.viewmodel.HealthFacilitiesAdapter;
-import com.cradleplatform.neptune.viewmodel.HealthFacilityViewModel;
+import com.cradleplatform.neptune.view.settings.adapters.HealthFacilitiesAdapter;
+import com.cradleplatform.neptune.viewmodel.settings.HealthFacilityViewModel;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import dagger.hilt.android.AndroidEntryPoint;

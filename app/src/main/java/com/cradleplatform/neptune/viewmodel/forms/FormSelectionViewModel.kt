@@ -1,4 +1,4 @@
-package com.cradleplatform.neptune.viewmodel
+package com.cradleplatform.neptune.viewmodel.forms
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData

@@ -42,7 +42,7 @@ import com.cradleplatform.neptune.view.newPatient.activities.ReadingActivity.Com
 import com.cradleplatform.neptune.view.newPatient.activities.ReadingActivity.Companion.makeIntentForNewReadingExistingPatient
 import com.cradleplatform.neptune.view.newPatient.activities.ReadingActivity.Companion.makeIntentForRecheck
 import com.cradleplatform.neptune.view.forms.activities.SavedFormsActivity
-import com.cradleplatform.neptune.viewmodel.ReadingRecyclerViewAdapter
+import com.cradleplatform.neptune.view.patients.adapter.ReadingRecyclerViewAdapter
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
@@ -546,7 +546,10 @@ open class PatientProfileActivity : AppCompatActivity() {
         readingRecyclerview.layoutManager = layoutManager
         readingRecyclerview.isNestedScrollingEnabled = false
 
-        val listAdapter = ReadingRecyclerViewAdapter(combinedList)
+        val listAdapter =
+            ReadingRecyclerViewAdapter(
+                combinedList
+            )
         listAdapter.setOnClickElementListener(
             object : ReadingRecyclerViewAdapter.OnClickElement {
                 override fun onClick(readingId: String?) {

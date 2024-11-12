@@ -1,4 +1,4 @@
-package com.cradleplatform.neptune.viewmodel
+package com.cradleplatform.neptune.viewmodel.statistics
 
 import android.content.SharedPreferences
 import androidx.lifecycle.ViewModel
@@ -10,6 +10,7 @@ import com.cradleplatform.neptune.model.Statistics
 import com.cradleplatform.neptune.utilities.Protocol
 import com.cradleplatform.neptune.utilities.UnixTimestamp
 import com.cradleplatform.neptune.view.statistics.activities.StatisticsFilterOptions
+import com.cradleplatform.neptune.viewmodel.UserViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.runBlocking
 import java.math.BigInteger

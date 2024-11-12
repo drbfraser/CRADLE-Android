@@ -1,4 +1,4 @@
-package com.cradleplatform.neptune.viewmodel
+package com.cradleplatform.neptune.view.forms.adapters
 
 import android.util.Log
 import android.view.LayoutInflater

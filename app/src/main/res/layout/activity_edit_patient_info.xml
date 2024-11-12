@@ -12,7 +12,7 @@
 
         <variable
             name="viewModel"
-            type="com.cradleplatform.neptune.viewmodel.EditPatientViewModel" />
+            type="com.cradleplatform.neptune.viewmodel.patients.EditPatientViewModel" />
 
     </data>
 

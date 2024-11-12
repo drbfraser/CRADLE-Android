@@ -1,4 +1,4 @@
-package com.cradleplatform.neptune.viewmodel
+package com.cradleplatform.neptune.viewmodel.patients
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -47,7 +47,8 @@ import com.cradleplatform.neptune.utilities.Months
 import com.cradleplatform.neptune.utilities.Weeks
 import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager
 import com.cradleplatform.neptune.view.newPatient.activities.ReadingActivity
-import com.cradleplatform.neptune.viewmodel.PatientReadingViewModel.LiveDataInitializationManager
+import com.cradleplatform.neptune.viewmodel.UserViewModel
+import com.cradleplatform.neptune.viewmodel.patients.PatientReadingViewModel.LiveDataInitializationManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -2075,7 +2076,8 @@ sealed interface ReadingFlowSaveResult {
          * because the patient and reading are valid and stored in the local database.
          */
         @JvmInline
-        value class ReferralSmsNeeded(val patientInfoForReferral: PatientAndReadings) : SaveSuccessful
+        value class ReferralSmsNeeded(val patientInfoForReferral: PatientAndReadings) :
+            SaveSuccessful
     }
 
     /**
@@ -2111,7 +2113,8 @@ sealed interface ReferralFlowSaveResult {
          * because the patient and reading are valid and stored in the local database.
          */
         @JvmInline
-        value class ReferralSmsNeeded(val patientInfoForReferral: PatientAndReferrals) : SaveSuccessful
+        value class ReferralSmsNeeded(val patientInfoForReferral: PatientAndReferrals) :
+            SaveSuccessful
     }
 
     /**

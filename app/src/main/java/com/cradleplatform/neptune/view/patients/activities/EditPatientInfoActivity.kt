@@ -17,8 +17,8 @@ import com.cradleplatform.neptune.binding.FragmentDataBindingComponent
 import com.cradleplatform.neptune.databinding.ActivityEditPatientInfoBinding
 import com.cradleplatform.neptune.ext.hideKeyboard
 import com.cradleplatform.neptune.model.Patient
-import com.cradleplatform.neptune.viewmodel.EditPatientViewModel
-import com.cradleplatform.neptune.viewmodel.EditPatientViewModel.SaveResult
+import com.cradleplatform.neptune.viewmodel.patients.EditPatientViewModel
+import com.cradleplatform.neptune.viewmodel.patients.EditPatientViewModel.SaveResult
 import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.dialog.MaterialAlertDialogBuilder

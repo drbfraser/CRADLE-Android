@@ -26,8 +26,8 @@ import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.manager.ReadingManager
 import com.cradleplatform.neptune.sync.workers.SyncAllWorker
-import com.cradleplatform.neptune.viewmodel.LocalSearchPatientAdapter
-import com.cradleplatform.neptune.viewmodel.PatientListViewModel
+import com.cradleplatform.neptune.view.patients.adapter.LocalSearchPatientAdapter
+import com.cradleplatform.neptune.viewmodel.patients.PatientListViewModel
 import com.cradleplatform.neptune.sync.SyncReminderHelper
 import com.cradleplatform.neptune.sync.views.SyncActivity
 import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager

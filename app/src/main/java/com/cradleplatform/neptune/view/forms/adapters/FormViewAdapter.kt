@@ -29,7 +29,7 @@ import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.Question
 import com.cradleplatform.neptune.model.QuestionTypeEnum.*
 import com.cradleplatform.neptune.utilities.DateUtil
-import com.cradleplatform.neptune.viewmodel.FormRenderingViewModel
+import com.cradleplatform.neptune.viewmodel.forms.FormRenderingViewModel
 import java.util.Calendar
 
 /**

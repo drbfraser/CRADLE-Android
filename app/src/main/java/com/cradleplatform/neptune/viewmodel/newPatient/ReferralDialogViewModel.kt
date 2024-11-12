@@ -1,4 +1,4 @@
-package com.cradleplatform.neptune.viewmodel
+package com.cradleplatform.neptune.viewmodel.newPatient
 
 import androidx.annotation.MainThread
 import androidx.lifecycle.LiveData

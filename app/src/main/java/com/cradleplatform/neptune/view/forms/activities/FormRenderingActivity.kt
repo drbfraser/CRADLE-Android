@@ -32,7 +32,7 @@ import com.cradleplatform.neptune.model.Question
 import com.cradleplatform.neptune.utilities.Protocol
 import com.cradleplatform.neptune.view.patients.activities.PatientProfileActivity
 import com.cradleplatform.neptune.view.forms.adapters.FormViewAdapter
-import com.cradleplatform.neptune.viewmodel.FormRenderingViewModel
+import com.cradleplatform.neptune.viewmodel.forms.FormRenderingViewModel
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers

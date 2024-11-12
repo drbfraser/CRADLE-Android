@@ -19,8 +19,8 @@ import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.ext.isConnected
 import com.cradleplatform.neptune.model.GlobalPatient
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
-import com.cradleplatform.neptune.viewmodel.ReadingRecyclerViewAdapter
-import com.cradleplatform.neptune.viewmodel.ReadingRecyclerViewAdapter.OnClickElement
+import com.cradleplatform.neptune.view.patients.adapter.ReadingRecyclerViewAdapter
+import com.cradleplatform.neptune.view.patients.adapter.ReadingRecyclerViewAdapter.OnClickElement
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -172,7 +172,10 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
      * simple function to setup the recyclerview
      */
     override fun setupReadingsRecyclerView() {
-        val listAdapter = ReadingRecyclerViewAdapter(patientReadings)
+        val listAdapter =
+            ReadingRecyclerViewAdapter(
+                patientReadings
+            )
         listAdapter.setOnClickElementListener(
             object : OnClickElement {
                 override fun onClick(readingId: String) {

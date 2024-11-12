@@ -14,7 +14,7 @@ import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.binding.FragmentDataBindingComponent
 import com.cradleplatform.neptune.databinding.FragmentAddPregnancyBinding
 import com.cradleplatform.neptune.ext.hideKeyboard
-import com.cradleplatform.neptune.viewmodel.EditPregnancyViewModel
+import com.cradleplatform.neptune.viewmodel.patients.EditPregnancyViewModel
 import com.google.android.material.textfield.TextInputLayout
 import kotlinx.coroutines.launch
 

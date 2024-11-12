@@ -14,7 +14,7 @@ import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.binding.FragmentDataBindingComponent
 import com.cradleplatform.neptune.databinding.FragmentVitalSignsBinding
 import com.cradleplatform.neptune.view.newPatient.activities.ReadingActivity
-import com.cradleplatform.neptune.viewmodel.PatientReadingViewModel
+import com.cradleplatform.neptune.viewmodel.patients.PatientReadingViewModel
 
 private const val TAG = "VitalSignsFragment"
 

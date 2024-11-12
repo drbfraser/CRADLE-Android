@@ -12,7 +12,7 @@ import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.binding.Converter
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.view.newPatient.activities.ReadingActivity
-import com.cradleplatform.neptune.viewmodel.PatientReadingViewModel
+import com.cradleplatform.neptune.viewmodel.patients.PatientReadingViewModel
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
 

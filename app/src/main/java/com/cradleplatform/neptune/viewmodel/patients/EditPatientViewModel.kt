@@ -1,4 +1,4 @@
-package com.cradleplatform.neptune.viewmodel
+package com.cradleplatform.neptune.viewmodel.patients
 
 import android.annotation.SuppressLint
 import android.content.Context

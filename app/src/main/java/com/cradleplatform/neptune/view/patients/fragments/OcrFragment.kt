@@ -25,7 +25,7 @@ import com.cradleplatform.neptune.databinding.FragmentOcrBinding
 import com.cradleplatform.neptune.ocr.OcrAnalyzer
 import com.cradleplatform.neptune.view.newPatient.activities.ReadingActivity
 import com.cradleplatform.neptune.viewmodel.OcrFragmentViewModel
-import com.cradleplatform.neptune.viewmodel.PatientReadingViewModel
+import com.cradleplatform.neptune.viewmodel.patients.PatientReadingViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch

@@ -7,7 +7,7 @@
     <data>
         <variable
             name="viewModel"
-            type="com.cradleplatform.neptune.viewmodel.FormSelectionViewModel" />
+            type="com.cradleplatform.neptune.viewmodel.forms.FormSelectionViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout

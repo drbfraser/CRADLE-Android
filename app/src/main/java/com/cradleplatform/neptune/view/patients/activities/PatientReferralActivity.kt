@@ -22,7 +22,7 @@ import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.utilities.CustomToast
 import com.cradleplatform.neptune.utilities.Protocol
-import com.cradleplatform.neptune.viewmodel.PatientReferralViewModel
+import com.cradleplatform.neptune.viewmodel.patients.PatientReferralViewModel
 import com.cradleplatform.neptune.viewmodel.UserViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch

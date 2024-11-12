@@ -26,10 +26,10 @@ import com.cradleplatform.neptune.manager.SmsKeyManager
 import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager
 import com.cradleplatform.neptune.utilities.Protocol
 import com.cradleplatform.neptune.view.newPatient.activities.ReadingActivity
-import com.cradleplatform.neptune.viewmodel.PatientReadingViewModel
-import com.cradleplatform.neptune.viewmodel.ReadingFlowSaveResult
-import com.cradleplatform.neptune.viewmodel.ReferralDialogViewModel
-import com.cradleplatform.neptune.viewmodel.ReferralOption
+import com.cradleplatform.neptune.viewmodel.patients.PatientReadingViewModel
+import com.cradleplatform.neptune.viewmodel.patients.ReadingFlowSaveResult
+import com.cradleplatform.neptune.viewmodel.newPatient.ReferralDialogViewModel
+import com.cradleplatform.neptune.viewmodel.patients.ReferralOption
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject

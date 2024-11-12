@@ -25,7 +25,7 @@ import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.manager.ReadingManager
 import com.cradleplatform.neptune.model.GlobalPatient
 import com.cradleplatform.neptune.utilities.Protocol
-import com.cradleplatform.neptune.viewmodel.GlobalPatientAdapter
+import com.cradleplatform.neptune.view.patients.adapter.GlobalPatientAdapter
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Deferred

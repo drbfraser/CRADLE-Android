@@ -1,4 +1,4 @@
-package com.cradleplatform.neptune.viewmodel
+package com.cradleplatform.neptune.viewmodel.patients
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

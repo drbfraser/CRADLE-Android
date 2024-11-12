@@ -1,4 +1,4 @@
-package com.cradleplatform.neptune.viewmodel
+package com.cradleplatform.neptune.viewmodel.patients
 
 import android.content.SharedPreferences
 import androidx.annotation.MainThread
@@ -20,6 +20,7 @@ import com.cradleplatform.neptune.model.Referral
 import com.cradleplatform.neptune.utilities.Protocol
 import com.cradleplatform.neptune.utilities.UnixTimestamp
 import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager
+import com.cradleplatform.neptune.viewmodel.UserViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

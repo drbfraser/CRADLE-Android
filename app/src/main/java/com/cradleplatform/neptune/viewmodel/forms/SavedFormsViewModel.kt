@@ -1,4 +1,4 @@
-package com.cradleplatform.neptune.viewmodel
+package com.cradleplatform.neptune.viewmodel.forms
 
 import androidx.lifecycle.ViewModel
 import com.cradleplatform.neptune.manager.FormResponseManager

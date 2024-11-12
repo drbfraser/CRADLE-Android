@@ -8,7 +8,7 @@
 
         <variable
             name="viewModel"
-            type="com.cradleplatform.neptune.viewmodel.PatientReferralViewModel" />
+            type="com.cradleplatform.neptune.viewmodel.patients.PatientReferralViewModel" />
     </data>
 
 

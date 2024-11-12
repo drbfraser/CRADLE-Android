@@ -17,8 +17,8 @@ import com.cradleplatform.neptune.binding.FragmentDataBindingComponent
 import com.cradleplatform.neptune.databinding.ActivityEditPregnancyBinding
 import com.cradleplatform.neptune.view.patients.fragments.AddPregnancyFragment
 import com.cradleplatform.neptune.view.patients.fragments.ClosePregnancyFragment
-import com.cradleplatform.neptune.viewmodel.EditPatientViewModel.SaveResult
-import com.cradleplatform.neptune.viewmodel.EditPregnancyViewModel
+import com.cradleplatform.neptune.viewmodel.patients.EditPatientViewModel.SaveResult
+import com.cradleplatform.neptune.viewmodel.patients.EditPregnancyViewModel
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch

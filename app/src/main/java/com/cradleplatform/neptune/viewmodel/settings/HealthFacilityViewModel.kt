@@ -1,4 +1,4 @@
-package com.cradleplatform.neptune.viewmodel
+package com.cradleplatform.neptune.viewmodel.settings
 
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel

@@ -30,7 +30,7 @@ import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.sync.workers.SyncAllWorker
 import com.cradleplatform.neptune.utilities.BarGraphValueFormatter
 import com.cradleplatform.neptune.utilities.DateUtil
-import com.cradleplatform.neptune.viewmodel.StatsViewModel
+import com.cradleplatform.neptune.viewmodel.statistics.StatsViewModel
 import com.cradleplatform.neptune.sync.SyncReminderHelper
 import com.cradleplatform.neptune.sync.views.SyncActivity
 import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager

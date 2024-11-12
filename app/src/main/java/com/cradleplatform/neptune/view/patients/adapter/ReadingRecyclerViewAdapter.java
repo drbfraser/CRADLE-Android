@@ -1,4 +1,4 @@
-package com.cradleplatform.neptune.viewmodel;
+package com.cradleplatform.neptune.view.patients.adapter;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -20,6 +20,7 @@ import com.cradleplatform.neptune.model.Referral;
 import com.cradleplatform.neptune.model.SymptomsState;
 import com.cradleplatform.neptune.model.UrineTest;
 import com.cradleplatform.neptune.utilities.DateUtil;
+import com.cradleplatform.neptune.viewmodel.ReadingAnalysisViewSupport;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.util.List;

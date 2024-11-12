@@ -9,10 +9,10 @@
 
         <variable
             name="readingViewModel"
-            type="com.cradleplatform.neptune.viewmodel.PatientReadingViewModel" />
+            type="com.cradleplatform.neptune.viewmodel.patients.PatientReadingViewModel" />
         <variable
             name="viewModel"
-            type="com.cradleplatform.neptune.viewmodel.ReferralDialogViewModel" />
+            type="com.cradleplatform.neptune.viewmodel.newPatient.ReferralDialogViewModel" />
         <variable
             name="launchReason"
             type="com.cradleplatform.neptune.view.newPatient.activities.ReadingActivity.LaunchReason" />

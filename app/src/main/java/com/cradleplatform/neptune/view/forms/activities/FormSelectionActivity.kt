@@ -15,7 +15,7 @@ import com.cradleplatform.neptune.binding.MaterialSpinnerArrayAdapter
 import com.cradleplatform.neptune.databinding.ActivityFormSelectionBinding
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.view.patients.activities.PatientProfileActivity
-import com.cradleplatform.neptune.viewmodel.FormSelectionViewModel
+import com.cradleplatform.neptune.viewmodel.forms.FormSelectionViewModel
 import com.google.android.material.textfield.TextInputLayout
 import dagger.hilt.android.AndroidEntryPoint
 

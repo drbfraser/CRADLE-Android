@@ -14,7 +14,7 @@ import com.cradleplatform.neptune.binding.FragmentDataBindingComponent
 import com.cradleplatform.neptune.databinding.FragmentClosePregnancyBinding
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.view.newPatient.activities.ReadingActivity
-import com.cradleplatform.neptune.viewmodel.EditPregnancyViewModel
+import com.cradleplatform.neptune.viewmodel.patients.EditPregnancyViewModel
 import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.textfield.TextInputEditText

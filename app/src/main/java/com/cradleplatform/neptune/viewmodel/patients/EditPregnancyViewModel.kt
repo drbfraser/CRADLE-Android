@@ -1,4 +1,4 @@
-package com.cradleplatform.neptune.viewmodel
+package com.cradleplatform.neptune.viewmodel.patients
 
 import android.content.Context
 import android.util.Log
@@ -26,7 +26,7 @@ import com.cradleplatform.neptune.utilities.Seconds
 import com.cradleplatform.neptune.utilities.Weeks
 import com.cradleplatform.neptune.utilities.WeeksAndDays
 import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager
-import com.cradleplatform.neptune.viewmodel.EditPatientViewModel.SaveResult
+import com.cradleplatform.neptune.viewmodel.patients.EditPatientViewModel.SaveResult
 import com.google.android.material.datepicker.MaterialDatePicker
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext

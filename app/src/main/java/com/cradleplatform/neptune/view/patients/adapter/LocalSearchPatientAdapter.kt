@@ -1,9 +1,10 @@
-package com.cradleplatform.neptune.viewmodel
+package com.cradleplatform.neptune.view.patients.adapter
 
 import android.view.ViewGroup
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import com.cradleplatform.neptune.database.views.LocalSearchPatient
+import com.cradleplatform.neptune.viewmodel.patients.LocalSearchPatientViewHolder
 
 class LocalSearchPatientAdapter :
     PagingDataAdapter<LocalSearchPatient, LocalSearchPatientViewHolder>(diffCallback) {
