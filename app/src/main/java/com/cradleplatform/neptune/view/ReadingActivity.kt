@@ -354,17 +354,17 @@ class ReadingActivity : AppCompatActivity(), ReferralDialogFragment.OnReadingSen
         MaterialAlertDialogBuilder(this)
             .setTitle(R.string.save_locally_title)
             .setMessage(getDiscardDialogMessageId())
-            .setNegativeButton(android.R.string.cancel, null)
             .setPositiveButton(R.string.save_locally_positive_button) { _, _ ->
                 findNavController(R.id.reading_nav_host).popBackStack(R.id.loadingFragment, true)
                 finish()
             }
-            .setNeutralButton(R.string.back_to_home) { _, _ ->
+            .setNeutralButton(R.string.discard_draft) { _, _ ->
                 val dashBoardIntent = Intent(this, DashBoardActivity::class.java)
                 dashBoardIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
                 startActivity(dashBoardIntent)
                 finish()
             }
+            .setNegativeButton(android.R.string.cancel, null)
             .show()
     }
 
