@@ -9,7 +9,7 @@
 
         <variable
             name="viewModel"
-            type="com.cradleplatform.neptune.viewmodel.PatientReadingViewModel" />
+            type="com.cradleplatform.neptune.viewmodel.patients.PatientReadingViewModel" />
     </data>
 
     <LinearLayout

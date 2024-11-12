@@ -5,17 +5,17 @@
 
     <data>
         <import type="com.cradleplatform.neptune.binding.Converter" />
-        <import type="com.cradleplatform.neptune.view.ReadingActivity.LaunchReason" />
+        <import type="com.cradleplatform.neptune.activities.newPatient.ReadingActivity.LaunchReason" />
 
         <variable
             name="readingViewModel"
-            type="com.cradleplatform.neptune.viewmodel.PatientReadingViewModel" />
+            type="com.cradleplatform.neptune.viewmodel.patients.PatientReadingViewModel" />
         <variable
             name="viewModel"
-            type="com.cradleplatform.neptune.viewmodel.ReferralDialogViewModel" />
+            type="com.cradleplatform.neptune.viewmodel.newPatient.ReferralDialogViewModel" />
         <variable
             name="launchReason"
-            type="com.cradleplatform.neptune.view.ReadingActivity.LaunchReason" />
+            type="com.cradleplatform.neptune.activities.newPatient.ReadingActivity.LaunchReason" />
     </data>
 
 

@@ -5,7 +5,7 @@
     <data>
         <variable
             name="viewModel"
-            type="com.cradleplatform.neptune.viewmodel.ReferralDialogViewModel" />
+            type="com.cradleplatform.neptune.viewmodel.newPatient.ReferralDialogViewModel" />
     </data>
 
 

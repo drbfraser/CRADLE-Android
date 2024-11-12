@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.databinding.InverseMethod
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.model.Sex
-import com.cradleplatform.neptune.view.ReadingActivity
+import com.cradleplatform.neptune.activities.newPatient.ReadingActivity
 
 object Converter {
     @InverseMethod("stringToInt")

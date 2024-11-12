@@ -22,7 +22,7 @@ import com.cradleplatform.neptune.sync.PeriodicSyncer
 import com.cradleplatform.neptune.sync.views.SyncActivity
 import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager
 import com.cradleplatform.neptune.utilities.notification.NotificationManagerGlobal
-import com.cradleplatform.neptune.view.PinPassActivity
+import com.cradleplatform.neptune.activities.authentication.PinPassActivity
 
 import com.jakewharton.threetenabp.AndroidThreeTen
 import dagger.hilt.android.HiltAndroidApp

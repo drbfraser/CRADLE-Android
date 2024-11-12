@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/patientInfoFragment"
-        android:name="com.cradleplatform.neptune.view.ui.reading.PatientInfoFragment"
+        android:name="com.cradleplatform.neptune.fragments.patients.PatientInfoFragment"
         android:label="Patient info"
         tools:layout="@layout/fragment_patient_info">
         <action
@@ -21,7 +21,7 @@
     </fragment>
     <fragment
         android:id="@+id/symptomsFragment"
-        android:name="com.cradleplatform.neptune.view.ui.reading.SymptomsFragment"
+        android:name="com.cradleplatform.neptune.fragments.newPatient.SymptomsFragment"
         android:label="Symptoms"
         tools:layout="@layout/fragment_symptoms">
         <action
@@ -35,7 +35,7 @@
     </fragment>
     <fragment
         android:id="@+id/loadingFragment"
-        android:name="com.cradleplatform.neptune.view.ui.reading.LoadingFragment"
+        android:name="com.cradleplatform.neptune.fragments.shared.LoadingFragment"
         android:label="fragment_loading"
         tools:layout="@layout/fragment_loading" >
         <action
@@ -55,7 +55,7 @@
     </fragment>
     <fragment
         android:id="@+id/vitalSignsFragment"
-        android:name="com.cradleplatform.neptune.view.ui.reading.VitalSignsFragment"
+        android:name="com.cradleplatform.neptune.fragments.newPatient.VitalSignsFragment"
         android:label="VitalSignsFragment"
         tools:layout="@layout/fragment_vital_signs">
         <action
@@ -76,11 +76,11 @@
 
     <fragment
         android:id="@+id/adviceFragment"
-        android:name="com.cradleplatform.neptune.view.ui.reading.AdviceFragment"
+        android:name="com.cradleplatform.neptune.fragments.patients.AdviceFragment"
         android:label="AdviceFragment"
         tools:layout="@layout/fragment_advice"/>
     <fragment
         android:id="@+id/ocrFragment"
-        android:name="com.cradleplatform.neptune.view.ui.reading.OcrFragment"
+        android:name="com.cradleplatform.neptune.fragments.patients.OcrFragment"
         android:label="OcrFragment" />
 </navigation>
