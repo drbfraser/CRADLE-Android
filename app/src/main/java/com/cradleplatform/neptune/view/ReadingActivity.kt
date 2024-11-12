@@ -359,6 +359,12 @@ class ReadingActivity : AppCompatActivity(), ReferralDialogFragment.OnReadingSen
                 findNavController(R.id.reading_nav_host).popBackStack(R.id.loadingFragment, true)
                 finish()
             }
+            .setNeutralButton(R.string.back_to_home) { _, _ ->
+                val dashBoardIntent = Intent(this, DashBoardActivity::class.java)
+                dashBoardIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                startActivity(dashBoardIntent)
+                finish()
+            }
             .show()
     }
 
