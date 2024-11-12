@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.cradleplatform.neptune.view.ui.settings.ui.healthFacility.HealthFacilitiesActivity">
+    tools:context="com.cradleplatform.neptune.view.settings.activities.HealthFacilitiesActivity">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/hfRecyclerView"

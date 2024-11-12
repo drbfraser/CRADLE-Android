@@ -1,4 +1,4 @@
-package com.cradleplatform.neptune.view.ui.settings
+package com.cradleplatform.neptune.view.settings.activities
 
 import android.content.Intent
 import android.content.SharedPreferences

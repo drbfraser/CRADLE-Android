@@ -1,4 +1,4 @@
-package com.cradleplatform.neptune.view.newpatient.fragments
+package com.cradleplatform.neptune.view.newPatient.fragments
 
 import android.app.AlertDialog
 import android.app.Dialog
@@ -25,7 +25,7 @@ import com.cradleplatform.neptune.http_sms_service.http.RestApi
 import com.cradleplatform.neptune.manager.SmsKeyManager
 import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager
 import com.cradleplatform.neptune.utilities.Protocol
-import com.cradleplatform.neptune.view.newpatient.activities.ReadingActivity
+import com.cradleplatform.neptune.view.newPatient.activities.ReadingActivity
 import com.cradleplatform.neptune.viewmodel.PatientReadingViewModel
 import com.cradleplatform.neptune.viewmodel.ReadingFlowSaveResult
 import com.cradleplatform.neptune.viewmodel.ReferralDialogViewModel

@@ -36,11 +36,11 @@ import com.cradleplatform.neptune.model.Sex
 import com.cradleplatform.neptune.utilities.SnackbarHelper
 import com.cradleplatform.neptune.utilities.Util
 import com.cradleplatform.neptune.view.forms.activities.FormSelectionActivity
-import com.cradleplatform.neptune.view.newpatient.activities.ReadingActivity
+import com.cradleplatform.neptune.view.newPatient.activities.ReadingActivity
 import com.cradleplatform.neptune.view.dashboard.activities.DashBoardActivity.Companion.READING_ACTIVITY_DONE
-import com.cradleplatform.neptune.view.newpatient.activities.ReadingActivity.Companion.makeIntentForEditReading
-import com.cradleplatform.neptune.view.newpatient.activities.ReadingActivity.Companion.makeIntentForNewReadingExistingPatient
-import com.cradleplatform.neptune.view.newpatient.activities.ReadingActivity.Companion.makeIntentForRecheck
+import com.cradleplatform.neptune.view.newPatient.activities.ReadingActivity.Companion.makeIntentForEditReading
+import com.cradleplatform.neptune.view.newPatient.activities.ReadingActivity.Companion.makeIntentForNewReadingExistingPatient
+import com.cradleplatform.neptune.view.newPatient.activities.ReadingActivity.Companion.makeIntentForRecheck
 import com.cradleplatform.neptune.view.forms.activities.SavedFormsActivity
 import com.cradleplatform.neptune.viewmodel.ReadingRecyclerViewAdapter
 import com.github.mikephil.charting.charts.LineChart

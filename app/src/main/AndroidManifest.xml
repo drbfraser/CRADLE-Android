@@ -38,7 +38,7 @@
         <activity
             android:name=".view.patients.activities.GlobalPatientSearchActivity"
             android:windowSoftInputMode="adjustNothing" />
-        <activity android:name=".view.ui.settings.ui.healthFacility.HealthFacilitiesActivity" />
+        <activity android:name=".view.settings.activities.HealthFacilitiesActivity" />
         <activity android:name=".view.education.activities.PosterActivity" />
         <activity android:name=".view.education.activities.EducationActivity" />
         <activity android:name=".view.statistics.activities.StatsActivity"
@@ -78,13 +78,13 @@
         </activity> <!-- windowSoftInputMode=adjustResize so that wizard's bottom buttons stay visible -->
         <activity android:name=".view.education.activities.VideoActivity" />
         <activity
-            android:name=".view.newpatient.activities.ReadingActivity"
+            android:name=".view.newPatient.activities.ReadingActivity"
             android:label="@string/title_activity_reading"
             android:screenOrientation="portrait"
             android:theme="@style/ReadingFlowTheme"
             android:windowSoftInputMode="adjustResize" />
         <activity
-            android:name=".view.ui.settings.SettingsActivity"
+            android:name=".view.settings.activities.SettingsActivity"
             android:label="Settings"
             android:screenOrientation="portrait" />
         <activity

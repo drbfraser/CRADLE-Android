@@ -14,7 +14,7 @@ import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.encodeMsg
 import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.formatSMS
 import com.cradleplatform.neptune.view.forms.activities.FormRenderingActivity
 import com.cradleplatform.neptune.view.patients.activities.PatientReferralActivity
-import com.cradleplatform.neptune.view.newpatient.activities.ReadingActivity
+import com.cradleplatform.neptune.view.newPatient.activities.ReadingActivity
 import com.cradleplatform.neptune.viewmodel.UserViewModel
 import androidx.fragment.app.Fragment
 import javax.inject.Inject

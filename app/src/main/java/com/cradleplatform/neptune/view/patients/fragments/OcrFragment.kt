@@ -23,7 +23,7 @@ import androidx.navigation.fragment.findNavController
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.databinding.FragmentOcrBinding
 import com.cradleplatform.neptune.ocr.OcrAnalyzer
-import com.cradleplatform.neptune.view.newpatient.activities.ReadingActivity
+import com.cradleplatform.neptune.view.newPatient.activities.ReadingActivity
 import com.cradleplatform.neptune.viewmodel.OcrFragmentViewModel
 import com.cradleplatform.neptune.viewmodel.PatientReadingViewModel
 import dagger.hilt.android.AndroidEntryPoint

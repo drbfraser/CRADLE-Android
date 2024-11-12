@@ -11,7 +11,7 @@ import androidx.fragment.app.activityViewModels
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.binding.Converter
 import com.cradleplatform.neptune.model.Patient
-import com.cradleplatform.neptune.view.newpatient.activities.ReadingActivity
+import com.cradleplatform.neptune.view.newPatient.activities.ReadingActivity
 import com.cradleplatform.neptune.viewmodel.PatientReadingViewModel
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint

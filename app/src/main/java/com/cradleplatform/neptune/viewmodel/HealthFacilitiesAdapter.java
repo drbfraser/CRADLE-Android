@@ -14,7 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.cradleplatform.neptune.R;
 import com.cradleplatform.neptune.model.HealthFacility;
-import com.cradleplatform.neptune.view.ui.settings.ui.healthFacility.HealthFacilitiesActivity;
+import com.cradleplatform.neptune.view.settings.activities.HealthFacilitiesActivity;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -25,8 +25,8 @@ import com.cradleplatform.neptune.model.Reading
 import com.cradleplatform.neptune.model.RetestGroup
 import com.cradleplatform.neptune.utilities.notification.NotificationManagerCustom
 import com.cradleplatform.neptune.view.patients.activities.PatientProfileActivity
-import com.cradleplatform.neptune.view.newpatient.activities.ReadingActivity
-import com.cradleplatform.neptune.view.newpatient.fragments.ReferralDialogFragment
+import com.cradleplatform.neptune.view.newPatient.activities.ReadingActivity
+import com.cradleplatform.neptune.view.newPatient.fragments.ReferralDialogFragment
 import com.cradleplatform.neptune.viewmodel.PatientReadingViewModel
 import com.cradleplatform.neptune.viewmodel.ReadingFlowSaveResult
 import com.google.android.material.dialog.MaterialAlertDialogBuilder

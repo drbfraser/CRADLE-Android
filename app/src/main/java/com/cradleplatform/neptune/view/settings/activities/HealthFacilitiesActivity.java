@@ -1,4 +1,4 @@
-package com.cradleplatform.neptune.view.ui.settings.ui.healthFacility;
+package com.cradleplatform.neptune.view.settings.activities;
 
 import android.app.SearchManager;
 import android.content.Context;

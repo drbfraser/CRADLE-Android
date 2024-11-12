@@ -25,10 +25,10 @@ import com.cradleplatform.neptune.utilities.Util
 import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager
 import com.cradleplatform.neptune.view.education.activities.EducationActivity
 import com.cradleplatform.neptune.view.patients.activities.PatientsActivity
-import com.cradleplatform.neptune.view.newpatient.activities.ReadingActivity
+import com.cradleplatform.neptune.view.newPatient.activities.ReadingActivity
 import com.cradleplatform.neptune.view.forms.activities.SavedFormsActivity
 import com.cradleplatform.neptune.view.statistics.activities.StatsActivity
-import com.cradleplatform.neptune.view.ui.settings.SettingsActivity.Companion.makeSettingsActivityLaunchIntent
+import com.cradleplatform.neptune.view.settings.activities.SettingsActivity.Companion.makeSettingsActivityLaunchIntent
 import com.cradleplatform.neptune.viewmodel.UserViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope

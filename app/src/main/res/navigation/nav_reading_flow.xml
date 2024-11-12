@@ -21,7 +21,7 @@
     </fragment>
     <fragment
         android:id="@+id/symptomsFragment"
-        android:name="com.cradleplatform.neptune.view.newpatient.fragments.SymptomsFragment"
+        android:name="com.cradleplatform.neptune.view.newPatient.fragments.SymptomsFragment"
         android:label="Symptoms"
         tools:layout="@layout/fragment_symptoms">
         <action
@@ -55,7 +55,7 @@
     </fragment>
     <fragment
         android:id="@+id/vitalSignsFragment"
-        android:name="com.cradleplatform.neptune.view.newpatient.fragments.VitalSignsFragment"
+        android:name="com.cradleplatform.neptune.view.newPatient.fragments.VitalSignsFragment"
         android:label="VitalSignsFragment"
         tools:layout="@layout/fragment_vital_signs">
         <action

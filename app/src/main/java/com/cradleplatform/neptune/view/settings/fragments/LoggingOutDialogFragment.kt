@@ -1,4 +1,4 @@
-package com.cradleplatform.neptune.view.ui.settings
+package com.cradleplatform.neptune.view.settings.fragments
 
 import android.app.Dialog
 import android.os.Bundle

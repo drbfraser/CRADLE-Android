@@ -36,8 +36,8 @@ import com.cradleplatform.neptune.manager.LoginManager
 import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager
 import com.cradleplatform.neptune.sync.workers.SyncAllWorker
 import com.cradleplatform.neptune.view.introduction.activities.IntroActivity
-import com.cradleplatform.neptune.view.ui.settings.SettingsActivity.Companion.ADVANCED_SETTINGS_KEY
-import com.cradleplatform.neptune.view.ui.settings.SettingsActivity.Companion.makeSettingsActivityLaunchIntent
+import com.cradleplatform.neptune.view.settings.activities.SettingsActivity.Companion.ADVANCED_SETTINGS_KEY
+import com.cradleplatform.neptune.view.settings.activities.SettingsActivity.Companion.makeSettingsActivityLaunchIntent
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException
 import com.google.android.gms.common.GooglePlayServicesRepairableException

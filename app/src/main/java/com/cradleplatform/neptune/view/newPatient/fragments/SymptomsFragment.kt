@@ -1,4 +1,4 @@
-package com.cradleplatform.neptune.view.newpatient.fragments
+package com.cradleplatform.neptune.view.newPatient.fragments
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -13,7 +13,7 @@ import androidx.fragment.app.activityViewModels
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.binding.FragmentDataBindingComponent
 import com.cradleplatform.neptune.databinding.FragmentSymptomsBinding
-import com.cradleplatform.neptune.view.newpatient.activities.ReadingActivity
+import com.cradleplatform.neptune.view.newPatient.activities.ReadingActivity
 import com.cradleplatform.neptune.viewmodel.PatientReadingViewModel
 
 private const val TAG = "SymptomsFragment"
