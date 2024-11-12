@@ -29,7 +29,7 @@ import com.cradleplatform.neptune.model.QuestionTypeEnum
 import com.cradleplatform.neptune.utilities.Protocol
 import com.cradleplatform.neptune.utilities.connectivity.api24.ConnectivityOptions
 import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager
-import com.cradleplatform.neptune.view.forms.activities.FormRenderingActivity
+import com.cradleplatform.neptune.activities.forms.FormRenderingActivity
 import com.cradleplatform.neptune.viewmodel.UserViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject

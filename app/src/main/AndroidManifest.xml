@@ -26,29 +26,29 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true"> <!--    set this to true when testing the app on a local dev server-->
-        <activity android:name=".view.patients.activities.EditPatientInfoActivity"/>
+        <activity android:name=".activities.patients.EditPatientInfoActivity"/>
         <activity
-            android:name=".view.forms.activities.FormRenderingActivity"
+            android:name=".activities.forms.FormRenderingActivity"
             android:windowSoftInputMode="adjustPan"
             android:exported="false" />
         <activity
             android:name=".sync.views.SyncActivity"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".view.patients.activities.GlobalPatientProfileActivity" />
+        <activity android:name=".activities.patients.GlobalPatientProfileActivity" />
         <activity
-            android:name=".view.patients.activities.GlobalPatientSearchActivity"
+            android:name=".activities.patients.GlobalPatientSearchActivity"
             android:windowSoftInputMode="adjustNothing" />
-        <activity android:name=".view.settings.activities.HealthFacilitiesActivity" />
-        <activity android:name=".view.education.activities.PosterActivity" />
-        <activity android:name=".view.education.activities.EducationActivity" />
-        <activity android:name=".view.statistics.activities.StatsActivity"
+        <activity android:name=".activities.settings.HealthFacilitiesActivity" />
+        <activity android:name=".activities.education.PosterActivity" />
+        <activity android:name=".activities.education.EducationActivity" />
+        <activity android:name=".activities.statistics.StatsActivity"
             android:theme="@style/AppTheme.NoActionBar"/>
         <activity
-            android:name=".view.authentication.activities.LoginActivity"
+            android:name=".activities.authentication.LoginActivity"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustResize"/>
         <activity
-            android:name=".view.introduction.activities.SplashActivity"
+            android:name=".activities.introduction.SplashActivity"
             android:theme="@style/SplashTheme"
             android:exported="true">
             <intent-filter>
@@ -56,18 +56,18 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".view.dashboard.activities.DashBoardActivity" />
-        <activity android:name=".view.patients.activities.PatientProfileActivity" />
-        <activity android:name=".view.patients.activities.PatientReferralActivity" />
-        <activity android:name=".view.patients.activities.PatientUpdateDrugMedicalActivity" />
-        <activity android:name=".view.patients.activities.EditPregnancyActivity" />
+        <activity android:name=".activities.dashboard.DashBoardActivity" />
+        <activity android:name=".activities.patients.PatientProfileActivity" />
+        <activity android:name=".activities.patients.PatientReferralActivity" />
+        <activity android:name=".activities.patients.PatientUpdateDrugMedicalActivity" />
+        <activity android:name=".activities.patients.EditPregnancyActivity" />
         <activity
-            android:name=".view.introduction.activities.IntroActivity"
+            android:name=".activities.introduction.IntroActivity"
             android:label="@string/app_name"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".view.patients.activities.PatientsActivity"
+            android:name=".activities.patients.PatientsActivity"
             android:label="@string/title_activity_patients"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar"
@@ -76,26 +76,26 @@
                 <action android:name="android.intent.action.SEARCH" />
             </intent-filter>
         </activity> <!-- windowSoftInputMode=adjustResize so that wizard's bottom buttons stay visible -->
-        <activity android:name=".view.education.activities.VideoActivity" />
+        <activity android:name=".activities.education.VideoActivity" />
         <activity
-            android:name=".view.newPatient.activities.ReadingActivity"
+            android:name=".activities.newPatient.ReadingActivity"
             android:label="@string/title_activity_reading"
             android:screenOrientation="portrait"
             android:theme="@style/ReadingFlowTheme"
             android:windowSoftInputMode="adjustResize" />
         <activity
-            android:name=".view.settings.activities.SettingsActivity"
+            android:name=".activities.settings.SettingsActivity"
             android:label="Settings"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".view.forms.activities.FormSelectionActivity"
+            android:name=".activities.forms.FormSelectionActivity"
             android:label="Form Selection"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".view.forms.activities.SavedFormsActivity"
+            android:name=".activities.forms.SavedFormsActivity"
             android:label="Saved Forms"
             android:screenOrientation="portrait" />
-        <activity android:name=".view.authentication.activities.PinPassActivity" />
+        <activity android:name=".activities.authentication.PinPassActivity" />
 
         <receiver android:name=".utilities.notification.NotificationPublisher"/>
         <provider

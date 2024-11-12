@@ -24,8 +24,8 @@ import com.cradleplatform.neptune.model.Question
 import com.cradleplatform.neptune.model.QuestionLangVersion
 import com.cradleplatform.neptune.model.QuestionTypeEnum
 import com.cradleplatform.neptune.model.VisibleCondition
-import com.cradleplatform.neptune.view.dashboard.activities.DashBoardActivity
-import com.cradleplatform.neptune.view.forms.activities.FormRenderingActivity
+import com.cradleplatform.neptune.activities.dashboard.DashBoardActivity
+import com.cradleplatform.neptune.activities.forms.FormRenderingActivity
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith

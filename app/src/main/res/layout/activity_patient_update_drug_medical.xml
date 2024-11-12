@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#e9e9e9"
-    tools:context=".view.patients.activities.PatientUpdateDrugMedicalActivity">
+    tools:context=".activities.patients.PatientUpdateDrugMedicalActivity">
 
     <TextView
         android:id="@+id/patientText"

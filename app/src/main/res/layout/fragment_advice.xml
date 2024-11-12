@@ -7,7 +7,7 @@
     <data>
         <import type="com.cradleplatform.neptune.binding.Converter" />
         <import type="com.cradleplatform.neptune.model.RetestAdvice" />
-        <import type="com.cradleplatform.neptune.view.newPatient.activities.ReadingActivity.LaunchReason"/>
+        <import type="com.cradleplatform.neptune.activities.newPatient.ReadingActivity.LaunchReason"/>
 
         <variable
             name="viewModel"
@@ -15,7 +15,7 @@
 
         <variable
             name="launchReason"
-            type="com.cradleplatform.neptune.view.newPatient.activities.ReadingActivity.LaunchReason" />
+            type="com.cradleplatform.neptune.activities.newPatient.ReadingActivity.LaunchReason" />
     </data>
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout
