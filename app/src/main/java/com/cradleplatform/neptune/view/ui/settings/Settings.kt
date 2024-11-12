@@ -30,8 +30,8 @@ import com.cradleplatform.neptune.sync.PeriodicSyncer
 import com.cradleplatform.neptune.utilities.Protocol
 import com.cradleplatform.neptune.utilities.validateHostname
 import com.cradleplatform.neptune.utilities.validatePort
-import com.cradleplatform.neptune.view.LoginActivity
-import com.cradleplatform.neptune.view.PinPassActivity
+import com.cradleplatform.neptune.view.authentication.activities.LoginActivity
+import com.cradleplatform.neptune.view.authentication.activities.PinPassActivity
 import com.cradleplatform.neptune.view.ui.settings.ui.healthFacility.HealthFacilitiesActivity
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint

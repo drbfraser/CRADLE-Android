@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.cradleplatform.neptune.view.ui.reading.LoadingFragment">
+    tools:context="com.cradleplatform.neptune.view.shared.fragments.LoadingFragment">
 
     <ProgressBar
         android:id="@+id/progressBar"

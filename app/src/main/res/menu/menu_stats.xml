@@ -1,7 +1,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context="com.cradleplatform.neptune.view.StatsActivity">
+    tools:context="com.cradleplatform.neptune.view.statistics.activities.StatsActivity">
     <item
         android:id="@+id/stats_time_picker"
         android:icon="@drawable/ic_schedule_24px"

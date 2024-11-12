@@ -9,7 +9,7 @@ import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.binding.FragmentDataBindingComponent
 import com.cradleplatform.neptune.database.views.LocalSearchPatient
 import com.cradleplatform.neptune.databinding.ListItemPatientBinding
-import com.cradleplatform.neptune.view.PatientProfileActivity
+import com.cradleplatform.neptune.view.patients.activities.PatientProfileActivity
 
 class LocalSearchPatientViewHolder(
     private val binding: ListItemPatientBinding

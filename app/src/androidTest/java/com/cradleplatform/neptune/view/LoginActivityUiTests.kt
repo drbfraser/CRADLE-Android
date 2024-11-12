@@ -14,6 +14,7 @@ import androidx.test.ext.junit.rules.activityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
 import com.cradleplatform.neptune.R
+import com.cradleplatform.neptune.view.authentication.activities.LoginActivity
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule

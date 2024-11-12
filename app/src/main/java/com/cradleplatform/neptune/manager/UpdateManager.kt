@@ -5,7 +5,7 @@ import android.content.Context
 import android.util.Log
 import android.widget.Toast
 import com.cradleplatform.neptune.R
-import com.cradleplatform.neptune.view.SplashActivity
+import com.cradleplatform.neptune.view.introduction.activities.SplashActivity
 import com.google.android.play.core.appupdate.AppUpdateInfo
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
 import com.google.android.play.core.appupdate.AppUpdateOptions

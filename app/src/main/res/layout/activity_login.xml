@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:background="@drawable/splash_screen_2"
     android:theme="@style/AppTheme.NoActionBar"
-    tools:context=".view.LoginActivity">
+    tools:context=".view.authentication.activities.LoginActivity">
 
     <ImageButton
         android:id="@+id/loginSettingsButton"

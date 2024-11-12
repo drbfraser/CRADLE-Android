@@ -12,7 +12,7 @@ import com.cradleplatform.neptune.binding.FragmentDataBindingComponent
 import com.cradleplatform.neptune.databinding.ListItemSavedFormBinding
 import com.cradleplatform.neptune.model.FormResponse
 import com.cradleplatform.neptune.model.Patient
-import com.cradleplatform.neptune.view.FormRenderingActivity
+import com.cradleplatform.neptune.view.forms.activities.FormRenderingActivity
 import java.util.Date
 
 /**

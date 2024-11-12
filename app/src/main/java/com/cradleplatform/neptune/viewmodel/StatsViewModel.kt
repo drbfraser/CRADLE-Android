@@ -9,7 +9,7 @@ import com.cradleplatform.neptune.model.HealthFacility
 import com.cradleplatform.neptune.model.Statistics
 import com.cradleplatform.neptune.utilities.Protocol
 import com.cradleplatform.neptune.utilities.UnixTimestamp
-import com.cradleplatform.neptune.view.StatisticsFilterOptions
+import com.cradleplatform.neptune.view.statistics.activities.StatisticsFilterOptions
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.runBlocking
 import java.math.BigInteger

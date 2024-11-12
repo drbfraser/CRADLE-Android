@@ -34,6 +34,8 @@ import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.utilities.UnixTimestamp
+import com.cradleplatform.neptune.view.dashboard.activities.DashBoardActivity
+import com.cradleplatform.neptune.view.newpatient.activities.ReadingActivity
 import org.hamcrest.Description
 import org.hamcrest.Matcher
 import org.hamcrest.Matchers.allOf
