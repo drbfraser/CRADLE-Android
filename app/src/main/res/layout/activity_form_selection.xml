@@ -2,12 +2,12 @@
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context=".view.FormSelectionActivity">
+    tools:context=".activities.forms.FormSelectionActivity">
 
     <data>
         <variable
             name="viewModel"
-            type="com.cradleplatform.neptune.viewmodel.FormSelectionViewModel" />
+            type="com.cradleplatform.neptune.viewmodel.forms.FormSelectionViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout

@@ -12,9 +12,9 @@ import com.cradleplatform.neptune.http_sms_service.sms.ui.SmsTransmissionDialogF
 import com.cradleplatform.neptune.manager.SmsKeyManager
 import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.encodeMsg
 import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.formatSMS
-import com.cradleplatform.neptune.view.FormRenderingActivity
-import com.cradleplatform.neptune.view.PatientReferralActivity
-import com.cradleplatform.neptune.view.ReadingActivity
+import com.cradleplatform.neptune.activities.forms.FormRenderingActivity
+import com.cradleplatform.neptune.activities.patients.PatientReferralActivity
+import com.cradleplatform.neptune.activities.newPatient.ReadingActivity
 import com.cradleplatform.neptune.viewmodel.UserViewModel
 import androidx.fragment.app.Fragment
 import javax.inject.Inject
@@ -145,7 +145,8 @@ class SMSSender @Inject constructor(
             }
             // TODO: Remove this after State reporting is implemented. Move logic to Activity instead.
             if (activityContext is ReadingActivity || activityContext is PatientReferralActivity
-                || activityContext is FormRenderingActivity) {
+                || activityContext is FormRenderingActivity
+            ) {
                 (activityContext as Activity).finish()
                 activityContext = null
             }

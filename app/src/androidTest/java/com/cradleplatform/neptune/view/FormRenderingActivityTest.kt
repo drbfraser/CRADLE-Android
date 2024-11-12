@@ -10,7 +10,6 @@ import androidx.test.espresso.action.ViewActions.scrollTo
 import androidx.test.espresso.action.ViewActions.typeText
 import androidx.test.espresso.assertion.ViewAssertions.doesNotExist
 import androidx.test.espresso.assertion.ViewAssertions.matches
-import androidx.test.espresso.contrib.RecyclerViewActions.*
 import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.ext.junit.rules.activityScenarioRule
 import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner
@@ -25,6 +24,8 @@ import com.cradleplatform.neptune.model.Question
 import com.cradleplatform.neptune.model.QuestionLangVersion
 import com.cradleplatform.neptune.model.QuestionTypeEnum
 import com.cradleplatform.neptune.model.VisibleCondition
+import com.cradleplatform.neptune.activities.dashboard.DashBoardActivity
+import com.cradleplatform.neptune.activities.forms.FormRenderingActivity
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith

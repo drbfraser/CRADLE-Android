@@ -6,7 +6,7 @@
     <data>
         <variable
             name="viewModel"
-            type="com.cradleplatform.neptune.viewmodel.EditPregnancyViewModel" />
+            type="com.cradleplatform.neptune.viewmodel.patients.EditPregnancyViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
