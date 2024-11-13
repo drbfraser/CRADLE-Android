@@ -359,13 +359,13 @@ class ReadingActivity : AppCompatActivity(), ReferralDialogFragment.OnReadingSen
                 findNavController(R.id.reading_nav_host).popBackStack(R.id.loadingFragment, true)
                 finish()
             }
-            .setNeutralButton(R.string.discard_draft) { _, _ ->
+            .setNegativeButton(R.string.discard_draft) { _, _ ->
                 val dashBoardIntent = Intent(this, DashBoardActivity::class.java)
                 dashBoardIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
                 startActivity(dashBoardIntent)
                 finish()
             }
-            .setNegativeButton(android.R.string.cancel, null)
+            .setNeutralButton(android.R.string.cancel, null)
             .show()
     }
 
