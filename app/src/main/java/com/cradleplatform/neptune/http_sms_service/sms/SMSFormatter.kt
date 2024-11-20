@@ -1,8 +1,10 @@
 package com.cradleplatform.neptune.utilities
 
-import android.util.Log
+import android.os.Build
+import androidx.annotation.RequiresApi
 import com.google.firebase.crashlytics.internal.model.ImmutableList
 import org.json.JSONObject
+import java.util.Base64
 import kotlin.math.min
 
 enum class RelayAction {
@@ -91,33 +93,28 @@ class SMSFormatter {
             )
 
         // TODO: CHANGE TEST
+        @RequiresApi(Build.VERSION_CODES.O)
         fun encodeMsg(msg: String, secretKey: String): String {
 
             val jsonObject = JSONObject(secretKey)
             val key = jsonObject.optString("sms_key")
 
             if (key.isNotEmpty()) {
-                return AESEncryptor.encryptString(
-                    GzipCompressor.compress(msg),
-                    key
-                )
-            }
+                val encryptedMsg = AESEncryptor.encryptString(GzipCompressor.compress(msg), key)
+                return Base64.getEncoder().encodeToString(encryptedMsg.toByteArray())            }
             return ""
         }
 
+        @RequiresApi(Build.VERSION_CODES.O)
         fun decodeMsg(msg: String, secretKey: String): String {
             // Extracts actual Key from secretKey, which is a JSON String
             val key = JSONObject(secretKey).optString("sms_key")
             if (key.isNotEmpty()) {
-                GzipCompressor.decompress(
-                    AESEncryptor.decryptString(msg, key)
-                ).let {
-                    Log.d("SMS_Formatter", it)
-                    return it
+                val decodedBytes = Base64.getDecoder().decode(msg)
+                val decryptedMsg = AESEncryptor.decryptString(String(decodedBytes), key)
+                return GzipCompressor.decompress(decryptedMsg)
                 }
-            } else {
                 return "ERROR: key is empty"
-            }
         }
 
         private fun computeRequestHeaderLength(): Int {
@@ -174,9 +171,8 @@ class SMSFormatter {
                         currentFragmentSize.toString().padStart(FRAGMENT_HEADER_LENGTH, '0')
                     "$fragmentNumber-"
                 }
-                val remainingSpace = PACKET_SIZE - requestHeader.length
-                val currentFragment =
-                    requestHeader + msg.substring(msgIdx, min(msgIdx + remainingSpace, msg.length))
+                val remainingSpace = (PACKET_SIZE - requestHeader.length) / 3 * 3
+                val currentFragment = requestHeader + msg.substring(msgIdx, min(msgIdx + remainingSpace, msg.length))
                 msgIdx = min(msgIdx + remainingSpace, msg.length)
 
                 packets.add(currentFragment)
