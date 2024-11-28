@@ -101,7 +101,7 @@ class SMSFormatter {
 
             if (key.isNotEmpty()) {
                 val encryptedMsg = AESEncryptor.encryptString(GzipCompressor.compress(msg), key)
-                return Base64.getEncoder().encodeToString(encryptedMsg.toByteArray())            }
+                return Base64.getEncoder().encodeToString(encryptedMsg.toByteArray()) }
             return ""
         }
 
@@ -113,8 +113,8 @@ class SMSFormatter {
                 val decodedBytes = Base64.getDecoder().decode(msg)
                 val decryptedMsg = AESEncryptor.decryptString(String(decodedBytes), key)
                 return GzipCompressor.decompress(decryptedMsg)
-                }
-                return "ERROR: key is empty"
+            }
+            return "ERROR: key is empty"
         }
 
         private fun computeRequestHeaderLength(): Int {
