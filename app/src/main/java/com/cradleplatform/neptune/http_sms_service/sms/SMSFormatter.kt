@@ -171,8 +171,9 @@ class SMSFormatter {
                         currentFragmentSize.toString().padStart(FRAGMENT_HEADER_LENGTH, '0')
                     "$fragmentNumber-"
                 }
-                val remainingSpace = (PACKET_SIZE - requestHeader.length) / 3 * 3
-                val currentFragment = requestHeader + msg.substring(msgIdx, min(msgIdx + remainingSpace, msg.length))
+                val remainingSpace = PACKET_SIZE - requestHeader.length
+                val currentFragment =
+                    requestHeader + msg.substring(msgIdx, min(msgIdx + remainingSpace, msg.length))
                 msgIdx = min(msgIdx + remainingSpace, msg.length)
 
                 packets.add(currentFragment)
