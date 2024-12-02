@@ -54,7 +54,7 @@ complexity:
     active: false
     threshold: 10
     includeStaticDeclarations: false
-  ComplexMethod:
+  CyclomaticComplexMethod:
     active: false
     threshold: 10
     ignoreSingleWhenExpression: false
@@ -113,7 +113,6 @@ empty-blocks:
     active: true
   EmptyFunctionBlock:
     active: true
-    ignoreOverridden: true
   EmptyIfBlock:
     active: true
   EmptyInitBlock:
@@ -193,7 +192,6 @@ formatting:
     active: true
     autoCorrect: true
     indentSize: 4
-    continuationIndentSize: 4
   MaximumLineLength:
     active: true
     maxLineLength: 120
@@ -292,17 +290,14 @@ naming:
     active: true
     functionPattern: '^([a-z$][a-zA-Z$0-9]*)|(`.*`)$'
     excludeClassPattern: '$^'
-    ignoreOverridden: true
   FunctionParameterNaming:
     active: true
     parameterPattern: '[a-z][A-Za-z0-9]*'
     excludeClassPattern: '$^'
-    ignoreOverridden: true
   MatchingDeclarationName:
     active: true
   MemberNameEqualsClassName:
     active: false
-    ignoreOverridden: true
   ObjectPropertyNaming:
     active: true
     constantPattern: '[A-Za-z][_A-Za-z0-9]*'
@@ -327,8 +322,6 @@ naming:
     variablePattern: '[a-z][A-Za-z0-9]*'
     privateVariablePattern: '(_)?[a-z][A-Za-z0-9]*'
     excludeClassPattern: '$^'
-    ignoreOverridden: true
-
 performance:
   active: true
   ArrayPrimitive:
@@ -342,8 +335,6 @@ performance:
 
 potential-bugs:
   active: true
-  DuplicateCaseInWhenExpression:
-    active: true
   EqualsAlwaysReturnsTrueOrFalse:
     active: false
   EqualsWithHashCodeExist:
@@ -397,7 +388,8 @@ style:
   FunctionOnlyReturningConstant:
     active: false
     ignoreOverridableFunction: true
-    excludedFunctions: "describeContents"
+    excludedFunctions:
+      - "describeContents"
   LoopWithTooManyJumpStatements:
     active: false
     maxJumpCount: 1
@@ -411,7 +403,7 @@ style:
     ignoreAnnotation: false
     ignoreNamedArgument: true
     ignoreEnums: false
-  MandatoryBracesIfStatements:
+  BracesOnIfStatements:
     active: false
   MaxLineLength:
     active: true
@@ -433,8 +425,6 @@ style:
     active: true
   OptionalUnit:
     active: false
-  OptionalWhenBraces:
-    active: false
   PreferToOverPairSyntax:
     active: false
   ProtectedMemberInFinalClass:
@@ -444,7 +434,8 @@ style:
   ReturnCount:
     active: true
     max: 8
-    excludedFunctions: "equals"
+    excludedFunctions:
+      - "equals"
   SafeCast:
     active: true
   SerialVersionUIDInSerializableClass:
@@ -458,7 +449,8 @@ style:
     active: false
   UnnecessaryAbstractClass:
     active: false
-    excludeAnnotatedClasses: ["dagger.Module"]
+    ignoreAnnotated:
+      - "dagger.Module"
   UnnecessaryApply:
     active: false
   UnnecessaryInheritance:
