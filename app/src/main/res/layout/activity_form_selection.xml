@@ -33,7 +33,7 @@
                 android:id="@+id/form_selection_auto_complete_text"
                 android:focusable='false'
                 android:cursorVisible='false'
-                setMaterialSpinnerItemsWithArray="@{viewModel.formTemplateListAsString}"
+                app:setMaterialSpinnerItemsWithArray="@{viewModel.formTemplateListAsString}"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="none" />
@@ -57,7 +57,7 @@
                 android:id="@+id/form_language_auto_complete_text"
                 android:focusable='false'
                 android:cursorVisible='false'
-                setMaterialSpinnerItemsWithArray="@{viewModel.formVersionLiveData}"
+                app:setMaterialSpinnerItemsWithArray="@{viewModel.formVersionLiveData}"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="none" />

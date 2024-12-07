@@ -169,7 +169,7 @@
                                 android:layout_height="match_parent"
                                 android:enabled="@{viewModel.isInputEnabled}"
                                 android:text="@string/fragment_advice_recheck_radio_button_dont_recheck"
-                                addRecommendedToEndWhen="@{viewModel.recommendedAdvice.retestAdvice == RetestAdvice.NOT_NEEDED}" />
+                                app:addRecommendedToEndWhen="@{viewModel.recommendedAdvice.retestAdvice == RetestAdvice.NOT_NEEDED}" />
 
                             <RadioButton
                                 android:id="@+id/recheck_vitals_after_radio_button"
@@ -177,7 +177,7 @@
                                 android:layout_height="match_parent"
                                 android:enabled="@{viewModel.isInputEnabled}"
                                 android:text="@string/fragment_advice_recheck_radio_button_recheck_immediately"
-                                addRecommendedToEndWhen="@{viewModel.recommendedAdvice.retestAdvice == RetestAdvice.RIGHT_NOW}" />
+                                app:addRecommendedToEndWhen="@{viewModel.recommendedAdvice.retestAdvice == RetestAdvice.RIGHT_NOW}" />
 
                             <RadioButton
                                 android:id="@+id/recheck_vitals_after_15_min_radio_button"
@@ -185,7 +185,7 @@
                                 android:layout_height="match_parent"
                                 android:enabled="@{viewModel.isInputEnabled}"
                                 android:text="@string/fragment_advice_recheck_radio_button_recheck_15_mins"
-                                addRecommendedToEndWhen="@{viewModel.recommendedAdvice.retestAdvice == RetestAdvice.IN_15_MIN}" />
+                                app:addRecommendedToEndWhen="@{viewModel.recommendedAdvice.retestAdvice == RetestAdvice.IN_15_MIN}" />
                         </RadioGroup>
 
                         <TextView
@@ -219,7 +219,7 @@
                                 android:layout_height="match_parent"
                                 android:enabled="@{viewModel.isInputEnabled}"
                                 android:text="@string/fragment_advice_follow_up_radio_button_no_followup"
-                                addRecommendedToEndWhen="@{viewModel.recommendedAdvice.followupNeeded == false}" />
+                                app:addRecommendedToEndWhen="@{viewModel.recommendedAdvice.followupNeeded == false}" />
 
                             <RadioButton
                                 android:id="@+id/follow_up_needed_radio_button"
@@ -227,7 +227,7 @@
                                 android:layout_height="match_parent"
                                 android:enabled="@{viewModel.isInputEnabled}"
                                 android:text="@string/fragment_advice_follow_up_radio_button_another_day"
-                                addRecommendedToEndWhen="@{viewModel.recommendedAdvice.followupNeeded == true}" />
+                                app:addRecommendedToEndWhen="@{viewModel.recommendedAdvice.followupNeeded == true}" />
                         </RadioGroup>
                     </androidx.constraintlayout.widget.ConstraintLayout>
                 </com.google.android.material.card.MaterialCardView>
@@ -274,7 +274,7 @@
                                 android:layout_height="match_parent"
                                 android:enabled="@{viewModel.isInputEnabled}"
                                 android:text="@string/fragment_advice_referral_radio_button_no_referral"
-                                addRecommendedToEndWhen="@{viewModel.recommendedAdvice.referralRecommended == false}" />
+                                app:addRecommendedToEndWhen="@{viewModel.recommendedAdvice.referralRecommended == false}" />
 
                             <RadioButton
                                 android:id="@+id/send_referral_radio_button"
@@ -282,7 +282,7 @@
                                 android:layout_height="match_parent"
                                 android:enabled="@{viewModel.isInputEnabled}"
                                 android:text="@string/fragment_advice_referral_radio_button_save_with_referral"
-                                addRecommendedToEndWhen="@{viewModel.recommendedAdvice.referralRecommended == true}" />
+                                app:addRecommendedToEndWhen="@{viewModel.recommendedAdvice.referralRecommended == true}" />
                         </RadioGroup>
 
                     </androidx.constraintlayout.widget.ConstraintLayout>

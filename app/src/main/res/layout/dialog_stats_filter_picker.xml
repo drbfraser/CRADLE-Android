@@ -76,7 +76,7 @@
                     android:layout_height="wrap_content"
                     android:inputType="none"
                     android:text="@={viewModel.healthFacilityToUse}"
-                    setMaterialSpinnerItemsWithArray="@{viewModel.selectedHealthFacilitiesAsStrings}" />
+                    app:setMaterialSpinnerItemsWithArray="@{viewModel.selectedHealthFacilitiesAsStrings}" />
 
             </com.google.android.material.textfield.TextInputLayout>
 

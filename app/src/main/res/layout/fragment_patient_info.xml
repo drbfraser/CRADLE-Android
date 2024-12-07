@@ -209,7 +209,7 @@
                             app:startIconDrawable="@drawable/ic_baseline_calendar_today_24"
                             app:suffixText="@string/age_input_suffix_approximate_years_old"
                             errorMessage='@{viewModel.errorMap["dob"]}'
-                            isUsingDateOfBirth="@{viewModel.patientIsExactDob}">
+                            app:isUsingDateOfBirth="@{viewModel.patientIsExactDob}">
                             <!-- Note: The age and date of birth share the same error message map key,
                                  i.e., "age". -->
 
@@ -246,7 +246,7 @@
                                 android:layout_height="wrap_content"
                                 android:inputType="none"
                                 android:text="@={Converter.sexToString(context, viewModel.patientSex)}"
-                                setMaterialSpinnerItemsWithArray="@{@stringArray/sex}" />
+                                app:setMaterialSpinnerItemsWithArray="@{@stringArray/sex}" />
                         </com.google.android.material.textfield.TextInputLayout>
 
                         <!-- Enabled:
@@ -281,7 +281,7 @@
                             app:layout_constraintTop_toBottomOf="@+id/gender_input_layout"
                             addMandatoryStarToLabelWhen="@{viewModel.patientIsPregnant}"
                             errorMessage='@{viewModel.errorMap["gestationalAge"]}'
-                            gestationalAgeUnits="@{viewModel.patientGestationalAgeUnits}">
+                            app:gestationalAgeUnits="@{viewModel.patientGestationalAgeUnits}">
 
                             <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/gestational_age_text"
@@ -318,7 +318,7 @@
                                 android:inputType="none"
                                 android:text="@={viewModel.patientGestationalAgeUnits}"
                                 tools:text="weeks"
-                                setMaterialSpinnerItemsWithArray="@{@stringArray/reading_ga_units}" />
+                                app:setMaterialSpinnerItemsWithArray="@{@stringArray/reading_ga_units}" />
                         </com.google.android.material.textfield.TextInputLayout>
 
                         <com.google.android.material.textfield.TextInputLayout

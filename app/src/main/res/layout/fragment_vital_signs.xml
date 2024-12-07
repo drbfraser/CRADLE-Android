@@ -201,7 +201,7 @@
                                 android:inputType="none"
                                 android:text="@={viewModel.urineTestLeukocytesInput}"
                                 makeTextEmptyWhen="@{!viewModel.isUsingUrineTest}"
-                                setMaterialSpinnerItemsWithArray="@{@stringArray/urine_test_symbols}" />
+                                app:setMaterialSpinnerItemsWithArray="@{@stringArray/urine_test_symbols}" />
                         </com.google.android.material.textfield.TextInputLayout>
 
                         <com.google.android.material.textfield.TextInputLayout
@@ -227,7 +227,7 @@
                                 android:inputType="none"
                                 android:text="@={viewModel.urineTestNitritesInput}"
                                 makeTextEmptyWhen="@{!viewModel.isUsingUrineTest}"
-                                setMaterialSpinnerItemsWithArray="@{@stringArray/urine_test_symbols}" />
+                                app:setMaterialSpinnerItemsWithArray="@{@stringArray/urine_test_symbols}" />
                         </com.google.android.material.textfield.TextInputLayout>
 
                         <com.google.android.material.textfield.TextInputLayout
@@ -253,7 +253,7 @@
                                 android:inputType="none"
                                 android:text="@={viewModel.urineTestGlucoseInput}"
                                 makeTextEmptyWhen="@{!viewModel.isUsingUrineTest}"
-                                setMaterialSpinnerItemsWithArray="@{@stringArray/urine_test_symbols}" />
+                                app:setMaterialSpinnerItemsWithArray="@{@stringArray/urine_test_symbols}" />
                         </com.google.android.material.textfield.TextInputLayout>
 
                         <com.google.android.material.textfield.TextInputLayout
@@ -279,7 +279,7 @@
                                 android:inputType="none"
                                 android:text="@={viewModel.urineTestProteinInput}"
                                 makeTextEmptyWhen="@{!viewModel.isUsingUrineTest}"
-                                setMaterialSpinnerItemsWithArray="@{@stringArray/urine_test_symbols}" />
+                                app:setMaterialSpinnerItemsWithArray="@{@stringArray/urine_test_symbols}" />
                         </com.google.android.material.textfield.TextInputLayout>
 
                         <com.google.android.material.textfield.TextInputLayout
@@ -305,7 +305,7 @@
                                 android:inputType="none"
                                 android:text="@={viewModel.urineTestBloodInput}"
                                 makeTextEmptyWhen="@{!viewModel.isUsingUrineTest}"
-                                setMaterialSpinnerItemsWithArray="@{@stringArray/urine_test_symbols}" />
+                                app:setMaterialSpinnerItemsWithArray="@{@stringArray/urine_test_symbols}" />
                         </com.google.android.material.textfield.TextInputLayout>
                     </androidx.constraintlayout.widget.ConstraintLayout>
                 </com.google.android.material.card.MaterialCardView>
