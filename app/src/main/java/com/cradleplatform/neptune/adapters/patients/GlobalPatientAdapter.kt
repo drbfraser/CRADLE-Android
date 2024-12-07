@@ -6,6 +6,7 @@ import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.TextView
 import androidx.cardview.widget.CardView
+import androidx.core.content.res.ResourcesCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.model.GlobalPatient
@@ -33,13 +34,21 @@ class GlobalPatientAdapter(private val patientList: List<GlobalPatient>) :
         holder.name.text = globalPatient.name
         if (globalPatient.isMyPatient) {
             holder.addToMyPatientButton.background =
-                holder.addToMyPatientButton.context.resources.getDrawable(R.drawable.ic_check_circle_black_24dp)
+                ResourcesCompat.getDrawable(
+                    holder.addToMyPatientButton.context.resources,
+                    R.drawable.ic_check_circle_black_24dp,
+                    null
+                )
         } else {
             // There seems to be a bug in recycler view's recycling method
             // if the else statement is not here, it will recycle old views with the if
             // statement from above.
             holder.addToMyPatientButton.background =
-                holder.addToMyPatientButton.context.resources.getDrawable(R.drawable.ic_add_circle_black_24dp)
+                ResourcesCompat.getDrawable(
+                    holder.addToMyPatientButton.context.resources,
+                    R.drawable.ic_add_circle_black_24dp,
+                    null
+                )
         }
         holder.addToMyPatientButton.setOnClickListener {
             onAddClicked(globalPatient)

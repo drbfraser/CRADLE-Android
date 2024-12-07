@@ -19,6 +19,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -295,12 +296,12 @@ class FormRenderingActivity : AppCompatActivity() {
 
         categoryViewList.forEach { categoryView ->
             categoryView.findViewById<Button>(R.id.category_row_btn)?.let { button ->
-                button.background = getDrawable(R.drawable.rounded_button_grey)
+                button.background = AppCompatResources.getDrawable(this, R.drawable.rounded_button_grey)
             }
         }
         val button: Button? =
             categoryViewList.getOrNull(currCategory - 1)?.findViewById(R.id.category_row_btn)
-        button?.background = getDrawable(R.drawable.rounded_button_teal)
+        button?.background = AppCompatResources.getDrawable(this, R.drawable.rounded_button_teal)
     }
 
     private fun updateQuestionsTotalText() {
@@ -383,7 +384,7 @@ class FormRenderingActivity : AppCompatActivity() {
         button.text = categoryPair.first
         if (categoryNumber == FIRST_CATEGORY_POSITION) {
             // set the first button as selected
-            button.background = getDrawable(R.drawable.rounded_button_teal)
+            button.background = AppCompatResources.getDrawable(this, R.drawable.rounded_button_teal)
         }
         button.setOnClickListener {
             viewModel.changeCategory(categoryNumber)
@@ -401,13 +402,13 @@ class FormRenderingActivity : AppCompatActivity() {
     private fun hideBottomSheet() {
         recyclerView.alpha = 1F
         bottomSheetBehaviour.state = BottomSheetBehavior.STATE_COLLAPSED
-        formStateBtn.background = getDrawable(R.drawable.ic_baseline_arrow_up_24)
+        formStateBtn.background = AppCompatResources.getDrawable(this, R.drawable.ic_baseline_arrow_up_24)
     }
 
     private fun showBottomSheet() {
         recyclerView.alpha = 0.3F
         bottomSheetBehaviour.state = BottomSheetBehavior.STATE_EXPANDED
-        formStateBtn.background = getDrawable(R.drawable.ic_baseline_arrow_down_24)
+        formStateBtn.background = AppCompatResources.getDrawable(this, R.drawable.ic_baseline_arrow_down_24)
     }
 
     /**
