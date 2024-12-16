@@ -440,13 +440,13 @@ class MigrationTests {
         val recentVersionAssessment = Assessment(
             id = "4535",
             dateAssessed = 1595745946L,
-            healthCareWorkerId = 2,
+            healthcareWorkerId = 2,
             diagnosis = "This is a detailed diagnosis.",
             treatment = "This is a treatment",
             medicationPrescribed = "These are medications prescripted.",
             specialInvestigations = "This is a special investiation",
-            followupNeeded = true,
-            followupInstructions = "These are things to do",
+            followUpNeeded = true,
+            followUpInstructions = "These are things to do",
             patientId = patientId
         )
 
@@ -507,12 +507,12 @@ class MigrationTests {
         val assessmentForReading = Assessment(
             id = "4535",
             dateAssessed = 1595745946L,
-            healthCareWorkerId = 2,
+            healthcareWorkerId = 2,
             diagnosis = "This is a detailed diagnosis.",
             treatment = "This is a treatment",
             medicationPrescribed = "These are medications prescripted.",
             specialInvestigations = "This is a special investiation",
-            followupNeeded = true, followupInstructions = "These are things to do",
+            followUpNeeded = true, followUpInstructions = "These are things to do",
             patientId = patientId
         )
 

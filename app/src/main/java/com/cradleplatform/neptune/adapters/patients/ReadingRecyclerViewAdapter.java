@@ -100,7 +100,7 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
                 myViewHolder.finalDiagnosis.setText(currAssessment.getDiagnosis());
                 myViewHolder.treatmentOp.setText(currAssessment.getTreatment());
                 myViewHolder.medication.setText(currAssessment.getMedicationPrescribed());
-                myViewHolder.followUp.setText(currAssessment.getFollowupInstructions());
+                myViewHolder.followUp.setText(currAssessment.getFollowUpInstructions());
                 break;
             case REFERRAL_ASSESSED:
                 Referral currReferral = (Referral) combinedList.get(i);

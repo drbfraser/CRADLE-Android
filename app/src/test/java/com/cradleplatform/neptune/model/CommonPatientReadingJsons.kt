@@ -443,14 +443,14 @@ object CommonPatientReadingJsons {
                     ),
                     followUp = Assessment(
                         id = "22",
-                        followupInstructions = "This is my follow up that is needded",
+                        followUpInstructions = "This is my follow up that is needded",
                         specialInvestigations = "This is a messgage",
                         diagnosis = "",
                         treatment = "Treatmnents applied",
                         medicationPrescribed = "",
                         dateAssessed = 1604981359L,
-                        followupNeeded = true,
-                        healthCareWorkerId = 1,
+                        followUpNeeded = true,
+                        healthcareWorkerId = 1,
                         patientId = "66665"
                     ),
                     urineTest = UrineTest(
