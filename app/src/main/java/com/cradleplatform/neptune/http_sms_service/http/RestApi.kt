@@ -180,16 +180,16 @@ class RestApi(
     /**
      * Sends a request to the authentication API to log a user in.
      *
-     * @param email the user's email
-     * @param password the user's password
-     * @return if successful, the [LoginResponse] that was returned by the server
-     *  which contains a bearer token to authenticate the user
+     * @param email The user's email or username.
+     * @param password The user's password.
+     * @return If successful, the [LoginResponse] that was returned by the server
+     *  which contains a bearer token to authenticate the user.
      */
     suspend fun authenticate(
         email: String,
         password: String,
     ): NetworkResult<LoginResponse> = withContext(IO) {
-        val body = JSONObject().put("email", email).put("password", password).toString()
+        val body = JSONObject().put("username", email).put("password", password).toString()
             .encodeToByteArray()
 
         val method = Http.Method.POST
