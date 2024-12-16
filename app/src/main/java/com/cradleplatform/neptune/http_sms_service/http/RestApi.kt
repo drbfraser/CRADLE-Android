@@ -2155,7 +2155,7 @@ class RestApi(
      */
     private val headers: Map<String, String>
         get() {
-            val token = sharedPreferences.getString(UserViewModel.TOKEN_KEY, null)
+            val token = sharedPreferences.getString(UserViewModel.ACCESS_TOKEN_KEY, null)
             return if (token != null) {
                 mapOf("Authorization" to "Bearer $token")
             } else {
