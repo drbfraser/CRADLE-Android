@@ -19,12 +19,6 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.net.HttpURLConnection.HTTP_OK
-import com.cradleplatform.neptune.viewmodel.UserViewModel.Companion.TOKEN_KEY
-import com.cradleplatform.neptune.viewmodel.UserViewModel.Companion.USER_ID_KEY
-import com.cradleplatform.neptune.viewmodel.UserViewModel.Companion.PHONE_NUMBERS
-import com.cradleplatform.neptune.viewmodel.UserViewModel.Companion.EMAIL_KEY
-import com.cradleplatform.neptune.viewmodel.UserViewModel.Companion.RELAY_PHONE_NUMBER
-import com.cradleplatform.neptune.viewmodel.UserViewModel.Companion.USER_PHONE_NUMBER
 import javax.inject.Inject
 
 /**
@@ -40,7 +34,7 @@ class LoginManager @Inject constructor(
 ) {
     companion object {
         private const val TAG = "LoginManager"
-        const val TOKEN_KEY = "token"
+        const val ACCESS_TOKEN_KEY = "accessToken"
         const val EMAIL_KEY = "loginEmail"
         // A list of all phone numbers for the user
         const val PHONE_NUMBERS = "phoneNumbers"
@@ -53,7 +47,7 @@ class LoginManager @Inject constructor(
 
     fun isLoggedIn(): Boolean {
         sharedPreferences.run {
-            if (!contains(TOKEN_KEY)) {
+            if (!contains(ACCESS_TOKEN_KEY)) {
                 return false
             }
             if (!contains(USER_ID_KEY)) {
@@ -90,24 +84,24 @@ class LoginManager @Inject constructor(
             if (loginResult is NetworkResult.Success) {
                 val loginResponse = loginResult.value
                 sharedPreferences.edit(commit = true) {
-                    putString(TOKEN_KEY, loginResponse.token)
-                    putInt(USER_ID_KEY, loginResponse.userId)
-                    putString(EMAIL_KEY, loginResponse.email)
+                    putString(ACCESS_TOKEN_KEY, loginResponse.accessToken)
+                    putInt(USER_ID_KEY, loginResponse.user.id)
+                    putString(EMAIL_KEY, loginResponse.user.email)
 
-                    val phoneNumbersSerialized = loginResponse.phoneNumbers.joinToString(",")
+                    val phoneNumbersSerialized = loginResponse.user.phoneNumbers.joinToString(",")
                     putString(PHONE_NUMBERS, phoneNumbersSerialized)
                     putString(
                         context.getString(R.string.key_vht_name),
-                        loginResponse.firstName
+                        loginResponse.user.name
                     )
 
-                    if (UserRole.safeValueOf(loginResponse.role) == UserRole.UNKNOWN) {
-                        Log.w(TAG, "server returned unrecognized role ${loginResponse.role}")
+                    if (UserRole.safeValueOf(loginResponse.user.role) == UserRole.UNKNOWN) {
+                        Log.w(TAG, "server returned unrecognized role ${loginResponse.user.role}")
                     }
                     // Put the role in as-is anyway
                     putString(
                         context.getString(R.string.key_role),
-                        loginResponse.role
+                        loginResponse.user.role
                     )
 
                     putInt(
@@ -118,7 +112,7 @@ class LoginManager @Inject constructor(
                     setDefaultRelayPhoneNumber()
 
                     // Extract and securely store the smsKey
-                    val smsKey = loginResponse.smsKey
+                    val smsKey = loginResponse.user.smsKey
                     // TODO: Modify such that what ever is stored is just
                     smsKeyManager.storeSmsKey(smsKey)
                     // TODO: todo check result
@@ -157,7 +151,7 @@ class LoginManager @Inject constructor(
         periodicSyncer.endPeriodicSync()
         // Clear all the user specific information from sharedPreferences
         sharedPreferences.edit().remove(USER_PHONE_NUMBER).apply()
-        sharedPreferences.edit().remove(TOKEN_KEY).apply()
+        sharedPreferences.edit().remove(ACCESS_TOKEN_KEY).apply()
         sharedPreferences.edit().remove(USER_ID_KEY).apply()
         sharedPreferences.edit().remove(EMAIL_KEY).apply()
         sharedPreferences.edit().remove(PHONE_NUMBERS).apply()
@@ -174,19 +168,27 @@ class LoginManager @Inject constructor(
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class LoginResponse(
     @JsonProperty
+    val accessToken: String,
+    @JsonProperty
+    val user: LoginResponseUser
+)
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class LoginResponseUser(
+    @JsonProperty
+    val id: Int,
+    @JsonProperty
+    val username: String,
+    @JsonProperty
     val email: String,
     @JsonProperty
     val role: String,
     @JsonProperty
-    val firstName: String?,
+    val name: String?,
     @JsonProperty
     val healthFacilityName: String?,
     @JsonProperty
     val phoneNumbers: List<String>,
-    @JsonProperty
-    val userId: Int,
-    @JsonProperty
-    val token: String,
     @JsonProperty
     val smsKey: String
 )
