@@ -466,7 +466,6 @@ data class Patient(
 
             // Some backend responses send gestationalTimestamp = null when not pregnant
             val gestationalAge = if (
-                has(PatientField.GESTATIONAL_AGE_UNIT.text) &&
                 has(PatientField.GESTATIONAL_AGE_VALUE.text) &&
                 get(PatientField.GESTATIONAL_AGE_VALUE).toString() != "null"
             ) {
@@ -693,8 +692,10 @@ sealed class GestationalAge(val timestamp: BigInteger) : Serializable {
          * Nested deserialization from the given [jsonNode]
          */
         fun get(jsonNode: JsonNode): GestationalAge = jsonNode.run {
-            val units = get(PatientField.GESTATIONAL_AGE_UNIT)!!.asText()
             val value = get(PatientField.GESTATIONAL_AGE_VALUE)!!.asLong()
+            /* TODO: Rework the logic for displaying pregnancy age in weeks or months. This is only.
+            *   This is only relevant when displaying the data.  */
+            /*
             return when (units) {
                 UNIT_VALUE_WEEKS -> GestationalAgeWeeks(BigInteger.valueOf(value))
                 UNIT_VALUE_MONTHS, "DAYS" -> GestationalAgeMonths(BigInteger.valueOf(value))
@@ -704,6 +705,9 @@ sealed class GestationalAge(val timestamp: BigInteger) : Serializable {
                     )
                 }
             }
+            */
+            return GestationalAgeMonths(BigInteger.valueOf(value))
+
         }
     }
 
@@ -727,7 +731,6 @@ sealed class GestationalAge(val timestamp: BigInteger) : Serializable {
             } else {
                 UNIT_VALUE_WEEKS
             }
-            gen.writeStringField(PatientField.GESTATIONAL_AGE_UNIT, units)
             gen.writeStringField(
                 PatientField.GESTATIONAL_AGE_VALUE,
                 gestationalAge.timestamp.toString()
@@ -796,11 +799,10 @@ class GestationalAgeMonths(timestamp: BigInteger) : GestationalAge(timestamp), S
  */
 
 private enum class PatientField(override val text: String) : Field {
-    ID("patientId"),
-    NAME("patientName"),
-    DOB("dob"),
-    IS_EXACT_DOB("isExactDob"),
-    GESTATIONAL_AGE_UNIT("gestationalAgeUnit"),
+    ID("id"),
+    NAME("name"),
+    DOB("dateOfBirth"),
+    IS_EXACT_DOB("isExactDateOfBirth"),
     GESTATIONAL_AGE_VALUE("pregnancyStartDate"),
     SEX("patientSex"),
     IS_PREGNANT("isPregnant"),
