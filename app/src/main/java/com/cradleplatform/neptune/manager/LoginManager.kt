@@ -114,7 +114,7 @@ class LoginManager @Inject constructor(
                     // Extract and securely store the smsKey
                     val smsKey = loginResponse.user.smsKey
                     // TODO: Modify such that what ever is stored is just
-                    smsKeyManager.storeSmsKey(smsKey)
+                    smsKeyManager.storeSmsKey(smsKey.key)
                     // TODO: todo check result
                 }
 
@@ -190,5 +190,11 @@ data class LoginResponseUser(
     @JsonProperty
     val phoneNumbers: List<String>,
     @JsonProperty
-    val smsKey: String
+    val smsKey: LoginResponseSmsKey
+)
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class LoginResponseSmsKey(
+    @JsonProperty
+    val key: String
 )
