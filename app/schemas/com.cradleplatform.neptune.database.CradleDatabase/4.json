@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 4,
-    "identityHash": "251c8df52b475aa3235388dc0c7a44e3",
+    "identityHash": "258c569db19fa512a57647647f777baa",
     "entities": [
       {
         "tableName": "Reading",
@@ -496,7 +496,7 @@
       },
       {
         "tableName": "Assessment",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `dateAssessed` INTEGER NOT NULL, `healthCareWorkerId` INTEGER NOT NULL, `patientId` TEXT NOT NULL, `diagnosis` TEXT, `treatment` TEXT, `medicationPrescribed` TEXT, `specialInvestigations` TEXT, `followupNeeded` INTEGER, `followupInstructions` TEXT, `lastEdited` INTEGER, `lastServerUpdate` INTEGER, `isUploadedToServer` INTEGER NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`patientId`) REFERENCES `Patient`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `dateAssessed` INTEGER NOT NULL, `healthcareWorkerId` INTEGER NOT NULL, `patientId` TEXT NOT NULL, `diagnosis` TEXT, `treatment` TEXT, `medicationPrescribed` TEXT, `specialInvestigations` TEXT, `followUpNeeded` INTEGER, `followUpInstructions` TEXT, `lastEdited` INTEGER, `lastServerUpdate` INTEGER, `isUploadedToServer` INTEGER NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`patientId`) REFERENCES `Patient`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -511,8 +511,8 @@
             "notNull": true
           },
           {
-            "fieldPath": "healthCareWorkerId",
-            "columnName": "healthCareWorkerId",
+            "fieldPath": "healthcareWorkerId",
+            "columnName": "healthcareWorkerId",
             "affinity": "INTEGER",
             "notNull": true
           },
@@ -547,14 +547,14 @@
             "notNull": false
           },
           {
-            "fieldPath": "followupNeeded",
-            "columnName": "followupNeeded",
+            "fieldPath": "followUpNeeded",
+            "columnName": "followUpNeeded",
             "affinity": "INTEGER",
             "notNull": false
           },
           {
-            "fieldPath": "followupInstructions",
-            "columnName": "followupInstructions",
+            "fieldPath": "followUpInstructions",
+            "columnName": "followUpInstructions",
             "affinity": "TEXT",
             "notNull": false
           },
@@ -775,7 +775,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '251c8df52b475aa3235388dc0c7a44e3')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '258c569db19fa512a57647647f777baa')"
     ]
   }
 }

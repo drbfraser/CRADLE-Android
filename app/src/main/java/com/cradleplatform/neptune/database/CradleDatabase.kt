@@ -186,7 +186,7 @@ internal object Migrations {
     }
 
     /**
-     * Version 3: add FormResponse
+     * Version 4: add FormResponse
      */
     private val MIGRATION_3_4 = object : Migration(3, 4) {
         override fun migrate(database: SupportSQLiteDatabase) {
