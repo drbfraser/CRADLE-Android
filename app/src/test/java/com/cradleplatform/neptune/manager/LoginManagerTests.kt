@@ -49,7 +49,7 @@ internal class LoginManagerTests {
         private const val TEST_FIRST_NAME = "NAME PERSON"
         private const val TEST_USER_ID = 4
         private const val TEST_USER_EMAIL = "test-android@example.com"
-        private val TEST_USER_PHONE_NUMBERS = listOf<String>("666-666-6666", "777-777-7777", "555-555-5555")
+        private val TEST_USER_PHONE_NUMBERS = listOf<String>("+1-666-666-6666", "+1-777-777-7777", "+1-555-555-5555")
         private const val TEST_USER_PASSWORD = "password"
         private const val TEST_AUTH_TOKEN = "sOmEaUtHToken"
         private val TEST_USER_ROLE = UserRole.VHT
