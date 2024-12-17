@@ -46,14 +46,14 @@ internal class LoginManagerTests {
 
     companion object {
         private const val TEST_USER_FACILITY_NAME = "H3445"
-        private const val TEST_FIRST_NAME = "NAME PERSON"
+        private const val TEST_NAME = "NAME PERSON"
         private const val TEST_USER_ID = 4
         private const val TEST_USER_EMAIL = "test-android@example.com"
         private const val TEST_USERNAME = "test-android"
         private const val TEST_SMS_KEY = "SGVsbG8sIFdvcmxkIQ"
         private val TEST_USER_PHONE_NUMBERS = listOf<String>("+1-666-666-6666", "+1-777-777-7777", "+1-555-555-5555")
         private const val TEST_USER_PASSWORD = "password"
-        private const val TEST_AUTH_TOKEN = "sOmEaUtHToken"
+        private const val TEST_ACCESS_TOKEN = "sOmEaUtHToken"
         private val TEST_USER_ROLE = UserRole.VHT
     }
 
@@ -100,12 +100,12 @@ internal class LoginManagerTests {
                             val json = JacksonMapper.createWriter<LoginResponse>()
                                 .writeValueAsString(
                                     LoginResponse(
-                                        accessToken = TEST_AUTH_TOKEN,
+                                        accessToken = TEST_ACCESS_TOKEN,
                                         user = LoginResponseUser(
                                             id = TEST_USER_ID,
                                             email = TEST_USER_EMAIL,
                                             role = "VHT",
-                                            name = TEST_FIRST_NAME,
+                                            name = TEST_NAME,
                                             healthFacilityName = TEST_USER_FACILITY_NAME,
                                             phoneNumbers = TEST_USER_PHONE_NUMBERS,
                                             username = TEST_USERNAME,
@@ -210,10 +210,10 @@ internal class LoginManagerTests {
             }
 
             assert(loginManager.isLoggedIn())
-            assertEquals(TEST_AUTH_TOKEN, fakeSharedPreferences["token"]) { "bad auth token" }
+            assertEquals(TEST_ACCESS_TOKEN, fakeSharedPreferences["token"]) { "bad auth token" }
             assertEquals(TEST_USER_ID, fakeSharedPreferences["userId"]) { "bad userId" }
             assertEquals(
-                TEST_FIRST_NAME,
+                TEST_NAME,
                 fakeSharedPreferences[mockContext.getString(R.string.key_vht_name)]
             ) { "bad first name" }
 
@@ -316,12 +316,12 @@ internal class LoginManagerTests {
             assert(result is NetworkResult.Success)
             assert(loginManager.isLoggedIn())
 
-            assertEquals(TEST_AUTH_TOKEN, fakeSharedPreferences["token"]) { "bad auth token" }
-            assertEquals(TEST_USER_ID, fakeSharedPreferences["userId"]) { "bad userId" }
+            assertEquals(TEST_ACCESS_TOKEN, fakeSharedPreferences["accessToken"]) { "Bad access token." }
+            assertEquals(TEST_USER_ID, fakeSharedPreferences["userId"]) { "Bad userId." }
             assertEquals(
-                TEST_FIRST_NAME,
+                TEST_NAME,
                 fakeSharedPreferences[mockContext.getString(R.string.key_vht_name)]
-            ) { "bad first name" }
+            ) { "Bad name." }
 
             val role =
                 UserRole.safeValueOf(fakeSharedPreferences[mockContext.getString(R.string.key_role)] as String)
