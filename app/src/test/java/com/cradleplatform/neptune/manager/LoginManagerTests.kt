@@ -57,7 +57,7 @@ internal class LoginManagerTests {
 
     private val fakeSharedPreferences: MutableMap<String, Any?>
     private val mockSharedPrefs: SharedPreferences
-    private val fakeEncrptedSharedPreferences: MutableMap<String, Any?>
+    private val fakeEncryptedSharedPreferences: MutableMap<String, Any?>
     private val encryptedSharedPreferences: EncryptedSharedPreferences
 
     init {
@@ -65,7 +65,7 @@ internal class LoginManagerTests {
         fakeSharedPreferences = map
         mockSharedPrefs = sharedPrefs
         val (map2, encrSharedPrefs) = MockDependencyUtils.createMockEncryptedSharedPreferences()
-        fakeEncrptedSharedPreferences = map2
+        fakeEncryptedSharedPreferences = map2
         encryptedSharedPreferences = encrSharedPrefs
     }
 
