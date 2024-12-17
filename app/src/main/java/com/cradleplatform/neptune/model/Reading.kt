@@ -286,11 +286,11 @@ data class Reading(
  * @property heartRate The heart rate in beats per minute (BPM).
  */
 data class BloodPressure constructor(
-    @JsonProperty("bpSystolic")
+    @JsonProperty("systolicBloodPressure")
     val systolic: Int,
-    @JsonProperty("bpDiastolic")
+    @JsonProperty("diastolicBloodPressure")
     val diastolic: Int,
-    @JsonProperty("heartRateBPM")
+    @JsonProperty("heartRate")
     val heartRate: Int
 ) : Serializable, Verifiable<BloodPressure> {
     /**
@@ -564,23 +564,23 @@ enum class RetestAdvice {
 private enum class ReadingField(override val text: String) : Field {
     ID("readingId"),
     PATIENT_ID("patientId"),
-    DATE_TIME_TAKEN("dateTimeTaken"),
+    DATE_TIME_TAKEN("dateTaken"),
     URINE_TEST("urineTests"),
     SYMPTOMS("symptoms"),
-    DATE_RECHECK_VITALS_NEEDED("dateRecheckVitalsNeeded"),
+    DATE_RECHECK_VITALS_NEEDED("dateRetestNeeded"),
     IS_FLAGGED_FOR_FOLLOWUP("isFlaggedForFollowup"),
     PREVIOUS_READING_IDS("retestOfPreviousReadingIds"),
     LAST_EDITED("lastEdited"),
     USER_ID("userId"),
     REFERRAL("referral"),
-    FOLLOWUP("followup"),
+    FOLLOWUP("followUp"),
 }
 
 /**
  * JSON keys for [BloodPressure] fields.
  */
 private enum class BloodPressureField(override val text: String) : Field {
-    SYSTOLIC("bpSystolic"),
-    DIASTOLIC("bpDiastolic"),
-    HEART_RATE("heartRateBPM"),
+    SYSTOLIC("systolicBloodPressure"),
+    DIASTOLIC("diastolicBloodPressure"),
+    HEART_RATE("heartRate"),
 }
