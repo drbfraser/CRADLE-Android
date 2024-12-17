@@ -49,6 +49,8 @@ internal class LoginManagerTests {
         private const val TEST_FIRST_NAME = "NAME PERSON"
         private const val TEST_USER_ID = 4
         private const val TEST_USER_EMAIL = "test-android@example.com"
+        private const val TEST_USERNAME = "test-android"
+        private const val TEST_SMS_KEY = "SGVsbG8sIFdvcmxkIQ"
         private val TEST_USER_PHONE_NUMBERS = listOf<String>("+1-666-666-6666", "+1-777-777-7777", "+1-555-555-5555")
         private const val TEST_USER_PASSWORD = "password"
         private const val TEST_AUTH_TOKEN = "sOmEaUtHToken"
@@ -81,7 +83,7 @@ internal class LoginManagerTests {
                             try {
                                 val userLogin =
                                     JSONObject(request.body.readString(Charset.defaultCharset()))
-                                if (userLogin.getString("email") != TEST_USER_EMAIL) {
+                                if (userLogin.getString("username") != TEST_USER_EMAIL) {
                                     setResponseCode(401)
                                     return@response
                                 }
@@ -98,14 +100,19 @@ internal class LoginManagerTests {
                             val json = JacksonMapper.createWriter<LoginResponse>()
                                 .writeValueAsString(
                                     LoginResponse(
-                                        token = TEST_AUTH_TOKEN,
-                                        email = TEST_USER_EMAIL,
-                                        role = "VHT",
-                                        userId = TEST_USER_ID,
-                                        firstName = TEST_FIRST_NAME,
-                                        healthFacilityName = TEST_USER_FACILITY_NAME,
-                                        phoneNumbers = TEST_USER_PHONE_NUMBERS,
-                                        smsKey = "{\"sms_key\":\"SGVsbG8sIFdvcmxkIQ==\"}"
+                                        accessToken = TEST_AUTH_TOKEN,
+                                        user = LoginResponseUser(
+                                            id = TEST_USER_ID,
+                                            email = TEST_USER_EMAIL,
+                                            role = "VHT",
+                                            name = TEST_FIRST_NAME,
+                                            healthFacilityName = TEST_USER_FACILITY_NAME,
+                                            phoneNumbers = TEST_USER_PHONE_NUMBERS,
+                                            username = TEST_USERNAME,
+                                            smsKey = LoginResponseSmsKey(
+                                                key = TEST_SMS_KEY
+                                            )
+                                        )
                                     )
                                 )
                             setResponseCode(200)
