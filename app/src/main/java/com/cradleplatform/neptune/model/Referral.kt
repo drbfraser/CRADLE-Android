@@ -222,7 +222,7 @@ private enum class ReferralField(override val text: String) : Field {
     COMMENT("comment"),
     USER_ID("userId"),
     PATIENT_ID("patientId"),
-    HEALTH_FACILITY_NAME("referralHealthFacilityName"),
+    HEALTH_FACILITY_NAME("healthFacilityName"),
     ACTION_TAKEN("actionTaken"),
     CANCEL_REASON("cancelReason"),
     NOT_ATTEND_REASON("notAttendReason"),
