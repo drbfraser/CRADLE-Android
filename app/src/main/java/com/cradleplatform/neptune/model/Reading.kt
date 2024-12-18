@@ -562,7 +562,7 @@ enum class RetestAdvice {
  * JSON keys for [Reading] fields.
  */
 private enum class ReadingField(override val text: String) : Field {
-    ID("readingId"),
+    ID("id"),
     PATIENT_ID("patientId"),
     DATE_TIME_TAKEN("dateTaken"),
     URINE_TEST("urineTests"),
