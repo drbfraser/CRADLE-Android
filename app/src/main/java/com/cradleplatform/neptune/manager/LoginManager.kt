@@ -35,7 +35,8 @@ class LoginManager @Inject constructor(
     companion object {
         private const val TAG = "LoginManager"
         const val ACCESS_TOKEN_KEY = "accessToken"
-        const val EMAIL_KEY = "loginEmail"
+        const val EMAIL_KEY = "email"
+        const val USERNAME_KEY = "username"
         // A list of all phone numbers for the user
         const val PHONE_NUMBERS = "phoneNumbers"
         // The current phone number of the user - will be the source of SMS messages
@@ -87,6 +88,7 @@ class LoginManager @Inject constructor(
                     putString(ACCESS_TOKEN_KEY, loginResponse.accessToken)
                     putInt(USER_ID_KEY, loginResponse.user.id)
                     putString(EMAIL_KEY, loginResponse.user.email)
+                    putString(USERNAME_KEY, loginResponse.user.username)
 
                     val phoneNumbersSerialized = loginResponse.user.phoneNumbers.joinToString(",")
                     putString(PHONE_NUMBERS, phoneNumbersSerialized)
@@ -154,6 +156,7 @@ class LoginManager @Inject constructor(
         sharedPreferences.edit().remove(ACCESS_TOKEN_KEY).apply()
         sharedPreferences.edit().remove(USER_ID_KEY).apply()
         sharedPreferences.edit().remove(EMAIL_KEY).apply()
+        sharedPreferences.edit().remove(USERNAME_KEY).apply()
         sharedPreferences.edit().remove(PHONE_NUMBERS).apply()
         sharedPreferences.edit().remove(RELAY_PHONE_NUMBER).apply()
         smsKeyManager.clearSmsKey()

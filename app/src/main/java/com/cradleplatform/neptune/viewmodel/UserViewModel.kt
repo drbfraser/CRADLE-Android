@@ -33,7 +33,8 @@ class UserViewModel @Inject constructor(
 
     companion object {
         const val ACCESS_TOKEN_KEY = "accessToken"
-        const val EMAIL_KEY = "loginEmail"
+        const val EMAIL_KEY = "email"
+        const val USERNAME = "username"
 
         // A list of all phone numbers for the user
         const val PHONE_NUMBERS = "phoneNumbers"
