@@ -8,17 +8,17 @@ import com.fasterxml.jackson.annotation.JsonProperty
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class Statistics(
-    @JsonProperty("patients_referred")
+    @JsonProperty("patientsReferred")
     val patientsReferred: Int,
-    @JsonProperty("sent_referrals")
+    @JsonProperty("sentReferrals")
     val sentReferrals: Int,
-    @JsonProperty("unique_patient_readings")
+    @JsonProperty("uniquePatientReadings")
     val uniquePatientReadings: Int,
-    @JsonProperty("total_readings")
+    @JsonProperty("totalReadings")
     val totalReadings: Int,
-    @JsonProperty("days_with_readings")
+    @JsonProperty("daysWithReadings")
     val daysWithReadings: Int,
-    @JsonProperty("color_readings")
+    @JsonProperty("colorReadings")
     val colorReadings: ColorReadings
 )
 
