@@ -694,7 +694,7 @@ sealed class GestationalAge(val timestamp: BigInteger) : Serializable {
          */
         fun get(jsonNode: JsonNode): GestationalAge = jsonNode.run {
             val value = get(PatientField.PREGNANCY_START_DATE)!!.asLong()
-            /* TODO: Rework the logic for displaying pregnancy age in weeks or months. This is only.
+            /* TODO: Rework the logic for displaying pregnancy age in weeks or months.
             *   This is only relevant when displaying the data.  */
             /*
             return when (units) {
@@ -805,7 +805,7 @@ private enum class PatientField(override val text: String) : Field {
     DOB("dateOfBirth"),
     IS_EXACT_DOB("isExactDateOfBirth"),
     PREGNANCY_START_DATE("pregnancyStartDate"),
-    SEX("patientSex"),
+    SEX("sex"),
     IS_PREGNANT("isPregnant"),
     PREGNANCY_ID("pregnancyId"),
     PREGNANCY_END_DATE("pregnancyEndDate"),
