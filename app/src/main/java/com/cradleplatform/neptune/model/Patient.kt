@@ -2,6 +2,7 @@ package com.cradleplatform.neptune.model
 
 import android.content.Context
 import android.os.Parcelable
+import android.util.Log
 import androidx.core.text.isDigitsOnly
 import androidx.room.ColumnInfo
 import androidx.room.Embedded
@@ -466,8 +467,8 @@ data class Patient(
 
             // Some backend responses send gestationalTimestamp = null when not pregnant
             val gestationalAge = if (
-                has(PatientField.GESTATIONAL_AGE_VALUE.text) &&
-                get(PatientField.GESTATIONAL_AGE_VALUE).toString() != "null"
+                has(PatientField.PREGNANCY_START_DATE.text) &&
+                get(PatientField.PREGNANCY_START_DATE).toString() != "null"
             ) {
                 GestationalAge.Deserializer.get(this)
             } else {
@@ -692,7 +693,7 @@ sealed class GestationalAge(val timestamp: BigInteger) : Serializable {
          * Nested deserialization from the given [jsonNode]
          */
         fun get(jsonNode: JsonNode): GestationalAge = jsonNode.run {
-            val value = get(PatientField.GESTATIONAL_AGE_VALUE)!!.asLong()
+            val value = get(PatientField.PREGNANCY_START_DATE)!!.asLong()
             /* TODO: Rework the logic for displaying pregnancy age in weeks or months. This is only.
             *   This is only relevant when displaying the data.  */
             /*
@@ -732,7 +733,7 @@ sealed class GestationalAge(val timestamp: BigInteger) : Serializable {
                 UNIT_VALUE_WEEKS
             }
             gen.writeStringField(
-                PatientField.GESTATIONAL_AGE_VALUE,
+                PatientField.PREGNANCY_START_DATE,
                 gestationalAge.timestamp.toString()
             )
         }
@@ -803,7 +804,7 @@ private enum class PatientField(override val text: String) : Field {
     NAME("name"),
     DOB("dateOfBirth"),
     IS_EXACT_DOB("isExactDateOfBirth"),
-    GESTATIONAL_AGE_VALUE("pregnancyStartDate"),
+    PREGNANCY_START_DATE("pregnancyStartDate"),
     SEX("patientSex"),
     IS_PREGNANT("isPregnant"),
     PREGNANCY_ID("pregnancyId"),
