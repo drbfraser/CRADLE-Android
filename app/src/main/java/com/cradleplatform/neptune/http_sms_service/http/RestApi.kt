@@ -298,7 +298,10 @@ class RestApi(
                         try {
                             val reader = JacksonMapper.readerForPatient
                             reader.readValues<Patient>(inputStream).use { iterator ->
-                                iterator.forEachJackson { patientChannel.send(it) }
+                                iterator.forEachJackson {
+                                    Log.i(TAG, "$it")
+                                    patientChannel.send(it)
+                                }
                             }
                         } catch (e: Exception) {
                             Log.e(TAG, e.toString())
@@ -1502,6 +1505,7 @@ class RestApi(
                                 when (currentName) {
                                     PatientSyncField.PATIENTS.text -> {
                                         parseObjectArray<Patient>(reader) {
+                                            Log.i(TAG, "Patient: $it")
                                             patientChannel.send(it)
                                             totalPatientsDownloaded++
                                             reportProgressBlock(
@@ -1521,6 +1525,7 @@ class RestApi(
                         }
                     } catch (e: Exception) {
                         Log.e(TAG, e.toString())
+                        Log.i(TAG, e.toString())
                         failedParse = true
                     }
                 }.also {
