@@ -276,7 +276,7 @@ data class McOption(
 }
 
 data class VisibleCondition(
-    @Expose @SerializedName("qidx") val qidx: Int?,
+    @Expose @SerializedName("questionIndex") val questionIndex: Int?,
     @Expose @SerializedName("relation") val relation: String?,
     @Expose @SerializedName("answers") var answerCondition: Answer?
 ) : Serializable {
@@ -284,9 +284,9 @@ data class VisibleCondition(
     fun verifyIntegrity(): Boolean {
         var nullCheckResult = true
 
-        this@VisibleCondition.qidx ?: let {
+        this@VisibleCondition.questionIndex ?: let {
             nullCheckResult = false
-            Log.w(TAG, "[qidx] was null")
+            Log.w(TAG, "[questionIndex] was null")
         }
         this@VisibleCondition.relation ?: let {
             nullCheckResult = false
@@ -325,13 +325,13 @@ data class VisibleCondition(
 data class Answer private constructor(
     @Expose @SerializedName("number") val numericAnswer: Number?,
     @Expose @SerializedName("text") val textAnswer: String?,
-    @Expose @SerializedName("mcidArray") val mcidArrayAnswer: List<Int>?,
+    @Expose @SerializedName("mcIdArray") val mcIdArrayAnswer: List<Int>?,
     @Expose @SerializedName("comment") val comment: String?,
 ) : Serializable {
 
     fun isValidAnswer(): Boolean {
         if (numericAnswer != null) return true
-        if (mcidArrayAnswer != null && mcidArrayAnswer.isNotEmpty()) return true
+        if (mcIdArrayAnswer != null && mcIdArrayAnswer.isNotEmpty()) return true
         return textAnswer?.isNotEmpty() == true
     }
 
@@ -362,7 +362,7 @@ data class Answer private constructor(
             return Answer(
                 null,
                 null,
-                mcidArrayAnswer = mcidArray,
+                mcIdArrayAnswer = mcidArray,
                 comment
             )
         }
@@ -371,7 +371,7 @@ data class Answer private constructor(
             return Answer(
                 null,
                 null,
-                mcidArrayAnswer = null,
+                mcIdArrayAnswer = null,
                 comment
             )
         }
