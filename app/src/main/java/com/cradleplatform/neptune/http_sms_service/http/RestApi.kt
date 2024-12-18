@@ -1505,7 +1505,6 @@ class RestApi(
                                 when (currentName) {
                                     PatientSyncField.PATIENTS.text -> {
                                         parseObjectArray<Patient>(reader) {
-                                            Log.i(TAG, "Patient: $it")
                                             patientChannel.send(it)
                                             totalPatientsDownloaded++
                                             reportProgressBlock(
