@@ -160,13 +160,10 @@ class CradleCookieJar(private val sharedPreferences: SharedPreferences): CookieJ
 
     override fun saveFromResponse(url: HttpUrl, cookies: List<Cookie>) {
         cookies.forEach {
-            Log.i("HTTP", "Saving cookie: $it")
             val cookieData = CookieData.create(it)
             val serializedCookie = cookieWriter.writeValueAsString(cookieData)
-            Log.i("HTTP", "Serialized cookie: $serializedCookie")
             sharedPreferences.edit().putString(it.name, serializedCookie).apply()
         }
-
     }
 
     override fun loadForRequest(url: HttpUrl): List<Cookie> {
@@ -175,7 +172,6 @@ class CradleCookieJar(private val sharedPreferences: SharedPreferences): CookieJ
 
         val refreshTokenCookieData: CookieData = cookieReader.readValue(serializedRefreshTokenCookie)
         val refreshTokenCookie = refreshTokenCookieData.toCookie()
-        Log.i("HTTP", "Retrieving refresh cookie: $refreshTokenCookie")
         return listOf(refreshTokenCookie)
     }
 }
