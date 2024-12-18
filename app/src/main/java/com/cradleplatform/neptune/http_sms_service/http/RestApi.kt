@@ -1451,6 +1451,11 @@ class RestApi(
                             patientChannel.close()
                         }
                     } else {
+                        Log.e(TAG, "Patient sync failed:")
+                        val errorMessage = it.getStatusMessage(context)
+                        if (errorMessage != null) {
+                            Log.e(TAG, errorMessage)
+                        }
                         // Fail the channel if not successful (note: idempotent operation).
                         patientChannel.close(SyncException("patient download wasn't done properly"))
                     }
@@ -1500,7 +1505,6 @@ class RestApi(
                 }
             }
         }
-
         PatientSyncResult(result, patientsToUpload.size, totalPatientsDownloaded, errors)
     }
 
