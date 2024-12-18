@@ -2281,26 +2281,6 @@ class RestApi(
     }
 
     /**
-     * The common headers used for most API requests.
-     * Note: The [Http] class also sets some headers for encoding.
-     *
-     * By design, the [authenticate] method doesn't include these headers in
-     * its request.
-     *
-     * TODO: Check expiration of accessToken and make call to refresh_token endpoint to refresh
-     *  it if necessary.
-     */
-//    private val headers: Map<String, String>
-//        get() {
-//            val accessToken = sharedPreferences.getString(UserViewModel.ACCESS_TOKEN_KEY, null)
-//            return if (accessToken != null) {
-//                mapOf("Authorization" to "Bearer $accessToken")
-//            } else {
-//                mapOf()
-//            }
-//        }
-
-    /**
      * Creates an Authorization header with the access token. If access token is expired, will try
      * to refresh it.
      */
