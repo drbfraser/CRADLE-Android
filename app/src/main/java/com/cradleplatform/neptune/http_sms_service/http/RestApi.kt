@@ -2157,6 +2157,9 @@ class RestApi(
      *
      * By design, the [authenticate] method doesn't include these headers in
      * its request.
+     *
+     * TODO: Check expiration of accessToken and make call to refresh_token endpoint to refresh
+     *  it if necessary.
      */
     private val headers: Map<String, String>
         get() {
