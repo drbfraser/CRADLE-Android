@@ -208,14 +208,14 @@ data class Question(
 
 data class QuestionLangVersion(
     @SerializedName("lang") val language: String?,
-    @SerializedName("qid") val parentId: String?,
+    @SerializedName("questionId") val parentId: String?,
     @SerializedName("questionText") val questionText: String?,
     @SerializedName("id") val questionTextId: Int?,
     @SerializedName("mcOptions") val mcOptions: List<McOption>?
 ) : Serializable {
 
     override fun toString(): String {
-        return "QuestionLangVersionsss(language=$language, " +
+        return "QuestionLangVersion(language=$language, " +
             "parentId=$parentId, " +
             "questionText=$questionText, " +
             "questionTextId=$questionTextId, " +
@@ -251,16 +251,16 @@ data class QuestionLangVersion(
 }
 
 data class McOption(
-    @Expose @SerializedName("mcid") val mcid: Int?,
+    @Expose @SerializedName("mcId") val mcId: Int?,
     @Expose @SerializedName("opt") val opt: String?
 ) : Serializable {
 
     fun verifyIntegrity(): Boolean {
         var nullCheckResult = true
 
-        this@McOption.mcid ?: let {
+        this@McOption.mcId ?: let {
             nullCheckResult = false
-            Log.w(TAG, "[mcid] was null")
+            Log.w(TAG, "[mcId] was null")
         }
         this@McOption.opt ?: let {
             nullCheckResult = false
