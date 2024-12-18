@@ -128,7 +128,7 @@ class DataModule {
 
     @Provides
     @Singleton
-    fun providesHttp(): Http = Http()
+    fun providesHttp(@ApplicationContext context: Context): Http = Http(PreferenceManager.getDefaultSharedPreferences(context))
 
     @Provides
     @Singleton
