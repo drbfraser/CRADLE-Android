@@ -163,6 +163,8 @@ class LoginManager @Inject constructor(
     }
 }
 
+
+
 /**
  * Models the response sent back by the server for /api/user/auth.
  * Not used outside of LoginManager.
@@ -200,4 +202,16 @@ data class LoginResponseUser(
 data class LoginResponseSmsKey(
     @JsonProperty
     val key: String
+)
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class RefreshTokenResponse(
+    @JsonProperty
+    val accessToken: String
+)
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class AccessTokenPayload(
+    @JsonProperty
+    val exp: Long
 )
