@@ -148,8 +148,6 @@ class Http(
     }
 }
 
-
-
 /**
  * Cookie jar to handle cookies. Particularly for handling the refresh token.
  */
@@ -176,7 +174,6 @@ class CradleCookieJar(private val sharedPreferences: SharedPreferences): CookieJ
     }
 }
 
-
 @JsonIgnoreProperties(ignoreUnknown = true)
 class CookieData(
     @JsonProperty
@@ -197,8 +194,7 @@ class CookieData(
     val persistent: Boolean,
     @JsonProperty
     val hostOnly: Boolean
-)
-{
+) {
     companion object {
         fun create(cookie: Cookie) = CookieData(
             name = cookie.name,
