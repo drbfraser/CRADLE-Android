@@ -47,7 +47,6 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
-import com.google.gson.JsonParser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.channels.Channel
@@ -245,8 +244,7 @@ class RestApi(
                 putString("accessToken", newAccessToken)
             }
             return@withContext newAccessToken
-        }
-        else {
+        } else {
             val errorMessage = result.getStatusMessage(context)
             Log.e(TAG, "Failed to refresh access token:")
             if (errorMessage != null) {
@@ -254,7 +252,6 @@ class RestApi(
             }
             return@withContext null
         }
-
     }
 
     /**
@@ -2241,7 +2238,6 @@ class RestApi(
 
         FormSyncResult(result, totalClassifications)
     }
-
 
     /**
      * Decodes the payload of a JWT.

@@ -2,7 +2,6 @@ package com.cradleplatform.neptune.model
 
 import android.content.Context
 import android.os.Parcelable
-import android.util.Log
 import androidx.core.text.isDigitsOnly
 import androidx.room.ColumnInfo
 import androidx.room.Embedded
@@ -708,7 +707,6 @@ sealed class GestationalAge(val timestamp: BigInteger) : Serializable {
             }
             */
             return GestationalAgeMonths(BigInteger.valueOf(value))
-
         }
     }
 

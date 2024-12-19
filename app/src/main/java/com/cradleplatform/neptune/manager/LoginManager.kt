@@ -163,8 +163,6 @@ class LoginManager @Inject constructor(
     }
 }
 
-
-
 /**
  * Models the response sent back by the server for /api/user/auth.
  * Not used outside of LoginManager.

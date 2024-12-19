@@ -151,7 +151,7 @@ class Http(
 /**
  * Cookie jar to handle cookies. Particularly for handling the refresh token.
  */
-class CradleCookieJar(private val sharedPreferences: SharedPreferences): CookieJar {
+class CradleCookieJar(private val sharedPreferences: SharedPreferences) : CookieJar {
 
     private val cookieReader = JacksonMapper.createReader<CookieData>()
     private val cookieWriter = JacksonMapper.createWriter<CookieData>()
@@ -217,5 +217,4 @@ class CookieData(
         if (secure) cookieBuilder.secure()
         return cookieBuilder.build()
     }
-
 }

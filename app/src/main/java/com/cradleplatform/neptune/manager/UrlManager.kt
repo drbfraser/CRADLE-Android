@@ -24,7 +24,7 @@ class UrlManager @Inject constructor(val settings: Settings) {
      * Endpoint for refreshing access token.
      */
     val refreshToken: String
-        get() = "${base}/user/auth/refresh_token"
+        get() = "$base/user/auth/refresh_token"
 
     /**
      * Endpoint for submitting the form.
