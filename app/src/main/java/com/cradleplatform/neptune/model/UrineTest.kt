@@ -68,9 +68,9 @@ data class UrineTest(
  * JSON fields for marshalling [UrineTest] objects.
  */
 private enum class UrineTestField(override val text: String) : Field {
-    LEUKOCYTES("urineTestLeuc"),
-    NITRITES("urineTestNit"),
-    PROTEIN("urineTestPro"),
-    BLOOD("urineTestBlood"),
-    GLUCOSE("urineTestGlu"),
+    LEUKOCYTES("leukocytes"),
+    NITRITES("nitrites"),
+    PROTEIN("protein"),
+    BLOOD("blood"),
+    GLUCOSE("glucose"),
 }
