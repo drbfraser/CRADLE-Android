@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 4,
-    "identityHash": "47f33f631490b385200d6f465594d577",
+    "identityHash": "55cee33c389595d64349cfcddaf49cec",
     "entities": [
       {
         "tableName": "Reading",
@@ -341,7 +341,7 @@
       },
       {
         "tableName": "Referral",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `comment` TEXT, `healthFacilityName` TEXT NOT NULL, `dateReferred` INTEGER NOT NULL, `userId` INTEGER, `patientId` TEXT NOT NULL, `actionTaken` TEXT, `cancelReason` TEXT, `notAttendReason` TEXT, `isAssessed` INTEGER NOT NULL, `isCancelled` INTEGER NOT NULL, `notAttended` INTEGER NOT NULL, `lastEdited` INTEGER NOT NULL, `lastServerUpdate` INTEGER, `isUploadedToServer` INTEGER NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`patientId`) REFERENCES `Patient`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `comment` TEXT, `healthFacilityName` TEXT NOT NULL, `dateReferred` INTEGER NOT NULL, `userId` INTEGER, `patientId` TEXT NOT NULL, `actionTaken` TEXT, `cancelReason` TEXT, `notAttendReason` TEXT, `isAssessed` INTEGER NOT NULL, `isCancelled` INTEGER NOT NULL, `notAttended` INTEGER NOT NULL, `lastEdited` INTEGER NOT NULL, `lastServerUpdate` INTEGER, `isUploadedToServer` INTEGER NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`patientId`) REFERENCES `Patient`(`id`) ON UPDATE CASCADE ON DELETE CASCADE , FOREIGN KEY(`healthFacilityName`) REFERENCES `HealthFacility`(`name`) ON UPDATE CASCADE ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -458,6 +458,15 @@
             ],
             "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_Referral_patientId` ON `${TABLE_NAME}` (`patientId`)"
+          },
+          {
+            "name": "index_Referral_healthFacilityName",
+            "unique": false,
+            "columnNames": [
+              "healthFacilityName"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_Referral_healthFacilityName` ON `${TABLE_NAME}` (`healthFacilityName`)"
           }
         ],
         "foreignKeys": [
@@ -470,6 +479,17 @@
             ],
             "referencedColumns": [
               "id"
+            ]
+          },
+          {
+            "table": "HealthFacility",
+            "onDelete": "CASCADE",
+            "onUpdate": "CASCADE",
+            "columns": [
+              "healthFacilityName"
+            ],
+            "referencedColumns": [
+              "name"
             ]
           }
         ]
@@ -755,7 +775,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '47f33f631490b385200d6f465594d577')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '55cee33c389595d64349cfcddaf49cec')"
     ]
   }
 }
