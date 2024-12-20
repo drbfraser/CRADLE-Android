@@ -442,7 +442,7 @@ class FormViewAdapter(
             }
 
             context.getString(R.string.form_patient_age) -> {
-                val age = DateUtil.getAgeFromDOB(patient?.dob)
+                val age = DateUtil.getAgeFromDOB(patient?.dateOfBirth)
                 if (age.isNotEmpty()) {
                     textView.text = age
                     viewModel.addAnswer(questionID, Answer.createNumericAnswer(age.toInt()))

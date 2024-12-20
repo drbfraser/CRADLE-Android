@@ -79,8 +79,8 @@ class PatientTests {
         val patient = Patient(
             id = "5414842504",
             name = "AB",
-            dob = "1989-10-24",
-            isExactDob = true,
+            dateOfBirth = "1989-10-24",
+            isExactDateOfBirth = true,
             gestationalAge = GestationalAgeWeeks(Weeks(28)),
             sex = Sex.FEMALE,
             isPregnant = true,
@@ -123,8 +123,8 @@ class PatientTests {
         val patient = Patient(
             id = patientId,
             name = "AB",
-            dob = "1989-11-11",
-            isExactDob = false,
+            dateOfBirth = "1989-11-11",
+            isExactDateOfBirth = false,
             sex = Sex.FEMALE,
             isPregnant = false
         )
@@ -173,13 +173,13 @@ class PatientTests {
         val patientWithoutAge = Patient(
             id = "3453455",
             name = "AB",
-            dob = null,
+            dateOfBirth = null,
             sex = Sex.FEMALE,
             isPregnant = false
         )
         // We expect null / empty date of birth to be invalid.
         assertValidityOverSet(
-            BLANK_AND_NULL_STRINGS, Patient::dob,
+            BLANK_AND_NULL_STRINGS, Patient::dateOfBirth,
             areAllValuesValid = false, patientInstance = patientWithoutAge
         )
         verify(exactly = BLANK_AND_NULL_STRINGS.size) {
@@ -188,7 +188,7 @@ class PatientTests {
 
         // Wrong format.
         assertValidityOverSet(
-            wrongFormat, Patient::dob,
+            wrongFormat, Patient::dateOfBirth,
             areAllValuesValid = false, patientInstance = patientWithoutAge
         )
         verify(exactly = wrongFormat.size) {
@@ -197,7 +197,7 @@ class PatientTests {
 
         // Age out of bounds.
         assertValidityOverSet(
-            badAgeButGoodFormat, Patient::dob,
+            badAgeButGoodFormat, Patient::dateOfBirth,
             areAllValuesValid = false, patientInstance = patientWithoutAge
         )
         verify(exactly = badAgeButGoodFormat.size) {
@@ -208,7 +208,7 @@ class PatientTests {
         }
 
         assertValidityOverSet(
-            good, Patient::dob, areAllValuesValid = true, patientInstance = patientWithoutAge
+            good, Patient::dateOfBirth, areAllValuesValid = true, patientInstance = patientWithoutAge
         )
     }
 
@@ -222,14 +222,14 @@ class PatientTests {
         val good = setOf("2004-05-22", "1995-04-08", "1995-05-01")
 
         assertValidityOverSet(
-            good, Patient::dob,
+            good, Patient::dateOfBirth,
             areAllValuesValid = true, patientInstance = null
         )
         verify(exactly = 0) { mockContext.getString(any()) }
         verify(exactly = 0) { mockContext.getString(any(), *anyVararg()) }
 
         assertValidityOverSet(
-            wrong, Patient::dob,
+            wrong, Patient::dateOfBirth,
             areAllValuesValid = false, patientInstance = null
         )
         verify(exactly = wrong.size) { mockContext.getString(any(), *anyVararg()) }
@@ -238,24 +238,24 @@ class PatientTests {
     @Test
     fun verify_gestationalAgeWeeks_withPatientInstance() {
         val patientFemalePregnant = Patient(
-            id = "3453455", name = "TEST", dob = "1989-10-10",
-            isExactDob = true, sex = Sex.FEMALE, isPregnant = true
+            id = "3453455", name = "TEST", dateOfBirth = "1989-10-10",
+            isExactDateOfBirth = true, sex = Sex.FEMALE, isPregnant = true
         )
         val patientOtherPregnant = Patient(
-            id = "3453455", name = "TEST", dob = "1989-10-10",
-            isExactDob = true, sex = Sex.OTHER, isPregnant = true
+            id = "3453455", name = "TEST", dateOfBirth = "1989-10-10",
+            isExactDateOfBirth = true, sex = Sex.OTHER, isPregnant = true
         )
         val patientFemaleNotPregnant = Patient(
-            id = "3453455", name = "TEST", dob = "1989-10-10",
-            isExactDob = true, sex = Sex.FEMALE, isPregnant = false
+            id = "3453455", name = "TEST", dateOfBirth = "1989-10-10",
+            isExactDateOfBirth = true, sex = Sex.FEMALE, isPregnant = false
         )
         val patientOtherNotPregnant = Patient(
-            id = "3453455", name = "TEST", dob = "1989-10-10",
-            isExactDob = true, sex = Sex.OTHER, isPregnant = false
+            id = "3453455", name = "TEST", dateOfBirth = "1989-10-10",
+            isExactDateOfBirth = true, sex = Sex.OTHER, isPregnant = false
         )
         val patientMale = Patient(
-            id = "3453455", name = "TEST", dob = "1989-10-10",
-            isExactDob = true, sex = Sex.MALE, isPregnant = false
+            id = "3453455", name = "TEST", dateOfBirth = "1989-10-10",
+            isExactDateOfBirth = true, sex = Sex.MALE, isPregnant = false
         )
 
         // Testing missing gestational age and age of 0

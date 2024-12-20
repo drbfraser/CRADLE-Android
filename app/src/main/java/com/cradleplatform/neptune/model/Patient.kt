@@ -50,8 +50,8 @@ import kotlin.reflect.KProperty
  *
  * @property id The unique identifier for this patient.
  * @property name This patient's name or initials.
- * @property dob This patient's date of birth (if known).
- * @property isExactDob Whether [dob] is exact, or just a date of birth for approximate age.
+ * @property dateOfBirth This patient's date of birth (if known).
+ * @property isExactDateOfBirth Whether [dateOfBirth] is exact, or just a date of birth for approximate age.
  * @property gestationalAge The gestational age of this patient if applicable.
  * @property sex This patient's sex.
  * @property isPregnant Whether this patient is pregnant or not.
@@ -85,8 +85,8 @@ data class Patient(
     @PrimaryKey @ColumnInfo
     var id: String = "",
     @ColumnInfo var name: String = "",
-    @ColumnInfo var dob: String? = null,
-    @ColumnInfo var isExactDob: Boolean? = null,
+    @ColumnInfo var dateOfBirth: String? = null,
+    @ColumnInfo var isExactDateOfBirth: Boolean? = null,
     @ColumnInfo var gestationalAge: GestationalAge? = null,
     @ColumnInfo var sex: Sex = Sex.OTHER,
     @ColumnInfo var isPregnant: Boolean = false,
@@ -220,7 +220,7 @@ data class Patient(
             }
 
             // validity of dob depends on age
-            Patient::dob -> with(value as String?) {
+            Patient::dateOfBirth -> with(value as String?) {
                 if (this == null || isBlank()) {
                     return@with Verifiable.Invalid(
                         property,
@@ -421,8 +421,8 @@ data class Patient(
             patient.run {
                 gen.writeStringField(PatientField.ID, id)
                 gen.writeStringField(PatientField.NAME, name)
-                gen.writeStringField(PatientField.DOB, dob!!)
-                gen.writeBooleanField(PatientField.IS_EXACT_DOB, isExactDob!!)
+                gen.writeStringField(PatientField.DOB, dateOfBirth!!)
+                gen.writeBooleanField(PatientField.IS_EXACT_DOB, isExactDateOfBirth!!)
                 gen.writeStringField(PatientField.SEX, sex.name)
                 gen.writeBooleanField(PatientField.IS_PREGNANT, isPregnant)
                 if (isPregnant) {
@@ -498,8 +498,8 @@ data class Patient(
             return@run Patient(
                 id = id,
                 name = name,
-                dob = dob,
-                isExactDob = isExactDob,
+                dateOfBirth = dob,
+                isExactDateOfBirth = isExactDob,
                 gestationalAge = gestationalAge,
                 sex = sex,
                 isPregnant = isPregnant,

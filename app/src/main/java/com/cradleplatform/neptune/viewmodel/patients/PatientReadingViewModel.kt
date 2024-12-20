@@ -676,7 +676,7 @@ class PatientReadingViewModel @Inject constructor(
         get() = patientBuilder.get<String>(Patient::name)
 
     /** Used in two-way Data Binding with PatientInfoFragment */
-    val patientDob: MediatorLiveData<String?> = patientBuilder.get<String?>(Patient::dob)
+    val patientDob: MediatorLiveData<String?> = patientBuilder.get<String?>(Patient::dateOfBirth)
 
     /**
      * Used in two-way Data Binding with PatientInfoFragment
@@ -843,7 +843,7 @@ class PatientReadingViewModel @Inject constructor(
      * date of birth via a date picker.
      */
     private val _patientIsExactDob: MediatorLiveData<Boolean?> =
-        patientBuilder.get(Patient::isExactDob, defaultValue = false)
+        patientBuilder.get(Patient::isExactDateOfBirth, defaultValue = false)
     val patientIsExactDob: LiveData<Boolean?> = _patientIsExactDob
 
     /**
@@ -1859,7 +1859,7 @@ class PatientReadingViewModel @Inject constructor(
                 addSource(patientDob) {
                     testValueForValidityAndSetErrorMapAsync(
                         value = it,
-                        propertyToCheck = Patient::dob,
+                        propertyToCheck = Patient::dateOfBirth,
                         verifier = Patient.Companion
                     )
                 }

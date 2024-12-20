@@ -140,8 +140,8 @@ class MigrationTests {
             Patient(
                 id = "1",
                 name = "Exact dob",
-                dob = "1989-10-24",
-                isExactDob = true,
+                dateOfBirth = "1989-10-24",
+                isExactDateOfBirth = true,
                 gestationalAge = GestationalAgeWeeks(Weeks(20L)),
                 sex = Sex.FEMALE,
                 isPregnant = true,
@@ -170,8 +170,8 @@ class MigrationTests {
             Patient(
                 id = "2",
                 name = "Approximate age of 23",
-                dob = null,
-                isExactDob = false,
+                dateOfBirth = null,
+                isExactDateOfBirth = false,
                 gestationalAge = GestationalAgeMonths(Months(4)),
                 sex = Sex.OTHER,
                 isPregnant = true,
@@ -200,8 +200,8 @@ class MigrationTests {
             Patient(
                 id = "3",
                 name = "Has both age and dob -- prefer dob",
-                dob = "1954-04-24",
-                isExactDob = true,
+                dateOfBirth = "1954-04-24",
+                isExactDateOfBirth = true,
                 gestationalAge = null,
                 sex = Sex.MALE,
                 isPregnant = false,
@@ -310,8 +310,8 @@ class MigrationTests {
             Patient(
                 id = patientId,
                 name = "Exact dob",
-                dob = "1989-10-24",
-                isExactDob = true,
+                dateOfBirth = "1989-10-24",
+                isExactDateOfBirth = true,
                 gestationalAge = GestationalAgeWeeks(Weeks(20L)),
                 sex = Sex.FEMALE,
                 isPregnant = true,

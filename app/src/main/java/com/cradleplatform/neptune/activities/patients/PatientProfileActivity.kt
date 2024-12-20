@@ -236,10 +236,10 @@ open class PatientProfileActivity : AppCompatActivity() {
     fun populatePatientInfo(patient: Patient) {
         patientID.text = patient.id
         patientName.text = patient.name
-        if (!Util.stringNullOrEmpty(patient.dob)) {
+        if (!Util.stringNullOrEmpty(patient.dateOfBirth)) {
             try {
-                val ageFromDob = Patient.calculateAgeFromDateString(patient.dob!!)
-                val ageDisplayString = if (patient.isExactDob == true) {
+                val ageFromDob = Patient.calculateAgeFromDateString(patient.dateOfBirth!!)
+                val ageDisplayString = if (patient.isExactDateOfBirth == true) {
                     getString(
                         R.string.patient_profile_age_n_years_old,
                         ageFromDob

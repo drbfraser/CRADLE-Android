@@ -64,7 +64,7 @@ class EditPatientViewModel @Inject constructor(
                 ?: error("no patient with given id")
 
             patientBuilder.decompose(patient)
-            setUpAgeLiveData(patient.dob)
+            setUpAgeLiveData(patient.dateOfBirth)
 
             // Disable editing gender if patient is pregnant
             isPatientSexEditable.value = !patient.isPregnant
@@ -86,11 +86,11 @@ class EditPatientViewModel @Inject constructor(
     val patientName: MutableLiveData<String>
         get() = patientBuilder.get<String>(Patient::name)
 
-    val patientDob: MediatorLiveData<String?> = patientBuilder.get<String?>(Patient::dob)
+    val patientDob: MediatorLiveData<String?> = patientBuilder.get<String?>(Patient::dateOfBirth)
     val patientAge = MutableLiveData<Int?>(null)
 
     private val _patientIsExactDob: MediatorLiveData<Boolean?> =
-        patientBuilder.get(Patient::isExactDob, defaultValue = false)
+        patientBuilder.get(Patient::isExactDateOfBirth, defaultValue = false)
     val patientIsExactDob: LiveData<Boolean?> = _patientIsExactDob
 
     val patientSex: MutableLiveData<Sex?>
@@ -297,7 +297,7 @@ class EditPatientViewModel @Inject constructor(
                 addSource(patientDob) {
                     testValueForValidityAndSetErrorMapAsync(
                         value = it,
-                        propertyToCheck = Patient::dob,
+                        propertyToCheck = Patient::dateOfBirth,
                         verifier = Patient.Companion
                     )
                 }
