@@ -3,7 +3,6 @@ package com.cradleplatform.neptune.model
 import com.cradleplatform.neptune.utilities.jackson.JacksonMapper
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import java.util.UUID
 
 internal class SmsReferralTest {
     @Test
@@ -16,7 +15,7 @@ internal class SmsReferralTest {
         val firstReading = patientAndReadings.readings.first()
         firstReading.referral = Referral(
             comment = "this is a comment",
-            referralHealthFacilityName = "H23234",
+            healthFacilityName = "H23234",
             dateReferred = 16456665L,
             patientId = "400003232",
             isAssessed = false,

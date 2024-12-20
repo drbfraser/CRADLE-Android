@@ -1470,7 +1470,7 @@ class PatientReadingViewModel @Inject constructor(
                     Referral(
                         id = UUID.randomUUID().toString(),
                         comment = referralComment,
-                        referralHealthFacilityName = healthFacilityName,
+                        healthFacilityName = healthFacilityName,
                         dateReferred = readingFromBuilder.dateTaken,
                         userId = sharedPreferences.getIntOrNull(UserViewModel.USER_ID_KEY),
                         patientId = readingFromBuilder.patientId,

@@ -412,7 +412,7 @@ class MigrationTests {
         )
         val recentVersionReferral = Referral(
             comment = "This is a comment",
-            referralHealthFacilityName = "H2230",
+            healthFacilityName = "H2230",
             dateReferred = 1595645675L,
             patientId = patientId,
             id = "345",
@@ -491,7 +491,7 @@ class MigrationTests {
         val readingId = UUID.randomUUID().toString()
         val referralForReading = Referral(
             comment = "This is a comment",
-            referralHealthFacilityName = "H2230",
+            healthFacilityName = "H2230",
             dateReferred = 1595645675L,
             patientId = patientId,
             id = "345",

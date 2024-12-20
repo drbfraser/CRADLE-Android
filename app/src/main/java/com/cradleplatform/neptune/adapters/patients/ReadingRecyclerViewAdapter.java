@@ -106,14 +106,14 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
                 Referral currReferral = (Referral) combinedList.get(i);
                 myViewHolder.referralDate.setText(DateUtil.getConciseDateString(currReferral.getDateReferred(), false));
                 myViewHolder.refAssessmentDate.setText("N/A");
-                myViewHolder.referralLocation.setText(currReferral.getReferralHealthFacilityName());
+                myViewHolder.referralLocation.setText(currReferral.getHealthFacilityName());
                 myViewHolder.referralComments.setText(currReferral.getComment());
                 break;
             case REFERRAL_CANCELLED:
                 currReferral = (Referral) combinedList.get(i);
                 myViewHolder.referralDate.setText(DateUtil.getConciseDateString(currReferral.getDateReferred(), false));
                 myViewHolder.refAssessmentDate.setText("N/A");
-                myViewHolder.referralLocation.setText(currReferral.getReferralHealthFacilityName());
+                myViewHolder.referralLocation.setText(currReferral.getHealthFacilityName());
                 myViewHolder.referralComments.setText(currReferral.getComment());
                 myViewHolder.cancellationReason.setText(currReferral.getCancelReason());
                 break;
@@ -121,7 +121,7 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
                 currReferral = (Referral) combinedList.get(i);
 //                myViewHolder.readingDate.setText(DateUtil.getConciseDateString(currReferral.getDateReferred(), false));
                 myViewHolder.referralDate.setText(DateUtil.getConciseDateString(currReferral.getDateReferred(), false));
-                myViewHolder.referralLocation.setText(currReferral.getReferralHealthFacilityName());
+                myViewHolder.referralLocation.setText(currReferral.getHealthFacilityName());
                 myViewHolder.referralComments.setText(currReferral.getComment());
                 break;
             case READING_VIEW:

@@ -31,7 +31,7 @@ import java.util.UUID
  * Holds information about a referral.
  *
  * @property comment An optional comment made by the user about this referral
- * @property referralHealthFacilityName The name of the health facility this referral
+ * @property healthFacilityName The name of the health facility this referral
  *  is being made to
  * @property dateReferred The time at which this referral was made as a unix
  *  timestamp
@@ -80,8 +80,8 @@ data class Referral(
     @ColumnInfo @JsonProperty("comment")
     var comment: String?,
 
-    @ColumnInfo @JsonProperty("referralHealthFacilityName")
-    var referralHealthFacilityName: String,
+    @ColumnInfo @JsonProperty("healthFacilityName")
+    var healthFacilityName: String,
 
     @ColumnInfo @JsonProperty("dateReferred")
     var dateReferred: Long,
@@ -129,7 +129,7 @@ data class Referral(
 
                 gen.writeStringField(ReferralField.ID, id)
                 gen.writeOptStringField(ReferralField.COMMENT, comment)
-                gen.writeStringField(ReferralField.HEALTH_FACILITY_NAME, referralHealthFacilityName)
+                gen.writeStringField(ReferralField.HEALTH_FACILITY_NAME, healthFacilityName)
                 gen.writeLongField(ReferralField.DATE_REFERRED, dateReferred)
                 gen.writeOptIntField(ReferralField.USER_ID, userId)
                 gen.writeStringField(ReferralField.PATIENT_ID, patientId)
@@ -168,7 +168,7 @@ data class Referral(
                 return@run Referral(
                     id = id,
                     comment = comment,
-                    referralHealthFacilityName = referralHealthFacilityName,
+                    healthFacilityName = referralHealthFacilityName,
                     dateReferred = dateReferred,
                     userId = userId,
                     patientId = patientId,
