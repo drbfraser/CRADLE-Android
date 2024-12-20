@@ -24,7 +24,7 @@ import org.junit.jupiter.api.fail
 import java.util.concurrent.TimeUnit
 
 internal class HttpTest {
-    private val mockContext: Context = mockk()
+    private val mockSharedPrefs: SharedPreferences = mockk()
 
     data class ServerResponse(val message: String)
 
@@ -56,7 +56,7 @@ internal class HttpTest {
             val reader = mapper.readerFor(ServerResponse::class.java)
 
             val testRequest: NetworkResult<ServerResponse> = runBlocking {
-                Http(mockContext).makeRequest(
+                Http(mockSharedPrefs).makeRequest(
                     method = Http.Method.GET,
                     url = server.url("/api/test").toString(),
                     headers = emptyMap(),
@@ -106,7 +106,7 @@ tortor rutrum mauris. Morbi pellentesque ex.
             val reader = mapper.readerFor(ServerResponse::class.java)
 
             val testRequest: NetworkResult<ServerResponse> = runBlocking {
-                Http(mockContext).makeRequest(
+                Http(mockSharedPrefs).makeRequest(
                     method = Http.Method.GET,
                     url = server.url("/api/test").toString(),
                     headers = emptyMap(),
@@ -138,7 +138,7 @@ tortor rutrum mauris. Morbi pellentesque ex.
                     }
             }
 
-            val http = Http(mockContext)
+            val http = Http(mockSharedPrefs)
 
             val notFoundRequest: NetworkResult<ServerResponse> = runBlocking {
                 http.makeRequest(
@@ -222,7 +222,7 @@ tortor rutrum mauris. Morbi pellentesque ex.
             val reader = mapper.readerFor(ServerResponse::class.java)
             // This should throw an exception during parsing
             val testRequest: NetworkResult<ServerResponse> = runBlocking {
-                Http(mockContext).makeRequest(
+                Http(mockSharedPrefs).makeRequest(
                     method = Http.Method.GET,
                     url = server.url("/api/anything").toString(),
                     headers = emptyMap(),

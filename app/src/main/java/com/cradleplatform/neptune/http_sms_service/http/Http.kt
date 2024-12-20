@@ -31,9 +31,8 @@ import java.util.concurrent.TimeUnit
  * class should be used instead of this one.
  */
 class Http(
-    private val context: Context,
+    private val sharedPreferences: SharedPreferences,
 ) {
-    private val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
     /**
      * Enumeration of common HTTP method request types.
      */

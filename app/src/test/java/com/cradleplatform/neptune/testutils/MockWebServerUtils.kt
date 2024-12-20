@@ -53,7 +53,7 @@ object MockWebServerUtils {
             mockContext,
             sharedPreferences = mockSharedPrefs,
             urlManager = fakeUrlManager,
-            http = Http(mockContext),
+            http = Http(mockSharedPrefs),
             mockSmsStateReporter,
             mockSmsSender,
             mockSmsDataProcessor
