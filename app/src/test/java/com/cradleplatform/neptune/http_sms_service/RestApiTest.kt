@@ -4,6 +4,8 @@ import android.util.Log
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
 import com.cradleplatform.neptune.manager.LoginResponse
+import com.cradleplatform.neptune.manager.LoginResponseSmsKey
+import com.cradleplatform.neptune.manager.LoginResponseUser
 import com.cradleplatform.neptune.testutils.MockWebServerUtils
 import io.mockk.every
 import io.mockk.mockkStatic
@@ -127,15 +129,21 @@ internal class RestApiTest {
         assertEquals(200, goodLoginResult.statusCode)
         val loginResponse = goodLoginResult.value
 
-        val expectedLoginResponseForVht = LoginResponse(
-            email = "vht@vht.com",
+        val user = LoginResponseUser(
+            email = "vht@email.com",
             role = "VHT",
-            firstName = "TestVHT",
+            username = "vht",
+            name = "TestVHT",
             healthFacilityName = "H0000",
-            userId = 3,
-            token = "test-token",
-            phoneNumbers = listOf<String>("666-666-6666", "777-777-7777", "555-555-5555"),
-            smsKey = "{\"sms_key\":\"SGVsbG8sIFdvcmxkIQ==\"}"
+            id = 3,
+            phoneNumbers = listOf<String>("+1-666-666-6666", "+1777-777-7777", "+1555-555-5555"),
+            smsKey = LoginResponseSmsKey(
+                key = "{\"sms_key\":\"SGVsbG8sIFdvcmxkIQ==\"}"
+            )
+        )
+        val expectedLoginResponseForVht = LoginResponse(
+            user = user,
+            accessToken = "test-token",
         )
 
         assertEquals(expectedLoginResponseForVht, loginResponse)
