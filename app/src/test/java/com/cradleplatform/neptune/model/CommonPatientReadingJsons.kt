@@ -34,7 +34,7 @@ object CommonPatientReadingJsons {
     val patientNoGestAgeJsonAndExpected = Pair(
         first = """
 {
-    "patientId": "123456",
+    "id": "123456",
     "name": "Another patient",
     "sex": "MALE",
     "isPregnant": false,
@@ -214,7 +214,7 @@ object CommonPatientReadingJsons {
     "lastEdited": 1604883600,
     "isPregnant": true,
     "isArchived": true,
-    "patientId": "3459834789348",
+    "id": "3459834789348",
     "pregnancyStartDate": 1590969549,
     "drugHistory": "Some drug history",
     "dateOfBirth": "2002-01-08",
@@ -318,12 +318,11 @@ object CommonPatientReadingJsons {
     val patientWithReferralAndFollowup = Pair(
         first = """
 {
-    "patientId": "66665",
+    "id": "66665",
     "name": "Name",
     "sex": "OTHER",
     "isPregnant": true,
     "isArchived": false,
-    "gestationalAgeUnit": "MONTHS",
     "pregnancyStartDate": 1584245042,
     "medicalHistory": "Medical history.",
     "allergy": "Seasonal allergies",
@@ -479,7 +478,7 @@ object CommonPatientReadingJsons {
     val patientWithNoSymptoms = Pair(
         first = """
 {
-    "patientId": "6454875454",
+    "id": "6454875454",
     "name": "PatientNoSymptoms",
     "sex": "MALE",
     "isPregnant": false,
