@@ -244,7 +244,7 @@ object CommonPatientReadingJsons {
                 "blood": "NAD",
                 "glucose": "+++",
                 "leukocytes": "++",
-                "id": "ca84ac2d-953f-4f5e-ae24-e0a6e8af7c94"
+                "readingId": "ca84ac2d-953f-4f5e-ae24-e0a6e8af7c94"
             }
         }
     ]

@@ -602,13 +602,13 @@ data class PatientAndReferrals(
 ) {
     class Serializer : StdSerializer<PatientAndReferrals>(PatientAndReferrals::class.java) {
         override fun serialize(
-            PatientAndReferrals: PatientAndReferrals,
+            patientAndReferrals: PatientAndReferrals,
             gen: JsonGenerator,
             provider: SerializerProvider
         ) {
-            PatientAndReferrals.run {
+            patientAndReferrals.run {
                 gen.writeStartObject()
-                Patient.Serializer.write(PatientAndReferrals.patient, gen)
+                Patient.Serializer.write(patientAndReferrals.patient, gen)
                 gen.writeObjectField(PatientField.REFERRALS, referrals)
                 gen.writeEndObject()
             }
