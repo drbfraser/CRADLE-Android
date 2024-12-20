@@ -156,9 +156,9 @@ object CommonReadingJsons {
                     heartRate = 85
                 ),
                 symptoms = listOf("Feverish", "Muscle ache"),
-                dateTimeTaken = 1605753210,
+                dateTaken = 1605753210,
                 lastEdited = 1605753210,
-                dateRecheckVitalsNeeded = 1605754111,
+                dateRetestNeeded = 1605754111,
                 previousReadingIds = listOf(),
                 patientId = "123456",
                 isFlaggedForFollowUp = false,
@@ -187,12 +187,12 @@ object CommonReadingJsons {
                     diastolic = 98,
                     heartRate = 87
                 ),
-                dateTimeTaken = 1604883648L,
+                dateTaken = 1604883648L,
                 lastEdited = 1604883648L,
                 patientId = "123456",
                 id = "777850f0-dc71-4501-a440-1871ecea6381",
                 symptoms = listOf("NONE"),
-                dateRecheckVitalsNeeded = 1605754111,
+                dateRetestNeeded = 1605754111,
                 followUp = null,
                 referral = null,
                 isFlaggedForFollowUp = false,
@@ -202,7 +202,7 @@ object CommonReadingJsons {
             ),
             Reading(
                 bloodPressure = BloodPressure(119, 97, 78),
-                dateTimeTaken = 1604883580L,
+                dateTaken = 1604883580L,
                 lastEdited = 1604883580L,
                 patientId = "3459834789348",
                 id = "ca84ac2d-953f-4f5e-ae24-e0a6e8af7c94",
@@ -214,7 +214,7 @@ object CommonReadingJsons {
                     leukocytes = "++", glucose = "+++", protein = "NAD", nitrites = "NAD",
                     blood = "NAD"
                 ),
-                dateRecheckVitalsNeeded = null,
+                dateRetestNeeded = null,
                 followUp = null,
                 referral = null,
                 isFlaggedForFollowUp = false,
@@ -228,7 +228,7 @@ object CommonReadingJsons {
                     heartRate = 85
                 ),
                 symptoms = listOf("Unwell", "Shortness of breath"),
-                dateTimeTaken = 1604981072L,
+                dateTaken = 1604981072L,
                 lastEdited = 1604981072L,
                 previousReadingIds = emptyList(),
                 patientId = "66665",
@@ -267,16 +267,16 @@ object CommonReadingJsons {
                     protein = "++",
                     blood = "+"
                 ),
-                dateRecheckVitalsNeeded = 1604981973L,
+                dateRetestNeeded = 1604981973L,
                 userId = 12
             ),
             Reading(
                 id = "1d242c26-5252-4187-bc82-9e4473c5a8c6",
                 bloodPressure = BloodPressure(123, 89, 85),
                 symptoms = emptyList(),
-                dateTimeTaken = 1605778643,
+                dateTaken = 1605778643,
                 lastEdited = 1605778643,
-                dateRecheckVitalsNeeded = 1603347681,
+                dateRetestNeeded = 1603347681,
                 previousReadingIds = emptyList(),
                 patientId = "6454875454",
                 isFlaggedForFollowUp = true,
