@@ -210,12 +210,12 @@ internal class LoginManagerTests {
             }
 
             assert(loginManager.isLoggedIn())
-            assertEquals(TEST_ACCESS_TOKEN, fakeSharedPreferences["token"]) { "bad auth token" }
+            assertEquals(TEST_ACCESS_TOKEN, fakeSharedPreferences["accessToken"]) { "bad access token" }
             assertEquals(TEST_USER_ID, fakeSharedPreferences["userId"]) { "bad userId" }
             assertEquals(
                 TEST_NAME,
                 fakeSharedPreferences[mockContext.getString(R.string.key_vht_name)]
-            ) { "bad first name" }
+            ) { "bad name" }
 
             val role =
                 UserRole.safeValueOf(fakeSharedPreferences[mockContext.getString(R.string.key_role)] as String)
