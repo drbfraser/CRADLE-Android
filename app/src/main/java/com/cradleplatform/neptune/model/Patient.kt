@@ -706,7 +706,7 @@ sealed class GestationalAge(val timestamp: BigInteger) : Serializable {
                 }
             }
             */
-            return GestationalAgeMonths(BigInteger.valueOf(value))
+            return GestationalAgeWeeks(BigInteger.valueOf(value))
         }
     }
 

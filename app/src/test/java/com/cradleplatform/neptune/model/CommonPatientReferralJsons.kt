@@ -49,7 +49,7 @@ object CommonPatientReferralJsons {
                 isPregnant = true,
                 name = "Test patient",
                 id = "3459834789348",
-                gestationalAge = GestationalAgeMonths(BigInteger.valueOf(1590969549L)),
+                gestationalAge = GestationalAgeWeeks(BigInteger.valueOf(1590969549L)),
                 drugHistory = "Some drug history",
                 dateOfBirth = "2002-01-08",
                 villageNumber = "133",
