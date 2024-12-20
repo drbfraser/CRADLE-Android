@@ -6,6 +6,7 @@ import android.util.Log
 import androidx.preference.PreferenceManager.getDefaultSharedPreferences
 import com.cradleplatform.neptune.http_sms_service.http.Http
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
+import com.cradleplatform.neptune.testutils.MockDependencyUtils.createMockSharedPreferences
 import com.fasterxml.jackson.databind.exc.MismatchedInputException
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.mockk.every
@@ -24,10 +25,7 @@ import org.junit.jupiter.api.fail
 import java.util.concurrent.TimeUnit
 
 internal class HttpTest {
-    private val mockSharedPrefs: SharedPreferences = mockk()
-
     data class ServerResponse(val message: String)
-
 
     @BeforeEach
     fun beforeEach() {
@@ -54,6 +52,7 @@ internal class HttpTest {
 
             val mapper = jacksonObjectMapper()
             val reader = mapper.readerFor(ServerResponse::class.java)
+            val (mockSharedPrefsMap, mockSharedPrefs) = createMockSharedPreferences()
 
             val testRequest: NetworkResult<ServerResponse> = runBlocking {
                 Http(mockSharedPrefs).makeRequest(
@@ -104,6 +103,7 @@ tortor rutrum mauris. Morbi pellentesque ex.
 
             val mapper = jacksonObjectMapper()
             val reader = mapper.readerFor(ServerResponse::class.java)
+            val (mockSharedPrefsMap, mockSharedPrefs) = createMockSharedPreferences()
 
             val testRequest: NetworkResult<ServerResponse> = runBlocking {
                 Http(mockSharedPrefs).makeRequest(
@@ -138,6 +138,7 @@ tortor rutrum mauris. Morbi pellentesque ex.
                     }
             }
 
+            val (mockSharedPrefsMap, mockSharedPrefs) = createMockSharedPreferences()
             val http = Http(mockSharedPrefs)
 
             val notFoundRequest: NetworkResult<ServerResponse> = runBlocking {
@@ -220,6 +221,8 @@ tortor rutrum mauris. Morbi pellentesque ex.
 
             val mapper = jacksonObjectMapper()
             val reader = mapper.readerFor(ServerResponse::class.java)
+            val (mockSharedPrefsMap, mockSharedPrefs) = createMockSharedPreferences()
+
             // This should throw an exception during parsing
             val testRequest: NetworkResult<ServerResponse> = runBlocking {
                 Http(mockSharedPrefs).makeRequest(
