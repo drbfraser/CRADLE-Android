@@ -1,11 +1,13 @@
 package com.cradleplatform.neptune.model
 
+import android.content.Context
 import android.util.Log
 import com.cradleplatform.neptune.http_sms_service.http.Http
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.utilities.jackson.JacksonMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.mockk.every
+import io.mockk.mockk
 import io.mockk.mockkStatic
 import kotlinx.coroutines.runBlocking
 import okhttp3.MediaType.Companion.toMediaType
@@ -21,6 +23,8 @@ import org.junit.jupiter.api.Test
 
 internal class ReferralTest {
     data class ServerResponse(val message: String)
+
+    private val mockContext: Context = mockk()
 
     @BeforeEach
     fun beforeEach() {
@@ -70,7 +74,7 @@ internal class ReferralTest {
             val body = emptyJson.toString().toRequestBody(mediaType)
 
             val testRequest: NetworkResult<ServerResponse> = runBlocking {
-                Http().makeRequest(
+                Http(mockContext).makeRequest(
                     method = Http.Method.POST,
                     url = server.url("/api/referrals").toString(),
                     headers = emptyMap(),
@@ -109,7 +113,7 @@ internal class ReferralTest {
             val body = emptyJson.toString().toRequestBody(mediaType)
 
             val failedRequest: NetworkResult<ServerResponse> = runBlocking {
-                Http().makeRequest(
+                Http(mockContext).makeRequest(
                     method = Http.Method.POST,
                     url = server.url("/api/referrals").toString(),
                     headers = emptyMap(),
