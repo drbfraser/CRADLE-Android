@@ -106,14 +106,14 @@ class PatientTests {
             Reading(
                 id = id,
                 patientId = patientId,
-                dateTimeTaken = 123,
+                dateTaken = 123,
                 lastEdited = 123,
                 bloodPressure = BloodPressure(110, 80, 70),
                 symptoms = emptyList(),
                 referral = null,
                 followUp = null,
                 urineTest = null,
-                dateRecheckVitalsNeeded = null,
+                dateRetestNeeded = null,
                 isFlaggedForFollowUp = false,
                 isUploadedToServer = false,
                 userId = 1

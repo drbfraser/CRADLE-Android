@@ -17,10 +17,10 @@ SELECT
   p.id,
   p.villageNumber,
   r.bloodPressure as latestBloodPressure,
-  MAX(r.dateTimeTaken) as latestReadingDate,
+  MAX(r.dateTaken) as latestReadingDate,
   p.lastEdited,
   r.referral,
-  r.dateRecheckVitalsNeeded
+  r.dateRetestNeeded
 FROM
   Patient as p
   LEFT JOIN Reading AS r ON p.id = r.patientId

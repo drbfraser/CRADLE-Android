@@ -128,7 +128,7 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
                 Reading currReading = (Reading) combinedList.get(i);
                 ReadingAnalysis analysis = currReading.getBloodPressure().getAnalysis();
 
-                myViewHolder.readingDate.setText(DateUtil.getConciseDateString(currReading.getDateTimeTaken(), false));
+                myViewHolder.readingDate.setText(DateUtil.getConciseDateString(currReading.getDateTaken(), false));
                 myViewHolder.sysBP.setText(new StringBuilder().append(currReading.getBloodPressure().getSystolic()).append("").toString());
                 myViewHolder.diaBP.setText(new StringBuilder().append(currReading.getBloodPressure().getDiastolic()).append("").toString());
                 myViewHolder.heartRate.setText(new StringBuilder().append(currReading.getBloodPressure().getHeartRate()).append("").toString());

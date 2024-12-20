@@ -124,7 +124,7 @@ interface ReadingDao {
     /**
      * get the newest reading of a particular patient
      */
-    @Query("SELECT * FROM Reading WHERE patientId = :id ORDER BY dateTimeTaken LIMIT 1")
+    @Query("SELECT * FROM Reading WHERE patientId = :id ORDER BY dateTaken LIMIT 1")
     suspend fun getNewestReadingByPatientId(id: String): Reading?
 
     /**
@@ -139,7 +139,7 @@ interface ReadingDao {
     /**
      * set dateRecheckVitalsNeeded field to null
      */
-    @Query("UPDATE Reading SET dateRecheckVitalsNeeded = NULL WHERE readingId = :readingId")
+    @Query("UPDATE Reading SET dateRetestNeeded = NULL WHERE readingId = :readingId")
     suspend fun setDateRecheckVitalsNeededToNull(readingId: String)
 
     /**

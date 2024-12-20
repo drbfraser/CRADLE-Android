@@ -60,13 +60,13 @@ private const val SECONDS_IN_MIN = 60
  * will be generated for this field.
  * @property patientId The identifier for the patient this reading is
  * associated with.
- * @property dateTimeTaken Unix time at which this reading was taken.
+ * @property dateTaken Unix time at which this reading was taken.
  * @property bloodPressure The result of a blood pressure test.
  * @property urineTest The result of a urine test.
  * @property symptoms A list of symptoms that the patient has at the time this
  * reading was taken.
  * @property referral An optional referral associated with this reading.
- * @property dateRecheckVitalsNeeded Unix time at which this patient's vitals
+ * @property dateRetestNeeded Unix time at which this patient's vitals
  * should be rechecked (if applicable).
  * @property isFlaggedForFollowUp Whether this patient requires a followup.
  * @property previousReadingIds A list of previous readings associated with
@@ -94,13 +94,13 @@ data class Reading(
     @ColumnInfo(name = "readingId")
     var id: String = UUID.randomUUID().toString(),
     @ColumnInfo var patientId: String,
-    @ColumnInfo var dateTimeTaken: Long,
+    @ColumnInfo var dateTaken: Long,
     @ColumnInfo var bloodPressure: BloodPressure,
     @ColumnInfo var urineTest: UrineTest?,
     @ColumnInfo var symptoms: List<String>,
     @ColumnInfo var referral: Referral?,
     @ColumnInfo var followUp: Assessment?,
-    @ColumnInfo var dateRecheckVitalsNeeded: Long?,
+    @ColumnInfo var dateRetestNeeded: Long?,
     @ColumnInfo var isFlaggedForFollowUp: Boolean,
     @ColumnInfo var previousReadingIds: List<String> = emptyList(),
     @ColumnInfo var isUploadedToServer: Boolean = false,
@@ -116,7 +116,7 @@ data class Reading(
     /**
      * True if this reading notes that a vital recheck is required.
      */
-    val isVitalRecheckRequired get() = dateRecheckVitalsNeeded != null
+    val isVitalRecheckRequired get() = dateRetestNeeded != null
 
     /**
      * True if a vital recheck is required right now.
@@ -131,7 +131,7 @@ data class Reading(
      */
     val minutesUntilVitalRecheck: Long?
         get() {
-            val recheckTime = dateRecheckVitalsNeeded ?: return null
+            val recheckTime = dateRetestNeeded ?: return null
             val timeLeft = recheckTime - ZonedDateTime.now().toEpochSecond()
             return if (timeLeft <= 0) {
                 0
@@ -157,11 +157,11 @@ data class Reading(
 
                 gen.writeStringField(ReadingField.ID, id)
                 gen.writeStringField(ReadingField.PATIENT_ID, patientId)
-                gen.writeLongField(ReadingField.DATE_TIME_TAKEN, dateTimeTaken)
+                gen.writeLongField(ReadingField.DATE_TIME_TAKEN, dateTaken)
                 bloodPressure.serialize(gen)
                 gen.writeOptLongField(
                     ReadingField.DATE_RECHECK_VITALS_NEEDED,
-                    dateRecheckVitalsNeeded
+                    dateRetestNeeded
                 )
                 gen.writeBooleanField(ReadingField.IS_FLAGGED_FOR_FOLLOWUP, isFlaggedForFollowUp)
                 gen.writeObjectField(ReadingField.SYMPTOMS, symptoms)
@@ -206,14 +206,14 @@ data class Reading(
                 return@run Reading(
                     id = readingId,
                     patientId = patientId,
-                    dateTimeTaken = dateTimeTaken,
+                    dateTaken = dateTimeTaken,
                     lastEdited = lastEdited,
                     bloodPressure = bloodPressure,
                     urineTest = urineTest,
                     symptoms = symptoms,
                     referral = referral,
                     followUp = followUp,
-                    dateRecheckVitalsNeeded = dateRecheckVitalsNeeded,
+                    dateRetestNeeded = dateRecheckVitalsNeeded,
                     isFlaggedForFollowUp = isFlaggedForFollowUp,
                     previousReadingIds = previousReadingIds,
                     userId = userId
@@ -261,10 +261,10 @@ data class Reading(
 
     object AscendingDataComparator : Comparator<Reading> {
         override fun compare(o1: Reading?, o2: Reading?): Int {
-            val hasO1 = o1?.dateTimeTaken != null
-            val hasO2 = o2?.dateTimeTaken != null
+            val hasO1 = o1?.dateTaken != null
+            val hasO2 = o2?.dateTaken != null
             return when {
-                hasO1 && hasO2 -> o1!!.dateTimeTaken.compareTo(o2!!.dateTimeTaken)
+                hasO1 && hasO2 -> o1!!.dateTaken.compareTo(o2!!.dateTaken)
                 hasO1 && !hasO2 -> -1
                 !hasO1 && hasO2 -> 1
                 else -> 0

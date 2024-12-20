@@ -821,7 +821,7 @@ class PatientReadingViewModel @Inject constructor(
     val readingId: MutableLiveData<String> =
         readingBuilder.get(Reading::id, UUID.randomUUID().toString())
 
-    val dateTimeTaken: MutableLiveData<Long?> = readingBuilder.get<Long?>(Reading::dateTimeTaken)
+    val dateTimeTaken: MutableLiveData<Long?> = readingBuilder.get<Long?>(Reading::dateTaken)
 
     val lastEdited: MutableLiveData<Long?> = readingBuilder.get<Long?>(Reading::lastEdited)
 
@@ -1471,7 +1471,7 @@ class PatientReadingViewModel @Inject constructor(
                         id = UUID.randomUUID().toString(),
                         comment = referralComment,
                         referralHealthFacilityName = healthFacilityName,
-                        dateReferred = readingFromBuilder.dateTimeTaken,
+                        dateReferred = readingFromBuilder.dateTaken,
                         userId = sharedPreferences.getIntOrNull(UserViewModel.USER_ID_KEY),
                         patientId = readingFromBuilder.patientId,
                         actionTaken = null,
@@ -1480,7 +1480,7 @@ class PatientReadingViewModel @Inject constructor(
                         isCancelled = false,
                         notAttended = false,
                         isAssessed = false,
-                        lastEdited = readingFromBuilder.dateTimeTaken
+                        lastEdited = readingFromBuilder.dateTaken
                     )
 
                 yield()
@@ -1643,7 +1643,7 @@ class PatientReadingViewModel @Inject constructor(
         get() = adviceManager.currentRecommendedAdvice
 
     val dateRecheckVitalsNeeded: MediatorLiveData<Long?> =
-        readingBuilder.get(Reading::dateRecheckVitalsNeeded, null).apply {
+        readingBuilder.get(Reading::dateRetestNeeded, null).apply {
             addSource(adviceRecheckButtonId) {
                 value = when (it) {
                     R.id.recheck_vitals_after_15_min_radio_button -> {
