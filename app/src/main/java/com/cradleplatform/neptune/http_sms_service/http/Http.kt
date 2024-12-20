@@ -1,7 +1,9 @@
 package com.cradleplatform.neptune.http_sms_service.http
 
+import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
+import androidx.preference.PreferenceManager
 import com.cradleplatform.neptune.utilities.jackson.JacksonMapper
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
@@ -29,8 +31,9 @@ import java.util.concurrent.TimeUnit
  * class should be used instead of this one.
  */
 class Http(
-    private val sharedPreferences: SharedPreferences,
+    private val context: Context,
 ) {
+    private val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
     /**
      * Enumeration of common HTTP method request types.
      */

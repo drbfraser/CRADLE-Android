@@ -1,11 +1,15 @@
 package com.cradleplatform.neptune.http_sms_service
 
+import android.content.Context
+import android.content.SharedPreferences
 import android.util.Log
+import androidx.preference.PreferenceManager.getDefaultSharedPreferences
 import com.cradleplatform.neptune.http_sms_service.http.Http
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.fasterxml.jackson.databind.exc.MismatchedInputException
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.mockk.every
+import io.mockk.mockk
 import io.mockk.mockkStatic
 import kotlinx.coroutines.runBlocking
 import okhttp3.mockwebserver.Dispatcher
@@ -20,8 +24,10 @@ import org.junit.jupiter.api.fail
 import java.util.concurrent.TimeUnit
 
 internal class HttpTest {
+    private val mockContext: Context = mockk()
 
     data class ServerResponse(val message: String)
+
 
     @BeforeEach
     fun beforeEach() {
@@ -50,7 +56,7 @@ internal class HttpTest {
             val reader = mapper.readerFor(ServerResponse::class.java)
 
             val testRequest: NetworkResult<ServerResponse> = runBlocking {
-                Http().makeRequest(
+                Http(mockContext).makeRequest(
                     method = Http.Method.GET,
                     url = server.url("/api/test").toString(),
                     headers = emptyMap(),
@@ -100,7 +106,7 @@ tortor rutrum mauris. Morbi pellentesque ex.
             val reader = mapper.readerFor(ServerResponse::class.java)
 
             val testRequest: NetworkResult<ServerResponse> = runBlocking {
-                Http().makeRequest(
+                Http(mockContext).makeRequest(
                     method = Http.Method.GET,
                     url = server.url("/api/test").toString(),
                     headers = emptyMap(),
@@ -132,7 +138,7 @@ tortor rutrum mauris. Morbi pellentesque ex.
                     }
             }
 
-            val http = Http()
+            val http = Http(mockContext)
 
             val notFoundRequest: NetworkResult<ServerResponse> = runBlocking {
                 http.makeRequest(
@@ -216,7 +222,7 @@ tortor rutrum mauris. Morbi pellentesque ex.
             val reader = mapper.readerFor(ServerResponse::class.java)
             // This should throw an exception during parsing
             val testRequest: NetworkResult<ServerResponse> = runBlocking {
-                Http().makeRequest(
+                Http(mockContext).makeRequest(
                     method = Http.Method.GET,
                     url = server.url("/api/anything").toString(),
                     headers = emptyMap(),
