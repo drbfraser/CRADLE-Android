@@ -36,7 +36,7 @@ data class LocalSearchPatient(
     val latestReadingDate: Long?,
     val lastEdited: Long?,
     val referral: Referral?,
-    val dateRecheckVitalsNeeded: Long?
+    val dateRetestNeeded: Long?
 ) {
     fun getLatestRetestAnalysis(): ReadingAnalysis? = latestBloodPressure?.analysis
 }
