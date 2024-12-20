@@ -51,7 +51,7 @@ import java.util.UUID
     indices = [
         Index(value = ["id"], unique = true),
         Index(value = ["patientId"]),
-        Index(value = ["referralHealthFacilityName"])
+        Index(value = ["healthFacilityName"])
     ],
     foreignKeys = [
         ForeignKey(
@@ -64,7 +64,7 @@ import java.util.UUID
         ForeignKey(
             entity = HealthFacility::class,
             parentColumns = arrayOf("name"),
-            childColumns = arrayOf("referralHealthFacilityName"),
+            childColumns = arrayOf("healthFacilityName"),
             onUpdate = ForeignKey.CASCADE,
             onDelete = ForeignKey.CASCADE
         )
@@ -152,7 +152,7 @@ data class Referral(
             p.codec.readTree<JsonNode>(p)!!.run {
                 val id = get(ReferralField.ID)!!.textValue()
                 val comment = get(ReferralField.COMMENT)?.textValue()
-                val referralHealthFacilityName = get(ReferralField.HEALTH_FACILITY_NAME)!!.textValue()
+                val healthFacilityName = get(ReferralField.HEALTH_FACILITY_NAME)!!.textValue()
                 val dateReferred = get(ReferralField.DATE_REFERRED)!!.longValue()
                 val userId = get(ReferralField.USER_ID)?.intValue()
                 val patientId = get(ReferralField.PATIENT_ID)!!.textValue()
@@ -168,7 +168,7 @@ data class Referral(
                 return@run Referral(
                     id = id,
                     comment = comment,
-                    healthFacilityName = referralHealthFacilityName,
+                    healthFacilityName = healthFacilityName,
                     dateReferred = dateReferred,
                     userId = userId,
                     patientId = patientId,
