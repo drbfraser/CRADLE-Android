@@ -68,13 +68,13 @@ private const val SECONDS_IN_MIN = 60
  * @property referral An optional referral associated with this reading.
  * @property dateRetestNeeded Unix time at which this patient's vitals
  * should be rechecked (if applicable).
- * @property isFlaggedForFollowUp Whether this patient requires a followup.
+ * @property isFlaggedForFollowUp Whether this patient requires a follow up.
  * @property previousReadingIds A list of previous readings associated with
  * this one. By default this is empty.
  */
 @Entity(
     indices = [
-        Index(value = ["readingId"], unique = true),
+        Index(value = ["id"], unique = true),
         Index(value = ["patientId"])
     ],
     foreignKeys = [
@@ -91,7 +91,7 @@ private const val SECONDS_IN_MIN = 60
 @JsonDeserialize(using = Reading.Deserializer::class)
 data class Reading(
     @PrimaryKey
-    @ColumnInfo(name = "readingId")
+    @ColumnInfo(name = "id")
     var id: String = UUID.randomUUID().toString(),
     @ColumnInfo var patientId: String,
     @ColumnInfo var dateTaken: Long,
@@ -163,10 +163,10 @@ data class Reading(
                     ReadingField.DATE_RECHECK_VITALS_NEEDED,
                     dateRetestNeeded
                 )
-                gen.writeBooleanField(ReadingField.IS_FLAGGED_FOR_FOLLOWUP, isFlaggedForFollowUp)
+                gen.writeBooleanField(ReadingField.IS_FLAGGED_FOR_FOLLOW_UP, isFlaggedForFollowUp)
                 gen.writeObjectField(ReadingField.SYMPTOMS, symptoms)
                 gen.writeOptObjectField(ReadingField.REFERRAL, referral)
-                gen.writeOptObjectField(ReadingField.FOLLOWUP, followUp)
+                gen.writeOptObjectField(ReadingField.FOLLOW_UP, followUp)
                 gen.writeOptObjectField(ReadingField.URINE_TEST, urineTest)
                 gen.writeStringField(
                     ReadingField.PREVIOUS_READING_IDS,
@@ -191,10 +191,10 @@ data class Reading(
                 val symptoms = getOptObjectArray<String>(ReadingField.SYMPTOMS, p.codec)
                     ?: emptyList()
                 val referral = getOptObject<Referral>(ReadingField.REFERRAL, p.codec)
-                val followUp = getOptObject<Assessment>(ReadingField.FOLLOWUP, p.codec)
+                val followUp = getOptObject<Assessment>(ReadingField.FOLLOW_UP, p.codec)
                 val dateRecheckVitalsNeeded = get(ReadingField.DATE_RECHECK_VITALS_NEEDED)
                     ?.longValue()
-                val isFlaggedForFollowUp = get(ReadingField.IS_FLAGGED_FOR_FOLLOWUP)
+                val isFlaggedForFollowUp = get(ReadingField.IS_FLAGGED_FOR_FOLLOW_UP)
                     ?.booleanValue() ?: false
                 val previousReadingIds = get(ReadingField.PREVIOUS_READING_IDS)
                     ?.textValue()
@@ -568,12 +568,12 @@ private enum class ReadingField(override val text: String) : Field {
     URINE_TEST("urineTests"),
     SYMPTOMS("symptoms"),
     DATE_RECHECK_VITALS_NEEDED("dateRetestNeeded"),
-    IS_FLAGGED_FOR_FOLLOWUP("isFlaggedForFollowup"),
+    IS_FLAGGED_FOR_FOLLOW_UP("isFlaggedForFollowUp"),
     PREVIOUS_READING_IDS("retestOfPreviousReadingIds"),
     LAST_EDITED("lastEdited"),
     USER_ID("userId"),
     REFERRAL("referral"),
-    FOLLOWUP("followUp"),
+    FOLLOW_UP("followUp"),
 }
 
 /**
