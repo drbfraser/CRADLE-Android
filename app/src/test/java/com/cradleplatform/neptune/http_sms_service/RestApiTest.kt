@@ -55,23 +55,24 @@ internal class RestApiTest {
 
                                 // sync with the actual endpoint
                                 JSONObject("""
-                            {
-                                "user": {
-                                    "email": "vht@vht.com",
-                                    "username": "vht",
-                                    "role": "VHT",
-                                    "name": "TestVHT",
-                                    "healthFacilityName": "H0000",
-                                    "phoneNumbers": ["+1-666-666-6666", "+1-777-777-7777", "+1-555-555-5555"],
-                                    "isLoggedIn": true,
-                                    "id": 3,
+                                {
+                                    "user": {
+                                        "email": "vht@email.com",
+                                        "username": "vht",
+                                        "role": "VHT",
+                                        "name": "TestVHT",
+                                        "healthFacilityName": "H0000",
+                                        "phoneNumbers": ["+1-666-666-6666", "+1-777-777-7777", "+1-555-555-5555"],
+                                        "isLoggedIn": true,
+                                        "id": 3,
+                                        "smsKey": {
+                                            "key": "SGVsbG8sIFdvcmxkIQ=="
+                                        }
+                                    },
+                                    "accessToken": "test-token",
+
                                 }
-                                "accessToken": "test-token",
-                                "smsKey": {
-                                    "key": "{\"sms_key\":\"SGVsbG8sIFdvcmxkIQ==\"}"
-                                }
-                            }
-                            """.trimIndent())
+                                """.trimIndent())
                             } else {
                                 throw GeneralSecurityException()
                             }
@@ -140,9 +141,9 @@ internal class RestApiTest {
             name = "TestVHT",
             healthFacilityName = "H0000",
             id = 3,
-            phoneNumbers = listOf<String>("+1-666-666-6666", "+1777-777-7777", "+1555-555-5555"),
+            phoneNumbers = listOf<String>("+1-666-666-6666", "+1-777-777-7777", "+1-555-555-5555"),
             smsKey = LoginResponseSmsKey(
-                key = "{\"sms_key\":\"SGVsbG8sIFdvcmxkIQ==\"}"
+                key = "SGVsbG8sIFdvcmxkIQ=="
             )
         )
         val expectedLoginResponseForVht = LoginResponse(
