@@ -51,8 +51,8 @@ import kotlin.reflect.KProperty
  *
  * @property id The unique identifier for this patient.
  * @property name This patient's name or initials.
- * @property dob This patient's date of birth (if known).
- * @property isExactDob Whether [dob] is exact, or just a date of birth for approximate age.
+ * @property dateOfBirth This patient's date of birth (if known).
+ * @property isExactDateOfBirth Whether [dateOfBirth] is exact, or just a date of birth for approximate age.
  * @property gestationalAge The gestational age of this patient if applicable.
  * @property sex This patient's sex.
  * @property isPregnant Whether this patient is pregnant or not.
@@ -73,7 +73,7 @@ import kotlin.reflect.KProperty
  * @property drugLastEdited Last time drug info was edited on android
  * @property medicalLastEdited Last time medical info was edited on android
  * @property lastServerUpdate Last time the patient has gotten updated from the server.
- *
+ * @property isArchived The flag of either the patient is archived or not
  */
 @Entity(
     indices = [
@@ -86,8 +86,8 @@ internal data class Patient(
     @PrimaryKey @ColumnInfo
     var id: String = "",
     @ColumnInfo var name: String = "",
-    @ColumnInfo var dob: String? = null,
-    @ColumnInfo var isExactDob: Boolean? = null,
+    @ColumnInfo var dateOfBirth: String? = null,
+    @ColumnInfo var isExactDateOfBirth: Boolean? = null,
     @ColumnInfo var gestationalAge: GestationalAge? = null,
     @ColumnInfo var sex: Sex = Sex.OTHER,
     @ColumnInfo var isPregnant: Boolean = false,
@@ -103,7 +103,8 @@ internal data class Patient(
     @ColumnInfo var lastEdited: Long? = null,
     @ColumnInfo var drugLastEdited: Long? = null,
     @ColumnInfo var medicalLastEdited: Long? = null,
-    @ColumnInfo var lastServerUpdate: Long? = null
+    @ColumnInfo var lastServerUpdate: Long? = null,
+    @ColumnInfo var isArchived: Boolean = false
 ) : Serializable, Verifiable<Patient> {
     override fun isValueForPropertyValid(
         property: KProperty<*>,
@@ -220,7 +221,7 @@ internal data class Patient(
             }
 
             // validity of dob depends on age
-            Patient::dob -> with(value as String?) {
+            Patient::dateOfBirth -> with(value as String?) {
                 if (this == null || isBlank()) {
                     return@with Verifiable.Invalid(
                         property,
@@ -421,8 +422,8 @@ internal data class Patient(
             patient.run {
                 gen.writeStringField(PatientField.ID, id)
                 gen.writeStringField(PatientField.NAME, name)
-                gen.writeStringField(PatientField.DOB, dob!!)
-                gen.writeBooleanField(PatientField.IS_EXACT_DOB, isExactDob!!)
+                gen.writeStringField(PatientField.DOB, dateOfBirth!!)
+                gen.writeBooleanField(PatientField.IS_EXACT_DOB, isExactDateOfBirth!!)
                 gen.writeStringField(PatientField.SEX, sex.name)
                 gen.writeBooleanField(PatientField.IS_PREGNANT, isPregnant)
                 if (isPregnant) {
@@ -441,6 +442,7 @@ internal data class Patient(
                 gen.writeOptLongField(PatientField.DRUG_LAST_EDITED, drugLastEdited)
                 gen.writeOptLongField(PatientField.MEDICAL_LAST_EDITED, medicalLastEdited)
                 gen.writeOptLongField(PatientField.LAST_SERVER_UPDATE, lastServerUpdate)
+                gen.writeBooleanField(PatientField.IS_ARCHIVED, isArchived)
             }
         }
 
@@ -464,7 +466,6 @@ internal data class Patient(
             val isExactDob = get(PatientField.IS_EXACT_DOB)?.asBoolean(false)
 
             val gestationalAge = if (
-                has(PatientField.GESTATIONAL_AGE_UNIT.text) &&
                 has(PatientField.GESTATIONAL_AGE_VALUE.text)
             ) {
                 GestationalAge.Deserializer.get(this)
@@ -492,12 +493,13 @@ internal data class Patient(
             val drugLastEdited = get(PatientField.DRUG_LAST_EDITED)?.asLong()
             val medicalLastEdited = get(PatientField.MEDICAL_LAST_EDITED)?.asLong()
             val lastServerUpdate = get(PatientField.LAST_SERVER_UPDATE)?.asLong()
+            val isArchived = get(PatientField.IS_ARCHIVED)?.booleanValue() ?: false
 
             return@run Patient(
                 id = id,
                 name = name,
-                dob = dob,
-                isExactDob = isExactDob,
+                dateOfBirth = dob,
+                isExactDateOfBirth = isExactDob,
                 gestationalAge = gestationalAge,
                 sex = sex,
                 isPregnant = isPregnant,
@@ -513,7 +515,8 @@ internal data class Patient(
                 lastEdited = lastEdited,
                 drugLastEdited = drugLastEdited,
                 medicalLastEdited = medicalLastEdited,
-                lastServerUpdate = lastServerUpdate
+                lastServerUpdate = lastServerUpdate,
+                isArchived = isArchived
             )
         }
 
@@ -627,17 +630,17 @@ sealed class GestationalAge(val timestamp: BigInteger) : Serializable {
          * Nested deserialization from the given [jsonNode]
          */
         fun get(jsonNode: JsonNode): GestationalAge = jsonNode.run {
-            val units = get(PatientField.GESTATIONAL_AGE_UNIT)!!.asText()
             val value = get(PatientField.GESTATIONAL_AGE_VALUE)!!.asLong()
-            return when (units) {
-                UNIT_VALUE_WEEKS -> GestationalAgeWeeks(BigInteger.valueOf(value))
-                UNIT_VALUE_MONTHS, "DAYS" -> GestationalAgeMonths(BigInteger.valueOf(value))
-                else -> {
-                    throw InvalidUnitsException(
-                        "invalid value for ${PatientField.GESTATIONAL_AGE_UNIT.text}"
-                    )
-                }
-            }
+//            return when (units) {
+//                UNIT_VALUE_WEEKS -> GestationalAgeWeeks(BigInteger.valueOf(value))
+//                UNIT_VALUE_MONTHS, "DAYS" -> GestationalAgeMonths(BigInteger.valueOf(value))
+//                else -> {
+//                    throw InvalidUnitsException(
+//                        "invalid value for ${PatientField.GESTATIONAL_AGE_UNIT.text}"
+//                    )
+//                }
+//            }
+            return GestationalAgeWeeks(BigInteger.valueOf(value))
         }
     }
 
@@ -661,7 +664,6 @@ sealed class GestationalAge(val timestamp: BigInteger) : Serializable {
             } else {
                 UNIT_VALUE_WEEKS
             }
-            gen.writeStringField(PatientField.GESTATIONAL_AGE_UNIT, units)
             gen.writeStringField(
                 PatientField.GESTATIONAL_AGE_VALUE,
                 gestationalAge.timestamp.toString()
@@ -729,13 +731,12 @@ class GestationalAgeMonths(timestamp: BigInteger) : GestationalAge(timestamp), S
  * methods use the same field names.
  */
 private enum class PatientField(override val text: String) : Field {
-    ID("patientId"),
-    NAME("patientName"),
-    DOB("dob"),
-    IS_EXACT_DOB("isExactDob"),
-    GESTATIONAL_AGE_UNIT("gestationalAgeUnit"),
+    ID("id"),
+    NAME("name"),
+    DOB("dateOfBirth"),
+    IS_EXACT_DOB("isExactDateOfBirth"),
     GESTATIONAL_AGE_VALUE("pregnancyStartDate"),
-    SEX("patientSex"),
+    SEX("sex"),
     IS_PREGNANT("isPregnant"),
     PREGNANCY_ID("pregnancyId"),
     PREGNANCY_END_DATE("pregnancyEndDate"),
@@ -750,7 +751,9 @@ private enum class PatientField(override val text: String) : Field {
     DRUG_LAST_EDITED("drugLastEdited"),
     MEDICAL_LAST_EDITED("medicalLastEdited"),
     LAST_SERVER_UPDATE("lastServerUpdate"),
-    READINGS("readings")
+    READINGS("readings"),
+    REFERRALS("referrals"),
+    IS_ARCHIVED("isArchived")
 }
 
 /**

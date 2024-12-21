@@ -8,7 +8,13 @@ import com.cradleplatform.neptune.database.firstversiondata.model.GestationalAge
 import com.cradleplatform.neptune.database.firstversiondata.model.Referral
 import com.cradleplatform.neptune.database.firstversiondata.model.Sex
 import com.cradleplatform.neptune.database.firstversiondata.model.UrineTest
+import com.cradleplatform.neptune.model.Answer
+import com.cradleplatform.neptune.model.FormTemplate
+import com.cradleplatform.neptune.model.QuestionResponse
+import com.cradleplatform.neptune.utilities.jackson.JacksonMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 
 /**
  * A list of [TypeConverter] to save objects into room database
@@ -21,10 +27,10 @@ import com.fasterxml.jackson.module.kotlin.readValue
  */
 internal class Version1TypeConverter {
     private inline fun <reified T> readStringValueByJackson(string: String?): T? =
-        string?.let { Version1JacksonMapper.mapper.readValue<T>(it) }
+        string?.let { JacksonMapper.mapper.readValue<T>(it) }
 
     private inline fun <reified T> writeStringByJackson(instance: T?): String? =
-        instance?.let { Version1JacksonMapper.mapper.writeValueAsString(it) }
+        instance?.let { JacksonMapper.mapper.writeValueAsString(it) }
 
     @TypeConverter
     fun gestationalAgeToString(gestationalAge: GestationalAge?): String? = writeStringByJackson(gestationalAge)
@@ -67,4 +73,27 @@ internal class Version1TypeConverter {
 
     @TypeConverter
     fun fromFollowUp(assessment: Assessment?): String? = writeStringByJackson(assessment)
+
+    @TypeConverter
+    fun fromFormTemplate(formTemplate: FormTemplate?): String? =
+        formTemplate?.let { Gson().toJson(formTemplate) }
+
+    @TypeConverter
+    fun toFormTemplate(string: String?): FormTemplate? =
+        string?.let { Gson().fromJson(string, FormTemplate::class.java) }
+
+    @TypeConverter
+    fun fromFormResponseAnswers(answers: Map<String, Answer>?): String? =
+        answers?.let { Gson().toJson(answers) }
+
+    @TypeConverter
+    fun toFormResponseAnswers(string: String?): Map<String, Answer>? =
+        string?.let { Gson().fromJson(string, object : TypeToken<Map<String, Answer>>() {}.type) }
+    @TypeConverter
+    fun fromQuestionResponseList(list: List<QuestionResponse>?): String? =
+        list?.let { Gson().toJson(list) }
+
+    @TypeConverter
+    fun toQuestionResponseList(string: String?): List<QuestionResponse>? =
+        string?.let { Gson().fromJson(string, object : TypeToken<List<QuestionResponse>>() {}.type) }
 }

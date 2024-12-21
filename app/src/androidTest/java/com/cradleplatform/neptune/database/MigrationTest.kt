@@ -66,8 +66,8 @@ class MigrationTests {
         val patientWithExactDob = com.cradleplatform.neptune.database.firstversiondata.model.Patient(
             id = patientId,
             name = "Exact dob",
-            dob = "1989-10-24",
-            isExactDob = true,
+            dateOfBirth = "1989-10-24",
+            isExactDateOfBirth = true,
             gestationalAge = com.cradleplatform.neptune.database.firstversiondata.model.GestationalAgeWeeks(Weeks(20L)),
             sex = com.cradleplatform.neptune.database.firstversiondata.model.Sex.FEMALE,
             isPregnant = true,
@@ -126,8 +126,8 @@ class MigrationTests {
             com.cradleplatform.neptune.database.firstversiondata.model.Patient(
                 id = "1",
                 name = "Exact dob",
-                dob = "1989-10-24",
-                isExactDob = true,
+                dateOfBirth = "1989-10-24",
+                isExactDateOfBirth = true,
                 gestationalAge = com.cradleplatform.neptune.database.firstversiondata.model.GestationalAgeWeeks(Weeks(20L)),
                 sex = com.cradleplatform.neptune.database.firstversiondata.model.Sex.FEMALE,
                 isPregnant = true,
@@ -156,9 +156,9 @@ class MigrationTests {
             com.cradleplatform.neptune.database.firstversiondata.model.Patient(
                 id = "2",
                 name = "Approximate age of 23",
-                dob = null,
-                isExactDob = false,
-                gestationalAge = com.cradleplatform.neptune.database.firstversiondata.model.GestationalAgeMonths(Months(4)),
+                dateOfBirth = null,
+                isExactDateOfBirth = false,
+                gestationalAge = com.cradleplatform.neptune.database.firstversiondata.model.GestationalAgeWeeks(Weeks(17)),
                 sex = com.cradleplatform.neptune.database.firstversiondata.model.Sex.OTHER,
                 isPregnant = true,
                 zone = "zone2",
@@ -172,7 +172,7 @@ class MigrationTests {
                 name = "Approximate age of 23",
                 dateOfBirth = null,
                 isExactDateOfBirth = false,
-                gestationalAge = GestationalAgeMonths(Months(4)),
+                gestationalAge = GestationalAgeWeeks(Weeks(17)),
                 sex = Sex.OTHER,
                 isPregnant = true,
                 zone = "zone2",
@@ -186,8 +186,8 @@ class MigrationTests {
             com.cradleplatform.neptune.database.firstversiondata.model.Patient(
                 id = "3",
                 name = "Has both age and dob -- prefer dob",
-                dob = "1954-04-24",
-                isExactDob = true,
+                dateOfBirth = "1954-04-24",
+                isExactDateOfBirth = true,
                 gestationalAge = null,
                 sex = com.cradleplatform.neptune.database.firstversiondata.model.Sex.MALE,
                 isPregnant = false,
@@ -296,8 +296,8 @@ class MigrationTests {
             com.cradleplatform.neptune.database.firstversiondata.model.Patient(
                 id = patientId,
                 name = "Exact dob",
-                dob = "1989-10-24",
-                isExactDob = true,
+                dateOfBirth = "1989-10-24",
+                isExactDateOfBirth = true,
                 gestationalAge = com.cradleplatform.neptune.database.firstversiondata.model.GestationalAgeWeeks(Weeks(20L)),
                 sex = com.cradleplatform.neptune.database.firstversiondata.model.Sex.FEMALE,
                 isPregnant = true,
@@ -361,6 +361,8 @@ class MigrationTests {
 
             readingDao.getReadingById(reading.firstVerObj.id)
                 ?.let { readingFromMigratedDb ->
+                    assertEquals(reading.expectedRecentVerObj.referral, readingFromMigratedDb.referral)
+                    assertEquals(reading.expectedRecentVerObj.followUp, readingFromMigratedDb.followUp)
                     assertEquals(reading.expectedRecentVerObj, readingFromMigratedDb)
                 }
                 ?: error {
@@ -405,10 +407,16 @@ class MigrationTests {
             healthFacilityName = "H2230",
             dateReferred = 1595645675L,
             patientId = patientId,
-            readingId = readingId,
-            id = 345,
+            id = "345",
             userId = 2,
-            isAssessed = true
+            isAssessed = true,
+            actionTaken = null,
+            cancelReason = null,
+            isCancelled = false,
+            lastEdited = 0L,
+            lastServerUpdate = 0L,
+            notAttendReason = null,
+            notAttended = false
         )
         val recentVersionReferral = Referral(
             comment = "This is a comment",
@@ -422,46 +430,51 @@ class MigrationTests {
             cancelReason = null,
             isCancelled = false,
             lastEdited = 0L,
+            lastServerUpdate = 0L,
             notAttendReason = null,
             notAttended = false
         )
         val firstVersionAssessment = com.cradleplatform.neptune.database.firstversiondata.model.Assessment(
-            id = 4535,
+            id = "4535",
             dateAssessed = 1595745946L,
-            healthCareWorkerId = 2,
-            readingId = readingId,
+            healthcareWorkerId = 2,
+            patientId = patientId,
+            lastEdited = 0L,
+            lastServerUpdate = 0L,
             diagnosis = "This is a detailed diagnosis.",
-            treatment = "This is a treatment",
-            medicationPrescribed = "These are medications prescripted.",
-            specialInvestigations = "This is a special investiation",
-            followupNeeded = true,
-            followupInstructions = "These are things to do"
+            treatment = "This is a treatment.",
+            medicationPrescribed = "These are medications prescribed.",
+            specialInvestigations = "This is a special investigation.",
+            followUpNeeded = true,
+            followUpInstructions = "These are things to do."
         )
         val recentVersionAssessment = Assessment(
             id = "4535",
             dateAssessed = 1595745946L,
             healthcareWorkerId = 2,
+            patientId = patientId,
+            lastEdited = 0L,
+            lastServerUpdate = 0L,
             diagnosis = "This is a detailed diagnosis.",
-            treatment = "This is a treatment",
-            medicationPrescribed = "These are medications prescripted.",
-            specialInvestigations = "This is a special investiation",
+            treatment = "This is a treatment.",
+            medicationPrescribed = "These are medications prescribed.",
+            specialInvestigations = "This is a special investigation.",
             followUpNeeded = true,
-            followUpInstructions = "These are things to do",
-            patientId = patientId
+            followUpInstructions = "These are things to do.",
         )
 
         return FirstVersionAndRecentVersion(
             com.cradleplatform.neptune.database.firstversiondata.model.Reading(
                 id = readingId,
                 patientId = patientId,
-                dateTimeTaken = unixTime,
+                dateTaken = unixTime,
                 lastEdited = unixTime,
                 bloodPressure = com.cradleplatform.neptune.database.firstversiondata.model.BloodPressure(110, 70, 65),
                 urineTest = com.cradleplatform.neptune.database.firstversiondata.model.UrineTest("+", "++", "NAD", "NAD", "NAD"),
                 symptoms = listOf("headache", "blurred vision", "pain"),
                 referral = firstVersionReferral,
                 followUp = firstVersionAssessment,
-                dateRecheckVitalsNeeded = unixTime,
+                dateRetestNeeded = unixTime,
                 isFlaggedForFollowUp = true,
                 previousReadingIds = listOf("1", "2", "3"),
                 isUploadedToServer = false,
@@ -509,10 +522,10 @@ class MigrationTests {
             dateAssessed = 1595745946L,
             healthcareWorkerId = 2,
             diagnosis = "This is a detailed diagnosis.",
-            treatment = "This is a treatment",
-            medicationPrescribed = "These are medications prescripted.",
-            specialInvestigations = "This is a special investiation",
-            followUpNeeded = true, followUpInstructions = "These are things to do",
+            treatment = "This is a treatment.",
+            medicationPrescribed = "These are medications prescribed.",
+            specialInvestigations = "This is a special investigation.",
+            followUpNeeded = true, followUpInstructions = "These are things to do.",
             patientId = patientId
         )
 
@@ -544,31 +557,31 @@ class MigrationTests {
             // We don't do statements like Reading::id.name, since that can get affected by
             // refactoring names.
             // @PrimaryKey
-            //     @ColumnInfo(name = "readingId")
+            //     @ColumnInfo(name = "id")
             //     var id: String = UUID.randomUUID().toString(),
             //     @ColumnInfo var patientId: String,
-            //     @ColumnInfo var dateTimeTaken: Long,
+            //     @ColumnInfo var dateTaken: Long,
             //     @ColumnInfo var bloodPressure: BloodPressure,
             //     @ColumnInfo var urineTest: UrineTest?,
             //     @ColumnInfo var symptoms: List<String>,
             //     @ColumnInfo var referral: Referral?,
             //     @ColumnInfo var followUp: Assessment?,
-            //     @ColumnInfo var dateRecheckVitalsNeeded: Long?,
+            //     @ColumnInfo var dateRetestNeeded: Long?,
             //     @ColumnInfo var isFlaggedForFollowUp: Boolean,
             //     @ColumnInfo var previousReadingIds: List<String> = emptyList(),
             //     @ColumnInfo var isUploadedToServer: Boolean = false,
             //     @ColumnInfo var lastEdited: Long,
             //     @ColumnInfo var userId: Int?
             contentValuesOf(
-                "readingId" to id,
+                "id" to id,
                 "patientId" to patientId,
-                "dateTimeTaken" to dateTimeTaken,
+                "dateTaken" to dateTaken,
                 "bloodPressure" to v1TypeConverter.fromBloodPressure(bloodPressure),
                 "urineTest" to v1TypeConverter.fromUrineTest(urineTest),
                 "symptoms" to v1TypeConverter.fromStringList(symptoms),
                 "referral" to v1TypeConverter.fromReferral(referral),
                 "followUp" to v1TypeConverter.fromFollowUp(followUp),
-                "dateRecheckVitalsNeeded" to dateRecheckVitalsNeeded,
+                "dateRetestNeeded" to dateRetestNeeded,
                 "isFlaggedForFollowUp" to isFlaggedForFollowUp,
                 "previousReadingIds" to v1TypeConverter.fromStringList(previousReadingIds),
                 "isUploadedToServer" to isUploadedToServer,
@@ -595,8 +608,8 @@ class MigrationTests {
         val values = patient.run {
             //     var id: String = "",
             //     @ColumnInfo var name: String = "",
-            //     @ColumnInfo var dob: String? = null,
-            //     @ColumnInfo var isExactDob: Boolean? = null,
+            //     @ColumnInfo var dateOfBirth: String? = null,
+            //     @ColumnInfo var isExactDateOfBirth: Boolean? = null,
             //     @ColumnInfo var gestationalAge: GestationalAge? = null,
             //     @ColumnInfo var sex: Sex = Sex.OTHER,
             //     @ColumnInfo var isPregnant: Boolean = false,
@@ -611,8 +624,8 @@ class MigrationTests {
             contentValuesOf(
                 "id" to id,
                 "name" to name,
-                "dob" to dob,
-                "isExactDob" to isExactDob,
+                "dateOfBirth" to dateOfBirth,
+                "isExactDateOfBirth" to isExactDateOfBirth,
                 "gestationalAge" to v1TypeConverter.gestationalAgeToString(gestationalAge),
                 "sex" to v1TypeConverter.sexToString(sex),
                 "isPregnant" to isPregnant,
@@ -623,7 +636,8 @@ class MigrationTests {
                 "medicalHistory" to medicalHistory,
                 "allergy" to allergy,
                 "lastEdited" to lastEdited,
-                "lastServerUpdate" to lastServerUpdate
+                "lastServerUpdate" to lastServerUpdate,
+                "isArchived" to isArchived
             )
         }
         database.insert(patientsTableName, SQLiteDatabase.CONFLICT_REPLACE, values)

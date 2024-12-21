@@ -157,17 +157,17 @@ data class Reading(
 
                 gen.writeStringField(ReadingField.ID, id)
                 gen.writeStringField(ReadingField.PATIENT_ID, patientId)
-                gen.writeLongField(ReadingField.DATE_TIME_TAKEN, dateTaken)
+                gen.writeLongField(ReadingField.DATE_TAKEN, dateTaken)
                 bloodPressure.serialize(gen)
                 gen.writeOptLongField(
-                    ReadingField.DATE_RECHECK_VITALS_NEEDED,
+                    ReadingField.DATE_RETEST_NEEDED,
                     dateRetestNeeded
                 )
                 gen.writeBooleanField(ReadingField.IS_FLAGGED_FOR_FOLLOW_UP, isFlaggedForFollowUp)
                 gen.writeObjectField(ReadingField.SYMPTOMS, symptoms)
                 gen.writeOptObjectField(ReadingField.REFERRAL, referral)
                 gen.writeOptObjectField(ReadingField.FOLLOW_UP, followUp)
-                gen.writeOptObjectField(ReadingField.URINE_TEST, urineTest)
+                gen.writeOptObjectField(ReadingField.URINE_TESTS, urineTest)
                 gen.writeStringField(
                     ReadingField.PREVIOUS_READING_IDS,
                     previousReadingIds.joinToString(",")
@@ -185,14 +185,14 @@ data class Reading(
             p.codec.readTree<JsonNode>(p)!!.run {
                 val readingId = get(ReadingField.ID)!!.textValue()
                 val patientId = get(ReadingField.PATIENT_ID)!!.textValue()
-                val dateTimeTaken = get(ReadingField.DATE_TIME_TAKEN)!!.longValue()
+                val dateTaken = get(ReadingField.DATE_TAKEN)!!.longValue()
                 val bloodPressure = BloodPressure.deserialize(this)
-                val urineTest = getOptObject<UrineTest>(ReadingField.URINE_TEST, p.codec)
+                val urineTests = getOptObject<UrineTest>(ReadingField.URINE_TESTS, p.codec)
                 val symptoms = getOptObjectArray<String>(ReadingField.SYMPTOMS, p.codec)
                     ?: emptyList()
                 val referral = getOptObject<Referral>(ReadingField.REFERRAL, p.codec)
                 val followUp = getOptObject<Assessment>(ReadingField.FOLLOW_UP, p.codec)
-                val dateRecheckVitalsNeeded = get(ReadingField.DATE_RECHECK_VITALS_NEEDED)
+                val dateRetestNeeded = get(ReadingField.DATE_RETEST_NEEDED)
                     ?.longValue()
                 val isFlaggedForFollowUp = get(ReadingField.IS_FLAGGED_FOR_FOLLOW_UP)
                     ?.booleanValue() ?: false
@@ -206,14 +206,14 @@ data class Reading(
                 return@run Reading(
                     id = readingId,
                     patientId = patientId,
-                    dateTaken = dateTimeTaken,
+                    dateTaken = dateTaken,
                     lastEdited = lastEdited,
                     bloodPressure = bloodPressure,
-                    urineTest = urineTest,
+                    urineTest = urineTests,
                     symptoms = symptoms,
                     referral = referral,
                     followUp = followUp,
-                    dateRetestNeeded = dateRecheckVitalsNeeded,
+                    dateRetestNeeded = dateRetestNeeded,
                     isFlaggedForFollowUp = isFlaggedForFollowUp,
                     previousReadingIds = previousReadingIds,
                     userId = userId
@@ -564,10 +564,10 @@ enum class RetestAdvice {
 private enum class ReadingField(override val text: String) : Field {
     ID("id"),
     PATIENT_ID("patientId"),
-    DATE_TIME_TAKEN("dateTaken"),
-    URINE_TEST("urineTests"),
+    DATE_TAKEN("dateTaken"),
+    URINE_TESTS("urineTests"),
     SYMPTOMS("symptoms"),
-    DATE_RECHECK_VITALS_NEEDED("dateRetestNeeded"),
+    DATE_RETEST_NEEDED("dateRetestNeeded"),
     IS_FLAGGED_FOR_FOLLOW_UP("isFlaggedForFollowUp"),
     PREVIOUS_READING_IDS("retestOfPreviousReadingIds"),
     LAST_EDITED("lastEdited"),

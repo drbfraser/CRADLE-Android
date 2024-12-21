@@ -59,9 +59,9 @@ import java.io.Serializable
         )
     ]
 )
-@JsonIgnoreProperties(ignoreUnknown = true)
 @JsonSerialize(using = Assessment.Serializer::class)
 @JsonDeserialize(using = Assessment.Deserializer::class)
+@JsonIgnoreProperties(ignoreUnknown = true)
 data class Assessment(
     @PrimaryKey @ColumnInfo @JsonProperty("id")
     var id: String,
@@ -69,7 +69,7 @@ data class Assessment(
     @ColumnInfo @JsonProperty("dateAssessed")
     var dateAssessed: Long,
 
-    @ColumnInfo @JsonProperty("healthCareWorkerId")
+    @ColumnInfo @JsonProperty("healthcareWorkerId")
     var healthcareWorkerId: Int,
 
     @ColumnInfo @JsonProperty("patientId")

@@ -61,13 +61,13 @@ private const val SECONDS_IN_MIN = 60
  * will be generated for this field.
  * @property patientId The identifier for the patient this reading is
  * associated with.
- * @property dateTimeTaken Unix time at which this reading was taken.
+ * @property dateTaken Unix time at which this reading was taken.
  * @property bloodPressure The result of a blood pressure test.
  * @property urineTest The result of a urine test.
  * @property symptoms A list of symptoms that the patient has at the time this
  * reading was taken.
  * @property referral An optional referral associated with this reading.
- * @property dateRecheckVitalsNeeded Unix time at which this patient's vitals
+ * @property dateRetestNeeded Unix time at which this patient's vitals
  * should be rechecked (if applicable).
  * @property isFlaggedForFollowUp Whether this patient requires a followup.
  * @property previousReadingIds A list of previous readings associated with
@@ -75,7 +75,7 @@ private const val SECONDS_IN_MIN = 60
  */
 @Entity(
     indices = [
-        Index(value = ["readingId"], unique = true),
+        Index(value = ["id"], unique = true),
         Index(value = ["patientId"])
     ],
     foreignKeys = [
@@ -92,16 +92,16 @@ private const val SECONDS_IN_MIN = 60
 @JsonDeserialize(using = Reading.Deserializer::class)
 internal data class Reading(
     @PrimaryKey
-    @ColumnInfo(name = "readingId")
+    @ColumnInfo(name = "id")
     var id: String = UUID.randomUUID().toString(),
     @ColumnInfo var patientId: String,
-    @ColumnInfo var dateTimeTaken: Long,
+    @ColumnInfo var dateTaken: Long,
     @ColumnInfo var bloodPressure: BloodPressure,
     @ColumnInfo var urineTest: UrineTest?,
     @ColumnInfo var symptoms: List<String>,
     @ColumnInfo var referral: Referral?,
     @ColumnInfo var followUp: Assessment?,
-    @ColumnInfo var dateRecheckVitalsNeeded: Long?,
+    @ColumnInfo var dateRetestNeeded: Long?,
     @ColumnInfo var isFlaggedForFollowUp: Boolean,
     @ColumnInfo var previousReadingIds: List<String> = emptyList(),
     @ColumnInfo var isUploadedToServer: Boolean = false,
@@ -117,7 +117,7 @@ internal data class Reading(
     /**
      * True if this reading notes that a vital recheck is required.
      */
-    val isVitalRecheckRequired get() = dateRecheckVitalsNeeded != null
+    val isVitalRecheckRequired get() = dateRetestNeeded != null
 
     /**
      * True if a vital recheck is required right now.
@@ -132,7 +132,7 @@ internal data class Reading(
      */
     val minutesUntilVitalRecheck: Long?
         get() {
-            val recheckTime = dateRecheckVitalsNeeded ?: return null
+            val recheckTime = dateRetestNeeded ?: return null
             val timeLeft = recheckTime - ZonedDateTime.now().toEpochSecond()
             return if (timeLeft <= 0) {
                 0
@@ -158,17 +158,17 @@ internal data class Reading(
 
                 gen.writeStringField(ReadingField.ID, id)
                 gen.writeStringField(ReadingField.PATIENT_ID, patientId)
-                gen.writeLongField(ReadingField.DATE_TIME_TAKEN, dateTimeTaken)
+                gen.writeLongField(ReadingField.DATE_TAKEN, dateTaken)
                 bloodPressure.serialize(gen)
                 gen.writeOptLongField(
-                    ReadingField.DATE_RECHECK_VITALS_NEEDED,
-                    dateRecheckVitalsNeeded
+                    ReadingField.DATE_RETEST_NEEDED,
+                    dateRetestNeeded
                 )
-                gen.writeBooleanField(ReadingField.IS_FLAGGED_FOR_FOLLOWUP, isFlaggedForFollowUp)
+                gen.writeBooleanField(ReadingField.IS_FLAGGED_FOR_FOLLOW_UP, isFlaggedForFollowUp)
                 gen.writeObjectField(ReadingField.SYMPTOMS, symptoms)
                 gen.writeOptObjectField(ReadingField.REFERRAL, referral)
-                gen.writeOptObjectField(ReadingField.FOLLOWUP, followUp)
-                gen.writeOptObjectField(ReadingField.URINE_TEST, urineTest)
+                gen.writeOptObjectField(ReadingField.FOLLOW_UP, followUp)
+                gen.writeOptObjectField(ReadingField.URINE_TESTS, urineTest)
                 gen.writeStringField(
                     ReadingField.PREVIOUS_READING_IDS,
                     previousReadingIds.joinToString(",")
@@ -186,16 +186,16 @@ internal data class Reading(
             p.codec.readTree<JsonNode>(p)!!.run {
                 val readingId = get(ReadingField.ID)!!.textValue()
                 val patientId = get(ReadingField.PATIENT_ID)!!.textValue()
-                val dateTimeTaken = get(ReadingField.DATE_TIME_TAKEN)!!.longValue()
+                val dateTaken = get(ReadingField.DATE_TAKEN)!!.longValue()
                 val bloodPressure = BloodPressure.deserialize(this)
-                val urineTest = getOptObject<UrineTest>(ReadingField.URINE_TEST, p.codec)
+                val urineTests = getOptObject<UrineTest>(ReadingField.URINE_TESTS, p.codec)
                 val symptoms = getOptObjectArray<String>(ReadingField.SYMPTOMS, p.codec)
                     ?: emptyList()
                 val referral = getOptObject<Referral>(ReadingField.REFERRAL, p.codec)
-                val followUp = getOptObject<Assessment>(ReadingField.FOLLOWUP, p.codec)
-                val dateRecheckVitalsNeeded = get(ReadingField.DATE_RECHECK_VITALS_NEEDED)
+                val followUp = getOptObject<Assessment>(ReadingField.FOLLOW_UP, p.codec)
+                val dateRetestNeeded = get(ReadingField.DATE_RETEST_NEEDED)
                     ?.longValue()
-                val isFlaggedForFollowUp = get(ReadingField.IS_FLAGGED_FOR_FOLLOWUP)
+                val isFlaggedForFollowUp = get(ReadingField.IS_FLAGGED_FOR_FOLLOW_UP)
                     ?.booleanValue() ?: false
                 val previousReadingIds = get(ReadingField.PREVIOUS_READING_IDS)
                     ?.textValue()
@@ -207,14 +207,14 @@ internal data class Reading(
                 return@run Reading(
                     id = readingId,
                     patientId = patientId,
-                    dateTimeTaken = dateTimeTaken,
+                    dateTaken = dateTaken,
                     lastEdited = lastEdited,
                     bloodPressure = bloodPressure,
-                    urineTest = urineTest,
+                    urineTest = urineTests,
                     symptoms = symptoms,
                     referral = referral,
                     followUp = followUp,
-                    dateRecheckVitalsNeeded = dateRecheckVitalsNeeded,
+                    dateRetestNeeded = dateRetestNeeded,
                     isFlaggedForFollowUp = isFlaggedForFollowUp,
                     previousReadingIds = previousReadingIds,
                     userId = userId
@@ -262,10 +262,10 @@ internal data class Reading(
 
     object AscendingDataComparator : Comparator<Reading> {
         override fun compare(o1: Reading?, o2: Reading?): Int {
-            val hasO1 = o1?.dateTimeTaken != null
-            val hasO2 = o2?.dateTimeTaken != null
+            val hasO1 = o1?.dateTaken != null
+            val hasO2 = o2?.dateTaken != null
             return when {
-                hasO1 && hasO2 -> o1!!.dateTimeTaken.compareTo(o2!!.dateTimeTaken)
+                hasO1 && hasO2 -> o1!!.dateTaken.compareTo(o2!!.dateTaken)
                 hasO1 && !hasO2 -> -1
                 !hasO1 && hasO2 -> 1
                 else -> 0
@@ -287,11 +287,11 @@ internal data class Reading(
  * @property heartRate The heart rate in beats per minute (BPM).
  */
 data class BloodPressure constructor(
-    @JsonProperty("bpSystolic")
+    @JsonProperty("systolicBloodPressure")
     val systolic: Int,
-    @JsonProperty("bpDiastolic")
+    @JsonProperty("diastolicBloodPressure")
     val diastolic: Int,
-    @JsonProperty("heartRateBPM")
+    @JsonProperty("heartRate")
     val heartRate: Int
 ) : Serializable, Verifiable<BloodPressure> {
     /**
@@ -563,25 +563,25 @@ enum class RetestAdvice {
  * JSON keys for [Reading] fields.
  */
 private enum class ReadingField(override val text: String) : Field {
-    ID("readingId"),
+    ID("id"),
     PATIENT_ID("patientId"),
-    DATE_TIME_TAKEN("dateTimeTaken"),
-    URINE_TEST("urineTests"),
+    DATE_TAKEN("dateTaken"),
+    URINE_TESTS("urineTests"),
     SYMPTOMS("symptoms"),
-    DATE_RECHECK_VITALS_NEEDED("dateRecheckVitalsNeeded"),
-    IS_FLAGGED_FOR_FOLLOWUP("isFlaggedForFollowup"),
+    DATE_RETEST_NEEDED("dateRetestNeeded"),
+    IS_FLAGGED_FOR_FOLLOW_UP("isFlaggedForFollowUp"),
     PREVIOUS_READING_IDS("retestOfPreviousReadingIds"),
     LAST_EDITED("lastEdited"),
     USER_ID("userId"),
     REFERRAL("referral"),
-    FOLLOWUP("followup"),
+    FOLLOW_UP("followUp"),
 }
 
 /**
  * JSON keys for [BloodPressure] fields.
  */
 private enum class BloodPressureField(override val text: String) : Field {
-    SYSTOLIC("bpSystolic"),
-    DIASTOLIC("bpDiastolic"),
-    HEART_RATE("heartRateBPM"),
+    SYSTOLIC("systolicBloodPressure"),
+    DIASTOLIC("diastolicBloodPressure"),
+    HEART_RATE("heartRate"),
 }
