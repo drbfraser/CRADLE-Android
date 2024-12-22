@@ -676,7 +676,7 @@ class PatientReadingViewModel @Inject constructor(
         get() = patientBuilder.get<String>(Patient::name)
 
     /** Used in two-way Data Binding with PatientInfoFragment */
-    val patientDob: MediatorLiveData<String?> = patientBuilder.get<String?>(Patient::dob)
+    val patientDob: MediatorLiveData<String?> = patientBuilder.get<String?>(Patient::dateOfBirth)
 
     /**
      * Used in two-way Data Binding with PatientInfoFragment
@@ -821,7 +821,7 @@ class PatientReadingViewModel @Inject constructor(
     val readingId: MutableLiveData<String> =
         readingBuilder.get(Reading::id, UUID.randomUUID().toString())
 
-    val dateTimeTaken: MutableLiveData<Long?> = readingBuilder.get<Long?>(Reading::dateTimeTaken)
+    val dateTimeTaken: MutableLiveData<Long?> = readingBuilder.get<Long?>(Reading::dateTaken)
 
     val lastEdited: MutableLiveData<Long?> = readingBuilder.get<Long?>(Reading::lastEdited)
 
@@ -843,7 +843,7 @@ class PatientReadingViewModel @Inject constructor(
      * date of birth via a date picker.
      */
     private val _patientIsExactDob: MediatorLiveData<Boolean?> =
-        patientBuilder.get(Patient::isExactDob, defaultValue = false)
+        patientBuilder.get(Patient::isExactDateOfBirth, defaultValue = false)
     val patientIsExactDob: LiveData<Boolean?> = _patientIsExactDob
 
     /**
@@ -1470,8 +1470,8 @@ class PatientReadingViewModel @Inject constructor(
                     Referral(
                         id = UUID.randomUUID().toString(),
                         comment = referralComment,
-                        referralHealthFacilityName = healthFacilityName,
-                        dateReferred = readingFromBuilder.dateTimeTaken,
+                        healthFacilityName = healthFacilityName,
+                        dateReferred = readingFromBuilder.dateTaken,
                         userId = sharedPreferences.getIntOrNull(UserViewModel.USER_ID_KEY),
                         patientId = readingFromBuilder.patientId,
                         actionTaken = null,
@@ -1480,7 +1480,7 @@ class PatientReadingViewModel @Inject constructor(
                         isCancelled = false,
                         notAttended = false,
                         isAssessed = false,
-                        lastEdited = readingFromBuilder.dateTimeTaken
+                        lastEdited = readingFromBuilder.dateTaken
                     )
 
                 yield()
@@ -1643,7 +1643,7 @@ class PatientReadingViewModel @Inject constructor(
         get() = adviceManager.currentRecommendedAdvice
 
     val dateRecheckVitalsNeeded: MediatorLiveData<Long?> =
-        readingBuilder.get(Reading::dateRecheckVitalsNeeded, null).apply {
+        readingBuilder.get(Reading::dateRetestNeeded, null).apply {
             addSource(adviceRecheckButtonId) {
                 value = when (it) {
                     R.id.recheck_vitals_after_15_min_radio_button -> {
@@ -1859,7 +1859,7 @@ class PatientReadingViewModel @Inject constructor(
                 addSource(patientDob) {
                     testValueForValidityAndSetErrorMapAsync(
                         value = it,
-                        propertyToCheck = Patient::dob,
+                        propertyToCheck = Patient::dateOfBirth,
                         verifier = Patient.Companion
                     )
                 }

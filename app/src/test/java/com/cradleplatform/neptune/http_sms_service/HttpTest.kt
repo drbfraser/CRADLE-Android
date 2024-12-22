@@ -1,11 +1,16 @@
 package com.cradleplatform.neptune.http_sms_service
 
+import android.content.Context
+import android.content.SharedPreferences
 import android.util.Log
+import androidx.preference.PreferenceManager.getDefaultSharedPreferences
 import com.cradleplatform.neptune.http_sms_service.http.Http
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
+import com.cradleplatform.neptune.testutils.MockDependencyUtils.createMockSharedPreferences
 import com.fasterxml.jackson.databind.exc.MismatchedInputException
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.mockk.every
+import io.mockk.mockk
 import io.mockk.mockkStatic
 import kotlinx.coroutines.runBlocking
 import okhttp3.mockwebserver.Dispatcher
@@ -20,7 +25,6 @@ import org.junit.jupiter.api.fail
 import java.util.concurrent.TimeUnit
 
 internal class HttpTest {
-
     data class ServerResponse(val message: String)
 
     @BeforeEach
@@ -48,9 +52,10 @@ internal class HttpTest {
 
             val mapper = jacksonObjectMapper()
             val reader = mapper.readerFor(ServerResponse::class.java)
+            val (mockSharedPrefsMap, mockSharedPrefs) = createMockSharedPreferences()
 
             val testRequest: NetworkResult<ServerResponse> = runBlocking {
-                Http().makeRequest(
+                Http(mockSharedPrefs).makeRequest(
                     method = Http.Method.GET,
                     url = server.url("/api/test").toString(),
                     headers = emptyMap(),
@@ -98,9 +103,10 @@ tortor rutrum mauris. Morbi pellentesque ex.
 
             val mapper = jacksonObjectMapper()
             val reader = mapper.readerFor(ServerResponse::class.java)
+            val (mockSharedPrefsMap, mockSharedPrefs) = createMockSharedPreferences()
 
             val testRequest: NetworkResult<ServerResponse> = runBlocking {
-                Http().makeRequest(
+                Http(mockSharedPrefs).makeRequest(
                     method = Http.Method.GET,
                     url = server.url("/api/test").toString(),
                     headers = emptyMap(),
@@ -132,7 +138,8 @@ tortor rutrum mauris. Morbi pellentesque ex.
                     }
             }
 
-            val http = Http()
+            val (mockSharedPrefsMap, mockSharedPrefs) = createMockSharedPreferences()
+            val http = Http(mockSharedPrefs)
 
             val notFoundRequest: NetworkResult<ServerResponse> = runBlocking {
                 http.makeRequest(
@@ -214,9 +221,11 @@ tortor rutrum mauris. Morbi pellentesque ex.
 
             val mapper = jacksonObjectMapper()
             val reader = mapper.readerFor(ServerResponse::class.java)
+            val (mockSharedPrefsMap, mockSharedPrefs) = createMockSharedPreferences()
+
             // This should throw an exception during parsing
             val testRequest: NetworkResult<ServerResponse> = runBlocking {
-                Http().makeRequest(
+                Http(mockSharedPrefs).makeRequest(
                     method = Http.Method.GET,
                     url = server.url("/api/anything").toString(),
                     headers = emptyMap(),

@@ -59,9 +59,9 @@ class SmsKeyManager @Inject constructor(@ApplicationContext private val context:
                 retrieveSmsKey(),
                 SmsKeyResponse::class.java
             )
-            smsKeyPreviousData.sms_key = updatedSecretKey.sms_key
-            smsKeyPreviousData.expiry_date = updatedSecretKey.expiry_date
-            smsKeyPreviousData.stale_date = updatedSecretKey.stale_date
+            smsKeyPreviousData.smsKey = updatedSecretKey.smsKey
+            smsKeyPreviousData.expiryDate = updatedSecretKey.expiryDate
+            smsKeyPreviousData.staleDate = updatedSecretKey.staleDate
             smsKeyPreviousData.message = updatedSecretKey.message
             val updatedSmsKeyString = convertToKeyValuePairs(smsKeyPreviousData)
             storeSmsKey(updatedSmsKeyString)
@@ -110,7 +110,7 @@ class SmsKeyManager @Inject constructor(@ApplicationContext private val context:
     fun getDaysUntilExpiry(smsKey: String): Int {
         val objectMapper = JacksonMapper.mapper
         val smsKeyLoginData: SmsKeyResponse = objectMapper.readValue(smsKey, SmsKeyResponse::class.java)
-        val targetDate = smsKeyLoginData.expiry_date
+        val targetDate = smsKeyLoginData.expiryDate
 
         val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
         val currentDate = Calendar.getInstance().time

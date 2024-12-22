@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.IntentFilter
 import android.content.SharedPreferences
 import android.util.Log
+import androidx.core.content.edit
 import androidx.lifecycle.asFlow
 import com.cradleplatform.neptune.ext.jackson.forEachJackson
 import com.cradleplatform.neptune.ext.jackson.parseObject
@@ -13,7 +14,9 @@ import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
 import com.cradleplatform.neptune.http_sms_service.sms.SmsStateReporter
 import com.cradleplatform.neptune.http_sms_service.sms.SmsTransmissionStates
 import com.cradleplatform.neptune.http_sms_service.sms.utils.SMSDataProcessor
+import com.cradleplatform.neptune.manager.AccessTokenPayload
 import com.cradleplatform.neptune.manager.LoginResponse
+import com.cradleplatform.neptune.manager.RefreshTokenResponse
 import com.cradleplatform.neptune.manager.UrlManager
 import com.cradleplatform.neptune.model.Assessment
 import com.cradleplatform.neptune.model.FormClassification
@@ -57,6 +60,8 @@ import java.io.InputStream
 import java.math.BigInteger
 import java.net.HttpURLConnection
 import javax.inject.Singleton
+import kotlin.io.encoding.Base64
+import kotlin.io.encoding.ExperimentalEncodingApi
 
 /**
  * Provides type-safe methods for interacting with the CRADLE server API.
@@ -180,16 +185,16 @@ class RestApi(
     /**
      * Sends a request to the authentication API to log a user in.
      *
-     * @param email the user's email
-     * @param password the user's password
-     * @return if successful, the [LoginResponse] that was returned by the server
-     *  which contains a bearer token to authenticate the user
+     * @param email The user's email or username.
+     * @param password The user's password.
+     * @return If successful, the [LoginResponse] that was returned by the server
+     *  which contains a bearer token to authenticate the user.
      */
     suspend fun authenticate(
         email: String,
         password: String,
     ): NetworkResult<LoginResponse> = withContext(IO) {
-        val body = JSONObject().put("email", email).put("password", password).toString()
+        val body = JSONObject().put("username", email).put("password", password).toString()
             .encodeToByteArray()
 
         val method = Http.Method.POST
@@ -203,6 +208,50 @@ class RestApi(
             inputStreamReader = {
                 JacksonMapper.createReader<LoginResponse>().readValue(it)
             })
+    }
+
+    /**
+     *  Sends a request to the /api/user/auth/refresh_token endpoint to refresh the access token.
+     *
+     * @return If successful, the [RefreshTokenResponse] that was returned by the server
+     *  which contains the new access token.
+     */
+    private suspend fun refreshAccessToken(
+        accessToken: String
+    ): String? = withContext(IO) {
+        val method = Http.Method.POST
+        val url = urlManager.refreshToken
+        val username = sharedPreferences.getString(UserViewModel.USERNAME, null)
+
+        // Must send username in body of request.
+        val body = JSONObject().put("username", username).toString()
+            .encodeToByteArray()
+
+        val headers = mapOf("Authorization" to "Bearer $accessToken")
+
+        val result = http.makeRequest(method = method,
+            url = url,
+            headers = headers,
+            requestBody = buildJsonRequestBody(body),
+
+            inputStreamReader = {
+                JacksonMapper.createReader<RefreshTokenResponse>().readValue<RefreshTokenResponse>(it)
+            })
+
+        if (result is NetworkResult.Success) {
+            val newAccessToken = result.value.accessToken
+            sharedPreferences.edit(commit = true) {
+                putString("accessToken", newAccessToken)
+            }
+            return@withContext newAccessToken
+        } else {
+            val errorMessage = result.getStatusMessage(context)
+            Log.e(TAG, "Failed to refresh access token:")
+            if (errorMessage != null) {
+                Log.e(TAG, "$errorMessage")
+            }
+            return@withContext null
+        }
     }
 
     /**
@@ -230,6 +279,7 @@ class RestApi(
     ): NetworkResult<Unit> = withContext(IO) {
         val method = Http.Method.GET
         val url = urlManager.getAllPatients
+        val headers = makeAuthorizationHeader()
 
         when (protocol) {
             Protocol.HTTP -> {
@@ -245,7 +295,10 @@ class RestApi(
                         try {
                             val reader = JacksonMapper.readerForPatient
                             reader.readValues<Patient>(inputStream).use { iterator ->
-                                iterator.forEachJackson { patientChannel.send(it) }
+                                iterator.forEachJackson {
+                                    Log.i(TAG, "$it")
+                                    patientChannel.send(it)
+                                }
                             }
                         } catch (e: Exception) {
                             Log.e(TAG, e.toString())
@@ -307,6 +360,7 @@ class RestApi(
     ): NetworkResult<Unit> = withContext(IO) {
         val method = Http.Method.GET
         val url = urlManager.getAllReadings
+        val headers = makeAuthorizationHeader()
 
         when (protocol) {
             Protocol.HTTP -> {
@@ -381,6 +435,7 @@ class RestApi(
     ): NetworkResult<Unit> = withContext(IO) {
         val method = Http.Method.GET
         val url = urlManager.getAllReferrals
+        val headers = makeAuthorizationHeader()
 
         when (protocol) {
             Protocol.HTTP -> {
@@ -455,6 +510,7 @@ class RestApi(
     ): NetworkResult<Unit> = withContext(IO) {
         val method = Http.Method.GET
         val url = urlManager.getAllAssessments
+        val headers = makeAuthorizationHeader()
 
         when (protocol) {
             Protocol.HTTP -> {
@@ -535,6 +591,7 @@ class RestApi(
         withContext(IO) {
             val method = Http.Method.GET
             val url = urlManager.getPatient(id)
+            val headers = makeAuthorizationHeader()
 
             when (protocol) {
                 Protocol.HTTP -> {
@@ -565,6 +622,7 @@ class RestApi(
         withContext(IO) {
             val method = Http.Method.GET
             val url = urlManager.getPatientInfo(id)
+            val headers = makeAuthorizationHeader()
 
             when (protocol) {
                 Protocol.HTTP -> {
@@ -597,6 +655,7 @@ class RestApi(
     ): NetworkResult<List<GlobalPatient>> = withContext(IO) {
         val method = Http.Method.GET
         val url = urlManager.getGlobalPatientSearch(searchString)
+        val headers = makeAuthorizationHeader()
 
         when (protocol) {
             Protocol.HTTP -> {
@@ -627,6 +686,7 @@ class RestApi(
         withContext(IO) {
             val method = Http.Method.GET
             val url = urlManager.getReading(id)
+            val headers = makeAuthorizationHeader()
 
             when (protocol) {
                 Protocol.HTTP -> {
@@ -655,6 +715,7 @@ class RestApi(
         withContext(IO) {
             val method = Http.Method.GET
             val url = urlManager.getAssessmentById(id)
+            val headers = makeAuthorizationHeader()
 
             when (protocol) {
                 Protocol.HTTP -> {
@@ -691,6 +752,7 @@ class RestApi(
     ): NetworkResult<Statistics> = withContext(IO) {
         val method = Http.Method.GET
         val url = urlManager.getStatisticsForFacilityBetween(date1, date2, filterFacility.name)
+        val headers = makeAuthorizationHeader()
 
         when (protocol) {
             Protocol.HTTP -> {
@@ -725,6 +787,7 @@ class RestApi(
     ): NetworkResult<Statistics> = withContext(IO) {
         val method = Http.Method.GET
         val url = urlManager.getStatisticsForUserBetween(date1, date2, userID)
+        val headers = makeAuthorizationHeader()
 
         when (protocol) {
             Protocol.HTTP -> {
@@ -758,6 +821,7 @@ class RestApi(
     ): NetworkResult<Statistics> = withContext(IO) {
         val method = Http.Method.GET
         val url = urlManager.getAllStatisticsBetween(date1, date2)
+        val headers = makeAuthorizationHeader()
 
         when (protocol) {
             Protocol.HTTP -> {
@@ -800,6 +864,7 @@ class RestApi(
         val body = createWriter<PatientAndReadings>().writeValueAsBytes(patient)
         val method = Http.Method.POST
         val url = urlManager.postPatient
+        val headers = makeAuthorizationHeader()
 
         when (protocol) {
             Protocol.HTTP -> {
@@ -848,6 +913,7 @@ class RestApi(
         val body = createWriter<PatientAndReferrals>().writeValueAsBytes(patient)
         val method = Http.Method.POST
         val url = urlManager.postPatient
+        val headers = makeAuthorizationHeader()
 
         when (protocol) {
             Protocol.HTTP -> {
@@ -885,6 +951,7 @@ class RestApi(
         val body = gson.toJson(mFormResponse).toByteArray()
         val method = Http.Method.POST
         val url = urlManager.uploadFormResponse
+        val headers = makeAuthorizationHeader()
 
         when (protocol) {
             Protocol.HTTP -> {
@@ -919,6 +986,7 @@ class RestApi(
             val body = JacksonMapper.writerForPatient.writeValueAsBytes(patient)
             val method = Http.Method.PUT
             val url = urlManager.getPatientInfoOnly(patient.id)
+            val headers = makeAuthorizationHeader()
 
             when (protocol) {
                 Protocol.HTTP -> {
@@ -967,6 +1035,7 @@ class RestApi(
         val body = buffer.readByteArray()
         val method = Http.Method.POST
         val url = urlManager.postMedicalRecord(patient.id)
+        val headers = makeAuthorizationHeader()
 
         when (protocol) {
             Protocol.HTTP -> {
@@ -999,6 +1068,7 @@ class RestApi(
             val body = JacksonMapper.writerForReading.writeValueAsBytes(reading)
             val method = Http.Method.POST
             val url = urlManager.postReading
+            val headers = makeAuthorizationHeader()
 
             when (protocol) {
                 Protocol.HTTP -> {
@@ -1037,6 +1107,7 @@ class RestApi(
         val body = JacksonMapper.writerForAssessment.writeValueAsBytes(assessment)
         val method = Http.Method.POST
         val url = urlManager.postAssessment
+        val headers = makeAuthorizationHeader()
 
         when (protocol) {
             Protocol.HTTP -> {
@@ -1073,6 +1144,7 @@ class RestApi(
             val body = JacksonMapper.writerForReferral.writeValueAsBytes(referral)
             val method = Http.Method.POST
             val url = urlManager.postReferral
+            val headers = makeAuthorizationHeader()
 
             when (protocol) {
                 Protocol.HTTP -> {
@@ -1140,6 +1212,7 @@ class RestApi(
         val body = buffer.readByteArray()
         val method = Http.Method.POST
         val url = urlManager.postPregnancy(patient.id)
+        val headers = makeAuthorizationHeader()
 
         when (protocol) {
             Protocol.HTTP -> {
@@ -1174,6 +1247,7 @@ class RestApi(
         val body = buffer.readByteArray()
         val method = Http.Method.PUT
         val url = urlManager.putPregnancy(patient.pregnancyId.toString())
+        val headers = makeAuthorizationHeader()
 
         when (protocol) {
             Protocol.HTTP -> {
@@ -1210,6 +1284,7 @@ class RestApi(
         val body = buffer.readByteArray()
         val method = Http.Method.POST
         val url = urlManager.postUserPhoneNumber(userID)
+        val headers = makeAuthorizationHeader()
 
         when (protocol) {
             Protocol.HTTP -> {
@@ -1232,6 +1307,7 @@ class RestApi(
         withContext(IO) {
             val method = Http.Method.GET
             val url = urlManager.getAllRelayPhoneNumbers()
+            val headers = makeAuthorizationHeader()
 
             when (protocol) {
                 Protocol.HTTP -> {
@@ -1256,6 +1332,7 @@ class RestApi(
     suspend fun getCurrentSmsKey(userID: Int): NetworkResult<SmsKeyResponse> = withContext(IO) {
         val method = Http.Method.GET
         val url = urlManager.smsKey(userID)
+        val headers = makeAuthorizationHeader()
 
         http.makeRequest(method = method,
             url = url,
@@ -1272,6 +1349,7 @@ class RestApi(
         requestBody.writeTo(buffer)
         val method = Http.Method.PUT
         val url = urlManager.smsKey(userID)
+        val headers = makeAuthorizationHeader()
 
         http.makeRequest(method = method,
             url = url,
@@ -1289,6 +1367,7 @@ class RestApi(
         requestBody.writeTo(buffer)
         val method = Http.Method.POST
         val url = urlManager.smsKey(userID)
+        val headers = makeAuthorizationHeader()
 
         http.makeRequest(method = method,
             url = url,
@@ -1315,6 +1394,7 @@ class RestApi(
             val body = "{\"patientId\":\"$patientId\"}".encodeToByteArray()
             val method = Http.Method.POST
             val url = urlManager.userPatientAssociation
+            val headers = makeAuthorizationHeader()
 
             when (protocol) {
                 Protocol.HTTP -> {
@@ -1345,6 +1425,7 @@ class RestApi(
     suspend fun getAllHealthFacilities(
         healthFacilityChannel: SendChannel<HealthFacility>
     ): NetworkResult<Unit> = withContext(IO) {
+        val headers = makeAuthorizationHeader()
         http.makeRequest(
             method = Http.Method.GET,
             url = urlManager.healthFacilities,
@@ -1376,8 +1457,9 @@ class RestApi(
      *
      * The API will first accept our [patientsToUpload], and then the server will respond with new
      * patients between now and [lastSyncTimestamp]. What the server sends back will be parsed and
-     * send through [patientChannel]. Note that the server response includes the same patients in
-     * [patientsToUpload]; by downloading them again, this is how we eventually set [Patient.lastServerUpdate].
+     * sent through [patientChannel]. Note that the server response includes the same patients in
+     * [patientsToUpload]; by downloading them again, this is how we eventually
+     * set [Patient.lastServerUpdate].
      *
      * Parsed patients are sent through the [patientChannel], with progress reporting done by
      * [reportProgressBlock] (first parameter is number of patients downloaded, second is number
@@ -1399,6 +1481,7 @@ class RestApi(
         val body = createWriter<List<Patient>>().writeValueAsBytes(patientsToUpload)
         val method = Http.Method.POST
         val url = urlManager.getPatientsSync(lastSyncTimestamp)
+        val headers = makeAuthorizationHeader()
 
         var totalPatientsDownloaded = 0
         var errors: String? = null
@@ -1438,6 +1521,7 @@ class RestApi(
                         }
                     } catch (e: Exception) {
                         Log.e(TAG, e.toString())
+                        Log.i(TAG, e.toString())
                         failedParse = true
                     }
                 }.also {
@@ -1450,6 +1534,11 @@ class RestApi(
                             patientChannel.close()
                         }
                     } else {
+                        Log.e(TAG, "Patient sync failed:")
+                        val errorMessage = it.getStatusMessage(context)
+                        if (errorMessage != null) {
+                            Log.e(TAG, errorMessage)
+                        }
                         // Fail the channel if not successful (note: idempotent operation).
                         patientChannel.close(SyncException("patient download wasn't done properly"))
                     }
@@ -1499,7 +1588,6 @@ class RestApi(
                 }
             }
         }
-
         PatientSyncResult(result, patientsToUpload.size, totalPatientsDownloaded, errors)
     }
 
@@ -1541,6 +1629,7 @@ class RestApi(
         val body = createWriter<List<Reading>>().writeValueAsBytes(readingsToUpload)
         val method = Http.Method.POST
         val url = urlManager.getReadingsSync(lastSyncTimestamp)
+        val headers = makeAuthorizationHeader()
 
         var totalReadingsDownloaded = 0
 
@@ -1677,6 +1766,7 @@ class RestApi(
         val body = createWriter<List<Referral>>().writeValueAsBytes(referralsToUpload)
         val method = Http.Method.POST
         val url = urlManager.getReferralsSync(lastSyncTimestamp)
+        val headers = makeAuthorizationHeader()
 
         var totalReferralsDownloaded = 0
         var errors: String? = null
@@ -1812,6 +1902,7 @@ class RestApi(
         val body = createWriter<List<Assessment>>().writeValueAsBytes(assessmentsToUpload)
         val method = Http.Method.POST
         val url = urlManager.getAssessmentsSync(lastSyncTimestamp)
+        val headers = makeAuthorizationHeader()
 
         var totalAssessmentsDownloaded = 0
         var errors: String? = null
@@ -1943,6 +2034,7 @@ class RestApi(
     ): HealthFacilitySyncResult = withContext(IO) {
         val method = Http.Method.GET
         val url = urlManager.healthFacilities
+        val headers = makeAuthorizationHeader()
 
         var totalHealthFacilitiesDownloaded = 0
 
@@ -2054,6 +2146,7 @@ class RestApi(
     ): FormSyncResult = withContext(IO) {
         val method = Http.Method.GET
         val url = urlManager.getAllFormsAsSummary
+        val headers = makeAuthorizationHeader()
 
         var totalClassifications = 0
 
@@ -2147,21 +2240,59 @@ class RestApi(
     }
 
     /**
-     * The common headers used for most API requests.
-     * Note: The [Http] class also sets some headers for encoding.
-     *
-     * By design, the [authenticate] method doesn't include these headers in
-     * its request.
+     * Decodes the payload of a JWT.
      */
-    private val headers: Map<String, String>
-        get() {
-            val token = sharedPreferences.getString(UserViewModel.TOKEN_KEY, null)
-            return if (token != null) {
-                mapOf("Authorization" to "Bearer $token")
-            } else {
-                mapOf()
-            }
+    @OptIn(ExperimentalEncodingApi::class)
+    private fun decodeJwtPayload(jwt: String): AccessTokenPayload {
+        val sections = jwt.split(".")
+        return try {
+            val charset = charset("UTF-8")
+            val payload = String(Base64.UrlSafe.decode(sections[1].toByteArray(charset)), charset)
+            val reader = JacksonMapper.createReader<AccessTokenPayload>()
+
+            val decodedPayload = reader.readValue<AccessTokenPayload>(payload)
+            decodedPayload
+        } catch (e: Exception) {
+            Log.e(TAG, "Error parsing JWT: $e")
+            throw e
         }
+    }
+
+    /**
+     * Decodes the access token and checks if it is expired.
+     *
+     * @return The access token if it is not expired, or the refreshed access token.
+     */
+    private suspend fun verifyAccessToken(): String? {
+        val accessToken =
+            sharedPreferences.getString(UserViewModel.ACCESS_TOKEN_KEY, null) ?: return null
+        // Decode JWT.
+        val payload = decodeJwtPayload(accessToken)
+        val currentDateTime = java.util.Date()
+        // Get current timestamp in seconds.
+        val currentTimestamp: Long = currentDateTime.time / 1000
+
+        // If expiration is more than 5 minutes from now, don't do anything.
+        if (payload.exp > currentTimestamp - 300) return accessToken
+
+        // If access token is expired, make a request to the refresh_token endpoint to get a new one
+        Log.e(TAG, "ACCESS TOKEN IS EXPIRED!")
+        return refreshAccessToken(accessToken)
+    }
+
+    /**
+     * Creates an Authorization header with the access token. If access token is expired, will try
+     * to refresh it.
+     */
+    private suspend fun makeAuthorizationHeader(): Map<String, String> {
+        verifyAccessToken()
+        val accessToken = sharedPreferences.getString(UserViewModel.ACCESS_TOKEN_KEY, null)
+        return if (accessToken != null) {
+            mapOf("Authorization" to "Bearer $accessToken")
+        } else {
+            mapOf()
+        }
+    }
 }
 
 class SyncException(message: String) : IOException(message)

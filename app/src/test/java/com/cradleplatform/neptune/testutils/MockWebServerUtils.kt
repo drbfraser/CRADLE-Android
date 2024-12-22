@@ -33,7 +33,7 @@ object MockWebServerUtils {
     ): Pair<RestApi, MockWebServer> {
         val mockServer = MockWebServer().apply { webServerBlock() }
 
-        val mockSharedPrefs = sharedPreferences ?: mockk()
+        val mockSharedPrefs = sharedPreferences ?: MockDependencyUtils.createMockSharedPreferences().second
 
         val mockSettings = mockk<Settings> {
             every { networkHostname } returns mockServer.url("").host
@@ -53,7 +53,7 @@ object MockWebServerUtils {
             mockContext,
             sharedPreferences = mockSharedPrefs,
             urlManager = fakeUrlManager,
-            http = Http(),
+            http = Http(mockSharedPrefs),
             mockSmsStateReporter,
             mockSmsSender,
             mockSmsDataProcessor

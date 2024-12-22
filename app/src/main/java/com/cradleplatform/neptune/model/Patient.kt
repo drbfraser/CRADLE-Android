@@ -50,8 +50,8 @@ import kotlin.reflect.KProperty
  *
  * @property id The unique identifier for this patient.
  * @property name This patient's name or initials.
- * @property dob This patient's date of birth (if known).
- * @property isExactDob Whether [dob] is exact, or just a date of birth for approximate age.
+ * @property dateOfBirth This patient's date of birth (if known).
+ * @property isExactDateOfBirth Whether [dateOfBirth] is exact, or just a date of birth for approximate age.
  * @property gestationalAge The gestational age of this patient if applicable.
  * @property sex This patient's sex.
  * @property isPregnant Whether this patient is pregnant or not.
@@ -85,8 +85,8 @@ data class Patient(
     @PrimaryKey @ColumnInfo
     var id: String = "",
     @ColumnInfo var name: String = "",
-    @ColumnInfo var dob: String? = null,
-    @ColumnInfo var isExactDob: Boolean? = null,
+    @ColumnInfo var dateOfBirth: String? = null,
+    @ColumnInfo var isExactDateOfBirth: Boolean? = null,
     @ColumnInfo var gestationalAge: GestationalAge? = null,
     @ColumnInfo var sex: Sex = Sex.OTHER,
     @ColumnInfo var isPregnant: Boolean = false,
@@ -220,7 +220,7 @@ data class Patient(
             }
 
             // validity of dob depends on age
-            Patient::dob -> with(value as String?) {
+            Patient::dateOfBirth -> with(value as String?) {
                 if (this == null || isBlank()) {
                     return@with Verifiable.Invalid(
                         property,
@@ -421,8 +421,8 @@ data class Patient(
             patient.run {
                 gen.writeStringField(PatientField.ID, id)
                 gen.writeStringField(PatientField.NAME, name)
-                gen.writeStringField(PatientField.DOB, dob!!)
-                gen.writeBooleanField(PatientField.IS_EXACT_DOB, isExactDob!!)
+                gen.writeStringField(PatientField.DOB, dateOfBirth!!)
+                gen.writeBooleanField(PatientField.IS_EXACT_DOB, isExactDateOfBirth!!)
                 gen.writeStringField(PatientField.SEX, sex.name)
                 gen.writeBooleanField(PatientField.IS_PREGNANT, isPregnant)
                 if (isPregnant) {
@@ -466,9 +466,8 @@ data class Patient(
 
             // Some backend responses send gestationalTimestamp = null when not pregnant
             val gestationalAge = if (
-                has(PatientField.GESTATIONAL_AGE_UNIT.text) &&
-                has(PatientField.GESTATIONAL_AGE_VALUE.text) &&
-                get(PatientField.GESTATIONAL_AGE_VALUE).toString() != "null"
+                has(PatientField.PREGNANCY_START_DATE.text) &&
+                get(PatientField.PREGNANCY_START_DATE).toString() != "null"
             ) {
                 GestationalAge.Deserializer.get(this)
             } else {
@@ -499,8 +498,8 @@ data class Patient(
             return@run Patient(
                 id = id,
                 name = name,
-                dob = dob,
-                isExactDob = isExactDob,
+                dateOfBirth = dob,
+                isExactDateOfBirth = isExactDob,
                 gestationalAge = gestationalAge,
                 sex = sex,
                 isPregnant = isPregnant,
@@ -603,13 +602,13 @@ data class PatientAndReferrals(
 ) {
     class Serializer : StdSerializer<PatientAndReferrals>(PatientAndReferrals::class.java) {
         override fun serialize(
-            PatientAndReferrals: PatientAndReferrals,
+            patientAndReferrals: PatientAndReferrals,
             gen: JsonGenerator,
             provider: SerializerProvider
         ) {
-            PatientAndReferrals.run {
+            patientAndReferrals.run {
                 gen.writeStartObject()
-                Patient.Serializer.write(PatientAndReferrals.patient, gen)
+                Patient.Serializer.write(patientAndReferrals.patient, gen)
                 gen.writeObjectField(PatientField.REFERRALS, referrals)
                 gen.writeEndObject()
             }
@@ -693,8 +692,10 @@ sealed class GestationalAge(val timestamp: BigInteger) : Serializable {
          * Nested deserialization from the given [jsonNode]
          */
         fun get(jsonNode: JsonNode): GestationalAge = jsonNode.run {
-            val units = get(PatientField.GESTATIONAL_AGE_UNIT)!!.asText()
-            val value = get(PatientField.GESTATIONAL_AGE_VALUE)!!.asLong()
+            val value = get(PatientField.PREGNANCY_START_DATE)!!.asLong()
+            /* TODO: Rework the logic for displaying pregnancy age in weeks or months.
+            *   This is only relevant when displaying the data.  */
+            /*
             return when (units) {
                 UNIT_VALUE_WEEKS -> GestationalAgeWeeks(BigInteger.valueOf(value))
                 UNIT_VALUE_MONTHS, "DAYS" -> GestationalAgeMonths(BigInteger.valueOf(value))
@@ -704,6 +705,8 @@ sealed class GestationalAge(val timestamp: BigInteger) : Serializable {
                     )
                 }
             }
+            */
+            return GestationalAgeWeeks(BigInteger.valueOf(value))
         }
     }
 
@@ -727,9 +730,8 @@ sealed class GestationalAge(val timestamp: BigInteger) : Serializable {
             } else {
                 UNIT_VALUE_WEEKS
             }
-            gen.writeStringField(PatientField.GESTATIONAL_AGE_UNIT, units)
             gen.writeStringField(
-                PatientField.GESTATIONAL_AGE_VALUE,
+                PatientField.PREGNANCY_START_DATE,
                 gestationalAge.timestamp.toString()
             )
         }
@@ -796,13 +798,12 @@ class GestationalAgeMonths(timestamp: BigInteger) : GestationalAge(timestamp), S
  */
 
 private enum class PatientField(override val text: String) : Field {
-    ID("patientId"),
-    NAME("patientName"),
-    DOB("dob"),
-    IS_EXACT_DOB("isExactDob"),
-    GESTATIONAL_AGE_UNIT("gestationalAgeUnit"),
-    GESTATIONAL_AGE_VALUE("pregnancyStartDate"),
-    SEX("patientSex"),
+    ID("id"),
+    NAME("name"),
+    DOB("dateOfBirth"),
+    IS_EXACT_DOB("isExactDateOfBirth"),
+    PREGNANCY_START_DATE("pregnancyStartDate"),
+    SEX("sex"),
     IS_PREGNANT("isPregnant"),
     PREGNANCY_ID("pregnancyId"),
     PREGNANCY_END_DATE("pregnancyEndDate"),

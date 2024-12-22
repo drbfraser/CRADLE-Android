@@ -6,7 +6,7 @@ object CommonReferralJsons {
             [{
                 "id": "42286a4a-f3be-4875-8b0f-3955ef65ec30",
                 "comment": "Hello World!",
-                "referralHealthFacilityName": "H0000",
+                "healthFacilityName": "H0000",
                 "dateReferred": 1605753210,
                 "userId": 1,
                 "patientId": "123456",
@@ -17,7 +17,7 @@ object CommonReferralJsons {
             },{
                 "id": "690c89ae-3097-4277-9913-08a24c9929dc",
                 "comment": "Lorem Ipsum",
-                "referralHealthFacilityName": "H0000",
+                "healthFacilityName": "H0000",
                 "dateReferred": 1656552823,
                 "userId": 2,
                 "patientId": "111111",
@@ -31,7 +31,7 @@ object CommonReferralJsons {
             Referral(
                 id = "42286a4a-f3be-4875-8b0f-3955ef65ec30",
                 comment = "Hello World!",
-                referralHealthFacilityName = "H0000",
+                healthFacilityName = "H0000",
                 dateReferred = 1605753210,
                 userId = 1,
                 patientId = "123456",
@@ -46,7 +46,7 @@ object CommonReferralJsons {
             Referral(
                 id = "690c89ae-3097-4277-9913-08a24c9929dc",
                 comment =  "Lorem Ipsum",
-                referralHealthFacilityName = "H0000",
+                healthFacilityName = "H0000",
                 dateReferred = 1656552823,
                 userId = 2,
                 patientId = "111111",

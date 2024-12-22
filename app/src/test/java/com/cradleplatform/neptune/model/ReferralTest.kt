@@ -1,11 +1,15 @@
 package com.cradleplatform.neptune.model
 
+import android.content.Context
+import android.content.SharedPreferences
 import android.util.Log
 import com.cradleplatform.neptune.http_sms_service.http.Http
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
+import com.cradleplatform.neptune.testutils.MockDependencyUtils.createMockSharedPreferences
 import com.cradleplatform.neptune.utilities.jackson.JacksonMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.mockk.every
+import io.mockk.mockk
 import io.mockk.mockkStatic
 import kotlinx.coroutines.runBlocking
 import okhttp3.MediaType.Companion.toMediaType
@@ -64,13 +68,14 @@ internal class ReferralTest {
 
             val mapper = jacksonObjectMapper()
             val reader = mapper.readerFor(ServerResponse::class.java)
+            val (mockSharedPrefsMap, mockSharedPrefs) = createMockSharedPreferences()
 
             val emptyJson = JSONObject()
             val mediaType = "application/json; charset=utf-8".toMediaType()
             val body = emptyJson.toString().toRequestBody(mediaType)
 
             val testRequest: NetworkResult<ServerResponse> = runBlocking {
-                Http().makeRequest(
+                Http(mockSharedPrefs).makeRequest(
                     method = Http.Method.POST,
                     url = server.url("/api/referrals").toString(),
                     headers = emptyMap(),
@@ -103,13 +108,14 @@ internal class ReferralTest {
 
             val mapper = jacksonObjectMapper()
             val reader = mapper.readerFor(ServerResponse::class.java)
+            val (mockSharedPrefsMap, mockSharedPrefs) = createMockSharedPreferences()
 
             val emptyJson = JSONObject()
             val mediaType = "application/json; charset=utf-8".toMediaType()
             val body = emptyJson.toString().toRequestBody(mediaType)
 
             val failedRequest: NetworkResult<ServerResponse> = runBlocking {
-                Http().makeRequest(
+                Http(mockSharedPrefs).makeRequest(
                     method = Http.Method.POST,
                     url = server.url("/api/referrals").toString(),
                     headers = emptyMap(),

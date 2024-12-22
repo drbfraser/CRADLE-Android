@@ -86,8 +86,8 @@ class DaoTests {
             Patient(
                 id = "1",
                 name = "Exact dob",
-                dob = "1989-10-24",
-                isExactDob = true,
+                dateOfBirth = "1989-10-24",
+                isExactDateOfBirth = true,
                 gestationalAge = GestationalAgeWeeks(Weeks(20L)),
                 sex = Sex.FEMALE,
                 isPregnant = true,
@@ -99,8 +99,8 @@ class DaoTests {
             Patient(
                 id = "2",
                 name = "Not exact dob",
-                dob = "1989-10-24",
-                isExactDob = false,
+                dateOfBirth = "1989-10-24",
+                isExactDateOfBirth = false,
                 gestationalAge = GestationalAgeMonths(Months(10L)),
                 sex = Sex.FEMALE,
                 isPregnant = true,
@@ -123,8 +123,8 @@ class DaoTests {
         val newPatient = Patient(
             id = "777",
             name = "I am a diffferent patient.",
-            dob = "1989-10-24",
-            isExactDob = true,
+            dateOfBirth = "1989-10-24",
+            isExactDateOfBirth = true,
             gestationalAge = GestationalAgeWeeks(Weeks(20L)),
             sex = Sex.FEMALE,
             isPregnant = true,
@@ -154,8 +154,8 @@ class DaoTests {
         val originalPatient = Patient(
             id = "115",
             name = "Exact dob",
-            dob = "1989-10-24",
-            isExactDob = true,
+            dateOfBirth = "1989-10-24",
+            isExactDateOfBirth = true,
             gestationalAge = GestationalAgeWeeks(Weeks(20L)),
             sex = Sex.FEMALE,
             isPregnant = true,
@@ -173,8 +173,8 @@ class DaoTests {
         val updatedPatient = Patient(
             id = "115",
             name = "Exact dober",
-            dob = "1989-10-24",
-            isExactDob = true,
+            dateOfBirth = "1989-10-24",
+            isExactDateOfBirth = true,
             gestationalAge = GestationalAgeWeeks(Weeks(20L)),
             sex = Sex.FEMALE,
             isPregnant = true,
@@ -360,8 +360,8 @@ class DaoTests {
         val patient = Patient(
             id = patientId,
             name = "Exact dob",
-            dob = "1989-10-24",
-            isExactDob = true,
+            dateOfBirth = "1989-10-24",
+            isExactDateOfBirth = true,
             gestationalAge = GestationalAgeWeeks(Weeks(20L)),
             sex = Sex.FEMALE,
             isPregnant = true,
@@ -379,7 +379,7 @@ class DaoTests {
         val readingId = UUID.randomUUID().toString()
         val referralForReading = Referral(
             comment = "This is a comment",
-            referralHealthFacilityName = "H2230",
+            healthFacilityName = "H2230",
             dateReferred = 1595645675L,
             patientId = patientId,
             id = "345",
@@ -395,12 +395,12 @@ class DaoTests {
         val assessmentForReading = Assessment(
             id = "4535",
             dateAssessed = 1595745946L,
-            healthCareWorkerId = 2,
+            healthcareWorkerId = 2,
             diagnosis = "This is a detailed diagnosis.",
             treatment = "This is a treatment",
             medicationPrescribed = "These are medications prescripted.",
             specialInvestigations = "This is a special investiation",
-            followupNeeded = true, followupInstructions = "These are things to do",
+            followUpNeeded = true, followUpInstructions = "These are things to do",
             patientId = patientId
         )
 
@@ -409,14 +409,14 @@ class DaoTests {
         return Reading(
             id = readingId,
             patientId = patientId,
-            dateTimeTaken = unixTime,
+            dateTaken = unixTime,
             lastEdited = unixTime,
             bloodPressure = BloodPressure(110, 70, 65),
             urineTest = UrineTest("+", "++", "NAD", "NAD", "NAD"),
             symptoms = listOf("headache", "blurred vision", "pain"),
             referral = referralForReading,
             followUp = assessmentForReading,
-            dateRecheckVitalsNeeded = unixTime,
+            dateRetestNeeded = unixTime,
             isFlaggedForFollowUp = true,
             previousReadingIds = listOf("1", "2", "3"),
             isUploadedToServer = false,

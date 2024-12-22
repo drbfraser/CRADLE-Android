@@ -175,7 +175,7 @@ class FormRenderingViewModel @Inject constructor(
 
     fun getMCAnswer(questionId: String?): List<Int>? {
         if (questionId == null) return null
-        return currentAnswers[questionId]?.mcidArrayAnswer
+        return currentAnswers[questionId]?.mcIdArrayAnswer
     }
 
     fun clearAnswers() {

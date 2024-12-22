@@ -22,17 +22,17 @@ import com.fasterxml.jackson.annotation.JsonProperty
  */
 @Entity
 data class HealthFacility(
-    @PrimaryKey @ColumnInfo @JsonProperty("healthFacilityName")
+    @PrimaryKey @ColumnInfo @JsonProperty("name")
     val name: String,
     @ColumnInfo
     val location: String = "",
     @ColumnInfo
     val newReferrals: String = "",
-    @ColumnInfo @JsonProperty("healthFacilityPhoneNumber")
+    @ColumnInfo @JsonProperty("phoneNumber")
     val phoneNumber: String = "",
     @ColumnInfo
     val about: String = "",
-    @ColumnInfo @JsonProperty("facilityType")
+    @ColumnInfo @JsonProperty("type")
     val type: String = "",
     @ColumnInfo @JsonIgnore
     var isUserSelected: Boolean = false
@@ -45,11 +45,11 @@ data class HealthFacility(
  * methods use the same field names.
  */
 private enum class HealthFacilityField(override val text: String) : Field {
-    TYPE("facilityType"),
+    TYPE("type"),
     LOCATION("location"),
     ABOUT("about"),
-    PHONE_NUMBER("healthFacilityPhoneNumber"),
+    PHONE_NUMBER("phoneNumber"),
     NewReferrals("newReferrals"),
-    NAME("healthFacilityName"),
+    NAME("name"),
     ID("id")
 }

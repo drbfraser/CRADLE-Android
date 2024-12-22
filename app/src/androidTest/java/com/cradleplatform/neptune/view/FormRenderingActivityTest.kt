@@ -57,7 +57,7 @@ class FormRenderingActivityTest{
             ContextCompat.startActivity(activity, intent, null)
             val sharedPref = activity?.getPreferences(Context.MODE_PRIVATE) ?: return@onActivity
             with (sharedPref.edit()) {
-                putString(LoginManager.RELAY_PHONE_NUMBER, "+15555215556")
+                putString(LoginManager.RELAY_PHONE_NUMBER, "+1-555-521-5556")
                 apply()
             }
 

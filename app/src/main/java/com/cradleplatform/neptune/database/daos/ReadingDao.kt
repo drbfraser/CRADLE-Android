@@ -71,22 +71,22 @@ interface ReadingDao {
      *
      * @param id The reading id to search for.
      */
-    @Query("SELECT * FROM Reading WHERE readingId = :id")
+    @Query("SELECT * FROM Reading WHERE id = :id")
     suspend fun getReadingById(id: String): Reading
 
     /**
      * Returns a List of Readings whose readingIds correspond to the given [ids]
      */
-    @Query("SELECT * FROM Reading WHERE readingId IN (:ids)")
+    @Query("SELECT * FROM Reading WHERE id IN (:ids)")
     suspend fun getReadingsByIds(ids: List<String>): List<Reading>
 
     /**
      * Returns all of the readings associated with a specified patient.
      *
-     * @param id The id of the patient to find readings for.
+     * @param patientId The id of the patient to find readings for.
      */
-    @Query("SELECT * FROM Reading WHERE patientId = :id")
-    suspend fun getAllReadingByPatientId(id: String): List<Reading>
+    @Query("SELECT * FROM Reading WHERE patientId = :patientId")
+    suspend fun getAllReadingByPatientId(patientId: String): List<Reading>
 
     /**
      * All readings which have not yet been uploaded to the server.
@@ -97,7 +97,7 @@ interface ReadingDao {
     /**
      * Number of readings which have not yet been uploaded to the server.
      */
-    @Query("SELECT COUNT(readingId) FROM Reading WHERE isUploadedToServer = 0")
+    @Query("SELECT COUNT(id) FROM Reading WHERE isUploadedToServer = 0")
     suspend fun getNumberOfUnUploadedReadings(): Int
 
     /**
@@ -124,8 +124,8 @@ interface ReadingDao {
     /**
      * get the newest reading of a particular patient
      */
-    @Query("SELECT * FROM Reading WHERE patientId = :id ORDER BY dateTimeTaken LIMIT 1")
-    suspend fun getNewestReadingByPatientId(id: String): Reading?
+    @Query("SELECT * FROM Reading WHERE patientId = :patientId ORDER BY dateTaken LIMIT 1")
+    suspend fun getNewestReadingByPatientId(patientId: String): Reading?
 
     /**
      * Deletes all readings from the database.
@@ -133,19 +133,19 @@ interface ReadingDao {
     @Query("DELETE FROM Reading")
     suspend fun deleteAllReading()
 
-    @Query("UPDATE Reading SET lastEdited = :lastEdited WHERE readingId = :readingId")
+    @Query("UPDATE Reading SET lastEdited = :lastEdited WHERE id = :readingId")
     suspend fun setLastEdited(readingId: String, lastEdited: Long)
 
     /**
      * set dateRecheckVitalsNeeded field to null
      */
-    @Query("UPDATE Reading SET dateRecheckVitalsNeeded = NULL WHERE readingId = :readingId")
+    @Query("UPDATE Reading SET dateRetestNeeded = NULL WHERE id = :readingId")
     suspend fun setDateRecheckVitalsNeededToNull(readingId: String)
 
     /**
      * mark the reading as needing to be uploaded to the server
      */
-    @Query("UPDATE Reading SET isUploadedToServer = 0 WHERE readingId = :readingId")
+    @Query("UPDATE Reading SET isUploadedToServer = 0 WHERE id = :readingId")
     suspend fun setIsUploadedToServerToZero(readingId: String)
 
     /**

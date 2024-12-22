@@ -2,15 +2,15 @@
   "formatVersion": 1,
   "database": {
     "version": 2,
-    "identityHash": "0aa04663f5346a29f1c1cbc4a619642c",
+    "identityHash": "1dab542bdf6ae83b9100b5c7b9cf9f7b",
     "entities": [
       {
         "tableName": "Reading",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`readingId` TEXT NOT NULL, `patientId` TEXT NOT NULL, `dateTimeTaken` INTEGER NOT NULL, `bloodPressure` TEXT NOT NULL, `urineTest` TEXT, `symptoms` TEXT NOT NULL, `referral` TEXT, `followUp` TEXT, `dateRecheckVitalsNeeded` INTEGER, `isFlaggedForFollowUp` INTEGER NOT NULL, `previousReadingIds` TEXT NOT NULL, `isUploadedToServer` INTEGER NOT NULL, `lastEdited` INTEGER NOT NULL, `userId` INTEGER, PRIMARY KEY(`readingId`), FOREIGN KEY(`patientId`) REFERENCES `Patient`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `patientId` TEXT NOT NULL, `dateTaken` INTEGER NOT NULL, `bloodPressure` TEXT NOT NULL, `urineTest` TEXT, `symptoms` TEXT NOT NULL, `referral` TEXT, `followUp` TEXT, `dateRetestNeeded` INTEGER, `isFlaggedForFollowUp` INTEGER NOT NULL, `previousReadingIds` TEXT NOT NULL, `isUploadedToServer` INTEGER NOT NULL, `lastEdited` INTEGER NOT NULL, `userId` INTEGER, PRIMARY KEY(`id`), FOREIGN KEY(`patientId`) REFERENCES `Patient`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
-            "columnName": "readingId",
+            "columnName": "id",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -21,8 +21,8 @@
             "notNull": true
           },
           {
-            "fieldPath": "dateTimeTaken",
-            "columnName": "dateTimeTaken",
+            "fieldPath": "dateTaken",
+            "columnName": "dateTaken",
             "affinity": "INTEGER",
             "notNull": true
           },
@@ -57,8 +57,8 @@
             "notNull": false
           },
           {
-            "fieldPath": "dateRecheckVitalsNeeded",
-            "columnName": "dateRecheckVitalsNeeded",
+            "fieldPath": "dateRetestNeeded",
+            "columnName": "dateRetestNeeded",
             "affinity": "INTEGER",
             "notNull": false
           },
@@ -94,19 +94,20 @@
           }
         ],
         "primaryKey": {
+          "autoGenerate": false,
           "columnNames": [
-            "readingId"
-          ],
-          "autoGenerate": false
+            "id"
+          ]
         },
         "indices": [
           {
-            "name": "index_Reading_readingId",
+            "name": "index_Reading_id",
             "unique": true,
             "columnNames": [
-              "readingId"
+              "id"
             ],
-            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_Reading_readingId` ON `${TABLE_NAME}` (`readingId`)"
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_Reading_id` ON `${TABLE_NAME}` (`id`)"
           },
           {
             "name": "index_Reading_patientId",
@@ -114,6 +115,7 @@
             "columnNames": [
               "patientId"
             ],
+            "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_Reading_patientId` ON `${TABLE_NAME}` (`patientId`)"
           }
         ],
@@ -133,7 +135,7 @@
       },
       {
         "tableName": "Patient",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `dob` TEXT, `isExactDob` INTEGER, `gestationalAge` TEXT, `sex` TEXT NOT NULL, `isPregnant` INTEGER NOT NULL, `pregnancyId` INTEGER, `prevPregnancyEndDate` INTEGER, `prevPregnancyOutcome` TEXT, `zone` TEXT, `villageNumber` TEXT, `householdNumber` TEXT, `drugHistory` TEXT NOT NULL, `medicalHistory` TEXT NOT NULL, `allergy` TEXT NOT NULL, `lastEdited` INTEGER, `drugLastEdited` INTEGER, `medicalLastEdited` INTEGER, `lastServerUpdate` INTEGER, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `dateOfBirth` TEXT, `isExactDateOfBirth` INTEGER, `gestationalAge` TEXT, `sex` TEXT NOT NULL, `isPregnant` INTEGER NOT NULL, `pregnancyId` INTEGER, `prevPregnancyEndDate` INTEGER, `prevPregnancyOutcome` TEXT, `zone` TEXT, `villageNumber` TEXT, `householdNumber` TEXT, `drugHistory` TEXT NOT NULL, `medicalHistory` TEXT NOT NULL, `allergy` TEXT NOT NULL, `lastEdited` INTEGER, `drugLastEdited` INTEGER, `medicalLastEdited` INTEGER, `lastServerUpdate` INTEGER, `isArchived` INTEGER NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -148,14 +150,14 @@
             "notNull": true
           },
           {
-            "fieldPath": "dob",
-            "columnName": "dob",
+            "fieldPath": "dateOfBirth",
+            "columnName": "dateOfBirth",
             "affinity": "TEXT",
             "notNull": false
           },
           {
-            "fieldPath": "isExactDob",
-            "columnName": "isExactDob",
+            "fieldPath": "isExactDateOfBirth",
+            "columnName": "isExactDateOfBirth",
             "affinity": "INTEGER",
             "notNull": false
           },
@@ -254,13 +256,19 @@
             "columnName": "lastServerUpdate",
             "affinity": "INTEGER",
             "notNull": false
+          },
+          {
+            "fieldPath": "isArchived",
+            "columnName": "isArchived",
+            "affinity": "INTEGER",
+            "notNull": true
           }
         ],
         "primaryKey": {
+          "autoGenerate": false,
           "columnNames": [
             "id"
-          ],
-          "autoGenerate": false
+          ]
         },
         "indices": [
           {
@@ -269,6 +277,7 @@
             "columnNames": [
               "id"
             ],
+            "orders": [],
             "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_Patient_id` ON `${TABLE_NAME}` (`id`)"
           }
         ],
@@ -322,17 +331,17 @@
           }
         ],
         "primaryKey": {
+          "autoGenerate": false,
           "columnNames": [
             "name"
-          ],
-          "autoGenerate": false
+          ]
         },
         "indices": [],
         "foreignKeys": []
       },
       {
         "tableName": "Referral",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `comment` TEXT, `referralHealthFacilityName` TEXT NOT NULL, `dateReferred` INTEGER NOT NULL, `userId` INTEGER, `patientId` TEXT NOT NULL, `actionTaken` TEXT, `cancelReason` TEXT, `notAttendReason` TEXT, `isAssessed` INTEGER NOT NULL, `isCancelled` INTEGER NOT NULL, `notAttended` INTEGER NOT NULL, `lastEdited` INTEGER NOT NULL, `lastServerUpdate` INTEGER, `isUploadedToServer` INTEGER NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`patientId`) REFERENCES `Patient`(`id`) ON UPDATE CASCADE ON DELETE CASCADE , FOREIGN KEY(`referralHealthFacilityName`) REFERENCES `HealthFacility`(`name`) ON UPDATE CASCADE ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `comment` TEXT, `healthFacilityName` TEXT NOT NULL, `dateReferred` INTEGER NOT NULL, `userId` INTEGER, `patientId` TEXT NOT NULL, `actionTaken` TEXT, `cancelReason` TEXT, `notAttendReason` TEXT, `isAssessed` INTEGER NOT NULL, `isCancelled` INTEGER NOT NULL, `notAttended` INTEGER NOT NULL, `lastEdited` INTEGER NOT NULL, `lastServerUpdate` INTEGER, `isUploadedToServer` INTEGER NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`patientId`) REFERENCES `Patient`(`id`) ON UPDATE CASCADE ON DELETE CASCADE , FOREIGN KEY(`healthFacilityName`) REFERENCES `HealthFacility`(`name`) ON UPDATE CASCADE ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -347,8 +356,8 @@
             "notNull": false
           },
           {
-            "fieldPath": "referralHealthFacilityName",
-            "columnName": "referralHealthFacilityName",
+            "fieldPath": "healthFacilityName",
+            "columnName": "healthFacilityName",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -426,10 +435,10 @@
           }
         ],
         "primaryKey": {
+          "autoGenerate": false,
           "columnNames": [
             "id"
-          ],
-          "autoGenerate": false
+          ]
         },
         "indices": [
           {
@@ -438,6 +447,7 @@
             "columnNames": [
               "id"
             ],
+            "orders": [],
             "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_Referral_id` ON `${TABLE_NAME}` (`id`)"
           },
           {
@@ -446,15 +456,17 @@
             "columnNames": [
               "patientId"
             ],
+            "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_Referral_patientId` ON `${TABLE_NAME}` (`patientId`)"
           },
           {
-            "name": "index_Referral_referralHealthFacilityName",
+            "name": "index_Referral_healthFacilityName",
             "unique": false,
             "columnNames": [
-              "referralHealthFacilityName"
+              "healthFacilityName"
             ],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_Referral_referralHealthFacilityName` ON `${TABLE_NAME}` (`referralHealthFacilityName`)"
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_Referral_healthFacilityName` ON `${TABLE_NAME}` (`healthFacilityName`)"
           }
         ],
         "foreignKeys": [
@@ -474,7 +486,7 @@
             "onDelete": "CASCADE",
             "onUpdate": "CASCADE",
             "columns": [
-              "referralHealthFacilityName"
+              "healthFacilityName"
             ],
             "referencedColumns": [
               "name"
@@ -484,7 +496,7 @@
       },
       {
         "tableName": "Assessment",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `dateAssessed` INTEGER NOT NULL, `healthCareWorkerId` INTEGER NOT NULL, `patientId` TEXT NOT NULL, `diagnosis` TEXT, `treatment` TEXT, `medicationPrescribed` TEXT, `specialInvestigations` TEXT, `followupNeeded` INTEGER, `followupInstructions` TEXT, `lastEdited` INTEGER, `lastServerUpdate` INTEGER, `isUploadedToServer` INTEGER NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`patientId`) REFERENCES `Patient`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `dateAssessed` INTEGER NOT NULL, `healthcareWorkerId` INTEGER NOT NULL, `patientId` TEXT NOT NULL, `diagnosis` TEXT, `treatment` TEXT, `medicationPrescribed` TEXT, `specialInvestigations` TEXT, `followUpNeeded` INTEGER, `followUpInstructions` TEXT, `lastEdited` INTEGER, `lastServerUpdate` INTEGER, `isUploadedToServer` INTEGER NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`patientId`) REFERENCES `Patient`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -499,8 +511,8 @@
             "notNull": true
           },
           {
-            "fieldPath": "healthCareWorkerId",
-            "columnName": "healthCareWorkerId",
+            "fieldPath": "healthcareWorkerId",
+            "columnName": "healthcareWorkerId",
             "affinity": "INTEGER",
             "notNull": true
           },
@@ -535,14 +547,14 @@
             "notNull": false
           },
           {
-            "fieldPath": "followupNeeded",
-            "columnName": "followupNeeded",
+            "fieldPath": "followUpNeeded",
+            "columnName": "followUpNeeded",
             "affinity": "INTEGER",
             "notNull": false
           },
           {
-            "fieldPath": "followupInstructions",
-            "columnName": "followupInstructions",
+            "fieldPath": "followUpInstructions",
+            "columnName": "followUpInstructions",
             "affinity": "TEXT",
             "notNull": false
           },
@@ -566,10 +578,10 @@
           }
         ],
         "primaryKey": {
+          "autoGenerate": false,
           "columnNames": [
             "id"
-          ],
-          "autoGenerate": false
+          ]
         },
         "indices": [
           {
@@ -578,6 +590,7 @@
             "columnNames": [
               "id"
             ],
+            "orders": [],
             "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_Assessment_id` ON `${TABLE_NAME}` (`id`)"
           },
           {
@@ -586,6 +599,7 @@
             "columnNames": [
               "patientId"
             ],
+            "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_Assessment_patientId` ON `${TABLE_NAME}` (`patientId`)"
           }
         ],
@@ -605,17 +619,17 @@
       },
       {
         "tableName": "FormClassification",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`formClass` TEXT NOT NULL, `language` TEXT NOT NULL, `formTemplate` TEXT NOT NULL, PRIMARY KEY(`formClass`, `language`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`formClassId` TEXT NOT NULL, `formClassName` TEXT NOT NULL, `formTemplate` TEXT NOT NULL, PRIMARY KEY(`formClassId`))",
         "fields": [
           {
-            "fieldPath": "formClass",
-            "columnName": "formClass",
+            "fieldPath": "formClassId",
+            "columnName": "formClassId",
             "affinity": "TEXT",
             "notNull": true
           },
           {
-            "fieldPath": "language",
-            "columnName": "language",
+            "fieldPath": "formClassName",
+            "columnName": "formClassName",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -627,25 +641,141 @@
           }
         ],
         "primaryKey": {
+          "autoGenerate": false,
           "columnNames": [
-            "formClass",
-            "language"
-          ],
-          "autoGenerate": false
+            "formClassId"
+          ]
         },
         "indices": [],
         "foreignKeys": []
+      },
+      {
+        "tableName": "FormResponse",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`formResponseId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `formTemplate` TEXT NOT NULL, `answers` TEXT NOT NULL, `saveResponseToSendLater` INTEGER NOT NULL, `archived` INTEGER NOT NULL, `formClassificationId` TEXT NOT NULL, `formClassificationName` TEXT, `dateCreated` INTEGER NOT NULL, `language` TEXT NOT NULL, `questionResponses` TEXT NOT NULL, `patientId` TEXT NOT NULL, `dateEdited` INTEGER NOT NULL, FOREIGN KEY(`patientId`) REFERENCES `Patient`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "formResponseId",
+            "columnName": "formResponseId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "formTemplate",
+            "columnName": "formTemplate",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "answers",
+            "columnName": "answers",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "saveResponseToSendLater",
+            "columnName": "saveResponseToSendLater",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "archived",
+            "columnName": "archived",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "formClassificationId",
+            "columnName": "formClassificationId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "formClassificationName",
+            "columnName": "formClassificationName",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "dateCreated",
+            "columnName": "dateCreated",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "language",
+            "columnName": "language",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "questionResponses",
+            "columnName": "questionResponses",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "patientId",
+            "columnName": "patientId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dateEdited",
+            "columnName": "dateEdited",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "formResponseId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_FormResponse_formResponseId",
+            "unique": true,
+            "columnNames": [
+              "formResponseId"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_FormResponse_formResponseId` ON `${TABLE_NAME}` (`formResponseId`)"
+          },
+          {
+            "name": "index_FormResponse_patientId",
+            "unique": false,
+            "columnNames": [
+              "patientId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_FormResponse_patientId` ON `${TABLE_NAME}` (`patientId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "Patient",
+            "onDelete": "CASCADE",
+            "onUpdate": "CASCADE",
+            "columns": [
+              "patientId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
       }
     ],
     "views": [
       {
         "viewName": "LocalSearchPatient",
-        "createSql": "CREATE VIEW `${VIEW_NAME}` AS SELECT\n  p.name,\n  p.id,\n  p.villageNumber,\n  r.bloodPressure as latestBloodPressure,\n  MAX(r.dateTimeTaken) as latestReadingDate,\n  p.lastEdited,\n  r.referral,\n  r.dateRecheckVitalsNeeded\nFROM\n  Patient as p\n  LEFT JOIN Reading AS r ON p.id = r.patientId\nGROUP BY \n  IFNULL(r.patientId, p.id)"
+        "createSql": "CREATE VIEW `${VIEW_NAME}` AS SELECT\n  p.name,\n  p.id,\n  p.villageNumber,\n  r.bloodPressure as latestBloodPressure,\n  MAX(r.dateTaken) as latestReadingDate,\n  p.lastEdited,\n  r.referral,\n  r.dateRetestNeeded\nFROM\n  Patient as p\n  LEFT JOIN Reading AS r ON p.id = r.patientId\nGROUP BY \n  IFNULL(r.patientId, p.id)"
       }
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '0aa04663f5346a29f1c1cbc4a619642c')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '1dab542bdf6ae83b9100b5c7b9cf9f7b')"
     ]
   }
 }

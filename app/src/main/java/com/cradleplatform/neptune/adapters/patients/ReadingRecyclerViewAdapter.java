@@ -100,20 +100,20 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
                 myViewHolder.finalDiagnosis.setText(currAssessment.getDiagnosis());
                 myViewHolder.treatmentOp.setText(currAssessment.getTreatment());
                 myViewHolder.medication.setText(currAssessment.getMedicationPrescribed());
-                myViewHolder.followUp.setText(currAssessment.getFollowupInstructions());
+                myViewHolder.followUp.setText(currAssessment.getFollowUpInstructions());
                 break;
             case REFERRAL_ASSESSED:
                 Referral currReferral = (Referral) combinedList.get(i);
                 myViewHolder.referralDate.setText(DateUtil.getConciseDateString(currReferral.getDateReferred(), false));
                 myViewHolder.refAssessmentDate.setText("N/A");
-                myViewHolder.referralLocation.setText(currReferral.getReferralHealthFacilityName());
+                myViewHolder.referralLocation.setText(currReferral.getHealthFacilityName());
                 myViewHolder.referralComments.setText(currReferral.getComment());
                 break;
             case REFERRAL_CANCELLED:
                 currReferral = (Referral) combinedList.get(i);
                 myViewHolder.referralDate.setText(DateUtil.getConciseDateString(currReferral.getDateReferred(), false));
                 myViewHolder.refAssessmentDate.setText("N/A");
-                myViewHolder.referralLocation.setText(currReferral.getReferralHealthFacilityName());
+                myViewHolder.referralLocation.setText(currReferral.getHealthFacilityName());
                 myViewHolder.referralComments.setText(currReferral.getComment());
                 myViewHolder.cancellationReason.setText(currReferral.getCancelReason());
                 break;
@@ -121,14 +121,14 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
                 currReferral = (Referral) combinedList.get(i);
 //                myViewHolder.readingDate.setText(DateUtil.getConciseDateString(currReferral.getDateReferred(), false));
                 myViewHolder.referralDate.setText(DateUtil.getConciseDateString(currReferral.getDateReferred(), false));
-                myViewHolder.referralLocation.setText(currReferral.getReferralHealthFacilityName());
+                myViewHolder.referralLocation.setText(currReferral.getHealthFacilityName());
                 myViewHolder.referralComments.setText(currReferral.getComment());
                 break;
             case READING_VIEW:
                 Reading currReading = (Reading) combinedList.get(i);
                 ReadingAnalysis analysis = currReading.getBloodPressure().getAnalysis();
 
-                myViewHolder.readingDate.setText(DateUtil.getConciseDateString(currReading.getDateTimeTaken(), false));
+                myViewHolder.readingDate.setText(DateUtil.getConciseDateString(currReading.getDateTaken(), false));
                 myViewHolder.sysBP.setText(new StringBuilder().append(currReading.getBloodPressure().getSystolic()).append("").toString());
                 myViewHolder.diaBP.setText(new StringBuilder().append(currReading.getBloodPressure().getDiastolic()).append("").toString());
                 myViewHolder.heartRate.setText(new StringBuilder().append(currReading.getBloodPressure().getHeartRate()).append("").toString());

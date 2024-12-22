@@ -13,11 +13,11 @@ import kotlin.reflect.KProperty
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class UrineTest(
-    @JsonProperty("urineTestLeuc") var leukocytes: String,
-    @JsonProperty("urineTestNit") var nitrites: String,
-    @JsonProperty("urineTestPro") var protein: String,
-    @JsonProperty("urineTestBlood") var blood: String,
-    @JsonProperty("urineTestGlu") var glucose: String
+    @JsonProperty("leukocytes") var leukocytes: String,
+    @JsonProperty("nitrites") var nitrites: String,
+    @JsonProperty("protein") var protein: String,
+    @JsonProperty("blood") var blood: String,
+    @JsonProperty("glucose") var glucose: String
 ) : Serializable, Verifiable<UrineTest> {
     companion object : Verifiable.Verifier<UrineTest> {
 
@@ -68,9 +68,9 @@ data class UrineTest(
  * JSON fields for marshalling [UrineTest] objects.
  */
 private enum class UrineTestField(override val text: String) : Field {
-    LEUKOCYTES("urineTestLeuc"),
-    NITRITES("urineTestNit"),
-    PROTEIN("urineTestPro"),
-    BLOOD("urineTestBlood"),
-    GLUCOSE("urineTestGlu"),
+    LEUKOCYTES("leukocytes"),
+    NITRITES("nitrites"),
+    PROTEIN("protein"),
+    BLOOD("blood"),
+    GLUCOSE("glucose"),
 }

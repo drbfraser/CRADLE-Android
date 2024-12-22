@@ -180,7 +180,7 @@ open class PatientProfileActivity : AppCompatActivity() {
     private fun changeAddReadingButtonColorIfNeeded(): Boolean {
         val button: Button = findViewById(R.id.newPatientReadingButton)
         return if (patientReadings.isNotEmpty()
-            && Util.isRecheckNeededNow(patientReadings[0].dateRecheckVitalsNeeded)) {
+            && Util.isRecheckNeededNow(patientReadings[0].dateRetestNeeded)) {
             button.backgroundTintList = ContextCompat.getColorStateList(this, R.color.redDown)
             button.text = getString(R.string.new_reading_is_required_now)
             true
@@ -236,10 +236,10 @@ open class PatientProfileActivity : AppCompatActivity() {
     fun populatePatientInfo(patient: Patient) {
         patientID.text = patient.id
         patientName.text = patient.name
-        if (!Util.stringNullOrEmpty(patient.dob)) {
+        if (!Util.stringNullOrEmpty(patient.dateOfBirth)) {
             try {
-                val ageFromDob = Patient.calculateAgeFromDateString(patient.dob!!)
-                val ageDisplayString = if (patient.isExactDob == true) {
+                val ageFromDob = Patient.calculateAgeFromDateString(patient.dateOfBirth!!)
+                val ageDisplayString = if (patient.isExactDateOfBirth == true) {
                     getString(
                         R.string.patient_profile_age_n_years_old,
                         ageFromDob
@@ -460,7 +460,7 @@ open class PatientProfileActivity : AppCompatActivity() {
         // TODO: this function has unclear dependency on setupReadingsRecyclerView,
         //  patientsReadings won't be loaded until it's called (refer to issue #50)
 
-        if (patientReadings.isNotEmpty() && Util.isRecheckNeededNow(patientReadings[0].dateRecheckVitalsNeeded)) {
+        if (patientReadings.isNotEmpty() && Util.isRecheckNeededNow(patientReadings[0].dateRetestNeeded)) {
             val createButton =
                 findViewById<Button>(R.id.newPatientReadingButton)
             createButton.isVisible = false
@@ -534,7 +534,7 @@ open class PatientProfileActivity : AppCompatActivity() {
         combinedList.sortWith(
             compareByDescending {
                 when (it) {
-                    is Reading -> it.dateTimeTaken
+                    is Reading -> it.dateTaken
                     is Referral -> it.dateReferred
                     is Assessment -> it.dateAssessed
                     else -> Integer.MAX_VALUE

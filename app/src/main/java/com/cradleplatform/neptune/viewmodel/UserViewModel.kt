@@ -32,8 +32,9 @@ class UserViewModel @Inject constructor(
 ) : AndroidViewModel(application) {
 
     companion object {
-        const val TOKEN_KEY = "token"
-        const val EMAIL_KEY = "loginEmail"
+        const val ACCESS_TOKEN_KEY = "accessToken"
+        const val EMAIL_KEY = "email"
+        const val USERNAME = "username"
 
         // A list of all phone numbers for the user
         const val PHONE_NUMBERS = "phoneNumbers"

@@ -31,17 +31,17 @@ import java.io.Serializable
  *
  * Note that this object is sometimes also referred to as "follow up".
  *
- * @property id A unique id for this follow up populated by the server
- * @property dateAssessed The time this follow up was made as a unix timestamp
- * @property healthCareWorkerId The id of the user who made this assessment
- * @property patientId Id of the patient this follow up belongs to
- * @property diagnosis An optional medical diagnosis
- * @property treatment An optional treatment description
+ * @property id A unique id for this assessment populated by the server.
+ * @property dateAssessed The time this assessment was made as a unix timestamp.
+ * @property healthcareWorkerId The id of the user who made this assessment.
+ * @property patientId Id of the patient this assessment belongs to.
+ * @property diagnosis An optional medical diagnosis.
+ * @property treatment An optional treatment description.
  * @property medicationPrescribed An optional description of the medication
- *  prescribed to the patient
- * @property followupNeeded True if a follow up is required by the VHT
- * @property followupInstructions Instructions for the follow up if required
- * @property lastEdited Last time assessment was edited on android
+ *  prescribed to the patient.
+ * @property followUpNeeded True if a follow up is required by the VHT.
+ * @property followUpInstructions Instructions for the follow up if required.
+ * @property lastEdited Last time assessment was edited on android.
  * @property lastServerUpdate Last time the assessment has gotten updated from the server.
  */
 @Entity(
@@ -59,9 +59,9 @@ import java.io.Serializable
         )
     ]
 )
-@JsonIgnoreProperties(ignoreUnknown = true)
 @JsonSerialize(using = Assessment.Serializer::class)
 @JsonDeserialize(using = Assessment.Deserializer::class)
+@JsonIgnoreProperties(ignoreUnknown = true)
 data class Assessment(
     @PrimaryKey @ColumnInfo @JsonProperty("id")
     var id: String,
@@ -69,8 +69,8 @@ data class Assessment(
     @ColumnInfo @JsonProperty("dateAssessed")
     var dateAssessed: Long,
 
-    @ColumnInfo @JsonProperty("healthCareWorkerId")
-    var healthCareWorkerId: Int,
+    @ColumnInfo @JsonProperty("healthcareWorkerId")
+    var healthcareWorkerId: Int,
 
     @ColumnInfo @JsonProperty("patientId")
     var patientId: String,
@@ -87,11 +87,11 @@ data class Assessment(
     @ColumnInfo @JsonProperty("specialInvestigations")
     var specialInvestigations: String?,
 
-    @ColumnInfo @JsonProperty("followupNeeded")
-    var followupNeeded: Boolean?,
+    @ColumnInfo @JsonProperty("followUpNeeded")
+    var followUpNeeded: Boolean?,
 
-    @ColumnInfo @JsonProperty("followupInstructions")
-    var followupInstructions: String?,
+    @ColumnInfo @JsonProperty("followUpInstructions")
+    var followUpInstructions: String?,
 
     @ColumnInfo @JsonProperty("lastEdited")
     var lastEdited: Long? = null,
@@ -112,14 +112,14 @@ data class Assessment(
 
                 gen.writeStringField(AssessmentField.ID, id)
                 gen.writeLongField(AssessmentField.DATE_ASSESSED, dateAssessed)
-                gen.writeIntField(AssessmentField.HEALTH_CARE_WORKER_ID, healthCareWorkerId)
+                gen.writeIntField(AssessmentField.HEALTHCARE_WORKER_ID, healthcareWorkerId)
                 gen.writeStringField(AssessmentField.PATIENT_ID, patientId)
                 gen.writeOptStringField(AssessmentField.DIAGNOSIS, diagnosis)
                 gen.writeOptStringField(AssessmentField.TREATMENT, treatment)
                 gen.writeOptStringField(AssessmentField.MEDICATION_PRESCRIBED, medicationPrescribed)
                 gen.writeOptStringField(AssessmentField.SPECIAL_INVESTIGATIONS, specialInvestigations)
-                gen.writeOptBooleanField(AssessmentField.FOLLOW_UP_NEEDED, followupNeeded)
-                gen.writeOptStringField(AssessmentField.FOLLOW_UP_INSTRUCTIONS, followupInstructions)
+                gen.writeOptBooleanField(AssessmentField.FOLLOW_UP_NEEDED, followUpNeeded)
+                gen.writeOptStringField(AssessmentField.FOLLOW_UP_INSTRUCTIONS, followUpInstructions)
                 gen.writeOptLongField(AssessmentField.LAST_EDITED, lastEdited)
                 gen.writeOptLongField(AssessmentField.LAST_SERVER_UPDATE, lastServerUpdate)
 
@@ -133,28 +133,28 @@ data class Assessment(
             p.codec.readTree<JsonNode>(p)!!.run {
                 val id = get(AssessmentField.ID)!!.textValue()
                 val dateAssessed = get(AssessmentField.DATE_ASSESSED)!!.longValue()
-                val healthCareWorkerId = get(AssessmentField.HEALTH_CARE_WORKER_ID)!!.intValue()
+                val healthcareWorkerId = get(AssessmentField.HEALTHCARE_WORKER_ID)!!.intValue()
                 val patientId = get(AssessmentField.PATIENT_ID)!!.textValue()
                 val diagnosis = get(AssessmentField.DIAGNOSIS)?.textValue()
                 val treatment = get(AssessmentField.TREATMENT)?.textValue()
                 val medicationPrescribed = get(AssessmentField.MEDICATION_PRESCRIBED)?.textValue()
                 val specialInvestigations = get(AssessmentField.SPECIAL_INVESTIGATIONS)?.textValue()
-                val followupNeeded = get(AssessmentField.FOLLOW_UP_NEEDED)?.booleanValue()
-                val followupInstructions = get(AssessmentField.FOLLOW_UP_INSTRUCTIONS)?.textValue()
+                val followUpNeeded = get(AssessmentField.FOLLOW_UP_NEEDED)?.booleanValue()
+                val followUpInstructions = get(AssessmentField.FOLLOW_UP_INSTRUCTIONS)?.textValue()
                 val lastEdited = get(AssessmentField.LAST_EDITED)?.longValue()
                 val lastServerUpdate = get(AssessmentField.LAST_SERVER_UPDATE)?.longValue()
 
                 return@run Assessment(
                     id = id,
                     dateAssessed = dateAssessed,
-                    healthCareWorkerId = healthCareWorkerId,
+                    healthcareWorkerId = healthcareWorkerId,
                     patientId = patientId,
                     diagnosis = diagnosis,
                     treatment = treatment,
                     medicationPrescribed = medicationPrescribed,
                     specialInvestigations = specialInvestigations,
-                    followupNeeded = followupNeeded,
-                    followupInstructions = followupInstructions,
+                    followUpNeeded = followUpNeeded,
+                    followUpInstructions = followUpInstructions,
                     lastEdited = lastEdited,
                     lastServerUpdate = lastServerUpdate
                 )
@@ -183,14 +183,14 @@ data class Assessment(
 private enum class AssessmentField(override val text: String) : Field {
     ID("id"),
     DATE_ASSESSED("dateAssessed"),
-    HEALTH_CARE_WORKER_ID("healthcareWorkerId"),
+    HEALTHCARE_WORKER_ID("healthcareWorkerId"),
     PATIENT_ID("patientId"),
     DIAGNOSIS("diagnosis"),
     TREATMENT("treatment"),
     MEDICATION_PRESCRIBED("medicationPrescribed"),
     SPECIAL_INVESTIGATIONS("specialInvestigations"),
-    FOLLOW_UP_NEEDED("followupNeeded"),
-    FOLLOW_UP_INSTRUCTIONS("followupInstructions"),
+    FOLLOW_UP_NEEDED("followUpNeeded"),
+    FOLLOW_UP_INSTRUCTIONS("followUpInstructions"),
     LAST_EDITED("lastEdited"),
     LAST_SERVER_UPDATE("lastServerUpdate")
 }

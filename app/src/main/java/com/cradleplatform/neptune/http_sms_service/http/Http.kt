@@ -1,10 +1,17 @@
 package com.cradleplatform.neptune.http_sms_service.http
 
+import android.content.SharedPreferences
 import android.util.Log
+import com.cradleplatform.neptune.utilities.jackson.JacksonMapper
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.annotation.JsonProperty
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.CertificatePinner
 import okhttp3.ConnectionSpec
+import okhttp3.Cookie
+import okhttp3.CookieJar
+import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
@@ -21,8 +28,9 @@ import java.util.concurrent.TimeUnit
  * When communicating with the CRADLE server, the [com.cradleplatform.neptune.http_sms_service.RestApi]
  * class should be used instead of this one.
  */
-class Http {
-
+class Http(
+    private val sharedPreferences: SharedPreferences,
+) {
     /**
      * Enumeration of common HTTP method request types.
      */
@@ -65,6 +73,7 @@ class Http {
                 )
                 .build()
         )
+        .cookieJar(CradleCookieJar(sharedPreferences))
         .build()
 
     /**
@@ -136,5 +145,76 @@ class Http {
 
     companion object {
         const val TAG = "HTTP"
+    }
+}
+
+/**
+ * Cookie jar to handle cookies. Particularly for handling the refresh token.
+ */
+class CradleCookieJar(private val sharedPreferences: SharedPreferences) : CookieJar {
+
+    private val cookieReader = JacksonMapper.createReader<CookieData>()
+    private val cookieWriter = JacksonMapper.createWriter<CookieData>()
+
+    override fun saveFromResponse(url: HttpUrl, cookies: List<Cookie>) {
+        cookies.forEach {
+            val cookieData = CookieData.create(it)
+            val serializedCookie = cookieWriter.writeValueAsString(cookieData)
+            sharedPreferences.edit().putString(it.name, serializedCookie).apply()
+        }
+    }
+
+    override fun loadForRequest(url: HttpUrl): List<Cookie> {
+        val serializedRefreshTokenCookie = sharedPreferences.getString("refresh_token", null)
+            ?: return emptyList()
+
+        val refreshTokenCookieData: CookieData = cookieReader.readValue(serializedRefreshTokenCookie)
+        val refreshTokenCookie = refreshTokenCookieData.toCookie()
+        return listOf(refreshTokenCookie)
+    }
+}
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+class CookieData(
+    @JsonProperty
+    val name: String,
+    @JsonProperty
+    val value: String,
+    @JsonProperty
+    val expiresAt: Long,
+    @JsonProperty
+    val domain: String,
+    @JsonProperty
+    val path: String,
+    @JsonProperty
+    val secure: Boolean,
+    @JsonProperty
+    val httpOnly: Boolean,
+    @JsonProperty
+    val persistent: Boolean,
+    @JsonProperty
+    val hostOnly: Boolean
+) {
+    companion object {
+        fun create(cookie: Cookie) = CookieData(
+            name = cookie.name,
+            value = cookie.value,
+            expiresAt = cookie.expiresAt,
+            domain = cookie.domain,
+            path = cookie.path,
+            secure = cookie.secure,
+            httpOnly = cookie.httpOnly,
+            persistent = cookie.persistent,
+            hostOnly = cookie.hostOnly
+        )
+    }
+
+    fun toCookie(): Cookie {
+        val cookieBuilder = Cookie.Builder()
+            .name(name).value(value).expiresAt(expiresAt).domain(domain)
+            .path(path)
+        if (httpOnly) cookieBuilder.httpOnly()
+        if (secure) cookieBuilder.secure()
+        return cookieBuilder.build()
     }
 }

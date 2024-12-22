@@ -128,7 +128,9 @@ class DataModule {
 
     @Provides
     @Singleton
-    fun providesHttp(): Http = Http()
+    fun providesHttp(
+        sharedPreferences: SharedPreferences
+    ): Http = Http(sharedPreferences)
 
     @Provides
     @Singleton

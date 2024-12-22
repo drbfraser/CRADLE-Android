@@ -110,7 +110,7 @@ class PatientReferralViewModel @Inject constructor(
             Referral(
                 id = UUID.randomUUID().toString(),
                 comment = comments.value,
-                referralHealthFacilityName = healthFacilityToUse.value
+                healthFacilityName = healthFacilityToUse.value
                     ?: error("No health facility selected"),
                 dateReferred = currentTime,
                 userId = sharedPreferences.getIntOrNull(UserViewModel.USER_ID_KEY),

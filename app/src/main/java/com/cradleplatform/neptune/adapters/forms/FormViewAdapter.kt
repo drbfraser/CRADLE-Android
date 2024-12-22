@@ -183,7 +183,7 @@ class FormViewAdapter(
                 langMcOptions.forEach {
                     val radioButton = RadioButton(context)
                     radioButton.text = it.opt
-                    radioButton.id = it.mcid!!
+                    radioButton.id = it.mcId!!
                     holder.binding.rgMultipleChoice.addView(radioButton)
 
                     //logic for pre population
@@ -244,7 +244,7 @@ class FormViewAdapter(
                         checkBox.setPadding(8)
 
                         val mcAnswers = viewModel.getMCAnswer(questionID)
-                        if (mcAnswers?.contains(it.mcid) == true) checkBox.isChecked = true
+                        if (mcAnswers?.contains(it.mcId) == true) checkBox.isChecked = true
 
                         holder.binding.checkboxContainer.addView(checkBox)
 
@@ -253,9 +253,9 @@ class FormViewAdapter(
                                 ArrayList(viewModel.getMCAnswer(questionID) ?: listOf())
 
                             if (isChecked) {
-                                it.mcid?.let { id -> currMCAnswers.add(id) }
+                                it.mcId?.let { id -> currMCAnswers.add(id) }
                             } else {
-                                it.mcid?.let { id -> currMCAnswers.remove(id) }
+                                it.mcId?.let { id -> currMCAnswers.remove(id) }
                             }
 
                             viewModel.addAnswer(questionID, Answer.createMcAnswer(currMCAnswers))
@@ -442,7 +442,7 @@ class FormViewAdapter(
             }
 
             context.getString(R.string.form_patient_age) -> {
-                val age = DateUtil.getAgeFromDOB(patient?.dob)
+                val age = DateUtil.getAgeFromDOB(patient?.dateOfBirth)
                 if (age.isNotEmpty()) {
                     textView.text = age
                     viewModel.addAnswer(questionID, Answer.createNumericAnswer(age.toInt()))

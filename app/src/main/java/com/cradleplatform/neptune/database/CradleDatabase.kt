@@ -23,7 +23,7 @@ import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.Reading
 import com.cradleplatform.neptune.model.Referral
 
-const val CURRENT_DATABASE_VERSION = 4
+const val CURRENT_DATABASE_VERSION = 2
 
 /**
  * An interface for the local CRADLE database.
@@ -93,7 +93,7 @@ abstract class CradleDatabase : RoomDatabase() {
 @Suppress("MagicNumber", "NestedBlockDepth", "ObjectPropertyNaming")
 internal object Migrations {
     val ALL_MIGRATIONS: Array<Migration> by lazy {
-        arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+        arrayOf(MIGRATION_1_2)
     }
 
     /**
@@ -108,7 +108,7 @@ internal object Migrations {
                     CREATE TABLE IF NOT EXISTS Referral (
                         `id` TEXT NOT NULL, 
                         `comment` TEXT,
-                        `referralHealthFacilityName` TEXT NOT NULL, 
+                        `healthFacilityName` TEXT NOT NULL, 
                         `dateReferred` INTEGER NOT NULL,
                         `userId` INTEGER,
                         `patientId` TEXT NOT NULL,
@@ -124,7 +124,7 @@ internal object Migrations {
                         PRIMARY KEY(`id`),
                         FOREIGN KEY(`patientId`) REFERENCES `Patient`(`id`) 
                             ON UPDATE CASCADE ON DELETE CASCADE,
-                        FOREIGN KEY(`referralHealthFacilityName`) REFERENCES `HealthFacility`(`name`) 
+                        FOREIGN KEY(`healthFacilityName`) REFERENCES `HealthFacility`(`name`) 
                             ON UPDATE CASCADE ON DELETE CASCADE
                     )
                     """.trimIndent()
@@ -135,14 +135,14 @@ internal object Migrations {
                     CREATE TABLE IF NOT EXISTS Assessment (
                         `id` TEXT NOT NULL, 
                         `dateAssessed` INTEGER NOT NULL,
-                        `healthCareWorkerId` INTEGER NOT NULL, 
+                        `healthcareWorkerId` INTEGER NOT NULL, 
                         `patientId` TEXT NOT NULL, 
                         `diagnosis` TEXT, 
                         `treatment` TEXT, 
                         `medicationPrescribed` TEXT, 
                         `specialInvestigations` TEXT, 
-                        `followupNeeded` INTEGER,
-                        `followupInstructions` TEXT, 
+                        `followUpNeeded` INTEGER,
+                        `followUpInstructions` TEXT, 
                         `lastEdited` INTEGER,
                         `lastServerUpdate` INTEGER,
                         `isUploadedToServer` INTEGER NOT NULL,
@@ -157,63 +157,12 @@ internal object Migrations {
                 execSQL(
                     """
                     CREATE INDEX 
-                    IF NOT EXISTS `index_Referral_referralHealthFacilityName` 
-                    ON `Referral` (`referralHealthFacilityName`)
+                    IF NOT EXISTS `index_Referral_healthFacilityName` 
+                    ON `Referral` (`healthFacilityName`)
                     """.trimIndent()
                 )
                 execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_Assessment_id` ON `Assessment` (`id`)")
                 execSQL("CREATE INDEX IF NOT EXISTS `index_Assessment_patientId` ON `Assessment` (`patientId`)")
-            }
-        }
-    }
-
-    /**
-     * Version 3: add FormClassification
-     */
-    private val MIGRATION_2_3 = object : Migration(2, 3) {
-        override fun migrate(database: SupportSQLiteDatabase) {
-            database.execSQL(
-                """
-                    CREATE TABLE IF NOT EXISTS FormClassification (
-                        `formClass` TEXT NOT NULL,
-                        `language` TEXT NOT NULL,
-                        `formTemplate` TEXT NOT NULL,
-                        PRIMARY KEY (formClass, language)
-                    )
-                """.trimIndent()
-            )
-        }
-    }
-
-    /**
-     * Version 3: add FormResponse
-     */
-    private val MIGRATION_3_4 = object : Migration(3, 4) {
-        override fun migrate(database: SupportSQLiteDatabase) {
-            database.apply {
-                execSQL(
-                    """
-                    CREATE TABLE IF NOT EXISTS FormResponse (
-                        `formResponseId` LONG NOT NULL,
-                        `patientId` TEXT NOT NULL,
-                        `formTemplate` TEXT NOT NULL,
-                        `language` TEXT NOT NULL,
-                        `answers` TEXT NOT NULL,
-                        `saveResponseToSendLater`, BIT NOT NULL,
-                        PRIMARY KEY(`formResponseId`),
-                        FOREIGN KEY(`patientId`) REFERENCES `Patient`(`id`) 
-                            ON UPDATE CASCADE ON DELETE CASCADE
-                    )
-                    """.trimIndent()
-                )
-                execSQL(
-                    "CREATE UNIQUE INDEX IF NOT EXISTS `index_FormResponse_formResponseId`"
-                        + " ON `FormResponse` (`formResponseId`)"
-                )
-                execSQL(
-                    "CREATE INDEX IF NOT EXISTS `index_FormResponse_patientId` "
-                        + "ON `FormResponse` (`patientId`)"
-                )
             }
         }
     }

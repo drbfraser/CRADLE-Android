@@ -1,12 +1,21 @@
 package com.cradleplatform.neptune.database.firstversiondata.model
 
 import android.content.SharedPreferences
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.ForeignKey
+import androidx.room.Index
+import androidx.room.PrimaryKey
 import com.cradleplatform.neptune.ext.Field
 import com.cradleplatform.neptune.ext.getIntOrNull
+import com.cradleplatform.neptune.model.HealthFacility
+import com.cradleplatform.neptune.model.Patient
+import com.cradleplatform.neptune.model.Referral
 import com.cradleplatform.neptune.viewmodel.UserViewModel
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 import java.io.Serializable
+import java.util.UUID
 
 /**
  * Holds information about a referral.
@@ -20,47 +29,84 @@ import java.io.Serializable
  * @property id The unique identifier for this referral assigned by the server
  * @property userId The id of the user who made this referral
  * @property patientId The id of patient being referred
- * @property readingId The id of the reading being referred
+ * @property actionTaken The action taken
+ * @property cancelReason The reason of cancel
+ * @property notAttendReason The reason of not attend
  * @property isAssessed True if the referral has been assessed
+ * @property isCancelled True if the referral has been cancelled
+ * @property notAttended True if the referral has not been attended
+ * @property lastEdited Last time referral was edited on android
+ * @property lastServerUpdate Last time the referral has gotten updated from the server.
  */
+@Entity(
+    indices = [
+        Index(value = ["id"], unique = true),
+        Index(value = ["patientId"]),
+        Index(value = ["healthFacilityName"])
+    ],
+    foreignKeys = [
+        ForeignKey(
+            entity = Patient::class,
+            parentColumns = arrayOf("id"),
+            childColumns = arrayOf("patientId"),
+            onUpdate = ForeignKey.CASCADE,
+            onDelete = ForeignKey.CASCADE
+        ),
+        ForeignKey(
+            entity = HealthFacility::class,
+            parentColumns = arrayOf("name"),
+            childColumns = arrayOf("healthFacilityName"),
+            onUpdate = ForeignKey.CASCADE,
+            onDelete = ForeignKey.CASCADE
+        )
+    ]
+)
 @JsonIgnoreProperties(ignoreUnknown = true)
-internal data class Referral constructor(
-    @JsonProperty("comment")
-    val comment: String?,
-    @JsonProperty("referralHealthFacilityName")
-    val healthFacilityName: String,
-    @JsonProperty("dateReferred")
-    val dateReferred: Long,
-    @JsonProperty("id")
-    val id: Int?,
-    @JsonProperty("userId")
-    val userId: Int?,
-    @JsonProperty("patientId")
-    val patientId: String,
-    @JsonProperty("readingId")
-    val readingId: String,
-    @JsonProperty("isAssessed")
-    var isAssessed: Boolean
-) : Serializable {
+internal data class Referral (
+    @PrimaryKey @ColumnInfo @JsonProperty("id")
+    var id: String = UUID.randomUUID().toString(),
 
-    constructor(
-        comment: String?,
-        healthFacilityName: String,
-        dateReferred: Long,
-        patientId: String,
-        readingId: String,
-        sharedPreferences: SharedPreferences
-    ) : this(
-        comment = comment,
-        healthFacilityName = healthFacilityName,
-        dateReferred = dateReferred,
-        id = null,
-        userId = sharedPreferences.getIntOrNull(UserViewModel.USER_ID_KEY),
-        patientId = patientId,
-        readingId = readingId,
-        isAssessed = false
-    )
-}
+    @ColumnInfo @JsonProperty("comment")
+    var comment: String?,
+
+    @ColumnInfo @JsonProperty("healthFacilityName")
+    var healthFacilityName: String,
+
+    @ColumnInfo @JsonProperty("dateReferred")
+    var dateReferred: Long,
+
+    @ColumnInfo @JsonProperty("userId")
+    var userId: Int?,
+
+    @ColumnInfo @JsonProperty("patientId")
+    var patientId: String,
+
+    @ColumnInfo @JsonProperty("actionTaken")
+    var actionTaken: String?,
+
+    @ColumnInfo @JsonProperty("cancelReason")
+    var cancelReason: String?,
+
+    @ColumnInfo @JsonProperty("notAttendReason")
+    var notAttendReason: String?,
+
+    @ColumnInfo @JsonProperty("isAssessed")
+    var isAssessed: Boolean,
+
+    @ColumnInfo @JsonProperty("isCancelled")
+    var isCancelled: Boolean,
+
+    @ColumnInfo @JsonProperty("notAttended")
+    var notAttended: Boolean,
+
+    @ColumnInfo @JsonProperty("lastEdited")
+    var lastEdited: Long,
+
+    @ColumnInfo @JsonProperty("lastServerUpdate")
+    var lastServerUpdate: Long? = null,
+
+    @ColumnInfo var isUploadedToServer: Boolean = false
+) : Serializable
 
 /**
  * The information that is expected by the SMS relay app.
@@ -76,7 +122,13 @@ private enum class ReferralField(override val text: String) : Field {
     COMMENT("comment"),
     USER_ID("userId"),
     PATIENT_ID("patientId"),
-    HEALTH_FACILITY_NAME("referralHealthFacilityName"),
-    READING_ID("readingId"),
-    IS_ASSESSED("isAssessed")
+    HEALTH_FACILITY_NAME("healthFacilityName"),
+    ACTION_TAKEN("actionTaken"),
+    CANCEL_REASON("cancelReason"),
+    NOT_ATTEND_REASON("notAttendReason"),
+    IS_ASSESSED("isAssessed"),
+    IS_CANCELLED("isCancelled"),
+    NOT_ATTENDED("notAttended"),
+    LAST_EDITED("lastEdited"),
+    LAST_SERVER_UPDATE("lastServerUpdate")
 }

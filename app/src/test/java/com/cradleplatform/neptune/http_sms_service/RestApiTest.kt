@@ -4,6 +4,8 @@ import android.util.Log
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
 import com.cradleplatform.neptune.manager.LoginResponse
+import com.cradleplatform.neptune.manager.LoginResponseSmsKey
+import com.cradleplatform.neptune.manager.LoginResponseUser
 import com.cradleplatform.neptune.testutils.MockWebServerUtils
 import io.mockk.every
 import io.mockk.mockkStatic
@@ -23,7 +25,7 @@ import java.security.GeneralSecurityException
 internal class RestApiTest {
 
     /**
-     * A server where only the user "vht@vht.com" with "vht123" has actual data.
+     * A server where only the user "vht@email.com" with password "cradle-vht" has actual data.
      */
     private val mockServer: MockWebServer
     private val restApi: RestApi
@@ -34,7 +36,7 @@ internal class RestApiTest {
                     "/api/user/auth" -> MockResponse().apply {
                         val login = JSONObject(request.body.readString(Charsets.UTF_8))
                         val (email, password) = try {
-                            login.getString("email") to login.getString("password")
+                            login.getString("username") to login.getString("password")
                         } catch (e: JSONException) {
                             setResponseCode(400)
                             setBody(
@@ -46,26 +48,31 @@ internal class RestApiTest {
                         }
 
                         val response: JSONObject = try {
-                            if (email == "vht@vht.com") {
-                                if (password != "vht123") {
+                            if (email == "vht@email.com") {
+                                if (password != "cradle-vht") {
                                     throw GeneralSecurityException()
                                 }
 
                                 // sync with the actual endpoint
                                 JSONObject("""
-                            {
-                                "email": "vht@vht.com",
-                                "role": "VHT",
-                                "firstName": "TestVHT",
-                                "healthFacilityName": "H0000",
-                                "phoneNumbers": ["666-666-6666", "777-777-7777", "555-555-5555"],
-                                "isLoggedIn": true,
-                                "userId": 3,
-                                "token": "test-token",
-                                "refresh": "test-refresh-token",
-                                "smsKey": "{\"sms_key\":\"SGVsbG8sIFdvcmxkIQ==\"}"
-                            }
-                            """.trimIndent())
+                                {
+                                    "user": {
+                                        "email": "vht@email.com",
+                                        "username": "vht",
+                                        "role": "VHT",
+                                        "name": "TestVHT",
+                                        "healthFacilityName": "H0000",
+                                        "phoneNumbers": ["+1-666-666-6666", "+1-777-777-7777", "+1-555-555-5555"],
+                                        "isLoggedIn": true,
+                                        "id": 3,
+                                        "smsKey": {
+                                            "key": "SGVsbG8sIFdvcmxkIQ=="
+                                        }
+                                    },
+                                    "accessToken": "test-token",
+
+                                }
+                                """.trimIndent())
                             } else {
                                 throw GeneralSecurityException()
                             }
@@ -120,22 +127,28 @@ internal class RestApiTest {
         )
 
         val goodLoginResult = runBlocking {
-            restApi.authenticate("vht@vht.com", "vht123")
+            restApi.authenticate("vht@email.com", "cradle-vht")
         }
         println("debug-test: $goodLoginResult")
         check(goodLoginResult is NetworkResult.Success) { "got $goodLoginResult" }
         assertEquals(200, goodLoginResult.statusCode)
         val loginResponse = goodLoginResult.value
 
-        val expectedLoginResponseForVht = LoginResponse(
-            email = "vht@vht.com",
+        val user = LoginResponseUser(
+            email = "vht@email.com",
             role = "VHT",
-            firstName = "TestVHT",
+            username = "vht",
+            name = "TestVHT",
             healthFacilityName = "H0000",
-            userId = 3,
-            token = "test-token",
-            phoneNumbers = listOf<String>("666-666-6666", "777-777-7777", "555-555-5555"),
-            smsKey = "{\"sms_key\":\"SGVsbG8sIFdvcmxkIQ==\"}"
+            id = 3,
+            phoneNumbers = listOf<String>("+1-666-666-6666", "+1-777-777-7777", "+1-555-555-5555"),
+            smsKey = LoginResponseSmsKey(
+                key = "SGVsbG8sIFdvcmxkIQ=="
+            )
+        )
+        val expectedLoginResponseForVht = LoginResponse(
+            user = user,
+            accessToken = "test-token",
         )
 
         assertEquals(expectedLoginResponseForVht, loginResponse)
