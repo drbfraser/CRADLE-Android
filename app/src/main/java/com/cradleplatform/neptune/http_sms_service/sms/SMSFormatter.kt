@@ -1,9 +1,10 @@
-package com.cradleplatform.neptune.utilities
+package com.cradleplatform.neptune.http_sms_service.sms
 
 import android.os.Build
 import androidx.annotation.RequiresApi
+import com.cradleplatform.neptune.utilities.AESEncryptor
+import com.cradleplatform.neptune.utilities.GzipCompressor
 import com.google.firebase.crashlytics.internal.model.ImmutableList
-import org.json.JSONObject
 import java.util.Base64
 import kotlin.math.min
 
@@ -96,14 +97,14 @@ class SMSFormatter {
         @RequiresApi(Build.VERSION_CODES.O)
         fun encodeMsg(msg: String, secretKey: String): String {
             if (secretKey.isNotEmpty()) {
-                val encryptedMsg = AESEncryptor.encryptString(GzipCompressor.compress(msg), secretKey)
+                val encryptedMsg =
+                    AESEncryptor.encryptString(GzipCompressor.compress(msg), secretKey)
                 return Base64.getEncoder().encodeToString(encryptedMsg.toByteArray()) }
             return ""
         }
 
         @RequiresApi(Build.VERSION_CODES.O)
         fun decodeMsg(msg: String, secretKey: String): String {
-            // Extracts actual Key from secretKey, which is a JSON String
             if (secretKey.isNotEmpty()) {
                 val decodedBytes = Base64.getDecoder().decode(msg)
                 val decryptedMsg = AESEncryptor.decryptString(String(decodedBytes), secretKey)

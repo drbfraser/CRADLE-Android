@@ -1,14 +1,10 @@
 package com.cradleplatform.neptune.sms
 
 import android.util.Base64
-import com.cradleplatform.neptune.http_sms_service.http.Http
 import com.cradleplatform.neptune.model.CommonPatientReferralJsons
 import com.cradleplatform.neptune.utilities.AESEncryptor
 import com.cradleplatform.neptune.utilities.GzipCompressor
-import com.cradleplatform.neptune.utilities.RelayAction
-import com.cradleplatform.neptune.utilities.SMSFormatter
-import io.mockk.every
-import io.mockk.mockkObject
+import com.cradleplatform.neptune.http_sms_service.sms.SMSFormatter
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions
 

@@ -215,7 +215,7 @@ class RestApi(
             headers = headers,
             requestBody = buildJsonRequestBody(body),
             inputStreamReader = {
-                Json{ ignoreUnknownKeys = true }.decodeFromStream<LoginResponse>(it)
+                Json { ignoreUnknownKeys = true }.decodeFromStream<LoginResponse>(it)
             })
     }
 

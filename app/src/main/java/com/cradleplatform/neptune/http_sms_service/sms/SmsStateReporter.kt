@@ -3,7 +3,6 @@ package com.cradleplatform.neptune.http_sms_service.sms
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import com.cradleplatform.neptune.manager.SmsKeyManager
-import com.cradleplatform.neptune.utilities.SMSFormatter
 import javax.inject.Inject
 import javax.inject.Singleton
 

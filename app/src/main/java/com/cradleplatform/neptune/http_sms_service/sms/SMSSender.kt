@@ -10,8 +10,8 @@ import android.widget.Toast
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.http_sms_service.sms.ui.SmsTransmissionDialogFragment
 import com.cradleplatform.neptune.manager.SmsKeyManager
-import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.encodeMsg
-import com.cradleplatform.neptune.utilities.SMSFormatter.Companion.formatSMS
+import com.cradleplatform.neptune.http_sms_service.sms.SMSFormatter.Companion.encodeMsg
+import com.cradleplatform.neptune.http_sms_service.sms.SMSFormatter.Companion.formatSMS
 import com.cradleplatform.neptune.activities.forms.FormRenderingActivity
 import com.cradleplatform.neptune.activities.patients.PatientReferralActivity
 import com.cradleplatform.neptune.activities.newPatient.ReadingActivity
