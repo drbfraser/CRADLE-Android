@@ -95,12 +95,8 @@ class SMSFormatter {
         // TODO: CHANGE TEST
         @RequiresApi(Build.VERSION_CODES.O)
         fun encodeMsg(msg: String, secretKey: String): String {
-
-            val jsonObject = JSONObject(secretKey)
-            val key = jsonObject.optString("sms_key")
-
-            if (key.isNotEmpty()) {
-                val encryptedMsg = AESEncryptor.encryptString(GzipCompressor.compress(msg), key)
+            if (secretKey.isNotEmpty()) {
+                val encryptedMsg = AESEncryptor.encryptString(GzipCompressor.compress(msg), secretKey)
                 return Base64.getEncoder().encodeToString(encryptedMsg.toByteArray()) }
             return ""
         }
@@ -108,10 +104,9 @@ class SMSFormatter {
         @RequiresApi(Build.VERSION_CODES.O)
         fun decodeMsg(msg: String, secretKey: String): String {
             // Extracts actual Key from secretKey, which is a JSON String
-            val key = JSONObject(secretKey).optString("sms_key")
-            if (key.isNotEmpty()) {
+            if (secretKey.isNotEmpty()) {
                 val decodedBytes = Base64.getDecoder().decode(msg)
-                val decryptedMsg = AESEncryptor.decryptString(String(decodedBytes), key)
+                val decryptedMsg = AESEncryptor.decryptString(String(decodedBytes), secretKey)
                 return GzipCompressor.decompress(decryptedMsg)
             }
             return "ERROR: key is empty"

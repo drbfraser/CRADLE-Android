@@ -29,6 +29,7 @@ import com.cradleplatform.neptune.activities.newPatient.ReadingActivity
 import com.cradleplatform.neptune.activities.forms.SavedFormsActivity
 import com.cradleplatform.neptune.activities.statistics.StatsActivity
 import com.cradleplatform.neptune.activities.settings.SettingsActivity.Companion.makeSettingsActivityLaunchIntent
+import com.cradleplatform.neptune.manager.SmsKey
 import com.cradleplatform.neptune.viewmodel.UserViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -108,14 +109,13 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
         // check SMS key validity only when there is internet connection
         val isNetworkAvailable = networkStateManager.getInternetConnectivityStatus().value
         if ((isNetworkAvailable != null) && isNetworkAvailable) {
-            val currentSmsKey = smsKeyManager.retrieveSmsKey()
-            val smsKeyStatus = smsKeyManager.validateSmsKey(currentSmsKey)
+            val smsKeyStatus = smsKeyManager.validateSmsKey()
             val userId = sharedPreferences.getInt(UserViewModel.USER_ID_KEY, -1)
             if (smsKeyStatus == SmsKeyManager.KeyState.NOTFOUND) {
                 // User doesn't have a valid sms key
                 coroutineScope.launch {
                     val response = restApi.getNewSmsKey(userId)
-                    handleSmsKeyUpdateResult(response, true)
+                    handleSmsKeyUpdateResult(response)
                 }
             }
             if (smsKeyStatus == SmsKeyManager.KeyState.EXPIRED) {
@@ -123,31 +123,22 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
                 if (userId != -1) {
                     coroutineScope.launch {
                         val response = restApi.refreshSmsKey(userId)
-                        handleSmsKeyUpdateResult(response, false)
+                        handleSmsKeyUpdateResult(response)
                     }
                 }
             } else if (smsKeyStatus == SmsKeyManager.KeyState.WARN) {
                 // User's sms key is stale - Warn the user to refresh their SmsKey
-                val daysUntilExpiry = smsKeyManager.getDaysUntilExpiry(currentSmsKey)
+                val daysUntilExpiry = smsKeyManager.getDaysUntilExpiry()
                 showExpiryWarning(applicationContext, daysUntilExpiry)
             }
         }
     }
 
-    private fun handleSmsKeyUpdateResult(result: NetworkResult<SmsKeyResponse>, isNew: Boolean) {
+    private fun handleSmsKeyUpdateResult(result: NetworkResult<SmsKey>) {
         when (result) {
             is NetworkResult.Success -> {
-                val storeResult: Boolean = if (isNew) {
-                    val newSmsKeyString = smsKeyManager.convertToKeyValuePairs(result.value)
-                    smsKeyManager.storeSmsKey(newSmsKeyString)
-                } else {
-                    smsKeyManager.updateSmsKey(result.value)
-                }
-                if (storeResult) {
-                    showToast("Key update was successful")
-                } else {
-                    showToast("Error: Key update was unsuccessful")
-                }
+                smsKeyManager.storeSmsKey(result.value)
+                showToast("Key update was successful")
             }
             else -> showToast("Network Error: Key update unsuccessful")
         }

@@ -91,8 +91,8 @@ class SmsStateReporter @Inject constructor(
             state.postValue(SmsTransmissionStates.EXCEPTION)
             stateToCollect.postValue(SmsTransmissionStates.EXCEPTION)
         } else {
-            val secretKey = smsKeyManager.retrieveSmsKey()
-            SMSFormatter.decodeMsg(msg, secretKey)
+            val smsKey = smsKeyManager.retrieveSmsKey()!!
+            SMSFormatter.decodeMsg(msg, smsKey.key)
                 .let {
                     decryptedMsg = it
                     decryptedMsgLiveData.postValue(it)

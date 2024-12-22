@@ -28,7 +28,6 @@ class SMSSender @Inject constructor(
     private val smsStateReporter: SmsStateReporter,
 ) {
     private var smsRelayQueue = ArrayDeque<String>()
-    private var smsSecretKey = smsKeyManager.retrieveSmsKey()
         ?: // TODO: handle the case when the secret key is not available
         error("Encryption failed - no valid smsSecretKey is available")
     // TODO: Remove this once State LiveData reporting is added
@@ -42,7 +41,8 @@ class SMSSender @Inject constructor(
     var data = ""
     fun queueRelayContent(unencryptedData: String): Boolean {
         data = String(unencryptedData.toCharArray())
-        val encryptedData = encodeMsg(unencryptedData, smsSecretKey)
+        val smsKey = smsKeyManager.retrieveSmsKey() ?: return false
+        val encryptedData = encodeMsg(unencryptedData, smsKey.key)
         val smsPacketList = formatSMS(encryptedData, RelayRequestCounter.getCount())
         RelayRequestCounter.incrementCount(appContext)
         smsStateReporter.setSmsSender(this)

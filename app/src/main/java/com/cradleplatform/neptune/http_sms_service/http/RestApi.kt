@@ -17,12 +17,12 @@ import com.cradleplatform.neptune.http_sms_service.sms.utils.SMSDataProcessor
 import com.cradleplatform.neptune.manager.AccessTokenPayload
 import com.cradleplatform.neptune.manager.LoginResponse
 import com.cradleplatform.neptune.manager.RefreshTokenResponse
+import com.cradleplatform.neptune.manager.SmsKey
 import com.cradleplatform.neptune.manager.UrlManager
 import com.cradleplatform.neptune.model.Assessment
 import com.cradleplatform.neptune.model.FormClassification
 import com.cradleplatform.neptune.model.FormResponse
 import com.cradleplatform.neptune.model.FormTemplate
-import com.cradleplatform.neptune.model.GestationalAgeMonths
 import com.cradleplatform.neptune.model.GlobalPatient
 import com.cradleplatform.neptune.model.HealthFacility
 import com.cradleplatform.neptune.model.Patient
@@ -31,7 +31,6 @@ import com.cradleplatform.neptune.model.PatientAndReferrals
 import com.cradleplatform.neptune.model.Reading
 import com.cradleplatform.neptune.model.Referral
 import com.cradleplatform.neptune.model.RelayPhoneNumberResponse
-import com.cradleplatform.neptune.model.SmsKeyResponse
 import com.cradleplatform.neptune.model.Statistics
 import com.cradleplatform.neptune.sync.workers.AssessmentSyncField
 import com.cradleplatform.neptune.sync.workers.PatientSyncField
@@ -52,6 +51,7 @@ import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.ExperimentalSerializationApi
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
@@ -62,6 +62,8 @@ import java.net.HttpURLConnection
 import javax.inject.Singleton
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.decodeFromStream
 
 /**
  * Provides type-safe methods for interacting with the CRADLE server API.
@@ -77,6 +79,7 @@ import kotlin.io.encoding.ExperimentalEncodingApi
  * threw an exception when sending the request or handling the response.
  * A timeout is one such cause of an exception for example.
  */
+@OptIn(ExperimentalSerializationApi::class)
 @Singleton
 class RestApi(
     private val context: Context,
@@ -125,9 +128,12 @@ class RestApi(
         setupSmsReceiver()
 
         try {
+            val jsonHeaders = Gson().toJson(headers)
+            Log.i("jsonHeaders", jsonHeaders)
             val json = smsDataProcessor.processRequestDataToJSON(
                 method, url, Gson().toJson(headers), body
             )
+            Log.i("smsDataProcessor", json)
             smsSender.queueRelayContent(json).let { enqueueSuccessful ->
                 if (enqueueSuccessful) {
                     smsSender.sendSmsMessage(false)
@@ -206,7 +212,7 @@ class RestApi(
             headers = headers,
             requestBody = buildJsonRequestBody(body),
             inputStreamReader = {
-                JacksonMapper.createReader<LoginResponse>().readValue(it)
+                Json.decodeFromStream<LoginResponse>(it)
             })
     }
 
@@ -1194,15 +1200,8 @@ class RestApi(
     ): NetworkResult<PregnancyResponse> = withContext(IO) {
         val jsonObject = JSONObject()
 
-        val units = if (patient.gestationalAge is GestationalAgeMonths) {
-            UNIT_VALUE_MONTHS
-        } else {
-            UNIT_VALUE_WEEKS
-        }
-
         val startDate = patient.gestationalAge?.timestamp.toString()
 
-        jsonObject.put("gestationalAgeUnit", units)
         jsonObject.put("pregnancyStartDate", startDate)
 
         val mediaType = "application/json; charset=utf-8".toMediaType()
@@ -1329,7 +1328,7 @@ class RestApi(
             }
         }
 
-    suspend fun getCurrentSmsKey(userID: Int): NetworkResult<SmsKeyResponse> = withContext(IO) {
+    suspend fun getCurrentSmsKey(userID: Int): NetworkResult<SmsKey> = withContext(IO) {
         val method = Http.Method.GET
         val url = urlManager.smsKey(userID)
         val headers = makeAuthorizationHeader()
@@ -1337,10 +1336,10 @@ class RestApi(
         http.makeRequest(method = method,
             url = url,
             headers = headers,
-            inputStreamReader = { JacksonMapper.readerSmsKey.readValue(it) })
+            inputStreamReader = { Json.decodeFromStream<SmsKey>(it) })
     }
 
-    suspend fun refreshSmsKey(userID: Int): NetworkResult<SmsKeyResponse> = withContext(IO) {
+    suspend fun refreshSmsKey(userID: Int): NetworkResult<SmsKey> = withContext(IO) {
         val jsonObject = JSONObject()
 
         val mediaType = "application/json; charset=utf-8".toMediaType()
@@ -1355,10 +1354,10 @@ class RestApi(
             url = url,
             headers = headers,
             requestBody = requestBody,
-            inputStreamReader = { JacksonMapper.readerSmsKey.readValue(it) })
+            inputStreamReader = { Json.decodeFromStream<SmsKey>(it) })
     }
 
-    suspend fun getNewSmsKey(userID: Int): NetworkResult<SmsKeyResponse> = withContext(IO) {
+    suspend fun getNewSmsKey(userID: Int): NetworkResult<SmsKey> = withContext(IO) {
         val jsonObject = JSONObject()
 
         val mediaType = "application/json; charset=utf-8".toMediaType()
@@ -1373,7 +1372,7 @@ class RestApi(
             url = url,
             headers = headers,
             requestBody = requestBody,
-            inputStreamReader = { JacksonMapper.readerSmsKey.readValue(it) })
+            inputStreamReader = { Json.decodeFromStream<SmsKey>(it) })
     }
 
     /**
