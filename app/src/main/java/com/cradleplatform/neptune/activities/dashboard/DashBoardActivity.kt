@@ -17,7 +17,6 @@ import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
 import com.cradleplatform.neptune.manager.SmsKeyManager
-import com.cradleplatform.neptune.model.SmsKeyResponse
 import com.cradleplatform.neptune.sync.SyncReminderHelper
 import com.cradleplatform.neptune.sync.views.SyncActivity
 import com.cradleplatform.neptune.utilities.CustomToast
@@ -114,8 +113,16 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
             if (smsKeyStatus == SmsKeyManager.KeyState.NOTFOUND) {
                 // User doesn't have a valid sms key
                 coroutineScope.launch {
-                    val response = restApi.getNewSmsKey(userId)
-                    handleSmsKeyUpdateResult(response)
+                    when (val response = restApi.getNewSmsKey(userId)) {
+                        is NetworkResult.Success -> {
+                            val smsKey = response.value
+                            if (smsKey != null) {
+                                smsKeyManager.storeSmsKey(smsKey)
+                                showToast("Key update was successful")
+                            }
+                        }
+                        else -> showToast("Network Error: Key update unsuccessful")
+                    }
                 }
             }
             if (smsKeyStatus == SmsKeyManager.KeyState.EXPIRED) {

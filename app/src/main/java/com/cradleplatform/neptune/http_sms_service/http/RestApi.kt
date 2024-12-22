@@ -92,6 +92,9 @@ class RestApi(
 ) {
     private lateinit var smsReceiver: SMSReceiver
 
+    @OptIn(ExperimentalEncodingApi::class)
+    private val base64 = Base64.withPadding(Base64.PaddingOption.PRESENT_OPTIONAL)
+
     companion object {
         private const val TAG = "RestApi"
         private const val UNIT_VALUE_WEEKS = "WEEKS"
@@ -1357,7 +1360,7 @@ class RestApi(
             inputStreamReader = { Json.decodeFromStream<SmsKey>(it) })
     }
 
-    suspend fun getNewSmsKey(userID: Int): NetworkResult<SmsKey> = withContext(IO) {
+    suspend fun getNewSmsKey(userID: Int): NetworkResult<SmsKey?> = withContext(IO) {
         val jsonObject = JSONObject()
 
         val mediaType = "application/json; charset=utf-8".toMediaType()
@@ -1372,7 +1375,13 @@ class RestApi(
             url = url,
             headers = headers,
             requestBody = requestBody,
-            inputStreamReader = { Json.decodeFromStream<SmsKey>(it) })
+            inputStreamReader = {
+                try {
+                    Json.decodeFromStream<SmsKey>(it)
+                } catch (e: Exception) {
+                    null
+                }
+            })
     }
 
     /**
@@ -2246,7 +2255,7 @@ class RestApi(
         val sections = jwt.split(".")
         return try {
             val charset = charset("UTF-8")
-            val payload = String(Base64.UrlSafe.decode(sections[1].toByteArray(charset)), charset)
+            val payload = String(base64.decode(sections[1].toByteArray(charset)), charset)
             val reader = JacksonMapper.createReader<AccessTokenPayload>()
 
             val decodedPayload = reader.readValue<AccessTokenPayload>(payload)
@@ -2267,8 +2276,9 @@ class RestApi(
             sharedPreferences.getString(UserViewModel.ACCESS_TOKEN_KEY, null) ?: return null
         // Decode JWT.
         val payload = decodeJwtPayload(accessToken)
-        val currentDateTime = java.util.Date()
+
         // Get current timestamp in seconds.
+        val currentDateTime = java.util.Date()
         val currentTimestamp: Long = currentDateTime.time / 1000
 
         // If expiration is more than 5 minutes from now, don't do anything.
