@@ -66,7 +66,10 @@ internal class RestApiTest {
                                         "isLoggedIn": true,
                                         "id": 3,
                                         "smsKey": {
-                                            "key": "SGVsbG8sIFdvcmxkIQ=="
+                                            "key": "SGVsbG8sIFdvcmxkIQ==",
+                                            "expiryDate": "2200-01-01 00:00:00",
+                                            "message": "NORMAL",
+                                            "staleDate": "2100-01-01 00:00:00"
                                         }
                                     },
                                     "accessToken": "test-token",
