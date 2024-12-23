@@ -4,8 +4,8 @@ import android.util.Log
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
 import com.cradleplatform.neptune.manager.LoginResponse
-import com.cradleplatform.neptune.manager.LoginResponseSmsKey
 import com.cradleplatform.neptune.manager.LoginResponseUser
+import com.cradleplatform.neptune.manager.SmsKey
 import com.cradleplatform.neptune.testutils.MockWebServerUtils
 import io.mockk.every
 import io.mockk.mockkStatic
@@ -142,8 +142,11 @@ internal class RestApiTest {
             healthFacilityName = "H0000",
             id = 3,
             phoneNumbers = listOf<String>("+1-666-666-6666", "+1-777-777-7777", "+1-555-555-5555"),
-            smsKey = LoginResponseSmsKey(
-                key = "SGVsbG8sIFdvcmxkIQ=="
+            smsKey = SmsKey(
+                key = "SGVsbG8sIFdvcmxkIQ==",
+                expiryDate = "2200-01-01 00:00:00",
+                message = "NORMAL",
+                staleDate = "2100-01-01 00:00:00"
             )
         )
         val expectedLoginResponseForVht = LoginResponse(
