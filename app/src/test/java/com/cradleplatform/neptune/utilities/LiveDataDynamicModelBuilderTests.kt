@@ -121,6 +121,7 @@ class LiveDataDynamicModelBuilderTests {
         val personBuilder = with(LiveDataDynamicModelBuilder()) {
             set(Person::name, "Jack")
             set(Person::age, 25)
+            set(Person::email, null)
         }
 
         assertEquals("Jack", personBuilder.get(Person::name).value)
@@ -135,7 +136,7 @@ class LiveDataDynamicModelBuilderTests {
         assertEquals("some@email.com", emailLiveData.value)
         assertEquals("some@email.com", personBuilder.get(Person::email).value)
 
-        personBuilder.get(Person::email).value = "some_other@email.com"
+        personBuilder.get<String?>(Person::email).value = "some_other@email.com"
         assertEquals("some_other@email.com", personBuilder.get(Person::email).value)
         assertEquals("some_other@email.com", emailLiveData.value)
 
@@ -168,7 +169,7 @@ class LiveDataDynamicModelBuilderTests {
         assertEquals("some@email.com", emailLiveData.value)
         assertEquals("some@email.com", personBuilder.get(Person::email).value)
 
-        personBuilder.get(Person::email).value = "some_other@email.com"
+        personBuilder.get<String?>(Person::email).value = "some_other@email.com"
         assertEquals("some_other@email.com", personBuilder.get(Person::email).value)
         assertEquals("some_other@email.com", emailLiveData.value)
 
