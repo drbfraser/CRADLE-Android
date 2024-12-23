@@ -130,12 +130,9 @@ class RestApi(
         setupSmsReceiver()
 
         try {
-            val jsonHeaders = Gson().toJson(headers)
-            Log.i("jsonHeaders", jsonHeaders)
             val json = smsDataProcessor.processRequestDataToJSON(
                 method, url, Gson().toJson(headers), body
             )
-            Log.i("smsDataProcessor", json)
             smsSender.queueRelayContent(json).let { enqueueSuccessful ->
                 if (enqueueSuccessful) {
                     smsSender.sendSmsMessage(false)
