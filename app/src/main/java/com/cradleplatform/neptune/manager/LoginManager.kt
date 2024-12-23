@@ -190,9 +190,3 @@ data class LoginResponseUser(
 data class RefreshTokenResponse(
     val accessToken: String
 )
-
-@JsonIgnoreProperties(ignoreUnknown = true)
-data class AccessTokenPayload(
-    @JsonProperty
-    val exp: Long
-)

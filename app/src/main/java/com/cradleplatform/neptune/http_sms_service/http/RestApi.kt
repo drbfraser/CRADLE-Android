@@ -14,7 +14,6 @@ import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
 import com.cradleplatform.neptune.http_sms_service.sms.SmsStateReporter
 import com.cradleplatform.neptune.http_sms_service.sms.SmsTransmissionStates
 import com.cradleplatform.neptune.http_sms_service.sms.utils.SMSDataProcessor
-import com.cradleplatform.neptune.manager.AccessTokenPayload
 import com.cradleplatform.neptune.manager.LoginResponse
 import com.cradleplatform.neptune.manager.RefreshTokenResponse
 import com.cradleplatform.neptune.manager.SmsKey
@@ -2248,18 +2247,16 @@ class RestApi(
     }
 
     /**
-     * Decodes the payload of a JWT.
+     * Decodes the payload of the access token JWT and extracts the expiry claim (exp).
      */
     @OptIn(ExperimentalEncodingApi::class)
-    private fun decodeJwtPayload(jwt: String): AccessTokenPayload {
-        val sections = jwt.split(".")
+    private fun decodeAccessTokenExpiry(accessToken: String): Long {
+        val sections = accessToken.split(".")
         return try {
             val charset = charset("UTF-8")
             val payload = String(base64.decode(sections[1].toByteArray(charset)), charset)
-            val reader = JacksonMapper.createReader<AccessTokenPayload>()
-
-            val decodedPayload = reader.readValue<AccessTokenPayload>(payload)
-            decodedPayload
+            val payloadJson = JSONObject(payload)
+            payloadJson.getLong("exp")
         } catch (e: Exception) {
             Log.e(TAG, "Error parsing JWT: $e")
             throw e
@@ -2274,15 +2271,15 @@ class RestApi(
     private suspend fun verifyAccessToken(): String? {
         val accessToken =
             sharedPreferences.getString(UserViewModel.ACCESS_TOKEN_KEY, null) ?: return null
-        // Decode JWT.
-        val payload = decodeJwtPayload(accessToken)
+        // Get expiry claim from access token JWT.
+        val exp = decodeAccessTokenExpiry(accessToken)
 
         // Get current timestamp in seconds.
         val currentDateTime = java.util.Date()
         val currentTimestamp: Long = currentDateTime.time / 1000
 
         // If expiration is more than 5 minutes from now, don't do anything.
-        if (payload.exp > currentTimestamp - 300) return accessToken
+        if (exp > currentTimestamp - 300) return accessToken
 
         // If access token is expired, make a request to the refresh_token endpoint to get a new one
         Log.e(TAG, "ACCESS TOKEN IS EXPIRED!")
