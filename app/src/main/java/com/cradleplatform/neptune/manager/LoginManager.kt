@@ -11,13 +11,12 @@ import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
 import com.cradleplatform.neptune.sync.PeriodicSyncer
 import com.cradleplatform.neptune.utilities.SharedPreferencesMigration
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import com.fasterxml.jackson.annotation.JsonProperty
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.Serializable
 import java.net.HttpURLConnection.HTTP_OK
 import javax.inject.Inject
 
@@ -116,7 +115,7 @@ class LoginManager @Inject constructor(
                     // Extract and securely store the smsKey
                     val smsKey = loginResponse.user.smsKey
                     // TODO: Modify such that what ever is stored is just
-                    smsKeyManager.storeSmsKey(smsKey.key)
+                    smsKeyManager.storeSmsKey(smsKey)
                     // TODO: todo check result
                 }
 
@@ -166,50 +165,26 @@ class LoginManager @Inject constructor(
 /**
  * Models the response sent back by the server for /api/user/auth.
  * Not used outside of LoginManager.
- * TODO: Store refresh token and use it (refer to issue #52)
  */
-@JsonIgnoreProperties(ignoreUnknown = true)
+@Serializable
 data class LoginResponse(
-    @JsonProperty
     val accessToken: String,
-    @JsonProperty
     val user: LoginResponseUser
 )
 
-@JsonIgnoreProperties(ignoreUnknown = true)
+@Serializable
 data class LoginResponseUser(
-    @JsonProperty
     val id: Int,
-    @JsonProperty
     val username: String,
-    @JsonProperty
     val email: String,
-    @JsonProperty
     val role: String,
-    @JsonProperty
     val name: String?,
-    @JsonProperty
     val healthFacilityName: String?,
-    @JsonProperty
     val phoneNumbers: List<String>,
-    @JsonProperty
-    val smsKey: LoginResponseSmsKey
+    val smsKey: SmsKey
 )
 
-@JsonIgnoreProperties(ignoreUnknown = true)
-data class LoginResponseSmsKey(
-    @JsonProperty
-    val key: String
-)
-
-@JsonIgnoreProperties(ignoreUnknown = true)
+@Serializable
 data class RefreshTokenResponse(
-    @JsonProperty
     val accessToken: String
-)
-
-@JsonIgnoreProperties(ignoreUnknown = true)
-data class AccessTokenPayload(
-    @JsonProperty
-    val exp: Long
 )

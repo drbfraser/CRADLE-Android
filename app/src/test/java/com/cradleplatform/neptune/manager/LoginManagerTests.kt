@@ -109,8 +109,11 @@ internal class LoginManagerTests {
                                             healthFacilityName = TEST_USER_FACILITY_NAME,
                                             phoneNumbers = TEST_USER_PHONE_NUMBERS,
                                             username = TEST_USERNAME,
-                                            smsKey = LoginResponseSmsKey(
-                                                key = TEST_SMS_KEY
+                                            smsKey = SmsKey(
+                                                key = TEST_SMS_KEY,
+                                                expiryDate = "2200-01-01 00:00:00",
+                                                message = "NORMAL",
+                                                staleDate = "2100-01-01 00:00:00"
                                             )
                                         )
                                     )

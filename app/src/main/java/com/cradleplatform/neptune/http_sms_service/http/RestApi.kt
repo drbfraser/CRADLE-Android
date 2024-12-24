@@ -14,15 +14,14 @@ import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
 import com.cradleplatform.neptune.http_sms_service.sms.SmsStateReporter
 import com.cradleplatform.neptune.http_sms_service.sms.SmsTransmissionStates
 import com.cradleplatform.neptune.http_sms_service.sms.utils.SMSDataProcessor
-import com.cradleplatform.neptune.manager.AccessTokenPayload
 import com.cradleplatform.neptune.manager.LoginResponse
 import com.cradleplatform.neptune.manager.RefreshTokenResponse
+import com.cradleplatform.neptune.manager.SmsKey
 import com.cradleplatform.neptune.manager.UrlManager
 import com.cradleplatform.neptune.model.Assessment
 import com.cradleplatform.neptune.model.FormClassification
 import com.cradleplatform.neptune.model.FormResponse
 import com.cradleplatform.neptune.model.FormTemplate
-import com.cradleplatform.neptune.model.GestationalAgeMonths
 import com.cradleplatform.neptune.model.GlobalPatient
 import com.cradleplatform.neptune.model.HealthFacility
 import com.cradleplatform.neptune.model.Patient
@@ -31,7 +30,6 @@ import com.cradleplatform.neptune.model.PatientAndReferrals
 import com.cradleplatform.neptune.model.Reading
 import com.cradleplatform.neptune.model.Referral
 import com.cradleplatform.neptune.model.RelayPhoneNumberResponse
-import com.cradleplatform.neptune.model.SmsKeyResponse
 import com.cradleplatform.neptune.model.Statistics
 import com.cradleplatform.neptune.sync.workers.AssessmentSyncField
 import com.cradleplatform.neptune.sync.workers.PatientSyncField
@@ -52,6 +50,7 @@ import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.ExperimentalSerializationApi
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
@@ -62,6 +61,8 @@ import java.net.HttpURLConnection
 import javax.inject.Singleton
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.decodeFromStream
 
 /**
  * Provides type-safe methods for interacting with the CRADLE server API.
@@ -77,6 +78,7 @@ import kotlin.io.encoding.ExperimentalEncodingApi
  * threw an exception when sending the request or handling the response.
  * A timeout is one such cause of an exception for example.
  */
+@OptIn(ExperimentalSerializationApi::class)
 @Singleton
 class RestApi(
     private val context: Context,
@@ -88,6 +90,9 @@ class RestApi(
     private val smsDataProcessor: SMSDataProcessor
 ) {
     private lateinit var smsReceiver: SMSReceiver
+
+    @OptIn(ExperimentalEncodingApi::class)
+    private val base64 = Base64.withPadding(Base64.PaddingOption.PRESENT_OPTIONAL)
 
     companion object {
         private const val TAG = "RestApi"
@@ -206,7 +211,7 @@ class RestApi(
             headers = headers,
             requestBody = buildJsonRequestBody(body),
             inputStreamReader = {
-                JacksonMapper.createReader<LoginResponse>().readValue(it)
+                Json { ignoreUnknownKeys = true }.decodeFromStream<LoginResponse>(it)
             })
     }
 
@@ -1194,15 +1199,8 @@ class RestApi(
     ): NetworkResult<PregnancyResponse> = withContext(IO) {
         val jsonObject = JSONObject()
 
-        val units = if (patient.gestationalAge is GestationalAgeMonths) {
-            UNIT_VALUE_MONTHS
-        } else {
-            UNIT_VALUE_WEEKS
-        }
-
         val startDate = patient.gestationalAge?.timestamp.toString()
 
-        jsonObject.put("gestationalAgeUnit", units)
         jsonObject.put("pregnancyStartDate", startDate)
 
         val mediaType = "application/json; charset=utf-8".toMediaType()
@@ -1329,7 +1327,7 @@ class RestApi(
             }
         }
 
-    suspend fun getCurrentSmsKey(userID: Int): NetworkResult<SmsKeyResponse> = withContext(IO) {
+    suspend fun getCurrentSmsKey(userID: Int): NetworkResult<SmsKey> = withContext(IO) {
         val method = Http.Method.GET
         val url = urlManager.smsKey(userID)
         val headers = makeAuthorizationHeader()
@@ -1337,10 +1335,10 @@ class RestApi(
         http.makeRequest(method = method,
             url = url,
             headers = headers,
-            inputStreamReader = { JacksonMapper.readerSmsKey.readValue(it) })
+            inputStreamReader = { Json.decodeFromStream<SmsKey>(it) })
     }
 
-    suspend fun refreshSmsKey(userID: Int): NetworkResult<SmsKeyResponse> = withContext(IO) {
+    suspend fun refreshSmsKey(userID: Int): NetworkResult<SmsKey> = withContext(IO) {
         val jsonObject = JSONObject()
 
         val mediaType = "application/json; charset=utf-8".toMediaType()
@@ -1355,10 +1353,10 @@ class RestApi(
             url = url,
             headers = headers,
             requestBody = requestBody,
-            inputStreamReader = { JacksonMapper.readerSmsKey.readValue(it) })
+            inputStreamReader = { Json.decodeFromStream<SmsKey>(it) })
     }
 
-    suspend fun getNewSmsKey(userID: Int): NetworkResult<SmsKeyResponse> = withContext(IO) {
+    suspend fun getNewSmsKey(userID: Int): NetworkResult<SmsKey?> = withContext(IO) {
         val jsonObject = JSONObject()
 
         val mediaType = "application/json; charset=utf-8".toMediaType()
@@ -1373,7 +1371,13 @@ class RestApi(
             url = url,
             headers = headers,
             requestBody = requestBody,
-            inputStreamReader = { JacksonMapper.readerSmsKey.readValue(it) })
+            inputStreamReader = {
+                try {
+                    Json.decodeFromStream<SmsKey>(it)
+                } catch (e: Exception) {
+                    null
+                }
+            })
     }
 
     /**
@@ -2240,18 +2244,16 @@ class RestApi(
     }
 
     /**
-     * Decodes the payload of a JWT.
+     * Decodes the payload of the access token JWT and extracts the expiry claim (exp).
      */
     @OptIn(ExperimentalEncodingApi::class)
-    private fun decodeJwtPayload(jwt: String): AccessTokenPayload {
-        val sections = jwt.split(".")
+    private fun decodeAccessTokenExpiry(accessToken: String): Long {
+        val sections = accessToken.split(".")
         return try {
             val charset = charset("UTF-8")
-            val payload = String(Base64.UrlSafe.decode(sections[1].toByteArray(charset)), charset)
-            val reader = JacksonMapper.createReader<AccessTokenPayload>()
-
-            val decodedPayload = reader.readValue<AccessTokenPayload>(payload)
-            decodedPayload
+            val payload = String(base64.decode(sections[1].toByteArray(charset)), charset)
+            val payloadJson = JSONObject(payload)
+            payloadJson.getLong("exp")
         } catch (e: Exception) {
             Log.e(TAG, "Error parsing JWT: $e")
             throw e
@@ -2266,14 +2268,15 @@ class RestApi(
     private suspend fun verifyAccessToken(): String? {
         val accessToken =
             sharedPreferences.getString(UserViewModel.ACCESS_TOKEN_KEY, null) ?: return null
-        // Decode JWT.
-        val payload = decodeJwtPayload(accessToken)
-        val currentDateTime = java.util.Date()
+        // Get expiry claim from access token JWT.
+        val exp = decodeAccessTokenExpiry(accessToken)
+
         // Get current timestamp in seconds.
+        val currentDateTime = java.util.Date()
         val currentTimestamp: Long = currentDateTime.time / 1000
 
         // If expiration is more than 5 minutes from now, don't do anything.
-        if (payload.exp > currentTimestamp - 300) return accessToken
+        if (exp > currentTimestamp - 300) return accessToken
 
         // If access token is expired, make a request to the refresh_token endpoint to get a new one
         Log.e(TAG, "ACCESS TOKEN IS EXPIRED!")

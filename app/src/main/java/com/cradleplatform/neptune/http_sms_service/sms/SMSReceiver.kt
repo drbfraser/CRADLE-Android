@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.telephony.SmsMessage
 import android.util.Log
-import com.cradleplatform.neptune.utilities.SMSFormatter
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 

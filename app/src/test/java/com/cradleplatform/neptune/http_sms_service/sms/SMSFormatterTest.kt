@@ -1,18 +1,13 @@
 package com.cradleplatform.neptune.http_sms_service.sms
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import java.util.Base64
-import com.cradleplatform.neptune.model.CommonPatientReferralJsons
 import com.cradleplatform.neptune.model.CommonProcessedHttpRequest
 import com.cradleplatform.neptune.utilities.AESEncryptor
 import com.cradleplatform.neptune.utilities.GzipCompressor
-import com.cradleplatform.neptune.utilities.SMSFormatter
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions
 import io.mockk.every
 import io.mockk.mockkObject
-import io.mockk.verify
 import org.json.JSONObject
 
 internal class SMSFormatterTest {

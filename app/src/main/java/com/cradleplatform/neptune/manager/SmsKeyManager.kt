@@ -4,8 +4,6 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
-import com.cradleplatform.neptune.model.SmsKeyResponse
-import com.cradleplatform.neptune.utilities.jackson.JacksonMapper
 import com.cradleplatform.neptune.viewmodel.UserViewModel.Companion.SMS_SECRET_KEY
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.text.SimpleDateFormat
@@ -14,7 +12,9 @@ import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.reflect.KProperty1
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.encodeToString
 
 @Singleton
 class SmsKeyManager @Inject constructor(@ApplicationContext private val context: Context) {
@@ -46,33 +46,15 @@ class SmsKeyManager @Inject constructor(@ApplicationContext private val context:
         )
     }
 
-    fun storeSmsKey(secretKey: String): Boolean {
-        encryptedSharedPreferences.edit().putString(SMS_SECRET_KEY, secretKey).apply()
+    fun storeSmsKey(smsKey: SmsKey): Boolean {
+        val smsKeyJson = Json.encodeToString(smsKey)
+        encryptedSharedPreferences.edit().putString(SMS_SECRET_KEY, smsKeyJson).apply()
         return true
     }
 
-    fun updateSmsKey(updatedSecretKey: SmsKeyResponse): Boolean {
-        // parse the JSON string using Jackson
-        val objectMapper = JacksonMapper.mapper
-        return try {
-            val smsKeyPreviousData: SmsKeyResponse = objectMapper.readValue(
-                retrieveSmsKey(),
-                SmsKeyResponse::class.java
-            )
-            smsKeyPreviousData.smsKey = updatedSecretKey.smsKey
-            smsKeyPreviousData.expiryDate = updatedSecretKey.expiryDate
-            smsKeyPreviousData.staleDate = updatedSecretKey.staleDate
-            smsKeyPreviousData.message = updatedSecretKey.message
-            val updatedSmsKeyString = convertToKeyValuePairs(smsKeyPreviousData)
-            storeSmsKey(updatedSmsKeyString)
-            true
-        } catch (e: Exception) {
-            false
-        }
-    }
-
-    fun retrieveSmsKey(): String {
-        return encryptedSharedPreferences.getString(SMS_SECRET_KEY, null) ?: "NOTFOUND"
+    fun retrieveSmsKey(): SmsKey? {
+        val smsKeyJson: String = encryptedSharedPreferences.getString(SMS_SECRET_KEY, null) ?: return null
+        return Json.decodeFromString<SmsKey>(smsKeyJson)
     }
 
     // Used for when the user logs out
@@ -80,15 +62,11 @@ class SmsKeyManager @Inject constructor(@ApplicationContext private val context:
         encryptedSharedPreferences.edit().remove(SMS_SECRET_KEY).apply()
     }
 
-    fun validateSmsKey(smsKey: String): KeyState {
-        if (smsKey == "NOTFOUND") {
-            return KeyState.NOTFOUND
-        }
+    fun validateSmsKey(): KeyState {
         // parse the JSON string using Jackson
-        val objectMapper = JacksonMapper.mapper
         return try {
-            val smsKeyData: SmsKeyResponse = objectMapper.readValue(smsKey, SmsKeyResponse::class.java)
-            when (smsKeyData.message) {
+            val smsKey: SmsKey = retrieveSmsKey()!!
+            when (smsKey.message) {
                 "EXPIRED" -> {
                     KeyState.EXPIRED
                 }
@@ -107,10 +85,9 @@ class SmsKeyManager @Inject constructor(@ApplicationContext private val context:
         }
     }
 
-    fun getDaysUntilExpiry(smsKey: String): Int {
-        val objectMapper = JacksonMapper.mapper
-        val smsKeyLoginData: SmsKeyResponse = objectMapper.readValue(smsKey, SmsKeyResponse::class.java)
-        val targetDate = smsKeyLoginData.expiryDate
+    fun getDaysUntilExpiry(): Int {
+        val smsKey = retrieveSmsKey() ?: return -1
+        val targetDate = smsKey.expiryDate
 
         val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
         val currentDate = Calendar.getInstance().time
@@ -121,19 +98,6 @@ class SmsKeyManager @Inject constructor(@ApplicationContext private val context:
         val daysUntilTarget = diffInMillis / daysInMillis
 
         return daysUntilTarget.toInt()
-    }
-
-    fun convertToKeyValuePairs(obj: Any): String {
-        val keyValuePairs = mutableListOf<String>()
-        val properties = obj::class.members.filterIsInstance<KProperty1<Any, *>>()
-
-        for (property in properties) {
-            val key = property.name
-            val value = property.get(obj)
-            keyValuePairs.add("\"$key\": \"$value\"")
-        }
-
-        return "{${keyValuePairs.joinToString(", ")}}"
     }
 
     // TODO: not used
@@ -152,3 +116,11 @@ class SmsKeyManager @Inject constructor(@ApplicationContext private val context:
         return false
     }
 }
+
+@Serializable
+data class SmsKey(
+    val key: String,
+    val message: String,
+    val expiryDate: String,
+    val staleDate: String
+)

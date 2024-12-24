@@ -3,7 +3,6 @@ package com.cradleplatform.neptune.http_sms_service.sms
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import com.cradleplatform.neptune.manager.SmsKeyManager
-import com.cradleplatform.neptune.utilities.SMSFormatter
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -91,8 +90,8 @@ class SmsStateReporter @Inject constructor(
             state.postValue(SmsTransmissionStates.EXCEPTION)
             stateToCollect.postValue(SmsTransmissionStates.EXCEPTION)
         } else {
-            val secretKey = smsKeyManager.retrieveSmsKey()
-            SMSFormatter.decodeMsg(msg, secretKey)
+            val smsKey = smsKeyManager.retrieveSmsKey()!!
+            SMSFormatter.decodeMsg(msg, smsKey.key)
                 .let {
                     decryptedMsg = it
                     decryptedMsgLiveData.postValue(it)

@@ -131,8 +131,7 @@ class ReferralDialogFragment : DialogFragment() {
                 // Retrieve and validate the locally stored smsKey - allow user to send SMS if the smsKey is valid
                 // TODO: Investigate and document why smsKeyManager is used here but not used
                 //  anywhere else where SMS functionality is enabled
-                val currentSmsKey = smsKeyManager.retrieveSmsKey()
-                val keyStatus: SmsKeyManager.KeyState = smsKeyManager.validateSmsKey(currentSmsKey)
+                val keyStatus: SmsKeyManager.KeyState = smsKeyManager.validateSmsKey()
                 if (keyStatus == SmsKeyManager.KeyState.NORMAL || keyStatus == SmsKeyManager.KeyState.WARN) {
                     // SmsKey is normal or stale ==> Send SMS
                     referralDialogViewModel.isSending.value = true

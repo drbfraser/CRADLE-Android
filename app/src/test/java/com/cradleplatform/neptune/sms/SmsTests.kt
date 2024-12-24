@@ -1,20 +1,16 @@
 package com.cradleplatform.neptune.sms
 
 import android.util.Base64
-import com.cradleplatform.neptune.http_sms_service.http.Http
 import com.cradleplatform.neptune.model.CommonPatientReferralJsons
 import com.cradleplatform.neptune.utilities.AESEncryptor
 import com.cradleplatform.neptune.utilities.GzipCompressor
-import com.cradleplatform.neptune.utilities.RelayAction
-import com.cradleplatform.neptune.utilities.SMSFormatter
-import io.mockk.every
-import io.mockk.mockkObject
+import com.cradleplatform.neptune.http_sms_service.sms.SMSFormatter
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions
 
 class SmsTests {
     @Test
-    fun `test_compression_encryption_encoding_decoding_decryption_decompression`() {
+    fun test_compression_encryption_encoding_decoding_decryption_decompression() {
         val originalMsg = CommonPatientReferralJsons.patientWithStandaloneReferral.first
         val originalSize = originalMsg.toByteArray(Charsets.UTF_8).size
         val stringKey = AESEncryptor.generateRandomKey("test@test.com")
@@ -47,7 +43,7 @@ class SmsTests {
     }
 
     @Test
-    fun `test_sms_packet_formatting_size`() {
+    fun test_sms_packet_formatting_size() {
         val originalMsg = CommonPatientReferralJsons.patientWithStandaloneReferral.first
         val stringKey = AESEncryptor.generateRandomKey("test@test.com")
         val secretKey = AESEncryptor.getSecretKeyFromString(stringKey)
@@ -66,11 +62,11 @@ class SmsTests {
     }
 
     @Test
-    fun `test_sms_packet_formatting_decoding`() {
+    fun test_sms_packet_formatting_decoding() {
         val originalMsg = CommonPatientReferralJsons.patientWithStandaloneReferral.first
         val requestCounter = 0L
-        val secretKey = "{\"sms_key\":\"9f86d081884c7d659a2feaa0c55ad015a3bf4f1" +
-            "b2b0b822cd15d6c15b0f00a08\"}"
+        val secretKey = "9f86d081884c7d659a2feaa0c55ad015a3bf4f1" +
+            "b2b0b822cd15d6c15b0f00a08"
 
         val encodedMsg = SMSFormatter.encodeMsg(
             originalMsg,
