@@ -18,6 +18,15 @@ open class Settings constructor(
     val context: Context
 ) {
 
+    init {
+        /* Set default debug settings. */
+        if (BuildConfig.DEBUG) {
+            sharedPreferences.edit().putBoolean(context.getString(R.string.key_server_use_https), false).apply()
+            sharedPreferences.edit().putString(context.getString(R.string.key_server_hostname), "10.0.2.2").apply()
+            sharedPreferences.edit().putString(context.getString(R.string.key_server_port), "5000").apply()
+        }
+    }
+
     /* Network */
 
     /**
