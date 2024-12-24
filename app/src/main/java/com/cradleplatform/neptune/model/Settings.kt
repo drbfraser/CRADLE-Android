@@ -46,7 +46,7 @@ open class Settings constructor(
         get() = if (BuildConfig.DEBUG) {
             sharedPreferences.getBoolean(
                 context.getString(R.string.key_server_use_https),
-                true
+                false
             )
         } else {
             true
