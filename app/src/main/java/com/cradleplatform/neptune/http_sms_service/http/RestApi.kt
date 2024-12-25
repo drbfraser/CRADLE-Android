@@ -104,6 +104,8 @@ class RestApi(
         val phoneNumber = sharedPreferences.getString(UserViewModel.RELAY_PHONE_NUMBER, null)
             ?: error("Invalid phone number")
 
+        /* TODO: Do we need to instantiate a new one every time? Can we not just
+            register/unregister a single instance? */
         smsReceiver = SMSReceiver(smsSender, phoneNumber, smsStateReporter)
 
         val intentFilter = IntentFilter()
@@ -145,7 +147,7 @@ class RestApi(
                         val response =
                             JacksonMapper.mapper.readValue(smsStateReporter.decryptedMsgLiveData.value,
                                 object : TypeReference<T>() {})
-
+                        Log.i("SMS", response.toString())
                         channel.send(
                             NetworkResult.Success(
                                 response, HttpURLConnection.HTTP_OK
@@ -2274,7 +2276,7 @@ class RestApi(
         val currentDateTime = java.util.Date()
         val currentTimestamp: Long = currentDateTime.time / 1000
 
-        // If expiration is more than 5 minutes from now, don't do anything.
+        // If expiration is more than 3 minutes from now, don't do anything.
         if (exp > currentTimestamp - 300) return accessToken
 
         // If access token is expired, make a request to the refresh_token endpoint to get a new one

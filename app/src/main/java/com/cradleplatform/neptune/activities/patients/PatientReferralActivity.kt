@@ -10,7 +10,6 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingComponent
 import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.lifecycleScope
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.binding.FragmentDataBindingComponent
 import com.cradleplatform.neptune.databinding.ActivityReferralBinding
@@ -22,7 +21,6 @@ import com.cradleplatform.neptune.utilities.CustomToast
 import com.cradleplatform.neptune.utilities.Protocol
 import com.cradleplatform.neptune.viewmodel.patients.PatientReferralViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
@@ -127,43 +125,31 @@ open class PatientReferralActivity : AppCompatActivity() {
         // We need to return and verify the output
         val sendViaHTTP = findViewById<Button>(R.id.send_web_button)
         sendViaHTTP.setOnClickListener {
-            lifecycleScope.launch {
-                //Passing context to viewModel might not be the best idea,
-                // however, it is required as of now to resolve the strings
-                val unusedResult = viewModel.saveReferral(Protocol.HTTP, currPatient)
-                CustomToast.shortToast(
-                    applicationContext,
-                    applicationContext.getString(R.string.referral_submitted)
-                )
-                finish()
-                // do something with the result (check success or failure) / do it elsewhere?
-            }
+            viewModel.saveReferral(Protocol.HTTP, currPatient)
+            CustomToast.shortToast(
+                applicationContext,
+                applicationContext.getString(R.string.referral_submitted)
+            )
+            finish()
+            // do something with the result (check success or failure) / do it elsewhere?
         }
 
         val sendViaSMS = findViewById<Button>(R.id.send_sms_button)
         sendViaSMS.setOnClickListener {
-            lifecycleScope.launch {
                 triedSendingViaSms = true
-                //Passing context to viewModel might not be the best idea,
-                // however, it is required as of now to resolve the strings
-                val unusedResult = viewModel.saveReferral(Protocol.SMS, currPatient)
-                // TODO: Verify that the referral was successful
-                // This code is never executed, as mentioned in the comment on line 125.
-                // TODO: Remove the following code from the UI and move to a more appropriate place
-                // This should not be in the UI and should be moved to a place where the server
-                // response is being parsed
+                viewModel.saveReferral(Protocol.SMS, currPatient)
+
                 Toast.makeText(
                     applicationContext,
                     applicationContext.getString(R.string.sms_sender_send),
                     Toast.LENGTH_SHORT
                 ).show()
-                currPatient.lastServerUpdate = currPatient.lastEdited
-                patientManager.add(currPatient)
+
                 CustomToast.shortToast(
                     applicationContext,
                     applicationContext.getString(R.string.sms_sender_send)
                 )
             }
-        }
     }
+
 }
