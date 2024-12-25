@@ -2,7 +2,6 @@ package com.cradleplatform.neptune.activities.newPatient
 
 import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.content.SharedPreferences
 import android.content.res.Resources
 import android.os.Bundle
@@ -31,7 +30,6 @@ import com.cradleplatform.neptune.activities.dashboard.DashBoardActivity
 import com.cradleplatform.neptune.databinding.ActivityReadingBinding
 import com.cradleplatform.neptune.ext.hideKeyboard
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
-import com.cradleplatform.neptune.http_sms_service.sms.SMSReceiver
 import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
 import com.cradleplatform.neptune.http_sms_service.sms.SmsStateReporter
 import com.cradleplatform.neptune.manager.SmsKeyManager
@@ -39,7 +37,6 @@ import com.cradleplatform.neptune.fragments.patients.PatientIdConflictDialogFrag
 import com.cradleplatform.neptune.fragments.newPatient.ReferralDialogFragment
 import com.cradleplatform.neptune.viewmodel.patients.PatientReadingViewModel
 import com.cradleplatform.neptune.viewmodel.patients.ReadingFlowError
-import com.cradleplatform.neptune.viewmodel.UserViewModel
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -72,8 +69,6 @@ class ReadingActivity : AppCompatActivity(), ReferralDialogFragment.OnReadingSen
     @Inject
     lateinit var smsStateReporter: SmsStateReporter
 
-    private lateinit var smsReceiver: SMSReceiver
-
     /**
      * Called only from tests. Creates and returns a new [CountingIdlingResource].
      * This is null if and only if this [ReadingActivity] is not being tested under Espresso.
@@ -88,14 +83,9 @@ class ReadingActivity : AppCompatActivity(), ReferralDialogFragment.OnReadingSen
 
     override fun onResume() {
         super.onResume()
-        setupSMSReceiver()
     }
 
     override fun onStop() {
-        if (smsReceiver != null) {
-            unregisterReceiver(smsReceiver)
-        }
-
         super.onStop()
         Log.d(TAG, "onStop()")
     }
@@ -429,17 +419,6 @@ class ReadingActivity : AppCompatActivity(), ReferralDialogFragment.OnReadingSen
                 }
             }
         }
-    }
-
-    private fun setupSMSReceiver() {
-        val intentFilter = IntentFilter()
-        intentFilter.addAction("android.provider.Telephony.SMS_RECEIVED")
-        intentFilter.priority = Int.MAX_VALUE
-
-        val phoneNumber = sharedPreferences.getString(UserViewModel.RELAY_PHONE_NUMBER, null)
-            ?: error("invalid phone number")
-        smsReceiver = SMSReceiver(smsSender, phoneNumber, smsStateReporter)
-        registerReceiver(smsReceiver, intentFilter)
     }
 
     enum class LaunchReason {

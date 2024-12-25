@@ -2,7 +2,6 @@ package com.cradleplatform.neptune.activities.patients
 
 import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.widget.Button
@@ -15,7 +14,6 @@ import androidx.lifecycle.lifecycleScope
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.binding.FragmentDataBindingComponent
 import com.cradleplatform.neptune.databinding.ActivityReferralBinding
-import com.cradleplatform.neptune.http_sms_service.sms.SMSReceiver
 import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
 import com.cradleplatform.neptune.http_sms_service.sms.SmsStateReporter
 import com.cradleplatform.neptune.manager.PatientManager
@@ -23,7 +21,6 @@ import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.utilities.CustomToast
 import com.cradleplatform.neptune.utilities.Protocol
 import com.cradleplatform.neptune.viewmodel.patients.PatientReferralViewModel
-import com.cradleplatform.neptune.viewmodel.UserViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -51,8 +48,6 @@ open class PatientReferralActivity : AppCompatActivity() {
 
     private val dataBindingComponent: DataBindingComponent = FragmentDataBindingComponent()
 
-    private lateinit var smsReceiver: SMSReceiver
-
     private var triedSendingViaSms = false
 
     companion object {
@@ -68,7 +63,6 @@ open class PatientReferralActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        setupSMSReceiver()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -96,9 +90,6 @@ open class PatientReferralActivity : AppCompatActivity() {
     }
 
     override fun onStop() {
-        if (smsReceiver != null) {
-            unregisterReceiver(smsReceiver)
-        }
         if (triedSendingViaSms) {
             CustomToast.shortToast(
                 applicationContext,
@@ -174,16 +165,5 @@ open class PatientReferralActivity : AppCompatActivity() {
                 )
             }
         }
-    }
-
-    private fun setupSMSReceiver() {
-        val intentFilter = IntentFilter()
-        intentFilter.addAction("android.provider.Telephony.SMS_RECEIVED")
-        intentFilter.priority = Int.MAX_VALUE
-
-        val phoneNumber = sharedPreferences.getString(UserViewModel.RELAY_PHONE_NUMBER, null)
-            ?: error("invalid phone number")
-        smsReceiver = SMSReceiver(smsSender, phoneNumber, smsStateReporter)
-        registerReceiver(smsReceiver, intentFilter)
     }
 }
