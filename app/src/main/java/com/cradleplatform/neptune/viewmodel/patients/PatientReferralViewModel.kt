@@ -105,71 +105,12 @@ class PatientReferralViewModel @Inject constructor(
 
     private fun isHealthCentreStringValid(healthFacility: String?) = !healthFacility.isNullOrBlank()
 
-    suspend fun uploadReferral(
-        protocol: Protocol,
-        patient: Patient,
-        referral: Referral
-    ): ReferralFlowSaveResult = withContext(Dispatchers.Default) {
-
-        // Check if patient exists on server.
-        Log.i("saveReferral", "Sending GET Patient Info request")
-        val result = restApi.getPatientInfo(patient.id, protocol)
-        /* Execution ceases at this point. All code below this comment is never executed for some reason.
-         * Possibly something to do with the activity lifecycle?
-         * */
-        Log.i("uploadReferral", "GET Patient Info Result: $result")
-
-        val patientExists: Boolean =
-            when (result) {
-                is NetworkResult.Success -> true
-                is NetworkResult.Failure -> if (result.statusCode == HttpURLConnection.HTTP_NOT_FOUND) {
-                    false
-                } else {
-                    return@withContext ReferralFlowSaveResult.ErrorUploadingReferral
-                }
-                is NetworkResult.NetworkException -> return@withContext ReferralFlowSaveResult.ErrorUploadingReferral
-            }
-
-        Log.i("uploadReferral", "Patient Exists?: $patientExists")
-
-        if (patientExists) {
-            Log.i("uploadReferral", "Patient Exists! Uploading Referral!")
-            val result = restApi.postReferral(referral, protocol)
-            when (result) {
-                is NetworkResult.Success -> return@withContext ReferralFlowSaveResult.SaveSuccessful.NoSmsNeeded
-                else -> return@withContext ReferralFlowSaveResult.ErrorUploadingReferral
-            }
-        }
-        else {
-            val result = restApi.postPatient(PatientAndReferrals(patient, listOf(referral)), protocol)
-            when (result) {
-                is NetworkResult.Success -> return@withContext ReferralFlowSaveResult.SaveSuccessful.NoSmsNeeded
-                else -> return@withContext ReferralFlowSaveResult.ErrorUploadingReferral
-            }
-        }
-
-//        /**
-//         * This line is just a placeholder to avoid a return error.
-//         * Again, the way success is handled is not ideal, even if it might work
-//         * with the current structure, the flow is extremely disconnected and
-//         * does not work with all the components, we want a unified approach to
-//         * handling all sms / http transactions #refer to issue #111
-//         */
-//        return@withContext ReferralFlowSaveResult.SaveSuccessful.NoSmsNeeded
-    }
-
     /**
-     * Creates a [Referral] and saves it to the local database, then uploads it to the
-     * Cradle-Platform server.
+     * Create a [Referral] object.
      */
-    fun saveReferral(
-        protocol: Protocol,
-        patient: Patient,
-    ) {
+    fun buildReferral(patient: Patient): Referral {
         val currentTime = UnixTimestamp.now.toLong()
-        //create a referral object
-        val referral =
-            Referral(
+        return Referral(
                 id = UUID.randomUUID().toString(),
                 comment = comments.value,
                 healthFacilityName = healthFacilityToUse.value
@@ -185,29 +126,6 @@ class PatientReferralViewModel @Inject constructor(
                 notAttended = false,
                 lastEdited = currentTime
             )
-
-        viewModelScope.launch {
-            // Save the data in internal database.
-            handleStoringReferralFromBuilders(referral)
-
-            // Upload referral to the server.
-            val result = uploadReferral(protocol, patient, referral)
-            Log.i("saveReferral", "Result: $result")
-            if (result is ReferralFlowSaveResult.SaveSuccessful) {
-                patient.lastServerUpdate = patient.lastEdited
-                patientManager.add(patient)
-            }
-        }
-
-    }
-
-    /**
-     * Will always save the referral to the database.
-     */
-    private suspend fun handleStoringReferralFromBuilders(
-        referralFromBuilder: Referral
-    ) {
-        referralManager.addReferral(referralFromBuilder, false)
     }
 
     override fun onCleared() {

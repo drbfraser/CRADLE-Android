@@ -10,17 +10,22 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingComponent
 import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.lifecycleScope
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.binding.FragmentDataBindingComponent
 import com.cradleplatform.neptune.databinding.ActivityReferralBinding
+import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
 import com.cradleplatform.neptune.http_sms_service.sms.SmsStateReporter
 import com.cradleplatform.neptune.manager.PatientManager
+import com.cradleplatform.neptune.manager.ReferralUploadManager
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.utilities.CustomToast
 import com.cradleplatform.neptune.utilities.Protocol
 import com.cradleplatform.neptune.viewmodel.patients.PatientReferralViewModel
+import com.cradleplatform.neptune.viewmodel.patients.ReferralFlowSaveResult
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
@@ -31,6 +36,9 @@ open class PatientReferralActivity : AppCompatActivity() {
 
     @Inject
     lateinit var patientManager: PatientManager
+
+    @Inject
+    lateinit var referralUploadManager: ReferralUploadManager
 
     @Inject
     lateinit var smsSender: SMSSender
@@ -77,8 +85,6 @@ open class PatientReferralActivity : AppCompatActivity() {
         populateCurrentPatient()
 
         setupToolBar()
-        //setupSendWebBtn()
-        //setupSendSMSBtn()
         setupSendButtons()
     }
 
@@ -119,26 +125,37 @@ open class PatientReferralActivity : AppCompatActivity() {
     }
 
     private fun setupSendButtons() {
-        // TODO: In both of the following buttons, the result is not being used.
-        // Furthermore, the saveReferralFunction is not even returning back to this block.
-        // Which is why the toast never appears, and we cannot do anything with the output.
-        // We need to return and verify the output
         val sendViaHTTP = findViewById<Button>(R.id.send_web_button)
         sendViaHTTP.setOnClickListener {
-            viewModel.saveReferral(Protocol.HTTP, currPatient)
-            CustomToast.shortToast(
-                applicationContext,
-                applicationContext.getString(R.string.referral_submitted)
-            )
-            finish()
-            // do something with the result (check success or failure) / do it elsewhere?
+            val referral = viewModel.buildReferral(currPatient)
+            lifecycleScope.launch {
+
+                val result = referralUploadManager.uploadReferral(referral, currPatient, Protocol.HTTP)
+                when (result) {
+                    is ReferralFlowSaveResult.SaveSuccessful -> {
+                        CustomToast.shortToast(
+                            applicationContext,
+                            applicationContext.getString(R.string.referral_submitted)
+                        )
+                        finish()
+                    }
+                    else -> {
+                        CustomToast.shortToast(
+                            applicationContext,
+                            "Error: Referral upload failed..."
+                        )
+                    }
+                }
+            }
+
         }
 
         val sendViaSMS = findViewById<Button>(R.id.send_sms_button)
         sendViaSMS.setOnClickListener {
-                triedSendingViaSms = true
-                viewModel.saveReferral(Protocol.SMS, currPatient)
+            triedSendingViaSms = true
+            val referral = viewModel.buildReferral(currPatient)
 
+            lifecycleScope.launch {
                 Toast.makeText(
                     applicationContext,
                     applicationContext.getString(R.string.sms_sender_send),
@@ -149,7 +166,25 @@ open class PatientReferralActivity : AppCompatActivity() {
                     applicationContext,
                     applicationContext.getString(R.string.sms_sender_send)
                 )
+
+                val result = referralUploadManager.uploadReferral(referral, currPatient, Protocol.SMS)
+                when (result) {
+                    is ReferralFlowSaveResult.SaveSuccessful -> {
+                        CustomToast.shortToast(
+                            applicationContext,
+                            applicationContext.getString(R.string.referral_submitted)
+                        )
+                        finish()
+                    }
+                    else -> {
+                        CustomToast.shortToast(
+                            applicationContext,
+                            "Error: Referral upload failed..."
+                        )
+                    }
+                }
             }
+        }
     }
 
 }

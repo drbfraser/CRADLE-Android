@@ -23,6 +23,7 @@ import com.cradleplatform.neptune.manager.HealthFacilityManager
 import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.manager.ReadingManager
 import com.cradleplatform.neptune.manager.ReferralManager
+import com.cradleplatform.neptune.manager.ReferralUploadManager
 import com.cradleplatform.neptune.manager.UrlManager
 import com.cradleplatform.neptune.model.Settings
 import dagger.Module
@@ -156,4 +157,13 @@ class DataModule {
         sharedPreferences: SharedPreferences,
         @ApplicationContext context: Context
     ) = Settings(sharedPreferences, context)
+
+
+    @Provides
+    @Singleton
+    fun provideReferralUploadManager(
+        restApi: RestApi,
+        referralManager: ReferralManager,
+        patientManager: PatientManager
+    ) = ReferralUploadManager(restApi, referralManager, patientManager)
 }
