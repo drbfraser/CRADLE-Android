@@ -1176,7 +1176,6 @@ class RestApi(
 
     object PregnancyResponse {
         var id: Int? = null
-        var gestationalAgeUnit: String? = null
         var lastEdited: Int? = null
         var patientId: String? = null
         var pregnancyEndDate: Int? = null
