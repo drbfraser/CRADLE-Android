@@ -13,9 +13,10 @@ import java.net.HttpURLConnection.HTTP_NOT_FOUND
 import javax.inject.Inject
 
 /**
- * Manages uploading referrals via HTTP.
+ * Manages uploading readings via HTTP.
+ * 
  */
-class ReferralUploadManager @Inject constructor(private val restApi: RestApi) {
+class ReadingUploadManager @Inject constructor(private val restApi: RestApi) {
 
     /**
      * Attempts to upload a referral to the server.
