@@ -37,7 +37,6 @@ import javax.inject.Inject
 @HiltViewModel
 class FormRenderingViewModel @Inject constructor(
     private val networkStateManager: NetworkStateManager,
-    private val smsSender: SMSSender,
     private val formResponseManager: FormResponseManager,
     private val formManager: FormManager,
     private val restApi: RestApi
@@ -191,12 +190,6 @@ class FormRenderingViewModel @Inject constructor(
         }
     }
 
-    fun getSMSReceiver(): SMSReceiver {
-        val phoneNumber = sharedPreferences.getString(UserViewModel.RELAY_PHONE_NUMBER, null)
-            ?: error("invalid phone number")
-        return SMSReceiver(smsSender, phoneNumber, smsStateReporter)
-    }
-
     fun addBlankQuestions(formTemplate: FormTemplate) {
         for (i in 1 until formTemplate.questions!!.size) {
             if (!currentAnswers.containsKey(formTemplate.questions[i].questionId.toString())) {
@@ -230,7 +223,7 @@ class FormRenderingViewModel @Inject constructor(
 
             when (restApi.postFormResponse(formResponse, protocol)) {
                 is NetworkResult.Success -> {
-                    Log.d("HTTP_SMS_BRIDGE", "Form uploaded successfully")
+                    Log.d("HTTP_SMS_BRIDGE", "Form uploaded successfully.")
                     Handler(Looper.getMainLooper()).post {
                         Toast.makeText(
                             applicationContext,
@@ -241,7 +234,7 @@ class FormRenderingViewModel @Inject constructor(
                 }
 
                 is NetworkResult.Failure -> {
-                    Log.d("HTTP_SMS_BRIDGE", "Form upload failed")
+                    Log.d("HTTP_SMS_BRIDGE", "Form upload failed.")
                     Handler(Looper.getMainLooper()).post {
                         Toast.makeText(
                             applicationContext,
@@ -252,7 +245,7 @@ class FormRenderingViewModel @Inject constructor(
                 }
 
                 is NetworkResult.NetworkException -> {
-                    Log.d("HTTP_SMS_BRIDGE", "Form upload failed")
+                    Log.d("HTTP_SMS_BRIDGE", "Form upload failed.")
                     Handler(Looper.getMainLooper()).post {
                         Toast.makeText(
                             applicationContext,
@@ -420,10 +413,6 @@ class FormRenderingViewModel @Inject constructor(
         if (currentCategory().value != 1) {
             changeCategory(_currentCategory.value?.minus(1) ?: 1)
         }
-    }
-
-    fun setSMSSenderContext(activity: Activity) {
-        smsSender.setActivityContext(activity)
     }
 
     suspend fun removeFormResponseFromDatabaseById(formResponseId: Long) =

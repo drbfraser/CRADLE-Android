@@ -30,7 +30,6 @@ import com.cradleplatform.neptune.activities.dashboard.DashBoardActivity
 import com.cradleplatform.neptune.databinding.ActivityReadingBinding
 import com.cradleplatform.neptune.ext.hideKeyboard
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
-import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
 import com.cradleplatform.neptune.http_sms_service.sms.SmsStateReporter
 import com.cradleplatform.neptune.manager.SmsKeyManager
 import com.cradleplatform.neptune.fragments.patients.PatientIdConflictDialogFragment
@@ -64,9 +63,6 @@ class ReadingActivity : AppCompatActivity(), ReferralDialogFragment.OnReadingSen
     lateinit var smsKeyManager: SmsKeyManager
 
     @Inject
-    lateinit var smsSender: SMSSender
-
-    @Inject
     lateinit var smsStateReporter: SmsStateReporter
 
     /**
@@ -98,8 +94,6 @@ class ReadingActivity : AppCompatActivity(), ReferralDialogFragment.OnReadingSen
             lifecycleOwner = this@ReadingActivity
             executePendingBindings()
         }
-
-        smsSender.setActivityContext(this)
 
         val toolbar = findViewById<Toolbar>(R.id.toolbar3)
         setSupportActionBar(toolbar)
@@ -475,22 +469,4 @@ class ReadingActivity : AppCompatActivity(), ReferralDialogFragment.OnReadingSen
         setResult(RESULT_OK, intent)
     }
 
-    // This overrides the DataParser interface in ReferralDialogFragment.kt
-    override fun sendSmsMessage(data: String) {
-        smsSender.queueRelayContent(data)
-            .let { enqueueSuccessful ->
-                if (enqueueSuccessful) {
-                    Toast.makeText(
-                        this, getString(R.string.sms_sender_send),
-                        Toast.LENGTH_LONG
-                    ).show()
-                    smsSender.sendSmsMessage(false)
-                } else {
-                    Toast.makeText(
-                        this, "SMSSender Enqueue failed",
-                        Toast.LENGTH_LONG
-                    ).show()
-                }
-            }
-    }
 }

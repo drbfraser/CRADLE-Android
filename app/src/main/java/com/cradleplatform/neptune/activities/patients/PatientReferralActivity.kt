@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
 import android.widget.Toast
 import androidx.activity.viewModels
@@ -14,8 +15,6 @@ import androidx.lifecycle.lifecycleScope
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.binding.FragmentDataBindingComponent
 import com.cradleplatform.neptune.databinding.ActivityReferralBinding
-import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
-import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
 import com.cradleplatform.neptune.http_sms_service.sms.SmsStateReporter
 import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.manager.ReferralUploadManager
@@ -41,9 +40,6 @@ open class PatientReferralActivity : AppCompatActivity() {
     lateinit var referralUploadManager: ReferralUploadManager
 
     @Inject
-    lateinit var smsSender: SMSSender
-
-    @Inject
     lateinit var smsStateReporter: SmsStateReporter
 
     private lateinit var currPatient: Patient
@@ -60,6 +56,8 @@ open class PatientReferralActivity : AppCompatActivity() {
         private const val EXTRA_PATIENT = "patient"
         private const val EXTRA_PATIENT_ID = "patient_id"
 
+        private const val TAG = "PatientReferralActivity"
+
         fun makeIntentForPatient(context: Context, patient: Patient): Intent {
             val intent = Intent(context, PatientReferralActivity::class.java)
             intent.putExtra(EXTRA_PATIENT, patient)
@@ -68,6 +66,7 @@ open class PatientReferralActivity : AppCompatActivity() {
     }
 
     override fun onResume() {
+        Log.i(TAG, "onResume()")
         super.onResume()
     }
 
@@ -79,8 +78,6 @@ open class PatientReferralActivity : AppCompatActivity() {
             lifecycleOwner = this@PatientReferralActivity
             executePendingBindings()
         }
-
-        smsSender.setActivityContext(this)
 
         populateCurrentPatient()
 
@@ -94,6 +91,7 @@ open class PatientReferralActivity : AppCompatActivity() {
     }
 
     override fun onStop() {
+        Log.i(TAG, "onStop()")
         if (triedSendingViaSms) {
             CustomToast.shortToast(
                 applicationContext,
@@ -101,6 +99,11 @@ open class PatientReferralActivity : AppCompatActivity() {
             )
         }
         super.onStop()
+    }
+
+    override fun onDestroy() {
+        Log.i(TAG, "onDestroy()")
+        super.onDestroy()
     }
 
     private fun populateCurrentPatient() {
@@ -129,7 +132,6 @@ open class PatientReferralActivity : AppCompatActivity() {
         sendViaHTTP.setOnClickListener {
             val referral = viewModel.buildReferral(currPatient)
             lifecycleScope.launch {
-
                 val result = referralUploadManager.uploadReferral(referral, currPatient, Protocol.HTTP)
                 when (result) {
                     is ReferralFlowSaveResult.SaveSuccessful -> {
@@ -137,6 +139,7 @@ open class PatientReferralActivity : AppCompatActivity() {
                             applicationContext,
                             applicationContext.getString(R.string.referral_submitted)
                         )
+                        Log.i(TAG, "HTTP Referral upload succeeded!")
                         finish()
                     }
                     else -> {
@@ -144,6 +147,7 @@ open class PatientReferralActivity : AppCompatActivity() {
                             applicationContext,
                             "Error: Referral upload failed..."
                         )
+                        Log.e(TAG, "HTTP Referral upload failed!")
                     }
                 }
             }
@@ -174,9 +178,11 @@ open class PatientReferralActivity : AppCompatActivity() {
                             applicationContext,
                             applicationContext.getString(R.string.referral_submitted)
                         )
+                        Log.i(TAG, "SMS Referral upload succeeded!")
                         finish()
                     }
                     else -> {
+                        Log.e(TAG, "SMS Referral upload failed!")
                         CustomToast.shortToast(
                             applicationContext,
                             "Error: Referral upload failed..."

@@ -47,7 +47,6 @@ class ReferralUploadManager @Inject constructor(
          * Otherwise, we need to upload the patient with the referral.
          * */
         if (patientExistsOnServer) {
-            Log.i("uploadReferral", "Patient Exists! Uploading Referral!")
             val result = restApi.postReferral(referral, protocol)
             return when (result) {
                 is NetworkResult.Success -> {

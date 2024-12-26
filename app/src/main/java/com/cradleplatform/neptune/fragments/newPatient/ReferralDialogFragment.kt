@@ -338,6 +338,5 @@ class ReferralDialogFragment : DialogFragment() {
 
     interface OnReadingSendWebSnackbarMsgPass {
         fun onMsgPass(data: String)
-        fun sendSmsMessage(data: String)
     }
 }

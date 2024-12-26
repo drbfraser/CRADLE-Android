@@ -28,14 +28,6 @@ class SMSSender @Inject constructor(
     private val smsStateReporter: SmsStateReporter,
 ) {
     private var smsRelayQueue = ArrayDeque<String>()
-        ?: // TODO: handle the case when the secret key is not available
-        error("Encryption failed - no valid smsSecretKey is available")
-    // TODO: Remove this once State LiveData reporting is added
-    // Activities based on a "Finished" State instead of from here.
-    private var activityContext: Context? = null
-    fun setActivityContext(activity: Context) {
-        activityContext = activity
-    }
 
     var showDialog = true
     var data = ""
@@ -52,11 +44,7 @@ class SMSSender @Inject constructor(
 
     fun sendSmsMessage(acknowledged: Boolean) {
         if (!acknowledged && showDialog) {
-            if (activityContext != null) {
-                activityContext!!.showDialog()
-            } else {
-                appContext.showDialog()
-            }
+            appContext.showDialog()
         }
         val relayPhoneNumber = sharedPreferences.getString(UserViewModel.RELAY_PHONE_NUMBER, null)
         val smsManager: SmsManager = SmsManager.getDefault()
@@ -142,13 +130,6 @@ class SMSSender @Inject constructor(
                     appContext, finishedMsg,
                     Toast.LENGTH_LONG
                 ).show()
-            }
-            // TODO: Remove this after State reporting is implemented. Move logic to Activity instead.
-            if (activityContext is ReadingActivity || activityContext is PatientReferralActivity
-                || activityContext is FormRenderingActivity
-            ) {
-                (activityContext as Activity).finish()
-                activityContext = null
             }
         }
     }
