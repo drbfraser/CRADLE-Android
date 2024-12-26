@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.DialogInterface
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -26,6 +27,8 @@ import com.cradleplatform.neptune.manager.SmsKeyManager
 import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager
 import com.cradleplatform.neptune.utilities.Protocol
 import com.cradleplatform.neptune.activities.newPatient.ReadingActivity
+import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
+import com.cradleplatform.neptune.utilities.CustomToast
 import com.cradleplatform.neptune.viewmodel.patients.PatientReadingViewModel
 import com.cradleplatform.neptune.viewmodel.patients.ReadingFlowSaveResult
 import com.cradleplatform.neptune.viewmodel.newPatient.ReferralDialogViewModel
@@ -65,6 +68,7 @@ class ReferralDialogFragment : DialogFragment() {
 
     @Inject
     lateinit var networkStateManager: NetworkStateManager
+
     override fun onAttach(context: Context) {
         super.onAttach(context)
         check(context is ReadingActivity)
@@ -190,6 +194,8 @@ class ReferralDialogFragment : DialogFragment() {
             // Different from handleWebReferralSend(), the ViewModel does not send.
             // Instead, a local save happens and then a ReadingFlowSaveResult indicates
             // that an SMS send should follow
+            /* TODO: This is a mess and should be massively refactored. Why does the
+            *   ViewModel send HTTP requests but not SMS Requests? */
             val roomDbSaveResult = viewModel.saveWithReferral(
                 ReferralOption.SMS,
                 comment,
@@ -198,18 +204,33 @@ class ReferralDialogFragment : DialogFragment() {
             when (roomDbSaveResult) {
                 is ReadingFlowSaveResult.SaveSuccessful.ReferralSmsNeeded -> {
                     showStatusToast(view.context, roomDbSaveResult, ReferralOption.SMS)
-                    if (roomDbSaveResult.patientInfoForReferral.patient.lastServerUpdate == null) {
+                    val result: NetworkResult<out Any> =  if (roomDbSaveResult.patientInfoForReferral.patient.lastServerUpdate == null)
                         restApi.postPatient(roomDbSaveResult.patientInfoForReferral, Protocol.SMS)
-                    } else {
-                        restApi.postReading(roomDbSaveResult.patientInfoForReferral.readings[0], Protocol.SMS)
+                    else restApi.postReading(roomDbSaveResult.patientInfoForReferral.readings[0], Protocol.SMS)
+
+                    when (result) {
+                        is NetworkResult.Success -> {
+                            Log.d(TAG, "Reading with Referral SMS upload successful!")
+                            // TODO: Remove the following code from the UI and move to a more appropriate place
+                            // This should not be in the UI and should be moved to a place where the server
+                            // response is being parsed
+                            roomDbSaveResult.patientInfoForReferral.patient.lastServerUpdate =
+                                roomDbSaveResult.patientInfoForReferral.patient.lastEdited
+                            viewModel.patientSentViaSMS(roomDbSaveResult.patientInfoForReferral.patient)
+                            activity?.finish()
+                        }
+                        else -> {
+
+                            Log.e(TAG, "Reading with Referral SMS upload failed!")
+                            // TODO: Add some kind of feedback indicating failure.
+//                            CustomToast.shortToast(
+//                                applicationContext,
+//                                "Error: Reading and Referral upload failed..."
+//                            )
+                        }
                     }
 
-                    // TODO: Remove the following code from the UI and move to a more appropriate place
-                    // This should not be in the UI and should be moved to a place where the server
-                    // response is being parsed
-                    roomDbSaveResult.patientInfoForReferral.patient.lastServerUpdate =
-                        roomDbSaveResult.patientInfoForReferral.patient.lastEdited
-                    viewModel.patientSentViaSMS(roomDbSaveResult.patientInfoForReferral.patient)
+
                 }
                 else -> {
                     showStatusToast(view.context, roomDbSaveResult, ReferralOption.SMS)
@@ -325,6 +346,7 @@ class ReferralDialogFragment : DialogFragment() {
     }
 
     companion object {
+        private const val TAG = "ReferralDialogFragment"
         private const val ARG_LAUNCH_REASON = "LAUNCH_REASON"
 
         fun makeInstance(launchReason: ReadingActivity.LaunchReason) =
