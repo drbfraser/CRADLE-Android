@@ -49,6 +49,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.SendChannel
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.ExperimentalSerializationApi
 import okhttp3.MediaType.Companion.toMediaType
@@ -127,7 +128,7 @@ class RestApi(
         url: String,
         headers: Map<String, String>,
         body: ByteArray = Gson().toJson(JsonObject()).toByteArray(),
-    ): NetworkResult<T> {
+    ): NetworkResult<T> = withContext(IO) {
         val channel = Channel<NetworkResult<T>>()
         setupSmsReceiver()
 
@@ -141,45 +142,60 @@ class RestApi(
                 }
             }
 
-            smsStateReporter.stateToCollect.asFlow().collect { state ->
-                when (state) {
-                    SmsTransmissionStates.DONE -> {
-                        val response =
-                            JacksonMapper.mapper.readValue(smsStateReporter.decryptedMsgLiveData.value,
-                                object : TypeReference<T>() {})
-                        Log.i("SMS", response.toString())
-                        channel.send(
-                            NetworkResult.Success(
-                                response, HttpURLConnection.HTTP_OK
-                            )
-                        )
-                    }
+            /**
+             * `collect()` will suspend until the flow is complete, but this flow will continue
+             * indefinitely. Therefore, we need to launch a separate coroutine for it to run in.
+             * This will allow us to continue to the `channel.receive()` call which will suspend
+             * until a `channel.send()` call is made.
+             */
+            val flowCollectJob = launch {
+                smsStateReporter.stateToCollect.asFlow().collect { state ->
+                    when (state) {
+                        SmsTransmissionStates.DONE -> {
+                            val response =
+                                JacksonMapper.mapper.readValue(smsStateReporter.decryptedMsgLiveData.value,
+                                    object : TypeReference<T>() {})
 
-                    SmsTransmissionStates.EXCEPTION -> {
-                        channel.send(
-                            NetworkResult.Failure(
-                                smsStateReporter.errorMessageToCollect.value!!.toByteArray(),
-                                smsStateReporter.errorCodeToCollect.value!!
-                            )
-                        )
-                    }
-
-                    SmsTransmissionStates.TIME_OUT -> {
-                        channel.send(
-                            NetworkResult.NetworkException(
-                                SMSTimeoutException(
-                                    "SMS has timed out"
+                            channel.send(
+                                NetworkResult.Success(
+                                    response, HttpURLConnection.HTTP_OK
                                 )
                             )
-                        )
-                    }
+                        }
 
-                    else -> {}
+                        SmsTransmissionStates.EXCEPTION -> {
+                            channel.send(
+                                NetworkResult.Failure(
+                                    smsStateReporter.errorMessageToCollect.value!!.toByteArray(),
+                                    smsStateReporter.errorCodeToCollect.value!!
+                                )
+                            )
+                        }
+
+                        SmsTransmissionStates.TIME_OUT -> {
+                            channel.send(
+                                NetworkResult.NetworkException(
+                                    SMSTimeoutException(
+                                        "SMS has timed out"
+                                    )
+                                )
+                            )
+                        }
+
+                        else -> {}
+                    }
                 }
             }
-            return channel.receive()
+
+            val result = channel.receive()
+            /* Returning will suspend until all child jobs are complete.
+             * The flow is infinite, so the collect job will never complete. Therefore, we must
+             * manually cancel it, otherwise the thread will be blocked forever.
+             * */
+            flowCollectJob.cancel()
+            return@withContext result
         } catch (e: IOException) {
-            return NetworkResult.NetworkException(e)
+            return@withContext NetworkResult.NetworkException(e)
         } finally {
             channel.close()
             smsStateReporter.stateToCollect.postValue(SmsTransmissionStates.GETTING_READY_TO_SEND)
@@ -255,7 +271,7 @@ class RestApi(
             val errorMessage = result.getStatusMessage(context)
             Log.e(TAG, "Failed to refresh access token:")
             if (errorMessage != null) {
-                Log.e(TAG, "$errorMessage")
+                Log.e(TAG, errorMessage)
             }
             return@withContext null
         }
