@@ -57,7 +57,6 @@ class FormRenderingActivity : AppCompatActivity() {
     private lateinit var formStateBtn: ImageButton
     private lateinit var formNextBtn: ImageButton
     private lateinit var formPrevBtn: ImageButton
-    private lateinit var smsReceiver: SMSReceiver
     val viewModel: FormRenderingViewModel by viewModels()
 
     override fun onSupportNavigateUp(): Boolean {
@@ -137,11 +136,6 @@ class FormRenderingActivity : AppCompatActivity() {
         adapter = FormViewAdapter(viewModel, languageSelected!!, patient)
 
         recyclerView.adapter = adapter
-
-        smsReceiver = viewModel.getSMSReceiver()
-        setupSMSReceiver(smsReceiver)
-
-        viewModel.setSMSSenderContext(this)
     }
 
     private fun setupSMSReceiver(smsReceiver: SMSReceiver) {
@@ -153,9 +147,6 @@ class FormRenderingActivity : AppCompatActivity() {
     }
 
     override fun onStop() {
-        if (smsReceiver != null) {
-            unregisterReceiver(smsReceiver)
-        }
         super.onStop()
     }
 
