@@ -158,7 +158,6 @@ class DataModule {
         @ApplicationContext context: Context
     ) = Settings(sharedPreferences, context)
 
-
     @Provides
     @Singleton
     fun provideReferralUploadManager(

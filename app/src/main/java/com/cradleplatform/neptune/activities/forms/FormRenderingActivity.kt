@@ -3,7 +3,6 @@ package com.cradleplatform.neptune.activities.forms
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.graphics.Rect
 import android.os.Bundle
 import android.provider.Settings
@@ -23,7 +22,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.cradleplatform.neptune.R
-import com.cradleplatform.neptune.http_sms_service.sms.SMSReceiver
 import com.cradleplatform.neptune.model.Answer
 import com.cradleplatform.neptune.model.FormResponse
 import com.cradleplatform.neptune.model.FormTemplate
@@ -32,10 +30,13 @@ import com.cradleplatform.neptune.model.Question
 import com.cradleplatform.neptune.utilities.Protocol
 import com.cradleplatform.neptune.activities.patients.PatientProfileActivity
 import com.cradleplatform.neptune.adapters.forms.FormViewAdapter
+import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
+import com.cradleplatform.neptune.http_sms_service.sms.ui.SmsTransmissionDialogFragment
 import com.cradleplatform.neptune.viewmodel.forms.FormRenderingViewModel
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import java.io.Serializable
 
@@ -136,14 +137,6 @@ class FormRenderingActivity : AppCompatActivity() {
         adapter = FormViewAdapter(viewModel, languageSelected!!, patient)
 
         recyclerView.adapter = adapter
-    }
-
-    private fun setupSMSReceiver(smsReceiver: SMSReceiver) {
-        val intentFilter = IntentFilter()
-        intentFilter.addAction("android.provider.Telephony.SMS_RECEIVED")
-        intentFilter.priority = Int.MAX_VALUE
-
-        registerReceiver(smsReceiver, intentFilter)
     }
 
     override fun onStop() {
@@ -250,15 +243,18 @@ class FormRenderingActivity : AppCompatActivity() {
         startActivity(intent)
     }
 
-    private fun formSubmission(languageSelected: String, submissionMode: Protocol) {
-        lifecycleScope.launch(Dispatchers.IO) {
-            viewModel.submitForm(
+    private fun formSubmission(languageSelected: String, protocol: Protocol) {
+        val smsTransmissionDialog = if (protocol == Protocol.SMS) openSmsTransmissionDialog() else null
+        lifecycleScope.launch {
+            val result = viewModel.submitForm(
                 patientId!!,
                 languageSelected,
-                submissionMode,
+                protocol,
                 applicationContext,
                 formResponseId
             )
+            if (result is NetworkResult.Success) finish()
+            smsTransmissionDialog?.dismiss()
         }
     }
 
@@ -418,7 +414,15 @@ class FormRenderingActivity : AppCompatActivity() {
         return super.dispatchTouchEvent(event)
     }
 
+    private fun openSmsTransmissionDialog(): SmsTransmissionDialogFragment {
+        val smsTransmissionDialogFragment = SmsTransmissionDialogFragment()
+        smsTransmissionDialogFragment.show(supportFragmentManager, "${TAG}::${SmsTransmissionDialogFragment.TAG}")
+        return smsTransmissionDialogFragment
+    }
+
     companion object {
+        private const val TAG = "FormRenderingActivity"
+
         private const val EXTRA_FORM_TEMPLATE = "JSON string for form template"
         private const val EXTRA_PATIENT_ID = "Patient id that the form is created for"
         private const val EXTRA_LANGUAGE_SELECTED = "String of language selected for a FormTemplate"

@@ -27,7 +27,9 @@ import com.cradleplatform.neptune.manager.SmsKeyManager
 import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager
 import com.cradleplatform.neptune.utilities.Protocol
 import com.cradleplatform.neptune.activities.newPatient.ReadingActivity
+import com.cradleplatform.neptune.activities.patients.PatientReferralActivity
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
+import com.cradleplatform.neptune.http_sms_service.sms.ui.SmsTransmissionDialogFragment
 import com.cradleplatform.neptune.utilities.CustomToast
 import com.cradleplatform.neptune.viewmodel.patients.PatientReadingViewModel
 import com.cradleplatform.neptune.viewmodel.patients.ReadingFlowSaveResult
@@ -204,9 +206,14 @@ class ReferralDialogFragment : DialogFragment() {
             when (roomDbSaveResult) {
                 is ReadingFlowSaveResult.SaveSuccessful.ReferralSmsNeeded -> {
                     showStatusToast(view.context, roomDbSaveResult, ReferralOption.SMS)
-                    val result: NetworkResult<out Any> =  if (roomDbSaveResult.patientInfoForReferral.patient.lastServerUpdate == null)
-                        restApi.postPatient(roomDbSaveResult.patientInfoForReferral, Protocol.SMS)
-                    else restApi.postReading(roomDbSaveResult.patientInfoForReferral.readings[0], Protocol.SMS)
+
+                    /* Initiate SMS Request. */
+                    val smsTransmissionDialog = openSmsTransmissionDialog() // Open SMS transmission dialog.
+                    val result: NetworkResult<out Any> =
+                        if (roomDbSaveResult.patientInfoForReferral.patient.lastServerUpdate == null)
+                            restApi.postPatient(roomDbSaveResult.patientInfoForReferral, Protocol.SMS)
+                                else restApi.postReading(roomDbSaveResult.patientInfoForReferral.readings[0], Protocol.SMS)
+                    smsTransmissionDialog.dismiss() // Dismiss SMS transmission dialog.
 
                     when (result) {
                         is NetworkResult.Success -> {
@@ -260,6 +267,12 @@ class ReferralDialogFragment : DialogFragment() {
         } finally {
             referralDialogViewModel.isSending.value = false
         }
+    }
+
+    private fun openSmsTransmissionDialog(): SmsTransmissionDialogFragment {
+        val smsTransmissionDialogFragment = SmsTransmissionDialogFragment()
+        smsTransmissionDialogFragment.show(parentFragmentManager, "${TAG}::${SmsTransmissionDialogFragment.TAG}")
+        return smsTransmissionDialogFragment
     }
 
     private fun showStatusToast(

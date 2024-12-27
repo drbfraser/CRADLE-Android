@@ -30,7 +30,6 @@ import com.cradleplatform.neptune.utilities.Protocol
 import com.cradleplatform.neptune.utilities.connectivity.api24.ConnectivityOptions
 import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager
 import com.cradleplatform.neptune.activities.forms.FormRenderingActivity
-import com.cradleplatform.neptune.viewmodel.UserViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
@@ -205,7 +204,7 @@ class FormRenderingViewModel @Inject constructor(
         protocol: Protocol,
         applicationContext: Context,
         formResponseId: Long?
-    ) {
+    ): NetworkResult<Unit> {
 //        formResponseId?.let {
 //            viewModelScope.launch {
 //                removeFormResponseFromDatabaseById(it)
@@ -221,9 +220,11 @@ class FormRenderingViewModel @Inject constructor(
                 answers = currentAnswers
             )
 
-            when (restApi.postFormResponse(formResponse, protocol)) {
+            val result = restApi.postFormResponse(formResponse, protocol)
+
+            when (result) {
                 is NetworkResult.Success -> {
-                    Log.d("HTTP_SMS_BRIDGE", "Form uploaded successfully.")
+                    Log.d(TAG, "Form uploaded successfully.")
                     Handler(Looper.getMainLooper()).post {
                         Toast.makeText(
                             applicationContext,
@@ -234,7 +235,7 @@ class FormRenderingViewModel @Inject constructor(
                 }
 
                 is NetworkResult.Failure -> {
-                    Log.d("HTTP_SMS_BRIDGE", "Form upload failed.")
+                    Log.d(TAG, "Form upload failed.")
                     Handler(Looper.getMainLooper()).post {
                         Toast.makeText(
                             applicationContext,
@@ -245,7 +246,7 @@ class FormRenderingViewModel @Inject constructor(
                 }
 
                 is NetworkResult.NetworkException -> {
-                    Log.d("HTTP_SMS_BRIDGE", "Form upload failed.")
+                    Log.d(TAG, "Form upload failed.")
                     Handler(Looper.getMainLooper()).post {
                         Toast.makeText(
                             applicationContext,
@@ -254,9 +255,10 @@ class FormRenderingViewModel @Inject constructor(
                         ).show()
                     }
                 }
+
             }
 
-            Unit // Match return type of Unit
+            return result
         } else {
             error("FormTemplate does not exist: Current displaying FormTemplate is null")
         }
@@ -460,6 +462,8 @@ class FormRenderingViewModel @Inject constructor(
     }
 
     private companion object {
+        private const val TAG = "FormRenderingViewModel"
+
         private val currentAnswers = mutableMapOf<String, Answer>()
     }
 }

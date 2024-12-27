@@ -78,12 +78,13 @@ class ReadingActivity : AppCompatActivity(), ReferralDialogFragment.OnReadingSen
     }
 
     override fun onResume() {
+        Log.d(TAG, "${TAG}::onResume()")
         super.onResume()
     }
 
     override fun onStop() {
+        Log.d(TAG, "${TAG}::onStop()")
         super.onStop()
-        Log.d(TAG, "onStop()")
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

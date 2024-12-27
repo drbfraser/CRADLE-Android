@@ -16,6 +16,7 @@ import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.binding.FragmentDataBindingComponent
 import com.cradleplatform.neptune.databinding.ActivityReferralBinding
 import com.cradleplatform.neptune.http_sms_service.sms.SmsStateReporter
+import com.cradleplatform.neptune.http_sms_service.sms.ui.SmsTransmissionDialogFragment
 import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.manager.ReferralUploadManager
 import com.cradleplatform.neptune.model.Patient
@@ -66,7 +67,7 @@ open class PatientReferralActivity : AppCompatActivity() {
     }
 
     override fun onResume() {
-        Log.i(TAG, "onResume()")
+        Log.d(TAG, "${TAG}::onResume()")
         super.onResume()
     }
 
@@ -78,7 +79,6 @@ open class PatientReferralActivity : AppCompatActivity() {
             lifecycleOwner = this@PatientReferralActivity
             executePendingBindings()
         }
-
         populateCurrentPatient()
 
         setupToolBar()
@@ -91,7 +91,7 @@ open class PatientReferralActivity : AppCompatActivity() {
     }
 
     override fun onStop() {
-        Log.i(TAG, "onStop()")
+        Log.d(TAG, "${TAG}::onStop()")
         if (triedSendingViaSms) {
             CustomToast.shortToast(
                 applicationContext,
@@ -102,7 +102,7 @@ open class PatientReferralActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
-        Log.i(TAG, "onDestroy()")
+        Log.d(TAG, "${TAG}::onDestroy()")
         super.onDestroy()
     }
 
@@ -158,7 +158,7 @@ open class PatientReferralActivity : AppCompatActivity() {
         sendViaSMS.setOnClickListener {
             triedSendingViaSms = true
             val referral = viewModel.buildReferral(currPatient)
-
+            val dialog = openSmsTransmissionDialog()
             lifecycleScope.launch {
                 Toast.makeText(
                     applicationContext,
@@ -172,6 +172,7 @@ open class PatientReferralActivity : AppCompatActivity() {
                 )
 
                 val result = referralUploadManager.uploadReferral(referral, currPatient, Protocol.SMS)
+                dialog.dismiss()
                 when (result) {
                     is ReferralFlowSaveResult.SaveSuccessful -> {
                         CustomToast.shortToast(
@@ -191,6 +192,12 @@ open class PatientReferralActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    private fun openSmsTransmissionDialog(): SmsTransmissionDialogFragment {
+        val smsTransmissionDialogFragment = SmsTransmissionDialogFragment()
+        smsTransmissionDialogFragment.show(supportFragmentManager, "${TAG}::${SmsTransmissionDialogFragment.TAG}")
+        return smsTransmissionDialogFragment
     }
 
 }
