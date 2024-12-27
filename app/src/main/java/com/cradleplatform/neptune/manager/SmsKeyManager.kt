@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
+import com.cradleplatform.neptune.utilities.jackson.JacksonMapper
 import com.cradleplatform.neptune.viewmodel.UserViewModel.Companion.SMS_SECRET_KEY
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.text.SimpleDateFormat
@@ -12,14 +13,14 @@ import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.encodeToString
 
 @Singleton
 class SmsKeyManager @Inject constructor(@ApplicationContext private val context: Context) {
 
     private lateinit var encryptedSharedPreferences: SharedPreferences
+
+    val jsonWriter = JacksonMapper.createWriter<SmsKey>()
+    val jsonReader = JacksonMapper.createReader<SmsKey>()
 
     init {
         initialize()
@@ -47,14 +48,14 @@ class SmsKeyManager @Inject constructor(@ApplicationContext private val context:
     }
 
     fun storeSmsKey(smsKey: SmsKey): Boolean {
-        val smsKeyJson = Json.encodeToString(smsKey)
+        val smsKeyJson = jsonWriter.writeValueAsString(smsKey)
         encryptedSharedPreferences.edit().putString(SMS_SECRET_KEY, smsKeyJson).apply()
         return true
     }
 
     fun retrieveSmsKey(): SmsKey? {
         val smsKeyJson: String = encryptedSharedPreferences.getString(SMS_SECRET_KEY, null) ?: return null
-        return Json.decodeFromString<SmsKey>(smsKeyJson)
+        return jsonReader.readValue<SmsKey>(smsKeyJson)
     }
 
     // Used for when the user logs out
@@ -117,7 +118,6 @@ class SmsKeyManager @Inject constructor(@ApplicationContext private val context:
     }
 }
 
-@Serializable
 data class SmsKey(
     val key: String,
     val message: String,

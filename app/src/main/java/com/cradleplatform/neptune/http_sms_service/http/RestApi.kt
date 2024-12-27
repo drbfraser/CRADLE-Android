@@ -51,7 +51,6 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.ExperimentalSerializationApi
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
@@ -79,7 +78,6 @@ import kotlinx.serialization.json.decodeFromStream
  * threw an exception when sending the request or handling the response.
  * A timeout is one such cause of an exception for example.
  */
-@OptIn(ExperimentalSerializationApi::class)
 @Singleton
 class RestApi(
     private val context: Context,
@@ -97,8 +95,6 @@ class RestApi(
 
     companion object {
         private const val TAG = "RestApi"
-        private const val UNIT_VALUE_WEEKS = "WEEKS"
-        private const val UNIT_VALUE_MONTHS = "MONTHS"
     }
 
     private fun setupSmsReceiver() {
@@ -123,6 +119,10 @@ class RestApi(
     // TODO: This only handles the case for endpoints that return status code 200 when successful.
     //       Additional logic is necessary for if an endpoint has multiple successful status codes
     //       (e.g. 200 and 201)
+    /* TODO: Currently, the [NetworkResult] will be returned as a [NetworkResult.Success] if a
+    *   response from the SMS Relay App is received, but it isn't looking at the actual [code]
+    *   field of the decoded message. So even if the relayed request fails and gets an error status
+    *    code, the [NetworkResult] will still be reported as successful. */
     private suspend inline fun <reified T> handleSmsRequest(
         method: Http.Method,
         url: String,
@@ -229,7 +229,7 @@ class RestApi(
             headers = headers,
             requestBody = buildJsonRequestBody(body),
             inputStreamReader = {
-                Json { ignoreUnknownKeys = true }.decodeFromStream<LoginResponse>(it)
+                JacksonMapper.createReader<LoginResponse>().readValue<LoginResponse>(it)
             })
     }
 
