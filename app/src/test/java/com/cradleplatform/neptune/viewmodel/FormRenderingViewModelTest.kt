@@ -28,13 +28,11 @@ class FormRenderingViewModelTest {
     @BeforeAll
     fun initialize() {
         val networkStateManager = Mockito.mock(NetworkStateManager::class.java)
-        val smsSender = Mockito.mock(SMSSender::class.java)
         val formResponseManager = Mockito.mock(FormResponseManager::class.java)
         val formManager = Mockito.mock(FormManager::class.java)
         val restApi = Mockito.mock(RestApi::class.java)
         viewModel = FormRenderingViewModel(
             networkStateManager,
-            smsSender,
             formResponseManager,
             formManager,
             restApi
