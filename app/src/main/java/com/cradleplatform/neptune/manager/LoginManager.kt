@@ -11,12 +11,12 @@ import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
 import com.cradleplatform.neptune.sync.PeriodicSyncer
 import com.cradleplatform.neptune.utilities.SharedPreferencesMigration
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.Serializable
 import java.net.HttpURLConnection.HTTP_OK
 import javax.inject.Inject
 
@@ -135,29 +135,23 @@ class LoginManager @Inject constructor(
     }
 
     suspend fun logout(): Unit = withContext(Dispatchers.IO) {
-        val (hostname, port) =
-            sharedPreferences.getString(context.getString(R.string.key_server_hostname), null) to
-                sharedPreferences.getString(context.getString(R.string.key_server_port), null)
-
-        sharedPreferences.edit(commit = true) {
-            clear()
-            hostname?.let { putString(context.getString(R.string.key_server_hostname), it) }
-            port?.let { putString(context.getString(R.string.key_server_port), it) }
-        }
-
         database.run {
             clearAllTables()
         }
 
         periodicSyncer.endPeriodicSync()
+
         // Clear all the user specific information from sharedPreferences
-        sharedPreferences.edit().remove(USER_PHONE_NUMBER).apply()
-        sharedPreferences.edit().remove(ACCESS_TOKEN_KEY).apply()
-        sharedPreferences.edit().remove(USER_ID_KEY).apply()
-        sharedPreferences.edit().remove(EMAIL_KEY).apply()
-        sharedPreferences.edit().remove(USERNAME_KEY).apply()
-        sharedPreferences.edit().remove(PHONE_NUMBERS).apply()
-        sharedPreferences.edit().remove(RELAY_PHONE_NUMBER).apply()
+        sharedPreferences.edit(commit = true) {
+            remove(USER_PHONE_NUMBER)
+            remove(ACCESS_TOKEN_KEY)
+            remove("refresh_token")
+            remove(USER_ID_KEY)
+            remove(EMAIL_KEY)
+            remove(USERNAME_KEY)
+            remove(PHONE_NUMBERS)
+            remove(RELAY_PHONE_NUMBER)
+        }
         smsKeyManager.clearSmsKey()
     }
 }
@@ -166,13 +160,12 @@ class LoginManager @Inject constructor(
  * Models the response sent back by the server for /api/user/auth.
  * Not used outside of LoginManager.
  */
-@Serializable
+@JsonIgnoreProperties(ignoreUnknown = true)
 data class LoginResponse(
     val accessToken: String,
     val user: LoginResponseUser
 )
 
-@Serializable
 data class LoginResponseUser(
     val id: Int,
     val username: String,
@@ -184,7 +177,6 @@ data class LoginResponseUser(
     val smsKey: SmsKey
 )
 
-@Serializable
 data class RefreshTokenResponse(
     val accessToken: String
 )
