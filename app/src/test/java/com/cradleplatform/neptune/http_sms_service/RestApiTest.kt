@@ -63,7 +63,6 @@ internal class RestApiTest {
                                         "name": "TestVHT",
                                         "healthFacilityName": "H0000",
                                         "phoneNumbers": ["+1-666-666-6666", "+1-777-777-7777", "+1-555-555-5555"],
-                                        "isLoggedIn": true,
                                         "id": 3,
                                         "smsKey": {
                                             "key": "SGVsbG8sIFdvcmxkIQ==",
