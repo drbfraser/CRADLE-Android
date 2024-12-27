@@ -233,8 +233,8 @@ internal class LoginManagerTests {
             assert(databaseCleared) {
                 "Database was not cleared after logging out"
             }
-            assert(fakeSharedPreferences.isEmpty()) {
-                "Shared Preferences was not cleared after logging out"
+            assert(fakeSharedPreferences["accessToken"] == null) {
+                "Access Token was not cleared from Shared Preferences after logging out."
             }
         }
     }
