@@ -27,10 +27,8 @@ import com.cradleplatform.neptune.manager.SmsKeyManager
 import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager
 import com.cradleplatform.neptune.utilities.Protocol
 import com.cradleplatform.neptune.activities.newPatient.ReadingActivity
-import com.cradleplatform.neptune.activities.patients.PatientReferralActivity
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.http_sms_service.sms.ui.SmsTransmissionDialogFragment
-import com.cradleplatform.neptune.utilities.CustomToast
 import com.cradleplatform.neptune.viewmodel.patients.PatientReadingViewModel
 import com.cradleplatform.neptune.viewmodel.patients.ReadingFlowSaveResult
 import com.cradleplatform.neptune.viewmodel.newPatient.ReferralDialogViewModel
@@ -212,7 +210,7 @@ class ReferralDialogFragment : DialogFragment() {
                     val result: NetworkResult<out Any> =
                         if (roomDbSaveResult.patientInfoForReferral.patient.lastServerUpdate == null)
                             restApi.postPatient(roomDbSaveResult.patientInfoForReferral, Protocol.SMS)
-                                else restApi.postReading(roomDbSaveResult.patientInfoForReferral.readings[0], Protocol.SMS)
+                        else restApi.postReading(roomDbSaveResult.patientInfoForReferral.readings[0], Protocol.SMS)
                     smsTransmissionDialog.dismiss() // Dismiss SMS transmission dialog.
 
                     when (result) {
@@ -236,8 +234,6 @@ class ReferralDialogFragment : DialogFragment() {
 //                            )
                         }
                     }
-
-
                 }
                 else -> {
                     showStatusToast(view.context, roomDbSaveResult, ReferralOption.SMS)
@@ -271,7 +267,7 @@ class ReferralDialogFragment : DialogFragment() {
 
     private fun openSmsTransmissionDialog(): SmsTransmissionDialogFragment {
         val smsTransmissionDialogFragment = SmsTransmissionDialogFragment()
-        smsTransmissionDialogFragment.show(parentFragmentManager, "${TAG}::${SmsTransmissionDialogFragment.TAG}")
+        smsTransmissionDialogFragment.show(parentFragmentManager, "$TAG::${SmsTransmissionDialogFragment.TAG}")
         return smsTransmissionDialogFragment
     }
 

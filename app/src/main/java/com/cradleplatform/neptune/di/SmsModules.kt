@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.SharedPreferences
 import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
 import com.cradleplatform.neptune.http_sms_service.sms.SmsStateReporter
-import com.cradleplatform.neptune.http_sms_service.sms.ui.SmsTransmissionDialogFragment
 import com.cradleplatform.neptune.http_sms_service.sms.utils.SMSDataProcessor
 import com.cradleplatform.neptune.manager.SmsKeyManager
 import com.cradleplatform.neptune.manager.UrlManager
@@ -46,5 +45,4 @@ class SmsModules {
         @ApplicationContext context: Context,
         smsStateReporter: SmsStateReporter,
     ) = SMSSender(smsKeyManager, sharedPreferences, context, smsStateReporter)
-
 }

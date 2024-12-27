@@ -36,7 +36,6 @@ import com.cradleplatform.neptune.viewmodel.forms.FormRenderingViewModel
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import java.io.Serializable
 
@@ -416,7 +415,7 @@ class FormRenderingActivity : AppCompatActivity() {
 
     private fun openSmsTransmissionDialog(): SmsTransmissionDialogFragment {
         val smsTransmissionDialogFragment = SmsTransmissionDialogFragment()
-        smsTransmissionDialogFragment.show(supportFragmentManager, "${TAG}::${SmsTransmissionDialogFragment.TAG}")
+        smsTransmissionDialogFragment.show(supportFragmentManager, "$TAG::${SmsTransmissionDialogFragment.TAG}")
         return smsTransmissionDialogFragment
     }
 

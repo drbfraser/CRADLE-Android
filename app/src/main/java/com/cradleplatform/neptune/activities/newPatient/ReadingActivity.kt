@@ -78,12 +78,12 @@ class ReadingActivity : AppCompatActivity(), ReferralDialogFragment.OnReadingSen
     }
 
     override fun onResume() {
-        Log.d(TAG, "${TAG}::onResume()")
+        Log.d(TAG, "$TAG::onResume()")
         super.onResume()
     }
 
     override fun onStop() {
-        Log.d(TAG, "${TAG}::onStop()")
+        Log.d(TAG, "$TAG::onStop()")
         super.onStop()
     }
 
@@ -469,5 +469,4 @@ class ReadingActivity : AppCompatActivity(), ReferralDialogFragment.OnReadingSen
         intent.putExtra(EXTRA_SNACKBAR_MSG, data)
         setResult(RESULT_OK, intent)
     }
-
 }

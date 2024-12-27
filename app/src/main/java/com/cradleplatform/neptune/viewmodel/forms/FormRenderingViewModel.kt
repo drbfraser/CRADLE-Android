@@ -1,6 +1,5 @@
 package com.cradleplatform.neptune.viewmodel.forms
 
-import android.app.Activity
 import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.drawable.Drawable
@@ -15,8 +14,6 @@ import androidx.lifecycle.ViewModel
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
-import com.cradleplatform.neptune.http_sms_service.sms.SMSReceiver
-import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
 import com.cradleplatform.neptune.http_sms_service.sms.SmsStateReporter
 import com.cradleplatform.neptune.http_sms_service.sms.utils.SMSDataProcessor
 import com.cradleplatform.neptune.manager.FormManager
@@ -255,7 +252,6 @@ class FormRenderingViewModel @Inject constructor(
                         ).show()
                     }
                 }
-
             }
 
             return result

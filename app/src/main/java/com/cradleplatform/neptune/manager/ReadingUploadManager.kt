@@ -14,7 +14,7 @@ import javax.inject.Inject
 
 /**
  * Manages uploading readings via HTTP.
- * 
+ *
  */
 class ReadingUploadManager @Inject constructor(private val restApi: RestApi) {
 

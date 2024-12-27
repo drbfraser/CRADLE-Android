@@ -1,8 +1,5 @@
 package com.cradleplatform.neptune.http_sms_service.sms.ui
 
-import android.os.CountDownTimer
-import androidx.core.view.isVisible
-import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
@@ -51,5 +48,4 @@ class SmsTransmissionDialogViewModel @Inject constructor(
             else -> ""
         }
     }
-
 }

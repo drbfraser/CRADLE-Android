@@ -8,9 +8,7 @@ import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
-import androidx.lifecycle.viewModelScope
 import com.cradleplatform.neptune.ext.getIntOrNull
-import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
 import com.cradleplatform.neptune.http_sms_service.sms.utils.SMSDataProcessor
 import com.cradleplatform.neptune.manager.HealthFacilityManager
@@ -18,17 +16,11 @@ import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.manager.ReferralManager
 import com.cradleplatform.neptune.model.HealthFacility
 import com.cradleplatform.neptune.model.Patient
-import com.cradleplatform.neptune.model.PatientAndReferrals
 import com.cradleplatform.neptune.model.Referral
-import com.cradleplatform.neptune.utilities.Protocol
 import com.cradleplatform.neptune.utilities.UnixTimestamp
 import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager
 import com.cradleplatform.neptune.viewmodel.UserViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.net.HttpURLConnection
 import java.util.UUID
 import javax.inject.Inject
 
@@ -111,21 +103,21 @@ class PatientReferralViewModel @Inject constructor(
     fun buildReferral(patient: Patient): Referral {
         val currentTime = UnixTimestamp.now.toLong()
         return Referral(
-                id = UUID.randomUUID().toString(),
-                comment = comments.value,
-                healthFacilityName = healthFacilityToUse.value
-                    ?: error("No health facility selected"),
-                dateReferred = currentTime,
-                userId = sharedPreferences.getIntOrNull(UserViewModel.USER_ID_KEY),
-                patientId = patient.id,
-                actionTaken = null,
-                cancelReason = null,
-                notAttendReason = null,
-                isAssessed = false,
-                isCancelled = false,
-                notAttended = false,
-                lastEdited = currentTime
-            )
+            id = UUID.randomUUID().toString(),
+            comment = comments.value,
+            healthFacilityName = healthFacilityToUse.value
+                ?: error("No health facility selected"),
+            dateReferred = currentTime,
+            userId = sharedPreferences.getIntOrNull(UserViewModel.USER_ID_KEY),
+            patientId = patient.id,
+            actionTaken = null,
+            cancelReason = null,
+            notAttendReason = null,
+            isAssessed = false,
+            isCancelled = false,
+            notAttended = false,
+            lastEdited = currentTime
+        )
     }
 
     override fun onCleared() {

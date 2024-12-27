@@ -67,7 +67,7 @@ open class PatientReferralActivity : AppCompatActivity() {
     }
 
     override fun onResume() {
-        Log.d(TAG, "${TAG}::onResume()")
+        Log.d(TAG, "$TAG::onResume()")
         super.onResume()
     }
 
@@ -91,7 +91,7 @@ open class PatientReferralActivity : AppCompatActivity() {
     }
 
     override fun onStop() {
-        Log.d(TAG, "${TAG}::onStop()")
+        Log.d(TAG, "$TAG::onStop()")
         if (triedSendingViaSms) {
             CustomToast.shortToast(
                 applicationContext,
@@ -102,7 +102,7 @@ open class PatientReferralActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
-        Log.d(TAG, "${TAG}::onDestroy()")
+        Log.d(TAG, "$TAG::onDestroy()")
         super.onDestroy()
     }
 
@@ -151,7 +151,6 @@ open class PatientReferralActivity : AppCompatActivity() {
                     }
                 }
             }
-
         }
 
         val sendViaSMS = findViewById<Button>(R.id.send_sms_button)
@@ -196,8 +195,7 @@ open class PatientReferralActivity : AppCompatActivity() {
 
     private fun openSmsTransmissionDialog(): SmsTransmissionDialogFragment {
         val smsTransmissionDialogFragment = SmsTransmissionDialogFragment()
-        smsTransmissionDialogFragment.show(supportFragmentManager, "${TAG}::${SmsTransmissionDialogFragment.TAG}")
+        smsTransmissionDialogFragment.show(supportFragmentManager, "$TAG::${SmsTransmissionDialogFragment.TAG}")
         return smsTransmissionDialogFragment
     }
-
 }

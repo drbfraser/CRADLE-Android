@@ -1,6 +1,5 @@
 package com.cradleplatform.neptune.manager
 
-import android.util.Log
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
 import com.cradleplatform.neptune.model.Patient
@@ -8,7 +7,6 @@ import com.cradleplatform.neptune.model.PatientAndReferrals
 import com.cradleplatform.neptune.model.Referral
 import com.cradleplatform.neptune.utilities.Protocol
 import com.cradleplatform.neptune.viewmodel.patients.ReferralFlowSaveResult
-import java.net.HttpURLConnection
 import javax.inject.Inject
 
 /**
@@ -55,8 +53,7 @@ class ReferralUploadManager @Inject constructor(
                 }
                 else -> ReferralFlowSaveResult.ErrorUploadingReferral
             }
-        }
-        else {
+        } else {
             val result = restApi.postPatient(PatientAndReferrals(patient, listOf(referral)), protocol)
             return when (result) {
                 is NetworkResult.Success -> {
@@ -66,12 +63,10 @@ class ReferralUploadManager @Inject constructor(
                 else -> ReferralFlowSaveResult.ErrorUploadingReferral
             }
         }
-
     }
 
     suspend fun updatePatientLastEdited(patient: Patient) {
         patient.lastServerUpdate = patient.lastEdited
         patientManager.add(patient)
     }
-
 }

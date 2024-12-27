@@ -16,7 +16,7 @@ import com.cradleplatform.neptune.http_sms_service.sms.SmsTransmissionStates
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class SmsTransmissionDialogFragment: DialogFragment() {
+class SmsTransmissionDialogFragment : DialogFragment() {
 
     private val viewModel: SmsTransmissionDialogViewModel by viewModels()
     private lateinit var timer: CountDownTimer
@@ -61,18 +61,21 @@ class SmsTransmissionDialogFragment: DialogFragment() {
             receiveProgressMessage.text = it
         }
         viewModel.smsStateReporter.retry.observe(viewLifecycleOwner) {
+            val smsStateReporter = viewModel.smsStateReporter
             if (it) {
                 if (::timer.isInitialized) {
                     timer.cancel()
                 }
                 retryTimer.isVisible = true
-                timer = object :
-                    CountDownTimer(viewModel.smsStateReporter.timeout * 1000 * (viewModel.smsStateReporter.retriesAttempted + 1),
-                        countDownIntervalMilli) {
+                timer = object : CountDownTimer(
+                    smsStateReporter.timeout * 1000 * (smsStateReporter.retriesAttempted + 1),
+                    countDownIntervalMilli
+                ) {
                     override fun onTick(timeRemaining: Long) {
                         val seconds = timeRemaining / 1000
-                        retryTimer.text =
-                            "Retry attempt: ${viewModel.smsStateReporter.retriesAttempted}, retrying in " + seconds.toString()
+                        val text = "Retry attempt: ${smsStateReporter.retriesAttempted}" +
+                            ", retrying in $seconds"
+                        retryTimer.text = text
                     }
                     override fun onFinish() {
                         retryTimer.isVisible = false
@@ -131,7 +134,7 @@ class SmsTransmissionDialogFragment: DialogFragment() {
     }
 
     override fun onDestroy() {
-        Log.d(TAG, "${TAG}::onDestroy()")
+        Log.d(TAG, "$TAG::onDestroy()")
         super.onDestroy()
     }
 }
