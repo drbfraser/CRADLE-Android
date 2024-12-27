@@ -61,8 +61,6 @@ import java.net.HttpURLConnection
 import javax.inject.Singleton
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.decodeFromStream
 
 /**
  * Provides type-safe methods for interacting with the CRADLE server API.
@@ -89,9 +87,6 @@ class RestApi(
     private val smsDataProcessor: SMSDataProcessor
 ) {
     private lateinit var smsReceiver: SMSReceiver
-
-    @OptIn(ExperimentalEncodingApi::class)
-    private val base64 = Base64.withPadding(Base64.PaddingOption.PRESENT_OPTIONAL)
 
     companion object {
         private const val TAG = "RestApi"
@@ -1352,7 +1347,7 @@ class RestApi(
         http.makeRequest(method = method,
             url = url,
             headers = headers,
-            inputStreamReader = { Json.decodeFromStream<SmsKey>(it) })
+            inputStreamReader = { JacksonMapper.createReader<SmsKey>().readValue<SmsKey>(it) })
     }
 
     suspend fun refreshSmsKey(userID: Int): NetworkResult<SmsKey> = withContext(IO) {
@@ -1370,7 +1365,7 @@ class RestApi(
             url = url,
             headers = headers,
             requestBody = requestBody,
-            inputStreamReader = { Json.decodeFromStream<SmsKey>(it) })
+            inputStreamReader = { JacksonMapper.createReader<SmsKey>().readValue<SmsKey>(it) })
     }
 
     suspend fun getNewSmsKey(userID: Int): NetworkResult<SmsKey?> = withContext(IO) {
@@ -1390,7 +1385,7 @@ class RestApi(
             requestBody = requestBody,
             inputStreamReader = {
                 try {
-                    Json.decodeFromStream<SmsKey>(it)
+                    JacksonMapper.createReader<SmsKey>().readValue<SmsKey>(it)
                 } catch (e: Exception) {
                     null
                 }
@@ -2268,7 +2263,7 @@ class RestApi(
         val sections = accessToken.split(".")
         return try {
             val charset = charset("UTF-8")
-            val payload = String(base64.decode(sections[1].toByteArray(charset)), charset)
+            val payload = String(Base64.decode(sections[1].toByteArray(charset)), charset)
             val payloadJson = JSONObject(payload)
             payloadJson.getLong("exp")
         } catch (e: Exception) {
@@ -2282,7 +2277,7 @@ class RestApi(
      *
      * @return The access token if it is not expired, or the refreshed access token.
      */
-    private suspend fun verifyAccessToken(): String? {
+    private suspend fun getAccessToken(): String? {
         val accessToken =
             sharedPreferences.getString(UserViewModel.ACCESS_TOKEN_KEY, null) ?: return null
         // Get expiry claim from access token JWT.
@@ -2305,7 +2300,7 @@ class RestApi(
      * to refresh it.
      */
     private suspend fun makeAuthorizationHeader(): Map<String, String> {
-        verifyAccessToken()
+        getAccessToken()
         val accessToken = sharedPreferences.getString(UserViewModel.ACCESS_TOKEN_KEY, null)
         return if (accessToken != null) {
             mapOf("Authorization" to "Bearer $accessToken")

@@ -7,8 +7,6 @@ apply plugin: 'com.google.gms.google-services'
 apply plugin: 'com.google.firebase.firebase-perf'
 apply plugin: 'com.google.firebase.crashlytics'
 apply plugin: 'kotlin-kapt'
-apply plugin: 'kotlinx-serialization'
-
 
 
 // Initialize the keystore credentials from the keystore.properties file
@@ -233,8 +231,6 @@ dependencies {
     // Gson library, used in model: FormTemplate.
     implementation 'com.google.code.gson:gson:2.8.2'
     implementation 'it.xabaras.android:recyclerview-swipedecorator:1.4'
-
-    implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3'
 
 }
 
