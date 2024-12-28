@@ -55,5 +55,4 @@ class SmsModules {
         smsSender: SMSSender,
         smsStateReporter: SmsStateReporter,
     ) = SMSReceiver(context, sharedPreferences, smsSender, smsStateReporter)
-
 }

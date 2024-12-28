@@ -1,7 +1,6 @@
 package com.cradleplatform.neptune.http_sms_service.http
 
 import android.content.Context
-import android.content.IntentFilter
 import android.content.SharedPreferences
 import android.util.Log
 import androidx.core.content.edit
