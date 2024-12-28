@@ -8,6 +8,7 @@ import com.cradleplatform.neptune.model.CommonReadingJsons
 import com.cradleplatform.neptune.model.Settings
 import com.cradleplatform.neptune.http_sms_service.http.Http
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
+import com.cradleplatform.neptune.http_sms_service.sms.SMSReceiver
 import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
 import com.cradleplatform.neptune.http_sms_service.sms.SmsStateReporter
 import com.cradleplatform.neptune.http_sms_service.sms.utils.SMSDataProcessor
@@ -47,6 +48,7 @@ object MockWebServerUtils {
 
         val mockSmsStateReporter = mock(SmsStateReporter::class.java)
         val mockSmsSender = mock(SMSSender::class.java)
+        val mockSmsReceiver = mock(SMSReceiver::class.java)
         val mockSmsDataProcessor = mock(SMSDataProcessor::class.java)
 
         val restApi = RestApi(
@@ -56,6 +58,7 @@ object MockWebServerUtils {
             http = Http(mockSharedPrefs),
             mockSmsStateReporter,
             mockSmsSender,
+            mockSmsReceiver,
             mockSmsDataProcessor
         )
 
