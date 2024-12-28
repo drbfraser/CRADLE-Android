@@ -13,6 +13,7 @@ import com.cradleplatform.neptune.database.daos.ReadingDao
 import com.cradleplatform.neptune.database.daos.ReferralDao
 import com.cradleplatform.neptune.http_sms_service.http.Http
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
+import com.cradleplatform.neptune.http_sms_service.sms.SMSReceiver
 import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
 import com.cradleplatform.neptune.http_sms_service.sms.SmsStateReporter
 import com.cradleplatform.neptune.http_sms_service.sms.utils.SMSDataProcessor
@@ -142,9 +143,17 @@ class DataModule {
         http: Http,
         smsStateReporter: SmsStateReporter,
         smsSender: SMSSender,
+        smsReceiver: SMSReceiver,
         smsDataProcessor: SMSDataProcessor,
     ) = RestApi(
-        context, sharedPreferences, urlManager, http, smsStateReporter, smsSender, smsDataProcessor
+        context,
+        sharedPreferences,
+        urlManager,
+        http,
+        smsStateReporter,
+        smsSender,
+        smsReceiver,
+        smsDataProcessor
     )
 
     @Provides

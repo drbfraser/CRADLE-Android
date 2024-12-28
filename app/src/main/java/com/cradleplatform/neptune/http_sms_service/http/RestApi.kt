@@ -84,31 +84,19 @@ class RestApi(
     private val http: Http,
     private val smsStateReporter: SmsStateReporter,
     private val smsSender: SMSSender,
+    private val smsReceiver: SMSReceiver,
     private val smsDataProcessor: SMSDataProcessor
 ) {
-    private lateinit var smsReceiver: SMSReceiver
-
     companion object {
         private const val TAG = "RestApi"
     }
 
     private fun setupSmsReceiver() {
-        val phoneNumber = sharedPreferences.getString(UserViewModel.RELAY_PHONE_NUMBER, null)
-            ?: error("Invalid phone number")
-
-        /* TODO: Do we need to instantiate a new one every time? Can we not just
-            register/unregister a single instance? */
-        smsReceiver = SMSReceiver(smsSender, phoneNumber, smsStateReporter)
-
-        val intentFilter = IntentFilter()
-        intentFilter.addAction("android.provider.Telephony.SMS_RECEIVED")
-        intentFilter.priority = Int.MAX_VALUE
-
-        context.registerReceiver(smsReceiver, intentFilter)
+        smsReceiver.register()
     }
 
     private fun teardownSmsReceiver() {
-        context.unregisterReceiver(smsReceiver)
+        smsReceiver.unregister()
     }
 
     // TODO: This only handles the case for endpoints that return status code 200 when successful.
@@ -147,6 +135,7 @@ class RestApi(
                 smsStateReporter.stateToCollect.asFlow().collect { state ->
                     when (state) {
                         SmsTransmissionStates.DONE -> {
+                            /* TODO: Check code of SMS response. */
                             val response =
                                 JacksonMapper.mapper.readValue(smsStateReporter.decryptedMsgLiveData.value,
                                     object : TypeReference<T>() {})
