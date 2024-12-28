@@ -10,6 +10,7 @@ import com.cradleplatform.neptune.model.UserRole
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
 import com.cradleplatform.neptune.sync.PeriodicSyncer
+import com.cradleplatform.neptune.sync.workers.SyncAllWorker
 import com.cradleplatform.neptune.utilities.SharedPreferencesMigration
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -150,7 +151,14 @@ class LoginManager @Inject constructor(
             remove(EMAIL_KEY)
             remove(USERNAME_KEY)
             remove(PHONE_NUMBERS)
-            remove(RELAY_PHONE_NUMBER)
+
+            /* Need to do this because the database gets cleared.
+             * Will re-sync all data upon next login. */
+            remove(SyncAllWorker.LAST_PATIENT_SYNC)
+            remove(SyncAllWorker.LAST_READING_SYNC)
+            remove(SyncAllWorker.LAST_REFERRAL_SYNC)
+            remove(SyncAllWorker.LAST_ASSESSMENT_SYNC)
+            remove(SyncAllWorker.LAST_HEALTH_FACILITIES_SYNC)
         }
         smsKeyManager.clearSmsKey()
     }
