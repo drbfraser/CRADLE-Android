@@ -236,6 +236,9 @@ internal class LoginManagerTests {
             assert(fakeSharedPreferences["accessToken"] == null) {
                 "Access Token was not cleared from Shared Preferences after logging out."
             }
+            assert(fakeSharedPreferences["lastSyncTime"] == null) {
+                "lastSyncTime was not cleared from Shared Preferences after logging out."
+            }
         }
     }
 
