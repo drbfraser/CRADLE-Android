@@ -130,7 +130,7 @@ data class Question(
     @SerializedName("questionType") val questionType: QuestionTypeEnum?,
     @SerializedName("hasCommentAttached") val hasCommentAttached: Boolean?,
     @SerializedName("required") val required: Boolean?,
-    @SerializedName("questionLangVersions") val languageVersions: List<QuestionLangVersion>?
+    @SerializedName("langVersions") val languageVersions: List<QuestionLangVersion>?
 ) : Serializable {
 
     override fun toString(): String {
