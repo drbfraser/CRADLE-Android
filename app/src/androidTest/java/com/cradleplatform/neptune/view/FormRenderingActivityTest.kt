@@ -85,7 +85,9 @@ class FormRenderingActivityTest{
                 hasCommentAttached = false,
                 required = false,
                 languageVersions = listOf(QuestionLangVersion("test-language",
-                    "test-parent","Test $i",i,null))
+                    "test-parent","Test $i",i,null)),
+                allowPastDates = true,
+                allowFutureDates = true
             )
             val categoryQuestion = Question(
                 id = "C$i",
@@ -102,7 +104,9 @@ class FormRenderingActivityTest{
                 hasCommentAttached = false,
                 required = false,
                 languageVersions = listOf(QuestionLangVersion("test-language",
-                    "test-parent","Category #$i",i,null))
+                    "test-parent","Category #$i",i,null)),
+                allowPastDates = true,
+                allowFutureDates = true
             )
             questions.add(stringQuestion)
             questions.add(categoryQuestion)

@@ -80,6 +80,7 @@ class FormRenderingViewModel @Inject constructor(
     }
 
     fun setCategorizedQuestions(languageSelected: String, context: Context) {
+        Log.d("FormTemplateDebug", "Questions: ${currentFormTemplate?.questions}")
         categoryList = getCategorizedQuestions(languageSelected, context)
     }
 
