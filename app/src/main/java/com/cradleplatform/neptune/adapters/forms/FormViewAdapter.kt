@@ -338,7 +338,21 @@ class FormViewAdapter(
             day
         )
 
-        dpd.datePicker.maxDate = System.currentTimeMillis()
+        // find question based on questionID
+        val question = mList.find { it.questionId == questionId }
+
+        // check if question is of type Date
+        if (question?.questionType == DATE) {
+            // apply past date restriction (if selected)
+            if (question.allowPastDates == false) {
+                dpd.datePicker.minDate = System.currentTimeMillis()
+            }
+            // apply future date restriction (if selected)
+            if (question.allowFutureDates == false) {
+                dpd.datePicker.maxDate = System.currentTimeMillis()
+            }
+        }
+
         dpd.show()
     }
 
@@ -422,7 +436,8 @@ class FormViewAdapter(
         } else if (type == INTEGER) {
             if (hint.text.isEmpty()) {
                 if (isRequired) {
-                    hint.hint = context.getString(R.string.is_required) + ": " +
+                    hint.hint =
+                        context.getString(R.string.is_required) + ": " +
                         context.getString(R.string.data_range) + "($numMin, $numMax)"
                 } else {
                     hint.hint = context.getString(R.string.is_optional)

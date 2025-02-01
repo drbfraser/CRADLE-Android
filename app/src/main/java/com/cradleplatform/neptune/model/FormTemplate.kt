@@ -117,6 +117,8 @@ enum class QuestionTypeEnum {
 }
 
 data class Question(
+    @SerializedName("allowPastDates") val allowPastDates: Boolean?,
+    @SerializedName("allowFutureDates") val allowFutureDates: Boolean?,
     @SerializedName("id") val id: String?,
     @SerializedName("visibleCondition") val visibleCondition: List<VisibleCondition>?,
     @SerializedName("isBlank") val isBlank: Boolean?, // Should be true for FormTemplates
@@ -135,6 +137,8 @@ data class Question(
 
     override fun toString(): String {
         return "Question(id=$id, " +
+            "allowPastDates=$allowPastDates, " +
+            "allowFutureDates=$allowFutureDates, " +
             "visibleCondition=$visibleCondition, " +
             "isBlank=$isBlank, " +
             "formTemplateId=$formTemplateId," +

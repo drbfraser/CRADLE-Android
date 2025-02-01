@@ -139,7 +139,9 @@ class FormRenderingViewModelTest {
         required: Boolean,
         id: String? = "generic_id",
         stringMaxLines: Int? = null,
-        questionTypeEnum: QuestionTypeEnum = QuestionTypeEnum.INTEGER
+        questionTypeEnum: QuestionTypeEnum = QuestionTypeEnum.INTEGER,
+        allowPastDates: Boolean = true,
+        allowFutureDates: Boolean = true
     ): Question {
         return Question(
             id = id,
@@ -155,7 +157,9 @@ class FormRenderingViewModelTest {
             questionType = questionTypeEnum,
             hasCommentAttached = false,
             required = required,
-            languageVersions = null
+            languageVersions = null,
+            allowPastDates = allowPastDates,
+            allowFutureDates = allowFutureDates
         )
     }
 }
