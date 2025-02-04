@@ -108,7 +108,7 @@ constructor(
                 )
             }
 
-            val response = answers[question.questionId]
+            val response = answers[question.id]
             val languageVersion = question.languageVersions?.find { it.language == language }
             val languageQuestionText = languageVersion?.questionText
                 ?: throw IllegalArgumentException(
@@ -140,7 +140,7 @@ constructor(
                     "Failed to create FormResponse: Required question does not have an answer $question"
                 )
             } else {
-                Log.w(TAG, "Answer Missing for questionId(${question.questionId}) in form ${question.formTemplateId}")
+                Log.w(TAG, "Answer Missing for question id(${question.id}) in form ${question.formTemplateId}")
             }
         }
 

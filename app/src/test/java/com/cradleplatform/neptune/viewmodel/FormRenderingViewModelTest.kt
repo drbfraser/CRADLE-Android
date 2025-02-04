@@ -89,7 +89,7 @@ class FormRenderingViewModelTest {
         )
         val formTemplate = FormTemplate(null, null, null, null, null, null, questions)
         viewModel.currentFormTemplate = formTemplate
-        viewModel.addAnswer(questions[0].questionId!!, Answer.createTextAnswer("\n \n \n"))
+        viewModel.addAnswer(questions[0].id!!, Answer.createTextAnswer("\n \n \n"))
 
         Mockito.`when`(context.getString(R.string.form_generic_field_exceeds_line_limit))
             .thenReturn("Some fields exceed line limit")
@@ -115,7 +115,7 @@ class FormRenderingViewModelTest {
         viewModel.populateEmptyIds(context)
 
         viewModel.currentFormTemplate?.questions?.forEach {
-            assert(it.questionId?.isNotEmpty() == true)
+            assert(it.id?.isNotEmpty() == true)
         }
     }
 
@@ -131,7 +131,7 @@ class FormRenderingViewModelTest {
         viewModel.populateEmptyIds(context)
 
         viewModel.currentFormTemplate?.questions?.forEach {
-            assert(it.questionId?.isNotEmpty() == true)
+            assert(it.id?.isNotEmpty() == true)
         }
     }
 
@@ -153,7 +153,6 @@ class FormRenderingViewModelTest {
             numMax = null,
             stringMaxLength = null,
             stringMaxLines = stringMaxLines,
-            questionId = id,
             questionType = questionTypeEnum,
             hasCommentAttached = false,
             required = required,
