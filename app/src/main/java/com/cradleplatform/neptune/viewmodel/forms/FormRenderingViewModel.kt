@@ -73,8 +73,8 @@ class FormRenderingViewModel @Inject constructor(
 
     fun populateEmptyIds(context: Context) {
         currentFormTemplate?.questions?.forEachIndexed { index, Q ->
-            if (Q.questionId?.isEmpty() == true && Q.questionType != QuestionTypeEnum.CATEGORY) {
-                Q.questionId = String.format(context.getString(R.string.form_generic_id), index)
+            if (Q.id?.isEmpty() == true && Q.questionType != QuestionTypeEnum.CATEGORY) {
+                Q.id = String.format(context.getString(R.string.form_generic_id), index)
             }
         }
     }
@@ -200,8 +200,8 @@ class FormRenderingViewModel @Inject constructor(
 
     fun addBlankQuestions(formTemplate: FormTemplate) {
         for (i in 1 until formTemplate.questions!!.size) {
-            if (!currentAnswers.containsKey(formTemplate.questions[i].questionId.toString())) {
-                currentAnswers[formTemplate.questions[i].questionId.toString()] =
+            if (!currentAnswers.containsKey(formTemplate.questions[i].id.toString())) {
+                currentAnswers[formTemplate.questions[i].id.toString()] =
                     Answer.createEmptyAnswer()
             }
         }
@@ -278,7 +278,7 @@ class FormRenderingViewModel @Inject constructor(
         context: Context
     ): Pair<Boolean, String?> {
         fullQuestionList().forEach {
-            val answer = currentAnswers[it.questionId]
+            val answer = currentAnswers[it.id]
 
             /**
              * Checks of if all required fields are filled
@@ -362,7 +362,7 @@ class FormRenderingViewModel @Inject constructor(
         var totalAnswered = 0
         var hasErrors = false
         questions?.forEach {
-            val currAnswer = currentAnswers[it.questionId]
+            val currAnswer = currentAnswers[it.id]
             if (it.required == true) {
                 if (currAnswer != null) {
                     totalAnswered++
@@ -388,7 +388,7 @@ class FormRenderingViewModel @Inject constructor(
         var totalAnswered = 0
         questions?.forEach {
             if (it.required != true) {
-                if (currentAnswers[it.questionId] != null) {
+                if (currentAnswers[it.id] != null) {
                     totalAnswered++
                 }
                 total++

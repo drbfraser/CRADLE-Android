@@ -117,9 +117,9 @@ enum class QuestionTypeEnum {
 }
 
 data class Question(
+    @SerializedName("id") var id: String?,
     @SerializedName("allowPastDates") val allowPastDates: Boolean?,
     @SerializedName("allowFutureDates") val allowFutureDates: Boolean?,
-    @SerializedName("id") val id: String?,
     @SerializedName("visibleCondition") val visibleCondition: List<VisibleCondition>?,
     @SerializedName("isBlank") val isBlank: Boolean?, // Should be true for FormTemplates
     @SerializedName("formTemplateId") val formTemplateId: String?, // Backend-Nullable
@@ -128,15 +128,14 @@ data class Question(
     @SerializedName("numMax") val numMax: Double?, // Backend-Nullable
     @SerializedName("stringMaxLength") val stringMaxLength: Int?, // Backend-Nullable
     @SerializedName("stringMaxLines") val stringMaxLines: Int?, // Backend-Nullable
-    @SerializedName("questionId") var questionId: String?,
     @SerializedName("questionType") val questionType: QuestionTypeEnum?,
     @SerializedName("hasCommentAttached") val hasCommentAttached: Boolean?,
     @SerializedName("required") val required: Boolean?,
-    @SerializedName("questionLangVersions") val languageVersions: List<QuestionLangVersion>?
+    @SerializedName("langVersions") val languageVersions: List<QuestionLangVersion>?
 ) : Serializable {
 
     override fun toString(): String {
-        return "Question(id=$id, " +
+        return "Question(questionId=$id, " +
             "allowPastDates=$allowPastDates, " +
             "allowFutureDates=$allowFutureDates, " +
             "visibleCondition=$visibleCondition, " +
@@ -147,7 +146,6 @@ data class Question(
             "numMax=$numMax, " +
             "stringMaxLength=$stringMaxLength, " +
             "stringMaxLines=$stringMaxLines, " +
-            "questionId=$questionId, " +
             "questionType=$questionType, " +
             "hasCommentAttached=$hasCommentAttached, " +
             "required=$required, " +
@@ -163,7 +161,7 @@ data class Question(
 
         this@Question.id ?: let {
             nullCheckResult = false
-            Log.w(TAG, "[id] was null")
+            Log.w(TAG, "[questionId] was null")
         }
         this@Question.isBlank ?: let {
             nullCheckResult = false

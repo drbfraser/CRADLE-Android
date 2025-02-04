@@ -93,7 +93,7 @@ class FormViewAdapter(
         //Depending on question type, we are setting one of the four possible types of inputs to visible.
         holder.binding.tvQuestion.textSize = 18f
 
-        val questionID = mList[position].questionId!!
+        val questionID = mList[position].id!!
 
         //Using Enum caused problems
         when (mList[position].questionType.toString()) {
@@ -119,7 +119,7 @@ class FormViewAdapter(
                 setHint(textView, mList[position], context)
 
                 //If question has answer repopulate it
-                val answer = viewModel.getTextAnswer(mList[position].questionId)
+                val answer = viewModel.getTextAnswer(mList[position].id)
                 if (answer?.isNotEmpty() == true) {
                     textView.text = answer
                 }
@@ -134,7 +134,7 @@ class FormViewAdapter(
                         context,
                         holder.binding.btnDateTimePicker,
                         holder,
-                        mList[position].questionId
+                        mList[position].id
                     )
                 }
             }
@@ -148,7 +148,7 @@ class FormViewAdapter(
                         context,
                         holder.binding.btnDatePicker,
                         holder,
-                        mList[position].questionId
+                        mList[position].id
                     )
                 }
             }
@@ -158,7 +158,7 @@ class FormViewAdapter(
                 setHint(holder.binding.etNumAnswer, mList[position], context)
 
                 //If question has answer repopulate it
-                viewModel.getNumericAnswer(mList[position].questionId)?.toInt()?.let {
+                viewModel.getNumericAnswer(mList[position].id)?.toInt()?.let {
                     val textView = holder.binding.etNumAnswer as TextView
                     textView.text = it.toString()
                 }
@@ -187,7 +187,7 @@ class FormViewAdapter(
                     holder.binding.rgMultipleChoice.addView(radioButton)
 
                     //logic for pre population
-                    when (mList[position].questionId) {
+                    when (mList[position].id) {
 
                         context.getString(R.string.form_patient_sex) -> {
                             if (patient?.sex?.name?.equals(it.opt, true) == true) {
@@ -213,12 +213,12 @@ class FormViewAdapter(
                 if (autoFillMCId != -1) {
                     holder.binding.rgMultipleChoice.check(autoFillMCId)
                     //add answer to viewmodel
-                    mList[position].questionId?.let {
+                    mList[position].id?.let {
                         viewModel.addAnswer(it, Answer.createMcAnswer(listOf(autoFillMCId)))
                     }
                 } else {
                     //If question has answer repopulate it
-                    viewModel.getMCAnswer(mList[position].questionId)?.getOrNull(0)?.let {
+                    viewModel.getMCAnswer(mList[position].id)?.getOrNull(0)?.let {
                         holder.binding.rgMultipleChoice.check(it)
                     }
                 }
@@ -273,7 +273,7 @@ class FormViewAdapter(
 
     private fun setEditTextListeners(position: Int, holder: ViewHolder) {
         val question = mList[position]
-        val questionID = question.questionId!!
+        val questionID = question.id!!
         val maxLines = question.stringMaxLines
 
         //String Answers Listener
@@ -339,7 +339,7 @@ class FormViewAdapter(
         )
 
         // find question based on questionID
-        val question = mList.find { it.questionId == questionId }
+        val question = mList.find { it.id == questionId }
 
         // check if question is of type Date
         if (question?.questionType == DATE) {
@@ -423,7 +423,7 @@ class FormViewAdapter(
         val numMax: Double? = question.numMax
         val isRequired = question.required!!
 
-        prePopulateText(hint, question.questionId)
+        prePopulateText(hint, question.id)
 
         if (type == STRING) {
             if (hint.text.isEmpty()) {
