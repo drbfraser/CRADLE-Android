@@ -17,7 +17,12 @@ class SMSDataProcessor @Inject constructor(private val urlManager: UrlManager) {
     // TODO: Add target API endpoint information needed by the backend to json ??
     // TODO: requestNumber=0 as it is not implemented in the backend yet
 
-    fun processRequestDataToJSON(method: Http.Method, url: String, headers: String, body: ByteArray): String {
+    fun processRequestDataToJSON(
+        method: Http.Method,
+        url: String,
+        headers: Map<String, String>,
+        body: ByteArray
+    ): String {
         val uri = Uri.parse(url)
         val endpoint = uri.path ?: throw Exception("URL path is null")
         return JacksonMapper.createWriter<SmsJsonData>().writeValueAsString(
@@ -36,6 +41,6 @@ data class SmsJsonData(
     val requestNumber: String,
     val method: String,
     val endpoint: String,
-    val headers: String,
+    val headers: Map<String, String>,
     val body: String
 )
