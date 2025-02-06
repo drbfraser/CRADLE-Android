@@ -1,7 +1,6 @@
 package com.cradleplatform.neptune.http_sms_service.http
 
 import android.content.Context
-import android.content.IntentFilter
 import android.content.SharedPreferences
 import android.util.Log
 import androidx.core.content.edit
@@ -49,8 +48,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.SendChannel
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.ExperimentalSerializationApi
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
@@ -61,8 +60,6 @@ import java.net.HttpURLConnection
 import javax.inject.Singleton
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.decodeFromStream
 
 /**
  * Provides type-safe methods for interacting with the CRADLE server API.
@@ -78,7 +75,6 @@ import kotlinx.serialization.json.decodeFromStream
  * threw an exception when sending the request or handling the response.
  * A timeout is one such cause of an exception for example.
  */
-@OptIn(ExperimentalSerializationApi::class)
 @Singleton
 class RestApi(
     private val context: Context,
@@ -87,45 +83,34 @@ class RestApi(
     private val http: Http,
     private val smsStateReporter: SmsStateReporter,
     private val smsSender: SMSSender,
+    private val smsReceiver: SMSReceiver,
     private val smsDataProcessor: SMSDataProcessor
 ) {
-    private lateinit var smsReceiver: SMSReceiver
-
-    @OptIn(ExperimentalEncodingApi::class)
-    private val base64 = Base64.withPadding(Base64.PaddingOption.PRESENT_OPTIONAL)
-
     companion object {
         private const val TAG = "RestApi"
-        private const val UNIT_VALUE_WEEKS = "WEEKS"
-        private const val UNIT_VALUE_MONTHS = "MONTHS"
     }
 
     private fun setupSmsReceiver() {
-        val phoneNumber = sharedPreferences.getString(UserViewModel.RELAY_PHONE_NUMBER, null)
-            ?: error("Invalid phone number")
-
-        smsReceiver = SMSReceiver(smsSender, phoneNumber, smsStateReporter)
-
-        val intentFilter = IntentFilter()
-        intentFilter.addAction("android.provider.Telephony.SMS_RECEIVED")
-        intentFilter.priority = Int.MAX_VALUE
-
-        context.registerReceiver(smsReceiver, intentFilter)
+        smsReceiver.register()
     }
 
     private fun teardownSmsReceiver() {
-        context.unregisterReceiver(smsReceiver)
+        smsReceiver.unregister()
     }
 
     // TODO: This only handles the case for endpoints that return status code 200 when successful.
     //       Additional logic is necessary for if an endpoint has multiple successful status codes
     //       (e.g. 200 and 201)
+    /* TODO: Currently, the [NetworkResult] will be returned as a [NetworkResult.Success] if a
+    *   response from the SMS Relay App is received, but it isn't looking at the actual [code]
+    *   field of the decoded message. So even if the relayed request fails and gets an error status
+    *    code, the [NetworkResult] will still be reported as successful. */
     private suspend inline fun <reified T> handleSmsRequest(
         method: Http.Method,
         url: String,
         headers: Map<String, String>,
         body: ByteArray = Gson().toJson(JsonObject()).toByteArray(),
-    ): NetworkResult<T> {
+    ): NetworkResult<T> = withContext(IO) {
         val channel = Channel<NetworkResult<T>>()
         setupSmsReceiver()
 
@@ -139,45 +124,61 @@ class RestApi(
                 }
             }
 
-            smsStateReporter.stateToCollect.asFlow().collect { state ->
-                when (state) {
-                    SmsTransmissionStates.DONE -> {
-                        val response =
-                            JacksonMapper.mapper.readValue(smsStateReporter.decryptedMsgLiveData.value,
-                                object : TypeReference<T>() {})
+            /**
+             * `collect()` will suspend until the flow is complete, but this flow will continue
+             * indefinitely. Therefore, we need to launch a separate coroutine for it to run in.
+             * This will allow us to continue to the `channel.receive()` call which will suspend
+             * until a `channel.send()` call is made.
+             */
+            val flowCollectJob = launch {
+                smsStateReporter.stateToCollect.asFlow().collect { state ->
+                    when (state) {
+                        SmsTransmissionStates.DONE -> {
+                            /* TODO: Check code of SMS response. */
+                            val response =
+                                JacksonMapper.mapper.readValue(smsStateReporter.decryptedMsgLiveData.value,
+                                    object : TypeReference<T>() {})
 
-                        channel.send(
-                            NetworkResult.Success(
-                                response, HttpURLConnection.HTTP_OK
-                            )
-                        )
-                    }
-
-                    SmsTransmissionStates.EXCEPTION -> {
-                        channel.send(
-                            NetworkResult.Failure(
-                                smsStateReporter.errorMessageToCollect.value!!.toByteArray(),
-                                smsStateReporter.errorCodeToCollect.value!!
-                            )
-                        )
-                    }
-
-                    SmsTransmissionStates.TIME_OUT -> {
-                        channel.send(
-                            NetworkResult.NetworkException(
-                                SMSTimeoutException(
-                                    "SMS has timed out"
+                            channel.send(
+                                NetworkResult.Success(
+                                    response, HttpURLConnection.HTTP_OK
                                 )
                             )
-                        )
-                    }
+                        }
 
-                    else -> {}
+                        SmsTransmissionStates.EXCEPTION -> {
+                            channel.send(
+                                NetworkResult.Failure(
+                                    smsStateReporter.errorMessageToCollect.value!!.toByteArray(),
+                                    smsStateReporter.errorCodeToCollect.value!!
+                                )
+                            )
+                        }
+
+                        SmsTransmissionStates.TIME_OUT -> {
+                            channel.send(
+                                NetworkResult.NetworkException(
+                                    SMSTimeoutException(
+                                        "SMS has timed out"
+                                    )
+                                )
+                            )
+                        }
+
+                        else -> {}
+                    }
                 }
             }
-            return channel.receive()
+
+            val result = channel.receive()
+            /* Returning will suspend until all child jobs are complete.
+             * The flow is infinite, so the collect job will never complete. Therefore, we must
+             * manually cancel it, otherwise the thread will be blocked forever.
+             * */
+            flowCollectJob.cancel()
+            return@withContext result
         } catch (e: IOException) {
-            return NetworkResult.NetworkException(e)
+            return@withContext NetworkResult.NetworkException(e)
         } finally {
             channel.close()
             smsStateReporter.stateToCollect.postValue(SmsTransmissionStates.GETTING_READY_TO_SEND)
@@ -211,7 +212,7 @@ class RestApi(
             headers = headers,
             requestBody = buildJsonRequestBody(body),
             inputStreamReader = {
-                Json { ignoreUnknownKeys = true }.decodeFromStream<LoginResponse>(it)
+                JacksonMapper.createReader<LoginResponse>().readValue<LoginResponse>(it)
             })
     }
 
@@ -253,7 +254,7 @@ class RestApi(
             val errorMessage = result.getStatusMessage(context)
             Log.e(TAG, "Failed to refresh access token:")
             if (errorMessage != null) {
-                Log.e(TAG, "$errorMessage")
+                Log.e(TAG, errorMessage)
             }
             return@withContext null
         }
@@ -1176,7 +1177,6 @@ class RestApi(
 
     object PregnancyResponse {
         var id: Int? = null
-        var gestationalAgeUnit: String? = null
         var lastEdited: Int? = null
         var patientId: String? = null
         var pregnancyEndDate: Int? = null
@@ -1335,7 +1335,7 @@ class RestApi(
         http.makeRequest(method = method,
             url = url,
             headers = headers,
-            inputStreamReader = { Json.decodeFromStream<SmsKey>(it) })
+            inputStreamReader = { JacksonMapper.createReader<SmsKey>().readValue<SmsKey>(it) })
     }
 
     suspend fun refreshSmsKey(userID: Int): NetworkResult<SmsKey> = withContext(IO) {
@@ -1353,7 +1353,7 @@ class RestApi(
             url = url,
             headers = headers,
             requestBody = requestBody,
-            inputStreamReader = { Json.decodeFromStream<SmsKey>(it) })
+            inputStreamReader = { JacksonMapper.createReader<SmsKey>().readValue<SmsKey>(it) })
     }
 
     suspend fun getNewSmsKey(userID: Int): NetworkResult<SmsKey?> = withContext(IO) {
@@ -1373,7 +1373,7 @@ class RestApi(
             requestBody = requestBody,
             inputStreamReader = {
                 try {
-                    Json.decodeFromStream<SmsKey>(it)
+                    JacksonMapper.createReader<SmsKey>().readValue<SmsKey>(it)
                 } catch (e: Exception) {
                     null
                 }
@@ -2251,7 +2251,7 @@ class RestApi(
         val sections = accessToken.split(".")
         return try {
             val charset = charset("UTF-8")
-            val payload = String(base64.decode(sections[1].toByteArray(charset)), charset)
+            val payload = String(Base64.decode(sections[1].toByteArray(charset)), charset)
             val payloadJson = JSONObject(payload)
             payloadJson.getLong("exp")
         } catch (e: Exception) {
@@ -2265,7 +2265,7 @@ class RestApi(
      *
      * @return The access token if it is not expired, or the refreshed access token.
      */
-    private suspend fun verifyAccessToken(): String? {
+    private suspend fun getAccessToken(): String? {
         val accessToken =
             sharedPreferences.getString(UserViewModel.ACCESS_TOKEN_KEY, null) ?: return null
         // Get expiry claim from access token JWT.
@@ -2275,7 +2275,7 @@ class RestApi(
         val currentDateTime = java.util.Date()
         val currentTimestamp: Long = currentDateTime.time / 1000
 
-        // If expiration is more than 5 minutes from now, don't do anything.
+        // If expiration is more than 3 minutes from now, don't do anything.
         if (exp > currentTimestamp - 300) return accessToken
 
         // If access token is expired, make a request to the refresh_token endpoint to get a new one
@@ -2288,7 +2288,7 @@ class RestApi(
      * to refresh it.
      */
     private suspend fun makeAuthorizationHeader(): Map<String, String> {
-        verifyAccessToken()
+        getAccessToken()
         val accessToken = sharedPreferences.getString(UserViewModel.ACCESS_TOKEN_KEY, null)
         return if (accessToken != null) {
             mapOf("Authorization" to "Bearer $accessToken")

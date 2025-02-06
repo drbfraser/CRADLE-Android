@@ -1,6 +1,5 @@
 package com.cradleplatform.neptune.http_sms_service.sms
 
-import android.app.Activity
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Handler
@@ -8,15 +7,10 @@ import android.os.Looper
 import android.telephony.SmsManager
 import android.widget.Toast
 import com.cradleplatform.neptune.R
-import com.cradleplatform.neptune.http_sms_service.sms.ui.SmsTransmissionDialogFragment
 import com.cradleplatform.neptune.manager.SmsKeyManager
 import com.cradleplatform.neptune.http_sms_service.sms.SMSFormatter.Companion.encodeMsg
 import com.cradleplatform.neptune.http_sms_service.sms.SMSFormatter.Companion.formatSMS
-import com.cradleplatform.neptune.activities.forms.FormRenderingActivity
-import com.cradleplatform.neptune.activities.patients.PatientReferralActivity
-import com.cradleplatform.neptune.activities.newPatient.ReadingActivity
 import com.cradleplatform.neptune.viewmodel.UserViewModel
-import androidx.fragment.app.Fragment
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -28,15 +22,6 @@ class SMSSender @Inject constructor(
     private val smsStateReporter: SmsStateReporter,
 ) {
     private var smsRelayQueue = ArrayDeque<String>()
-        ?: // TODO: handle the case when the secret key is not available
-        error("Encryption failed - no valid smsSecretKey is available")
-    // TODO: Remove this once State LiveData reporting is added
-    // Activities based on a "Finished" State instead of from here.
-    private var activityContext: Context? = null
-    fun setActivityContext(activity: Context) {
-        activityContext = activity
-    }
-
     var showDialog = true
     var data = ""
     fun queueRelayContent(unencryptedData: String): Boolean {
@@ -51,13 +36,6 @@ class SMSSender @Inject constructor(
     }
 
     fun sendSmsMessage(acknowledged: Boolean) {
-        if (!acknowledged && showDialog) {
-            if (activityContext != null) {
-                activityContext!!.showDialog()
-            } else {
-                appContext.showDialog()
-            }
-        }
         val relayPhoneNumber = sharedPreferences.getString(UserViewModel.RELAY_PHONE_NUMBER, null)
         val smsManager: SmsManager = SmsManager.getDefault()
         smsStateReporter.state.postValue(SmsTransmissionStates.SENDING_TO_RELAY_SERVER)
@@ -143,25 +121,6 @@ class SMSSender @Inject constructor(
                     Toast.LENGTH_LONG
                 ).show()
             }
-            // TODO: Remove this after State reporting is implemented. Move logic to Activity instead.
-            if (activityContext is ReadingActivity || activityContext is PatientReferralActivity
-                || activityContext is FormRenderingActivity
-            ) {
-                (activityContext as Activity).finish()
-                activityContext = null
-            }
-        }
-    }
-
-    private fun Context.showDialog() {
-        val fragmentManager = when (this) {
-            is Fragment -> childFragmentManager
-            is androidx.fragment.app.FragmentActivity -> supportFragmentManager
-            else -> null
-        }
-        fragmentManager?.let {
-            val dialog = SmsTransmissionDialogFragment(smsStateReporter, this@SMSSender)
-            dialog.show(it, "sms transmission dialog")
         }
     }
 

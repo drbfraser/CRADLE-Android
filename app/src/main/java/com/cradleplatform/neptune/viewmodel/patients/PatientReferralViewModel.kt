@@ -1,6 +1,7 @@
 package com.cradleplatform.neptune.viewmodel.patients
 
 import android.content.SharedPreferences
+import android.util.Log
 import androidx.annotation.MainThread
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
@@ -8,29 +9,25 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
 import com.cradleplatform.neptune.ext.getIntOrNull
-import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
 import com.cradleplatform.neptune.http_sms_service.sms.utils.SMSDataProcessor
 import com.cradleplatform.neptune.manager.HealthFacilityManager
+import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.manager.ReferralManager
 import com.cradleplatform.neptune.model.HealthFacility
 import com.cradleplatform.neptune.model.Patient
-import com.cradleplatform.neptune.model.PatientAndReferrals
 import com.cradleplatform.neptune.model.Referral
-import com.cradleplatform.neptune.utilities.Protocol
 import com.cradleplatform.neptune.utilities.UnixTimestamp
 import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager
 import com.cradleplatform.neptune.viewmodel.UserViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import java.net.HttpURLConnection
 import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
 class PatientReferralViewModel @Inject constructor(
     private val referralManager: ReferralManager, //for the internal database
+    private val patientManager: PatientManager,
     networkStateManager: NetworkStateManager,
     private val sharedPreferences: SharedPreferences,
     healthFacilityManager: HealthFacilityManager,
@@ -100,66 +97,31 @@ class PatientReferralViewModel @Inject constructor(
 
     private fun isHealthCentreStringValid(healthFacility: String?) = !healthFacility.isNullOrBlank()
 
-    suspend fun saveReferral(
-        protocol: Protocol,
-        patient: Patient,
-    ): ReferralFlowSaveResult = withContext(Dispatchers.Default) {
+    /**
+     * Create a [Referral] object.
+     */
+    fun buildReferral(patient: Patient): Referral {
         val currentTime = UnixTimestamp.now.toLong()
-        //create a referral object
-        val referral =
-            Referral(
-                id = UUID.randomUUID().toString(),
-                comment = comments.value,
-                healthFacilityName = healthFacilityToUse.value
-                    ?: error("No health facility selected"),
-                dateReferred = currentTime,
-                userId = sharedPreferences.getIntOrNull(UserViewModel.USER_ID_KEY),
-                patientId = patient.id,
-                actionTaken = null,
-                cancelReason = null,
-                notAttendReason = null,
-                isAssessed = false,
-                isCancelled = false,
-                notAttended = false,
-                lastEdited = currentTime
-            )
-
-        val patientExists: Boolean =
-            when (val result = restApi.getPatientInfo(patient.id, protocol)) {
-                is NetworkResult.Success -> true
-                is NetworkResult.Failure -> if (result.statusCode == HttpURLConnection.HTTP_NOT_FOUND) {
-                    false
-                } else {
-                    return@withContext ReferralFlowSaveResult.ErrorUploadingReferral
-                }
-                is NetworkResult.NetworkException -> return@withContext ReferralFlowSaveResult.ErrorUploadingReferral
-            }
-
-        if (patientExists) {
-            restApi.postReferral(referral, protocol)
-        } else {
-            restApi.postPatient(PatientAndReferrals(patient, listOf(referral)), protocol)
-        }
-
-        // saves the data in internal db
-        handleStoringReferralFromBuilders(referral)
-
-        /**
-         * This line is just a placeholder to avoid a return error.
-         * Again, the way success is handled is not ideal, even if it might work
-         * with the current structure, the flow is extremely disconnected and
-         * does not work with all the components, we want a unified approach to
-         * handling all sms / http transactions #refer to issue #111
-         */
-        return@withContext ReferralFlowSaveResult.SaveSuccessful.NoSmsNeeded
+        return Referral(
+            id = UUID.randomUUID().toString(),
+            comment = comments.value,
+            healthFacilityName = healthFacilityToUse.value
+                ?: error("No health facility selected"),
+            dateReferred = currentTime,
+            userId = sharedPreferences.getIntOrNull(UserViewModel.USER_ID_KEY),
+            patientId = patient.id,
+            actionTaken = null,
+            cancelReason = null,
+            notAttendReason = null,
+            isAssessed = false,
+            isCancelled = false,
+            notAttended = false,
+            lastEdited = currentTime
+        )
     }
 
-    /**
-     * Will always save the referral to the database.
-     */
-    private suspend fun handleStoringReferralFromBuilders(
-        referralFromBuilder: Referral
-    ) {
-        referralManager.addReferral(referralFromBuilder, false)
+    override fun onCleared() {
+        Log.i("PatientReferralViewModel", "onCleared()")
+        super.onCleared()
     }
 }

@@ -2,6 +2,7 @@ package com.cradleplatform.neptune.http_sms_service.sms.ui
 
 import android.os.Bundle
 import android.os.CountDownTimer
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,20 +10,21 @@ import android.widget.Button
 import android.widget.TextView
 import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.viewModels
 import com.cradleplatform.neptune.R
-import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
-import com.cradleplatform.neptune.http_sms_service.sms.SmsStateReporter
 import com.cradleplatform.neptune.http_sms_service.sms.SmsTransmissionStates
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
 
 @AndroidEntryPoint
-class SmsTransmissionDialogFragment @Inject constructor(
-    private val smsStateReporter: SmsStateReporter,
-    private val smsSender: SMSSender,
-) : DialogFragment() {
-    private val viewModel = SmsTransmissionDialogViewModel(smsStateReporter)
+class SmsTransmissionDialogFragment : DialogFragment() {
+
+    private val viewModel: SmsTransmissionDialogViewModel by viewModels()
     private lateinit var timer: CountDownTimer
+
+    companion object {
+        const val TAG = "SmsTransmissionDialogFragment"
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -58,19 +60,22 @@ class SmsTransmissionDialogFragment @Inject constructor(
         viewModel.receiveProgress.observe(viewLifecycleOwner) {
             receiveProgressMessage.text = it
         }
-        smsStateReporter.retry.observe(viewLifecycleOwner) {
+        viewModel.smsStateReporter.retry.observe(viewLifecycleOwner) {
+            val smsStateReporter = viewModel.smsStateReporter
             if (it) {
                 if (::timer.isInitialized) {
                     timer.cancel()
                 }
                 retryTimer.isVisible = true
-                timer = object :
-                    CountDownTimer(smsStateReporter.timeout * 1000 * (smsStateReporter.retriesAttempted + 1),
-                        countDownIntervalMilli) {
+                timer = object : CountDownTimer(
+                    smsStateReporter.timeout * 1000 * (smsStateReporter.retriesAttempted + 1),
+                    countDownIntervalMilli
+                ) {
                     override fun onTick(timeRemaining: Long) {
                         val seconds = timeRemaining / 1000
-                        retryTimer.text =
-                            "Retry attempt: ${smsStateReporter.retriesAttempted}, retrying in " + seconds.toString()
+                        val text = "Retry attempt: ${smsStateReporter.retriesAttempted}" +
+                            ", retrying in $seconds"
+                        retryTimer.text = text
                     }
                     override fun onFinish() {
                         retryTimer.isVisible = false
@@ -82,7 +87,7 @@ class SmsTransmissionDialogFragment @Inject constructor(
                 }
             }
         }
-        smsStateReporter.state.observe(viewLifecycleOwner) { state ->
+        viewModel.smsStateReporter.state.observe(viewLifecycleOwner) { state ->
             if (state == SmsTransmissionStates.EXCEPTION || state == SmsTransmissionStates.DONE) {
                 positiveButton.isEnabled = true
             } else if (state == SmsTransmissionStates.TIME_OUT) {
@@ -92,7 +97,7 @@ class SmsTransmissionDialogFragment @Inject constructor(
                 receiveProgressMessage.isVisible = false
             }
         }
-        smsStateReporter.errorCode.observe(viewLifecycleOwner) {
+        viewModel.smsStateReporter.errorCode.observe(viewLifecycleOwner) {
             // Display response code from server
             when (it) {
                 // TODO: Currently no error code is in SMS received
@@ -113,18 +118,23 @@ class SmsTransmissionDialogFragment @Inject constructor(
         positiveButton.setOnClickListener {
             dismiss()
 
-            // TODO: We want manually exit Acitivty/Fragments so user can review the result
+            // TODO: We want manually exit Activity/Fragments so user can review the result
         }
         negativeButton.setOnClickListener {
             // TODO: kill/interrupt transmission, reverse DB modifications
-            smsSender.reset()
+            viewModel.smsSender.reset()
             dismiss()
         }
         retryButton.setOnClickListener {
-            smsSender.reset()
-            smsStateReporter.resetStateReporter()
-            smsSender.queueRelayContent(smsSender.data)
+            viewModel.smsSender.reset()
+            viewModel.smsStateReporter.resetStateReporter()
+            viewModel.smsSender.queueRelayContent(viewModel.smsSender.data)
             receiveProgressMessage.isVisible = true
         }
+    }
+
+    override fun onDestroy() {
+        Log.d(TAG, "$TAG::onDestroy()")
+        super.onDestroy()
     }
 }

@@ -2,105 +2,71 @@ package com.cradleplatform.neptune.manager
 
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
-import com.cradleplatform.neptune.http_sms_service.http.map
 import com.cradleplatform.neptune.model.Patient
-import com.cradleplatform.neptune.model.PatientAndReadings
 import com.cradleplatform.neptune.model.PatientAndReferrals
-import com.cradleplatform.neptune.model.Reading
 import com.cradleplatform.neptune.model.Referral
 import com.cradleplatform.neptune.utilities.Protocol
-import java.net.HttpURLConnection.HTTP_NOT_FOUND
+import com.cradleplatform.neptune.viewmodel.patients.ReferralFlowSaveResult
 import javax.inject.Inject
 
 /**
- * Manages uploading referrals via HTTP.
+ * Manages uploading Referrals to the Cradle-Platform server. Either over HTTP or SMS.
  */
-class ReferralUploadManager @Inject constructor(private val restApi: RestApi) {
+class ReferralUploadManager @Inject constructor(
+    private val restApi: RestApi,
+    private val referralManager: ReferralManager, // For the internal database.
+    private val patientManager: PatientManager
+) {
 
-    /**
-     * Attempts to upload a referral to the server.
-     *
-     * The referral itself is actually nested within [reading], but we can't
-     * just upload that to the server because the reading (and maybe the
-     * patient) don't yet exist up there. This method takes care of figuring
-     * out what additional data needs to be uploaded along with the referral.
-     *
-     * @param patient the patient being referred
-     * @param reading the reading containing the referral
-     * @throws IllegalArgumentException if [reading] does not contain a referral
-     * @return result of the network request. [patient] is returned back if [patient] already exists
-     * on the server.
-     */
-    suspend fun uploadReferralViaWebCoupled(
+    suspend fun uploadReferral(
+        referral: Referral,
         patient: Patient,
-        reading: Reading
-    ): NetworkResult<PatientAndReadings> {
-        if (reading.referral == null) {
-            error("reading must contain a nested referral")
-        }
+        protocol: Protocol
+    ): ReferralFlowSaveResult {
+        // Save Referral to local database.
+        referralManager.addReferral(referral, false)
 
-        // First check to see if the patient exists. We don't have an explicit
-        // API for this so we use the response code of the get patient info
-        // API to determine whether the patient exists or not.
-        val patientExists = when (val result = restApi.getPatientInfo(patient.id, Protocol.HTTP)) {
-            is NetworkResult.Failure ->
-                if (result.statusCode == HTTP_NOT_FOUND) {
-                    false
-                } else {
-                    return result.cast()
+        /* First, check if the patient exists on the Cradle-Platform server, as the patient may
+        * have been created locally and not yet uploaded.
+        * Or, the patient may have been deleted on the server? But in cases where the patient has
+        * been deleted on the server, we probably want the referral upload to fail, rather than
+        * recreating a patient that was deleted on the server. This would be in keeping with the
+        * strategy of deferring to the server.
+        * */
+
+        /* Before, to check if the patient exists on the server, a GET request was made to the
+         * server. A much simpler way of checking would be to check the `lastServerUpdate` field
+         * of the patient. If the field is `null`, then the patient was created locally and hasn't
+         * yet been uploaded to the server.
+         */
+        val patientExistsOnServer = patient.lastServerUpdate != null
+
+        /* If the patient exists on the server, we only need to upload the referral.
+         * Otherwise, we need to upload the patient with the referral.
+         * */
+        if (patientExistsOnServer) {
+            val result = restApi.postReferral(referral, protocol)
+            return when (result) {
+                is NetworkResult.Success -> {
+                    updatePatientLastEdited(patient)
+                    ReferralFlowSaveResult.SaveSuccessful.NoSmsNeeded
                 }
-
-            is NetworkResult.Success -> true
-            is NetworkResult.NetworkException -> return result.cast()
-        }
-
-        // If the patient exists we only need to upload the reading, if not
-        // then we need to upload the whole patient as well.
-        return if (patientExists) {
-            restApi.postReading(reading, Protocol.HTTP)
-                .map { PatientAndReadings(patient, listOf(it)) }
+                else -> ReferralFlowSaveResult.ErrorUploadingReferral
+            }
         } else {
-            restApi.postPatient(PatientAndReadings(patient, listOf(reading)), Protocol.HTTP)
+            val result = restApi.postPatient(PatientAndReferrals(patient, listOf(referral)), protocol)
+            return when (result) {
+                is NetworkResult.Success -> {
+                    updatePatientLastEdited(patient)
+                    ReferralFlowSaveResult.SaveSuccessful.NoSmsNeeded
+                }
+                else -> ReferralFlowSaveResult.ErrorUploadingReferral
+            }
         }
     }
 
-    /**
-     * Attempts to upload an independent referral to the server, without a reading.
-     *
-     * As referral has been detached from a mandatory reading association,
-     * we can now upload a referral independent of any reading.
-     *
-     * @param patient the patient being referred
-     * @param referral the referral
-     * @return result of the network request. [patient] is returned back if [patient] already exists
-     * on the server.
-     */
-    suspend fun uploadReferralViaWeb(
-        patient: Patient,
-        referral: Referral
-    ): NetworkResult<PatientAndReferrals> {
-        // First check to see if the patient exists. We don't have an explicit
-        // API for this so we use the response code of the get patient info
-        // API to determine whether the patient exists or not.
-        val patientExists = when (val result = restApi.getPatientInfo(patient.id, Protocol.HTTP)) {
-            is NetworkResult.Failure ->
-                if (result.statusCode == HTTP_NOT_FOUND) {
-                    false
-                } else {
-                    return result.cast()
-                }
-
-            is NetworkResult.Success -> true
-            is NetworkResult.NetworkException -> return result.cast()
-        }
-
-        // If the patient exists we only need to upload the reading, if not
-        // then we need to upload the whole patient as well.
-        return if (patientExists) {
-            restApi.postReferral(referral, Protocol.HTTP)
-                .map { PatientAndReferrals(patient, listOf(it)) }
-        } else {
-            restApi.postPatient(PatientAndReferrals(patient, listOf(referral)), Protocol.HTTP)
-        }
+    suspend fun updatePatientLastEdited(patient: Patient) {
+        patient.lastServerUpdate = patient.lastEdited
+        patientManager.add(patient)
     }
 }

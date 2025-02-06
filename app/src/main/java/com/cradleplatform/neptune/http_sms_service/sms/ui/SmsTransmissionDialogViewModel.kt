@@ -3,18 +3,22 @@ package com.cradleplatform.neptune.http_sms_service.sms.ui
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
+import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
 import com.cradleplatform.neptune.http_sms_service.sms.SmsStateReporter
 import com.cradleplatform.neptune.http_sms_service.sms.SmsTransmissionStates
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlin.times
 
 /**
  * Generate formatted String based on SmsStateReporter
  */
 @HiltViewModel
 class SmsTransmissionDialogViewModel @Inject constructor(
-    private val smsStateReporter: SmsStateReporter,
+    val smsStateReporter: SmsStateReporter,
+    val smsSender: SMSSender
 ) : ViewModel() {
+
     val stateString: LiveData<String> = smsStateReporter.state.map {
         when (it) {
             SmsTransmissionStates.GETTING_READY_TO_SEND -> "Queuing SMS to be sent..."

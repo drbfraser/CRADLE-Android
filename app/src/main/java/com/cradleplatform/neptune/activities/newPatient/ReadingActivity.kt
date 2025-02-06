@@ -2,7 +2,6 @@ package com.cradleplatform.neptune.activities.newPatient
 
 import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.content.SharedPreferences
 import android.content.res.Resources
 import android.os.Bundle
@@ -31,15 +30,12 @@ import com.cradleplatform.neptune.activities.dashboard.DashBoardActivity
 import com.cradleplatform.neptune.databinding.ActivityReadingBinding
 import com.cradleplatform.neptune.ext.hideKeyboard
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
-import com.cradleplatform.neptune.http_sms_service.sms.SMSReceiver
-import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
 import com.cradleplatform.neptune.http_sms_service.sms.SmsStateReporter
 import com.cradleplatform.neptune.manager.SmsKeyManager
 import com.cradleplatform.neptune.fragments.patients.PatientIdConflictDialogFragment
 import com.cradleplatform.neptune.fragments.newPatient.ReferralDialogFragment
 import com.cradleplatform.neptune.viewmodel.patients.PatientReadingViewModel
 import com.cradleplatform.neptune.viewmodel.patients.ReadingFlowError
-import com.cradleplatform.neptune.viewmodel.UserViewModel
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -67,12 +63,7 @@ class ReadingActivity : AppCompatActivity(), ReferralDialogFragment.OnReadingSen
     lateinit var smsKeyManager: SmsKeyManager
 
     @Inject
-    lateinit var smsSender: SMSSender
-
-    @Inject
     lateinit var smsStateReporter: SmsStateReporter
-
-    private lateinit var smsReceiver: SMSReceiver
 
     /**
      * Called only from tests. Creates and returns a new [CountingIdlingResource].
@@ -87,17 +78,13 @@ class ReadingActivity : AppCompatActivity(), ReferralDialogFragment.OnReadingSen
     }
 
     override fun onResume() {
+        Log.d(TAG, "$TAG::onResume()")
         super.onResume()
-        setupSMSReceiver()
     }
 
     override fun onStop() {
-        if (smsReceiver != null) {
-            unregisterReceiver(smsReceiver)
-        }
-
+        Log.d(TAG, "$TAG::onStop()")
         super.onStop()
-        Log.d(TAG, "onStop()")
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -108,8 +95,6 @@ class ReadingActivity : AppCompatActivity(), ReferralDialogFragment.OnReadingSen
             lifecycleOwner = this@ReadingActivity
             executePendingBindings()
         }
-
-        smsSender.setActivityContext(this)
 
         val toolbar = findViewById<Toolbar>(R.id.toolbar3)
         setSupportActionBar(toolbar)
@@ -431,17 +416,6 @@ class ReadingActivity : AppCompatActivity(), ReferralDialogFragment.OnReadingSen
         }
     }
 
-    private fun setupSMSReceiver() {
-        val intentFilter = IntentFilter()
-        intentFilter.addAction("android.provider.Telephony.SMS_RECEIVED")
-        intentFilter.priority = Int.MAX_VALUE
-
-        val phoneNumber = sharedPreferences.getString(UserViewModel.RELAY_PHONE_NUMBER, null)
-            ?: error("invalid phone number")
-        smsReceiver = SMSReceiver(smsSender, phoneNumber, smsStateReporter)
-        registerReceiver(smsReceiver, intentFilter)
-    }
-
     enum class LaunchReason {
         LAUNCH_REASON_NEW, LAUNCH_REASON_EDIT_READING, LAUNCH_REASON_RECHECK, LAUNCH_REASON_NONE,
         LAUNCH_REASON_EXISTINGNEW
@@ -494,24 +468,5 @@ class ReadingActivity : AppCompatActivity(), ReferralDialogFragment.OnReadingSen
         val intent = intent
         intent.putExtra(EXTRA_SNACKBAR_MSG, data)
         setResult(RESULT_OK, intent)
-    }
-
-    // This overrides the DataParser interface in ReferralDialogFragment.kt
-    override fun sendSmsMessage(data: String) {
-        smsSender.queueRelayContent(data)
-            .let { enqueueSuccessful ->
-                if (enqueueSuccessful) {
-                    Toast.makeText(
-                        this, getString(R.string.sms_sender_send),
-                        Toast.LENGTH_LONG
-                    ).show()
-                    smsSender.sendSmsMessage(false)
-                } else {
-                    Toast.makeText(
-                        this, "SMSSender Enqueue failed",
-                        Toast.LENGTH_LONG
-                    ).show()
-                }
-            }
     }
 }

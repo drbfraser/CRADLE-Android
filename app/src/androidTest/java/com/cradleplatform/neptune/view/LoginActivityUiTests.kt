@@ -40,7 +40,9 @@ class LoginActivityUiTests {
 
     @After
     fun after() {
-        IdlingRegistry.getInstance().unregister(idlingResource)
+        if (this::idlingResource.isInitialized) {
+            IdlingRegistry.getInstance().unregister(idlingResource)
+        }
     }
 
     @Test

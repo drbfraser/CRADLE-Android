@@ -25,7 +25,7 @@ import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.manager.ReadingManager
 import com.cradleplatform.neptune.manager.ReferralManager
-import com.cradleplatform.neptune.manager.ReferralUploadManager
+import com.cradleplatform.neptune.manager.ReadingUploadManager
 import com.cradleplatform.neptune.model.BloodPressure
 import com.cradleplatform.neptune.model.GestationalAge
 import com.cradleplatform.neptune.model.GestationalAgeMonths
@@ -108,7 +108,7 @@ class PatientReadingViewModel @Inject constructor(
     private val readingManager: ReadingManager,
     private val referralManager: ReferralManager,
     private val patientManager: PatientManager,
-    private val referralUploadManager: ReferralUploadManager,
+    private val readingUploadManager: ReadingUploadManager,
     private val networkStateManager: NetworkStateManager,
     private val sharedPreferences: SharedPreferences,
     @ApplicationContext @SuppressLint("StaticFieldLeak")
@@ -1501,7 +1501,7 @@ class PatientReadingViewModel @Inject constructor(
                         // Upload patient and reading to the server, with the referral embedded in
                         // the reading.
                         val result =
-                            referralUploadManager.uploadReferralViaWebCoupled(patient, readingFromBuilder)
+                            readingUploadManager.uploadReferralViaWebCoupled(patient, readingFromBuilder)
                         if (result is NetworkResult.Success) {
                             // Save the patient and reading in local database
                             // Note: If patient already exists on server, then

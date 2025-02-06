@@ -13,6 +13,7 @@ import com.cradleplatform.neptune.database.daos.ReadingDao
 import com.cradleplatform.neptune.database.daos.ReferralDao
 import com.cradleplatform.neptune.http_sms_service.http.Http
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
+import com.cradleplatform.neptune.http_sms_service.sms.SMSReceiver
 import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
 import com.cradleplatform.neptune.http_sms_service.sms.SmsStateReporter
 import com.cradleplatform.neptune.http_sms_service.sms.utils.SMSDataProcessor
@@ -23,6 +24,7 @@ import com.cradleplatform.neptune.manager.HealthFacilityManager
 import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.manager.ReadingManager
 import com.cradleplatform.neptune.manager.ReferralManager
+import com.cradleplatform.neptune.manager.ReferralUploadManager
 import com.cradleplatform.neptune.manager.UrlManager
 import com.cradleplatform.neptune.model.Settings
 import dagger.Module
@@ -141,9 +143,17 @@ class DataModule {
         http: Http,
         smsStateReporter: SmsStateReporter,
         smsSender: SMSSender,
+        smsReceiver: SMSReceiver,
         smsDataProcessor: SMSDataProcessor,
     ) = RestApi(
-        context, sharedPreferences, urlManager, http, smsStateReporter, smsSender, smsDataProcessor
+        context,
+        sharedPreferences,
+        urlManager,
+        http,
+        smsStateReporter,
+        smsSender,
+        smsReceiver,
+        smsDataProcessor
     )
 
     @Provides
@@ -156,4 +166,12 @@ class DataModule {
         sharedPreferences: SharedPreferences,
         @ApplicationContext context: Context
     ) = Settings(sharedPreferences, context)
+
+    @Provides
+    @Singleton
+    fun provideReferralUploadManager(
+        restApi: RestApi,
+        referralManager: ReferralManager,
+        patientManager: PatientManager
+    ) = ReferralUploadManager(restApi, referralManager, patientManager)
 }
