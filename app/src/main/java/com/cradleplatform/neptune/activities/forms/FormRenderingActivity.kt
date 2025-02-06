@@ -7,6 +7,7 @@ import android.content.IntentFilter
 import android.graphics.Rect
 import android.os.Bundle
 import android.provider.Settings
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.MotionEvent
@@ -230,7 +231,7 @@ class FormRenderingActivity : AppCompatActivity() {
             }
         } else {
             builder.setPositiveButton(internetString) { _, _ ->
-                formSubmission(languageSelected, Protocol.SMS)
+                formSubmission(languageSelected, Protocol.HTTP)
                 returnToPatientProfile()
             }
         }
