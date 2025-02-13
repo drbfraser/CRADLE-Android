@@ -213,7 +213,7 @@ class FormRenderingActivity : AppCompatActivity() {
             }
         } else {
             builder.setPositiveButton(internetString) { _, _ ->
-                formSubmission(languageSelected, Protocol.SMS)
+                formSubmission(languageSelected, Protocol.HTTP)
                 returnToPatientProfile()
             }
         }
