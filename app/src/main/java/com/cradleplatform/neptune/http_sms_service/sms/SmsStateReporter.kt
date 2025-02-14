@@ -80,16 +80,32 @@ class SmsStateReporter @Inject constructor(
         state.postValue(SmsTransmissionStates.EXCEPTION)
     }
 
-    fun handleResponse(msg: String, errCode: Int?) {
+    fun handleResponse(msg: String, errCode: Int?, isErrorEncrypted: Boolean) {
         if (errCode != null) {
+            // Error server status code
             errorCode.postValue(errCode!!)
-            errorMsg.postValue(msg)
             errorCodeToCollect.postValue(errCode!!)
-            errorMessageToCollect.postValue(msg)
-            Log.d("SmsStateReporter", "Error Code: $errCode Error Msg: $msg")
-            state.postValue(SmsTransmissionStates.EXCEPTION)
-            stateToCollect.postValue(SmsTransmissionStates.EXCEPTION)
+            if (isErrorEncrypted) {
+                val smsKey = smsKeyManager.retrieveSmsKey()!!
+                SMSFormatter.decodeMsg(msg, smsKey.key)
+                    .let {
+                        var decryptedJsonString = it    // TODO: Need to convert to JSON object and handle error
+                        errorMsg.postValue(it)
+                        errorMessageToCollect.postValue(it)
+                        Log.d("SmsStateReporter", "Error Code: $errCode Decrypted Error Msg: $it")
+                        state.postValue(SmsTransmissionStates.EXCEPTION)
+                        stateToCollect.postValue(SmsTransmissionStates.EXCEPTION)
+                    }
+            } else {
+                errorMsg.postValue(msg)
+                errorMessageToCollect.postValue(msg)
+                Log.d("SmsStateReporter", "Error Code: $errCode Error Msg: $msg")
+                state.postValue(SmsTransmissionStates.EXCEPTION)
+                stateToCollect.postValue(SmsTransmissionStates.EXCEPTION)
+            }
+
         } else {
+            // Successful server status code
             val smsKey = smsKeyManager.retrieveSmsKey()!!
             SMSFormatter.decodeMsg(msg, smsKey.key)
                 .let {

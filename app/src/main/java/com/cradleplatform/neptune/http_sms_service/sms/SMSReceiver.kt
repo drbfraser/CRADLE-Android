@@ -28,6 +28,7 @@ class SMSReceiver @Inject constructor(
     private var requestIdentifier = ""
     private var relayData = ""
     private var isError: Boolean? = null
+    private var isErrorEncrypted: Boolean = false
     private var numberReceivedMessages = 0
     private var totalMessages = 0
     private var errorCode: Int? = null
@@ -69,6 +70,7 @@ class SMSReceiver @Inject constructor(
         relayData = ""
         isError = null
         errorCode = null
+        isErrorEncrypted = false
     }
 
     override fun onReceive(context: Context?, intent: Intent?) {
@@ -95,8 +97,8 @@ class SMSReceiver @Inject constructor(
             }
             // start storing message data and send ACK message
             else if (smsFormatter.isFirstReplyMessage(messageBody)) {
-
                 isError = smsFormatter.isFirstReplyError(messageBody)
+                isErrorEncrypted = smsFormatter.isReplyErrorEncrypted(messageBody)
                 requestIdentifier = smsFormatter.getRequestIdentifier(messageBody)
                 smsFormatter.getTotalNumMessages(messageBody)
                     .let {
@@ -137,7 +139,7 @@ class SMSReceiver @Inject constructor(
         // this happens at the end of exchange
         // resetting vars if process finished
         if (numberReceivedMessages == totalMessages) {
-            smsStateReporter.handleResponse(relayData, errorCode)
+            smsStateReporter.handleResponse(relayData, errorCode, isErrorEncrypted)
             Log.d("Search: Encrypted Message/Error", "$isError  $relayData")
             Log.d("Search: Total Messages received", numberReceivedMessages.toString())
             smsSender.reset()

@@ -31,6 +31,7 @@ class SMSFormatter {
         const val MAGIC_STRING = "CRADLE"
         private const val REPLY_SUCCESS = "REPLY"
         private const val REPLY_ERROR = "REPLY_ERROR"
+        private const val REPLY_ERROR_ENCRYPTED = "REPLY_ERROR_ENC"
         private const val REPLY_ERROR_CODE_PREFIX = "ERR"
 
         //Lengths for different parts of the SMS Protocol
@@ -82,7 +83,7 @@ class SMSFormatter {
         val firstErrorReplyPattern =
             Regex(
                 "^$SMS_TUNNEL_PROTOCOL_VERSION-$MAGIC_STRING-" +
-                    "(\\d{$REQUEST_NUMBER_LENGTH})-$REPLY_ERROR-(\\d{$FRAGMENT_HEADER_LENGTH})-" +
+                    "(\\d{$REQUEST_NUMBER_LENGTH})-$REPLY_ERROR(?:_ENC)?-(\\d{$FRAGMENT_HEADER_LENGTH})-" +
                     "$REPLY_ERROR_CODE_PREFIX(\\d{$REPLY_ERROR_CODE_LENGTH})-(.+$)"
             )
 
@@ -91,6 +92,13 @@ class SMSFormatter {
                 "^$SMS_TUNNEL_PROTOCOL_VERSION-$MAGIC_STRING-" +
                     "(\\d{$REQUEST_NUMBER_LENGTH})-$REPLY_SUCCESS-" +
                     "(\\d{$FRAGMENT_HEADER_LENGTH})-(.+$)"
+            )
+
+        val encryptedErrorReplyPattern =
+            Regex(
+                "^$SMS_TUNNEL_PROTOCOL_VERSION-$MAGIC_STRING-" +
+                        "(\\d{$REQUEST_NUMBER_LENGTH})-$REPLY_ERROR_ENCRYPTED-(\\d{$FRAGMENT_HEADER_LENGTH})-" +
+                        "$REPLY_ERROR_CODE_PREFIX(\\d{$REPLY_ERROR_CODE_LENGTH})-(.+$)"
             )
 
         // TODO: CHANGE TEST
@@ -241,5 +249,9 @@ class SMSFormatter {
 
     fun getErrorCode(message: String): Int {
         return firstErrorReplyPattern.find(message)?.groupValues!![POS_REPLY_ERROR_CODE].toInt()
+    }
+
+    fun isReplyErrorEncrypted(message: String): Boolean {
+        return encryptedErrorReplyPattern.matches(message)
     }
 }
