@@ -99,7 +99,6 @@ class SmsStateReporter @Inject constructor(
                 Log.d("SmsStateReporter", "Error Code: $errCode Decrypted Error Msg: $responseMsg")
                 state.postValue(SmsTransmissionStates.EXCEPTION)
                 stateToCollect.postValue(SmsTransmissionStates.EXCEPTION)
-
             } else {
                 // Handling unencrypted error
                 errorMsg.postValue(msg)
@@ -108,7 +107,6 @@ class SmsStateReporter @Inject constructor(
                 state.postValue(SmsTransmissionStates.EXCEPTION)
                 stateToCollect.postValue(SmsTransmissionStates.EXCEPTION)
             }
-
         } else {
             // Successful status code from server
             val smsKey = smsKeyManager.retrieveSmsKey()!!
