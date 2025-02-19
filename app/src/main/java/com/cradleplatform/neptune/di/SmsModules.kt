@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import com.cradleplatform.neptune.http_sms_service.sms.SMSReceiver
 import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
+import com.cradleplatform.neptune.http_sms_service.sms.SmsErrorHandler
 import com.cradleplatform.neptune.http_sms_service.sms.SmsStateReporter
 import com.cradleplatform.neptune.http_sms_service.sms.utils.SMSDataProcessor
 import com.cradleplatform.neptune.manager.SmsKeyManager
@@ -36,7 +37,8 @@ class SmsModules {
     @Singleton
     fun provideSMSDataProcessor(
         urlManager: UrlManager,
-    ) = SMSDataProcessor(urlManager)
+        smsStateReporter: SmsStateReporter
+    ) = SMSDataProcessor(urlManager, smsStateReporter)
 
     @Provides
     @Singleton
@@ -55,4 +57,11 @@ class SmsModules {
         smsSender: SMSSender,
         smsStateReporter: SmsStateReporter,
     ) = SMSReceiver(context, sharedPreferences, smsSender, smsStateReporter)
+
+    @Provides
+    @Singleton
+    fun provideSmsErrorHandler(
+        smsKeyManager: SmsKeyManager,
+        smsStateReporter: SmsStateReporter,
+    ) = SmsErrorHandler(smsKeyManager, smsStateReporter)
 }

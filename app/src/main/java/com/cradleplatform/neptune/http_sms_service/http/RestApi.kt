@@ -139,6 +139,8 @@ class RestApi(
                                 JacksonMapper.mapper.readValue(smsStateReporter.decryptedMsgLiveData.value,
                                     object : TypeReference<T>() {})
 
+                            smsStateReporter.incrementRequestNumber()
+
                             channel.send(
                                 NetworkResult.Success(
                                     response, HttpURLConnection.HTTP_OK
