@@ -26,7 +26,8 @@ class SmsErrorHandler @Inject constructor(
             .let {
                 val errorJsonString = it
                 val errorResponse = Gson().fromJson(errorJsonString, SmsRelayErrorResponse::class.java)
-                Log.d("SmsStateReporter", "Handling Encrypted Error - Error Code: $errCode Decrypted Error Msg: ${errorResponse.message}")
+                Log.d("SmsStateReporter",
+                    "Handling Encrypted Error - Error Code: $errCode Decrypted Error Msg: ${errorResponse.message}")
                 when (errCode) {
                     409 -> handleRequestNumberMismatch(errorResponse)
                 }
