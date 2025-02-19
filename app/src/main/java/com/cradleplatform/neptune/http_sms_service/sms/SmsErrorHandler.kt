@@ -11,8 +11,12 @@ class SmsErrorHandler @Inject constructor(
         private val smsStateReporter: SmsStateReporter
     ) {
 
+        companion object {
+            private const val REQUEST_NUMBER_MISMATCH = 409
+        }
+
         fun shouldDecryptError(errCode:Int): Boolean {
-            val encryptedErrorCodes = listOf(409)
+            val encryptedErrorCodes = listOf(REQUEST_NUMBER_MISMATCH)
             return errCode in encryptedErrorCodes
         }
 
@@ -31,8 +35,8 @@ class SmsErrorHandler @Inject constructor(
         }
 
         private fun handleRequestNumberMismatch(errorResponse: SmsRelayErrorResponse) {
-            Log.d("LCDEBUG", "HANDLING REQUEST NO MISMATCH")
             val expectedRequestNumber = errorResponse.expectedRequestNumber
             smsStateReporter.requestNumber.postValue(expectedRequestNumber)
+            Log.d("SmsStateReporter", "Request Number Mismatch - Updating to $expectedRequestNumber")
         }
 }

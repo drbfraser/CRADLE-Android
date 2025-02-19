@@ -137,7 +137,6 @@ class SMSReceiver @Inject constructor(
         // resetting vars if process finished
         if (numberReceivedMessages == totalMessages) {
             smsStateReporter.handleResponse(relayData, errorCode)
-            Log.d("Search: Encrypted Message/Error", "$isError  $relayData")
             Log.d("Search: Total Messages received", numberReceivedMessages.toString())
             smsSender.reset()
             reset()
