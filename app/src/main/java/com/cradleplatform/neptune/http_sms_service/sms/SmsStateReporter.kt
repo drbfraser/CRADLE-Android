@@ -32,7 +32,7 @@ class SmsStateReporter @Inject constructor(
     val errorMsg = MutableLiveData<String>("")
     val errorMessageToCollect = MutableLiveData("")
     val decryptedMsgLiveData = MutableLiveData("")
-    val requestNumber = MutableLiveData(0)
+    val requestNumber = MutableLiveData(1)
 
     val milliseconds = 1000
     var totalToBeSent = 0
@@ -91,6 +91,7 @@ class SmsStateReporter @Inject constructor(
             // Error status code from server on outer API call
             errorCode.postValue(errCode!!)
             errorCodeToCollect.postValue(errCode!!)
+            Log.d("LCDEBUG", "ERRCODE REPORTER $errCode")
             if (smsErrorHandler.shouldDecryptError(errCode)) {
                 // Handling encrypted error
                 val responseMsg = smsErrorHandler.handleEncryptedError(errCode, msg)
