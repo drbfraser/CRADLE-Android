@@ -5,8 +5,8 @@ import com.google.gson.annotations.SerializedName
 data class SmsRelayErrorResponse(
 
     @SerializedName("message")
-    var message: String,
+    val message: String,
 
     @SerializedName("expected_request_number")
-    var expectedRequestNumber: Int?
+    val expectedRequestNumber: Int?
 )

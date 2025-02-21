@@ -77,7 +77,7 @@ class SmsStateReporter @Inject constructor(
     }
 
     fun incrementRequestNumber() {
-        requestNumber.postValue(requestNumber.value!! + 1)
+        requestNumber.postValue((requestNumber.value ?: 0) + 1)
     }
 
     fun postException(code: Int) {
@@ -97,16 +97,14 @@ class SmsStateReporter @Inject constructor(
                 errorMsg.postValue(responseMsg)
                 errorMessageToCollect.postValue(responseMsg)
                 Log.d("SmsStateReporter", "Error Code: $errCode Decrypted Error Msg: $responseMsg")
-                state.postValue(SmsTransmissionStates.EXCEPTION)
-                stateToCollect.postValue(SmsTransmissionStates.EXCEPTION)
             } else {
                 // Handling unencrypted error
                 errorMsg.postValue(msg)
                 errorMessageToCollect.postValue(msg)
                 Log.d("SmsStateReporter", "Error Code: $errCode Error Msg: $msg")
-                state.postValue(SmsTransmissionStates.EXCEPTION)
-                stateToCollect.postValue(SmsTransmissionStates.EXCEPTION)
             }
+            state.postValue(SmsTransmissionStates.EXCEPTION)
+            stateToCollect.postValue(SmsTransmissionStates.EXCEPTION)
         } else {
             // Successful status code from server
             val smsKey = smsKeyManager.retrieveSmsKey()!!

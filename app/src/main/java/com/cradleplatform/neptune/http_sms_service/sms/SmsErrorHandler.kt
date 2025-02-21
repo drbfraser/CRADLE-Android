@@ -22,17 +22,14 @@ class SmsErrorHandler @Inject constructor(
 
     fun handleEncryptedError(errCode: Int, encryptedMsg: String): String {
         val smsKey = smsKeyManager.retrieveSmsKey()!!
-        SMSFormatter.decodeMsg(encryptedMsg, smsKey.key)
-            .let {
-                val errorJsonString = it
-                val errorResponse = Gson().fromJson(errorJsonString, SmsRelayErrorResponse::class.java)
-                Log.d("SmsStateReporter",
-                    "Handling Encrypted Error - Error Code: $errCode Decrypted Error Msg: ${errorResponse.message}")
-                when (errCode) {
-                    REQUEST_NUMBER_MISMATCH -> handleRequestNumberMismatch(errorResponse)
-                }
-                return errorResponse.message
-            }
+        val errorJsonString = SMSFormatter.decodeMsg(encryptedMsg, smsKey.key)
+        val errorResponse = Gson().fromJson(errorJsonString, SmsRelayErrorResponse::class.java)
+        Log.d("SmsStateReporter",
+            "Handling Encrypted Error - Error Code: $errCode Decrypted Error Msg: ${errorResponse.message}")
+        when (errCode) {
+            REQUEST_NUMBER_MISMATCH -> handleRequestNumberMismatch(errorResponse)
+        }
+        return errorResponse.message
     }
 
     private fun handleRequestNumberMismatch(errorResponse: SmsRelayErrorResponse) {
