@@ -12,7 +12,7 @@ class SmsErrorHandler @Inject constructor(
 ) {
 
     companion object {
-        private const val REQUEST_NUMBER_MISMATCH = 409
+        private const val REQUEST_NUMBER_MISMATCH = 425
     }
 
     fun shouldDecryptError(errCode: Int): Boolean {
@@ -29,7 +29,7 @@ class SmsErrorHandler @Inject constructor(
                 Log.d("SmsStateReporter",
                     "Handling Encrypted Error - Error Code: $errCode Decrypted Error Msg: ${errorResponse.message}")
                 when (errCode) {
-                    409 -> handleRequestNumberMismatch(errorResponse)
+                    REQUEST_NUMBER_MISMATCH -> handleRequestNumberMismatch(errorResponse)
                 }
                 return errorResponse.message
             }
