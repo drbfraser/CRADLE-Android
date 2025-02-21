@@ -31,7 +31,6 @@ class SMSFormatter {
         const val MAGIC_STRING = "CRADLE"
         private const val REPLY_SUCCESS = "REPLY"
         private const val REPLY_ERROR = "REPLY_ERROR"
-        private const val REPLY_ERROR_ENCRYPTED = "REPLY_ERROR_ENC"
         private const val REPLY_ERROR_CODE_PREFIX = "ERR"
 
         //Lengths for different parts of the SMS Protocol
