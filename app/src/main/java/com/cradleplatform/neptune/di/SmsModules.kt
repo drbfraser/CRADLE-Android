@@ -57,11 +57,4 @@ class SmsModules {
         smsSender: SMSSender,
         smsStateReporter: SmsStateReporter,
     ) = SMSReceiver(context, sharedPreferences, smsSender, smsStateReporter)
-
-    @Provides
-    @Singleton
-    fun provideSmsErrorHandler(
-        smsKeyManager: SmsKeyManager,
-        smsStateReporter: SmsStateReporter,
-    ) = SmsErrorHandler(smsKeyManager, smsStateReporter)
 }
