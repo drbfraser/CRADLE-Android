@@ -24,7 +24,7 @@ class SmsErrorHandler @Inject constructor(
         val smsKey = smsKeyManager.retrieveSmsKey()!!
         val errorJsonString = SMSFormatter.decodeMsg(encryptedMsg, smsKey.key)
         val errorResponse = Gson().fromJson(errorJsonString, SmsRelayErrorResponse::class.java)
-        Log.d("SmsStateReporter",
+        Log.e("SmsStateReporter",
             "Handling Encrypted Error - Error Code: $errCode Decrypted Error Msg: ${errorResponse.message}")
         when (errCode) {
             REQUEST_NUMBER_MISMATCH -> handleRequestNumberMismatch(errorResponse)
@@ -34,7 +34,7 @@ class SmsErrorHandler @Inject constructor(
 
     private fun handleRequestNumberMismatch(errorResponse: SmsRelayErrorResponse) {
         val expectedRequestNumber = errorResponse.expectedRequestNumber
-        smsStateReporter.requestNumber.postValue(expectedRequestNumber)
+        smsStateReporter.updateRequestNumber(expectedRequestNumber ?: 0)
         Log.d("SmsStateReporter", "Request Number Mismatch - Updating to $expectedRequestNumber")
     }
 }

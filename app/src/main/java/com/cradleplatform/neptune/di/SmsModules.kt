@@ -28,8 +28,9 @@ class SmsModules {
     @Singleton
     fun provideSmsStateReporter(
         smsKeyManager: SmsKeyManager,
+        @DataModule.EncryptedPrefs encryptedPreferences: SharedPreferences
     ): SmsStateReporter {
-        return SmsStateReporter(smsKeyManager)
+        return SmsStateReporter(smsKeyManager, encryptedPreferences)
     }
 
     @Provides

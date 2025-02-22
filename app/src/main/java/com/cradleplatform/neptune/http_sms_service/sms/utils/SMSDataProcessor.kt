@@ -31,7 +31,7 @@ class SMSDataProcessor @Inject constructor(
         val endpoint = uri.path ?: throw Exception("URL path is null")
         return JacksonMapper.createWriter<SmsJsonData>().writeValueAsString(
             SmsJsonData(
-                requestNumber = smsStateReporter.requestNumber.value!!,
+                requestNumber = smsStateReporter.requestNumber,
                 method = method.name,
                 endpoint = endpoint,
                 headers = headers,

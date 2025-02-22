@@ -1,5 +1,6 @@
 package com.cradleplatform.neptune.http_sms_service.sms
 
+import android.content.SharedPreferences
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import com.cradleplatform.neptune.manager.SmsKeyManager
@@ -13,7 +14,13 @@ import javax.inject.Singleton
 @Singleton
 class SmsStateReporter @Inject constructor(
     private val smsKeyManager: SmsKeyManager,
+    private val encryptedPreferences: SharedPreferences
 ) {
+    companion object {
+        private const val MAX_REQUEST_NUMBER = 999999
+        const val SMS_REQUEST_NUMBER_KEY = "requestNumber"
+    }
+
     private var smsFormatter: SMSFormatter = SMSFormatter()
     private lateinit var smsSender: SMSSender
     val state = MutableLiveData<SmsTransmissionStates>(SmsTransmissionStates.GETTING_READY_TO_SEND)
@@ -32,7 +39,7 @@ class SmsStateReporter @Inject constructor(
     val errorMsg = MutableLiveData<String>("")
     val errorMessageToCollect = MutableLiveData("")
     val decryptedMsgLiveData = MutableLiveData("")
-    val requestNumber = MutableLiveData(0)
+    var requestNumber = getCurrentRequestNumber()
 
     val milliseconds = 1000
     var totalToBeSent = 0
@@ -76,8 +83,20 @@ class SmsStateReporter @Inject constructor(
         totalReceived.postValue(++received)
     }
 
+    private fun getCurrentRequestNumber(): Int {
+        return encryptedPreferences.getInt(SMS_REQUEST_NUMBER_KEY, 0)
+    }
+
+    fun updateRequestNumber(newRequestNumber: Int) {
+        encryptedPreferences.edit().putInt(SMS_REQUEST_NUMBER_KEY, newRequestNumber).apply()
+        requestNumber = newRequestNumber
+    }
+
     fun incrementRequestNumber() {
-        requestNumber.postValue((requestNumber.value ?: 0) + 1)
+        val currentRequestNumber = getCurrentRequestNumber()
+        val newRequestNumber = (currentRequestNumber + 1) % MAX_REQUEST_NUMBER
+        encryptedPreferences.edit().putInt(SMS_REQUEST_NUMBER_KEY, newRequestNumber).apply()
+        requestNumber = newRequestNumber
     }
 
     fun postException(code: Int) {
