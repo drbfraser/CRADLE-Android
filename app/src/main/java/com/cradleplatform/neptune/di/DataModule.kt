@@ -134,7 +134,7 @@ class DataModule {
     @Provides
     @Singleton
     @EncryptedPrefs
-    fun providesEncryptedSharedPreferences(@ApplicationContext context: Context): SharedPreferences {
+    fun provideEncryptedSharedPreferences(@ApplicationContext context: Context): SharedPreferences {
         val masterKey: MasterKey = MasterKey.Builder(context)
             .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
             .build()

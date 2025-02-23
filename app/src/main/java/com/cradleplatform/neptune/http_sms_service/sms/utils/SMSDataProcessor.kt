@@ -3,8 +3,7 @@ package com.cradleplatform.neptune.http_sms_service.sms.utils
 import android.net.Uri
 import com.cradleplatform.neptune.http_sms_service.http.Http
 import com.cradleplatform.neptune.http_sms_service.sms.SmsStateReporter
-import com.cradleplatform.neptune.manager.UrlManager
-import com.cradleplatform.neptune.utilities.jackson.JacksonMapper
+import com.google.gson.Gson
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -15,12 +14,8 @@ import javax.inject.Singleton
  */
 @Singleton
 class SMSDataProcessor @Inject constructor(
-    private val urlManager: UrlManager,
     private val smsStateReporter: SmsStateReporter
 ) {
-    // TODO: Add target API endpoint information needed by the backend to json ??
-    // TODO: requestNumber=0 as it is not implemented in the backend yet
-
     fun processRequestDataToJSON(
         method: Http.Method,
         url: String,
@@ -29,9 +24,9 @@ class SMSDataProcessor @Inject constructor(
     ): String {
         val uri = Uri.parse(url)
         val endpoint = uri.path ?: throw Exception("URL path is null")
-        return JacksonMapper.createWriter<SmsJsonData>().writeValueAsString(
+        return Gson().toJson(
             SmsJsonData(
-                requestNumber = smsStateReporter.requestNumber,
+                requestNumber = smsStateReporter.getCurrentRequestNumber(),
                 method = method.name,
                 endpoint = endpoint,
                 headers = headers,

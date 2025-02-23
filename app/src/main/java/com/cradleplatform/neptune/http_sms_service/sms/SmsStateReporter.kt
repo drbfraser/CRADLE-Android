@@ -39,7 +39,6 @@ class SmsStateReporter @Inject constructor(
     val errorMsg = MutableLiveData<String>("")
     val errorMessageToCollect = MutableLiveData("")
     val decryptedMsgLiveData = MutableLiveData("")
-    var requestNumber = getCurrentRequestNumber()
 
     val milliseconds = 1000
     var totalToBeSent = 0
@@ -83,20 +82,18 @@ class SmsStateReporter @Inject constructor(
         totalReceived.postValue(++received)
     }
 
-    private fun getCurrentRequestNumber(): Int {
+    fun getCurrentRequestNumber(): Int {
         return encryptedPreferences.getInt(SMS_REQUEST_NUMBER_KEY, 0)
     }
 
     fun updateRequestNumber(newRequestNumber: Int) {
         encryptedPreferences.edit().putInt(SMS_REQUEST_NUMBER_KEY, newRequestNumber).apply()
-        requestNumber = newRequestNumber
     }
 
     fun incrementRequestNumber() {
         val currentRequestNumber = getCurrentRequestNumber()
         val newRequestNumber = (currentRequestNumber + 1) % MAX_REQUEST_NUMBER
-        encryptedPreferences.edit().putInt(SMS_REQUEST_NUMBER_KEY, newRequestNumber).apply()
-        requestNumber = newRequestNumber
+        updateRequestNumber(newRequestNumber)
     }
 
     fun postException(code: Int) {
