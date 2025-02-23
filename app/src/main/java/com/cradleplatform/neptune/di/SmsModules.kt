@@ -7,7 +7,6 @@ import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
 import com.cradleplatform.neptune.http_sms_service.sms.SmsStateReporter
 import com.cradleplatform.neptune.http_sms_service.sms.utils.SMSDataProcessor
 import com.cradleplatform.neptune.manager.SmsKeyManager
-import com.cradleplatform.neptune.manager.UrlManager
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -28,15 +27,16 @@ class SmsModules {
     @Singleton
     fun provideSmsStateReporter(
         smsKeyManager: SmsKeyManager,
+        @DataModule.EncryptedPrefs encryptedPreferences: SharedPreferences
     ): SmsStateReporter {
-        return SmsStateReporter(smsKeyManager)
+        return SmsStateReporter(smsKeyManager, encryptedPreferences)
     }
 
     @Provides
     @Singleton
     fun provideSMSDataProcessor(
-        urlManager: UrlManager,
-    ) = SMSDataProcessor(urlManager)
+        smsStateReporter: SmsStateReporter
+    ) = SMSDataProcessor(smsStateReporter)
 
     @Provides
     @Singleton

@@ -1,5 +1,6 @@
 package com.cradleplatform.neptune.http_sms_service.sms
 
+import android.content.SharedPreferences
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import com.cradleplatform.neptune.manager.SmsKeyManager
@@ -13,7 +14,13 @@ import javax.inject.Singleton
 @Singleton
 class SmsStateReporter @Inject constructor(
     private val smsKeyManager: SmsKeyManager,
+    private val encryptedPreferences: SharedPreferences
 ) {
+    companion object {
+        private const val MAX_REQUEST_NUMBER = 999999
+        const val SMS_REQUEST_NUMBER_KEY = "requestNumber"
+    }
+
     private var smsFormatter: SMSFormatter = SMSFormatter()
     private lateinit var smsSender: SMSSender
     val state = MutableLiveData<SmsTransmissionStates>(SmsTransmissionStates.GETTING_READY_TO_SEND)
@@ -75,6 +82,20 @@ class SmsStateReporter @Inject constructor(
         totalReceived.postValue(++received)
     }
 
+    fun getCurrentRequestNumber(): Int {
+        return encryptedPreferences.getInt(SMS_REQUEST_NUMBER_KEY, 0)
+    }
+
+    fun updateRequestNumber(newRequestNumber: Int) {
+        encryptedPreferences.edit().putInt(SMS_REQUEST_NUMBER_KEY, newRequestNumber).apply()
+    }
+
+    fun incrementRequestNumber() {
+        val currentRequestNumber = getCurrentRequestNumber()
+        val newRequestNumber = (currentRequestNumber + 1) % MAX_REQUEST_NUMBER
+        updateRequestNumber(newRequestNumber)
+    }
+
     fun postException(code: Int) {
         errorCode.postValue(code)
         state.postValue(SmsTransmissionStates.EXCEPTION)
@@ -82,14 +103,26 @@ class SmsStateReporter @Inject constructor(
 
     fun handleResponse(msg: String, errCode: Int?) {
         if (errCode != null) {
+            val smsErrorHandler = SmsErrorHandler(smsKeyManager, this)
+            // Error status code from server on outer API call
             errorCode.postValue(errCode!!)
-            errorMsg.postValue(msg)
             errorCodeToCollect.postValue(errCode!!)
-            errorMessageToCollect.postValue(msg)
-            Log.d("SmsStateReporter", "Error Code: $errCode Error Msg: $msg")
+            if (smsErrorHandler.shouldDecryptError(errCode)) {
+                // Handling encrypted error
+                val responseMsg = smsErrorHandler.handleEncryptedError(errCode, msg)
+                errorMsg.postValue(responseMsg)
+                errorMessageToCollect.postValue(responseMsg)
+                Log.d("SmsStateReporter", "Error Code: $errCode Decrypted Error Msg: $responseMsg")
+            } else {
+                // Handling unencrypted error
+                errorMsg.postValue(msg)
+                errorMessageToCollect.postValue(msg)
+                Log.d("SmsStateReporter", "Error Code: $errCode Error Msg: $msg")
+            }
             state.postValue(SmsTransmissionStates.EXCEPTION)
             stateToCollect.postValue(SmsTransmissionStates.EXCEPTION)
         } else {
+            // Successful status code from server
             val smsKey = smsKeyManager.retrieveSmsKey()!!
             SMSFormatter.decodeMsg(msg, smsKey.key)
                 .let {

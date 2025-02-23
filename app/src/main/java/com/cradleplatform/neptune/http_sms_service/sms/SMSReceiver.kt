@@ -95,7 +95,6 @@ class SMSReceiver @Inject constructor(
             }
             // start storing message data and send ACK message
             else if (smsFormatter.isFirstReplyMessage(messageBody)) {
-
                 isError = smsFormatter.isFirstReplyError(messageBody)
                 requestIdentifier = smsFormatter.getRequestIdentifier(messageBody)
                 smsFormatter.getTotalNumMessages(messageBody)
@@ -138,7 +137,6 @@ class SMSReceiver @Inject constructor(
         // resetting vars if process finished
         if (numberReceivedMessages == totalMessages) {
             smsStateReporter.handleResponse(relayData, errorCode)
-            Log.d("Search: Encrypted Message/Error", "$isError  $relayData")
             Log.d("Search: Total Messages received", numberReceivedMessages.toString())
             smsSender.reset()
             reset()
