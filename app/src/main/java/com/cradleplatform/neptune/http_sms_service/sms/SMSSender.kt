@@ -24,6 +24,7 @@ class SMSSender @Inject constructor(
     private var smsRelayQueue = ArrayDeque<String>()
     var showDialog = true
     var data = ""
+
     fun queueRelayContent(unencryptedData: String): Boolean {
         data = String(unencryptedData.toCharArray())
         val smsKey = smsKeyManager.retrieveSmsKey() ?: return false
@@ -39,7 +40,7 @@ class SMSSender @Inject constructor(
         val relayPhoneNumber = sharedPreferences.getString(UserViewModel.RELAY_PHONE_NUMBER, null)
         val smsManager: SmsManager = SmsManager.getDefault()
         smsStateReporter.state.postValue(SmsTransmissionStates.SENDING_TO_RELAY_SERVER)
-        if (!smsRelayQueue.isNullOrEmpty()) {
+        if (!smsRelayQueue.isEmpty()) {
             // if acknowledgement received, remove window block and proceed to next
             if (acknowledged) {
                 smsRelayQueue.removeFirst()
@@ -69,12 +70,13 @@ class SMSSender @Inject constructor(
                     relayPhoneNumber, UserViewModel.USER_PHONE_NUMBER,
                     packetMsgDivided, null, null
                 )
-                Handler(Looper.getMainLooper()).post {
-                    Toast.makeText(
-                        appContext, appContext.getString(R.string.sms_packet_sent),
-                        Toast.LENGTH_LONG
-                    ).show()
-                }
+
+//                Handler(Looper.getMainLooper()).post {
+//                    Toast.makeText(
+//                        appContext, appContext.getString(R.string.sms_packet_sent),
+//                        Toast.LENGTH_LONG
+//                    ).show()
+//                }
             } catch (ex: Exception) {
                 Handler(Looper.getMainLooper()).post {
                     Toast.makeText(

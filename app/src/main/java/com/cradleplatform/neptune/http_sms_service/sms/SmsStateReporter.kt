@@ -36,7 +36,7 @@ class SmsStateReporter @Inject constructor(
     val totalReceived = MutableLiveData<Int>(0)
     val errorCode = MutableLiveData<Int>(0)
     val errorCodeToCollect = MutableLiveData(0)
-    val errorMsg = MutableLiveData<String>("")
+    private val errorMsg = MutableLiveData<String>("")
     val errorMessageToCollect = MutableLiveData("")
     val decryptedMsgLiveData = MutableLiveData("")
 
@@ -47,11 +47,13 @@ class SmsStateReporter @Inject constructor(
     private var sent = 0
     private var received = 0
     private var decryptedMsg = ""
+
     //Adjust this variable for the number of seconds before initial retry
     var timeout: Long = 10
+
     //Adjust this variable for the number of retry attempts
     var retriesAttempted = 0
-    var maxAttempts = 3
+    private var maxAttempts = 3
 
     val retry = MutableLiveData<Boolean>(false)
 
@@ -96,48 +98,46 @@ class SmsStateReporter @Inject constructor(
         updateRequestNumber(newRequestNumber)
     }
 
-    fun postException(code: Int) {
-        errorCode.postValue(code)
-        state.postValue(SmsTransmissionStates.EXCEPTION)
+    fun postErrorMessage(msg: String) {
+        errorMsg.postValue(msg)
+        errorMessageToCollect.postValue(msg)
     }
 
-    fun handleResponse(msg: String, errCode: Int?) {
-        if (errCode != null) {
-            val smsErrorHandler = SmsErrorHandler(smsKeyManager, this)
-            // Error status code from server on outer API call
-            errorCode.postValue(errCode!!)
-            errorCodeToCollect.postValue(errCode!!)
-            if (smsErrorHandler.shouldDecryptError(errCode)) {
-                // Handling encrypted error
-                val responseMsg = smsErrorHandler.handleEncryptedError(errCode, msg)
-                errorMsg.postValue(responseMsg)
-                errorMessageToCollect.postValue(responseMsg)
-                Log.d("SmsStateReporter", "Error Code: $errCode Decrypted Error Msg: $responseMsg")
-            } else {
-                // Handling unencrypted error
-                errorMsg.postValue(msg)
-                errorMessageToCollect.postValue(msg)
-                Log.d("SmsStateReporter", "Error Code: $errCode Error Msg: $msg")
-            }
-            state.postValue(SmsTransmissionStates.EXCEPTION)
-            stateToCollect.postValue(SmsTransmissionStates.EXCEPTION)
-        } else {
-            // Successful status code from server
-            val smsKey = smsKeyManager.retrieveSmsKey()!!
-            SMSFormatter.decodeMsg(msg, smsKey.key)
-                .let {
-                    decryptedMsg = it
-                    decryptedMsgLiveData.postValue(it)
-//                val mappedJson = JSONObject(decryptedMsg)
-                    // TODO: Do something with the JSON object sent back. As for now, it is the same
-                    //  data that was sent out. Compare and make sure everything was correct?
-                    Log.d("SmsStateReporter", "Decrypted Message: $it")
-                    // if failed, post exception instead of
-                    // else it's DONE
-                    state.postValue(SmsTransmissionStates.DONE)
-                    stateToCollect.postValue(SmsTransmissionStates.DONE)
-                }
+    fun postErrorCode(code: Int) {
+        errorCode.postValue(code)
+        errorCodeToCollect.postValue(code)
+    }
+
+    fun setExceptionState() {
+        state.postValue(SmsTransmissionStates.EXCEPTION)
+        stateToCollect.postValue(SmsTransmissionStates.EXCEPTION)
+    }
+
+    fun handleResponse(msg: String, outerErrorCode: Int?) {
+        val smsErrorHandler = SmsErrorHandler(smsKeyManager, this)
+
+        if (outerErrorCode != null) {
+            smsErrorHandler.handleOuterError(outerErrorCode, msg)
+            return
         }
+
+        val smsKey = smsKeyManager.retrieveSmsKey()!!
+        SMSFormatter.decodeMsg(msg, smsKey.key).let {
+            val innerErrorCode = smsErrorHandler.getInnerErrorCode(it)
+            if (innerErrorCode != null) {
+                smsErrorHandler.handleInnerError(innerErrorCode, it)
+                return
+            }
+
+            decryptedMsg = it
+            decryptedMsgLiveData.postValue(it)
+            // TODO: Do something with the JSON object sent back. As for now, it is the same
+            //  data that was sent out. Compare and make sure everything was correct?
+            // val mappedJson = JSONObject(decryptedMsg)
+            Log.d("SmsStateReporter", "Decrypted Message: $it")
+        }
+        state.postValue(SmsTransmissionStates.DONE)
+        stateToCollect.postValue(SmsTransmissionStates.DONE)
     }
 
     fun setSmsSender(sender: SMSSender) {
