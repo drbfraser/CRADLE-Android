@@ -105,6 +105,11 @@ class SmsTransmissionDialogFragment : DialogFragment() {
                     successFailMessage.visibility = View.VISIBLE
                     successFailMessage.text = "Failed: 400"
                 }
+                425 -> {
+                    successFailMessage.visibility = View.VISIBLE
+                    successFailMessage.text = "Failed: ${viewModel.smsStateReporter.errorMsg.value}"
+                    retryButton.isVisible = true
+                }
                 200 -> {
                     successFailMessage.visibility = View.VISIBLE
                     successFailMessage.text = "Success: 200"

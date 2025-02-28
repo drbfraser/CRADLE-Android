@@ -157,7 +157,7 @@ open class PatientReferralActivity : AppCompatActivity() {
         sendViaSMS.setOnClickListener {
             triedSendingViaSms = true
             val referral = viewModel.buildReferral(currPatient)
-            val dialog = openSmsTransmissionDialog()
+            openSmsTransmissionDialog()
             lifecycleScope.launch {
                 Toast.makeText(
                     applicationContext,
@@ -165,13 +165,7 @@ open class PatientReferralActivity : AppCompatActivity() {
                     Toast.LENGTH_SHORT
                 ).show()
 
-                CustomToast.shortToast(
-                    applicationContext,
-                    applicationContext.getString(R.string.sms_sender_send)
-                )
-
                 val result = referralUploadManager.uploadReferral(referral, currPatient, Protocol.SMS)
-                dialog.dismiss()
                 when (result) {
                     is ReferralFlowSaveResult.SaveSuccessful -> {
                         CustomToast.shortToast(

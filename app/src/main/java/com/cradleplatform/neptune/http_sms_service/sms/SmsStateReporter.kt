@@ -119,6 +119,8 @@ class SmsStateReporter @Inject constructor(
                 errorMessageToCollect.postValue(msg)
                 Log.d("SmsStateReporter", "Error Code: $errCode Error Msg: $msg")
             }
+            errorCode.postValue(errCode!!)
+            errorCodeToCollect.postValue(errCode!!)
             state.postValue(SmsTransmissionStates.EXCEPTION)
             stateToCollect.postValue(SmsTransmissionStates.EXCEPTION)
         } else {

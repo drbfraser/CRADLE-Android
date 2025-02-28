@@ -50,7 +50,7 @@ class SMSSender @Inject constructor(
                     Handler(Looper.getMainLooper()).post {
                         Toast.makeText(
                             appContext, finishedMsg,
-                            Toast.LENGTH_LONG
+                            Toast.LENGTH_SHORT
                         ).show()
                     }
                     return
@@ -69,12 +69,6 @@ class SMSSender @Inject constructor(
                     relayPhoneNumber, UserViewModel.USER_PHONE_NUMBER,
                     packetMsgDivided, null, null
                 )
-                Handler(Looper.getMainLooper()).post {
-                    Toast.makeText(
-                        appContext, appContext.getString(R.string.sms_packet_sent),
-                        Toast.LENGTH_LONG
-                    ).show()
-                }
             } catch (ex: Exception) {
                 Handler(Looper.getMainLooper()).post {
                     Toast.makeText(
