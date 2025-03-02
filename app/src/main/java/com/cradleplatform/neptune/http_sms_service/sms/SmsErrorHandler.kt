@@ -12,7 +12,7 @@ class SmsErrorHandler @Inject constructor(
 ) {
 
     companion object {
-        private const val REQUEST_NUMBER_MISMATCH = 425
+       const val REQUEST_NUMBER_MISMATCH = 425
     }
 
     fun shouldDecryptError(errCode: Int): Boolean {

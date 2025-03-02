@@ -7,5 +7,6 @@ enum class SmsTransmissionStates {
     RECEIVING_SERVER_RESPONSE,
     DONE,
     EXCEPTION,
+    RETRANSMISSION,
     TIME_OUT
 }

@@ -115,14 +115,7 @@ class RestApi(
         setupSmsReceiver()
 
         try {
-            val json = smsDataProcessor.processRequestDataToJSON(
-                method, url, headers, body
-            )
-            smsSender.queueRelayContent(json).let { enqueueSuccessful ->
-                if (enqueueSuccessful) {
-                    smsSender.sendSmsMessage(false)
-                }
-            }
+            processAndSendSms(method, url, headers, body)
 
             /**
              * `collect()` will suspend until the flow is complete, but this flow will continue
@@ -135,6 +128,7 @@ class RestApi(
                     when (state) {
                         SmsTransmissionStates.DONE -> {
                             /* TODO: Check code of SMS response. */
+                            Log.d("RestApi", "DONE successful transmission state.")
                             val response =
                                 JacksonMapper.mapper.readValue(smsStateReporter.decryptedMsgLiveData.value,
                                     object : TypeReference<T>() {})
@@ -155,6 +149,13 @@ class RestApi(
                                     smsStateReporter.errorCodeToCollect.value!!
                                 )
                             )
+                        }
+
+                        SmsTransmissionStates.RETRANSMISSION -> {
+                            Log.d("RestApi", "In Retransmission State, will process and send SMS again")
+                            smsStateReporter.state.postValue(SmsTransmissionStates.GETTING_READY_TO_SEND)
+                            smsStateReporter.stateToCollect.postValue(SmsTransmissionStates.GETTING_READY_TO_SEND)
+                            processAndSendSms(method, url, headers, body)
                         }
 
                         SmsTransmissionStates.TIME_OUT -> {
@@ -187,6 +188,25 @@ class RestApi(
             smsStateReporter.errorMessageToCollect.postValue("")
             smsStateReporter.errorCodeToCollect.postValue(0)
             teardownSmsReceiver()
+        }
+    }
+
+    private fun processAndSendSms(
+        method: Http.Method,
+        url: String,
+        headers: Map<String, String>,
+        body: ByteArray
+    ) {
+
+        val json = smsDataProcessor.processRequestDataToJSON(
+            method, url, headers, body
+        )
+        Log.d("LCDEBUG", "NEW SMS JSON CREATED")
+        smsSender.queueRelayContent(json).let { enqueueSuccessful ->
+            if (enqueueSuccessful) {
+                Log.d("LCDEBUG", "SENDING SMS MESSAGE")
+                smsSender.sendSmsMessage(false)
+            }
         }
     }
 

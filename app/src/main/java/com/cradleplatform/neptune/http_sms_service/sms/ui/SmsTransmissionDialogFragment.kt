@@ -51,6 +51,7 @@ class SmsTransmissionDialogFragment : DialogFragment() {
         // Set initial values or customize views
         positiveButton.isEnabled = false
         retryButton.isVisible = false
+        successFailMessage.visibility = View.GONE
         viewModel.stateString.observe(viewLifecycleOwner) {
             stateMessage.text = it
         }
@@ -107,8 +108,7 @@ class SmsTransmissionDialogFragment : DialogFragment() {
                 }
                 425 -> {
                     successFailMessage.visibility = View.VISIBLE
-                    successFailMessage.text = "Failed: ${viewModel.smsStateReporter.errorMsg.value}"
-                    retryButton.isVisible = true
+                    successFailMessage.text = "Performing request number update. Re-sending transmission."
                 }
                 200 -> {
                     successFailMessage.visibility = View.VISIBLE

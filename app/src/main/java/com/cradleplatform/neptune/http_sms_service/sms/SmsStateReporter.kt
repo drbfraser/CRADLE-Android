@@ -34,7 +34,7 @@ class SmsStateReporter @Inject constructor(
     private var timeoutThread: Thread? = null
     val totalSent = MutableLiveData<Int>(0)
     val totalReceived = MutableLiveData<Int>(0)
-    val errorCode = MutableLiveData<Int>(0)
+    val errorCode = MutableLiveData<Int?>(0)
     val errorCodeToCollect = MutableLiveData(0)
     val errorMsg = MutableLiveData<String>("")
     val errorMessageToCollect = MutableLiveData("")
@@ -52,6 +52,9 @@ class SmsStateReporter @Inject constructor(
     //Adjust this variable for the number of retry attempts
     var retriesAttempted = 0
     var maxAttempts = 3
+
+    var requestNumberRetries = 0
+    var maxRequestNumberRetries = 1
 
     val retry = MutableLiveData<Boolean>(false)
 
@@ -104,9 +107,7 @@ class SmsStateReporter @Inject constructor(
     fun handleResponse(msg: String, errCode: Int?) {
         if (errCode != null) {
             val smsErrorHandler = SmsErrorHandler(smsKeyManager, this)
-            // Error status code from server on outer API call
-            errorCode.postValue(errCode!!)
-            errorCodeToCollect.postValue(errCode!!)
+
             if (smsErrorHandler.shouldDecryptError(errCode)) {
                 // Handling encrypted error
                 val responseMsg = smsErrorHandler.handleEncryptedError(errCode, msg)
@@ -119,10 +120,19 @@ class SmsStateReporter @Inject constructor(
                 errorMessageToCollect.postValue(msg)
                 Log.d("SmsStateReporter", "Error Code: $errCode Error Msg: $msg")
             }
+            // Error status code from server on outer API call
             errorCode.postValue(errCode!!)
             errorCodeToCollect.postValue(errCode!!)
-            state.postValue(SmsTransmissionStates.EXCEPTION)
-            stateToCollect.postValue(SmsTransmissionStates.EXCEPTION)
+            if (errCode == SmsErrorHandler.REQUEST_NUMBER_MISMATCH
+                    && requestNumberRetries < maxRequestNumberRetries) {
+                state.postValue(SmsTransmissionStates.RETRANSMISSION)
+                stateToCollect.postValue(SmsTransmissionStates.RETRANSMISSION)
+                requestNumberRetries++
+                Log.d("SmsStateReporter", "Error Code: $errCode, Request Number Mismatch, Retransmission $requestNumberRetries/$maxRequestNumberRetries")
+            } else {
+                state.postValue(SmsTransmissionStates.EXCEPTION)
+                stateToCollect.postValue(SmsTransmissionStates.EXCEPTION)
+            }
         } else {
             // Successful status code from server
             val smsKey = smsKeyManager.retrieveSmsKey()!!
@@ -133,9 +143,12 @@ class SmsStateReporter @Inject constructor(
 //                val mappedJson = JSONObject(decryptedMsg)
                     // TODO: Do something with the JSON object sent back. As for now, it is the same
                     //  data that was sent out. Compare and make sure everything was correct?
+                    Log.d("SmsStateReporter", "200 Status Code From Server")
                     Log.d("SmsStateReporter", "Decrypted Message: $it")
                     // if failed, post exception instead of
                     // else it's DONE
+                    errorCode.postValue(null)
+                    errorCodeToCollect.postValue(null)
                     state.postValue(SmsTransmissionStates.DONE)
                     stateToCollect.postValue(SmsTransmissionStates.DONE)
                 }
@@ -173,6 +186,7 @@ class SmsStateReporter @Inject constructor(
         totalReceived.postValue(0)
         totalToBeReceived = 0
         retriesAttempted = 0
+        requestNumberRetries = 0
         timeoutThread?.interrupt()
     }
 
