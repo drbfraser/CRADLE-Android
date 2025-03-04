@@ -1168,7 +1168,6 @@ class RestApi(
                         },
                     )
                 }
-
                 Protocol.SMS -> {
                     handleSmsRequest(
                         method, url, headers, body

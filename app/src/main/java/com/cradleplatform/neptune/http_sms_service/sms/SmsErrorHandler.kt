@@ -12,26 +12,29 @@ class SmsErrorHandler @Inject constructor(
 ) {
     companion object {
         private const val REQUEST_NUMBER_MISMATCH = 425
+        private const val TAG = "SmsErrorHandler"
     }
+
 
     private fun handleRequestNumberMismatch(errorResponse: SmsRelayErrorResponse) {
         val expectedRequestNumber = errorResponse.expectedRequestNumber
         smsStateReporter.updateRequestNumber(expectedRequestNumber ?: 0)
-        Log.d("SmsStateReporter", "Request Number Mismatch - Updating to $expectedRequestNumber")
+        Log.d(TAG, "Request Number Mismatch - Updating to $expectedRequestNumber")
     }
 
 
-    private fun shouldDecryptOuterError(errCode: Int): Boolean {
+    private fun shouldDecryptRelayError(errCode: Int): Boolean {
         val encryptedErrorCodes = listOf(REQUEST_NUMBER_MISMATCH)
         return errCode in encryptedErrorCodes
     }
 
-    private fun handleEncryptedOuterError(errCode: Int, encryptedMsg: String): String {
+    private fun handleEncryptedRelayError(errCode: Int, encryptedMsg: String): String {
         val smsKey = smsKeyManager.retrieveSmsKey()!!
         val errorJsonString = SMSFormatter.decodeMsg(encryptedMsg, smsKey.key)
         val errorResponse = Gson().fromJson(errorJsonString, SmsRelayErrorResponse::class.java)
+
         Log.e(
-            "SmsStateReporter",
+            TAG,
             "Handling Encrypted Error - Error Code: $errCode Decrypted Error Msg: ${errorResponse.message}"
         )
         when (errCode) {
@@ -40,20 +43,19 @@ class SmsErrorHandler @Inject constructor(
         return errorResponse.message
     }
 
-    fun handleOuterError(outerErrorCode: Int, msg: String) {
-        if (shouldDecryptOuterError(outerErrorCode)) {
-            val responseMsg = handleEncryptedOuterError(outerErrorCode, msg)
-            Log.d(
-                "SmsStateReporter",
-                "Error Code: $outerErrorCode Decrypted Error Msg: $responseMsg"
-            )
-            smsStateReporter.postErrorMessage(responseMsg)
+    fun handleOuterError(
+        outerErrorCode: Int,
+        msg: String,
+    ): String {
+        var errorMsg = msg
+        if (shouldDecryptRelayError(outerErrorCode)) {
+            errorMsg = handleEncryptedRelayError(outerErrorCode, msg)
+            Log.d(TAG, "Error Code: $outerErrorCode Decrypted Error Msg: $errorMsg")
         } else {
-            Log.d("SmsStateReporter", "Error Code: $outerErrorCode Error Msg: $msg")
-            smsStateReporter.postErrorMessage(msg)
+            Log.d(TAG, "Error Code: $outerErrorCode Error Msg: $msg")
         }
-        smsStateReporter.postErrorCode(outerErrorCode)
-        smsStateReporter.setExceptionState()
+
+        return errorMsg
     }
 
 
@@ -62,14 +64,12 @@ class SmsErrorHandler @Inject constructor(
         val description: String?
     )
 
-    fun handleInnerError(innerErrorCode: Int, decryptedMsg: String) {
+    fun handleInnerError(innerErrorCode: Int, decryptedMsg: String): String {
         val innerRequestData = Gson().fromJson(decryptedMsg, InnerRequestData::class.java)
         val errorMsg = innerRequestData.description ?: "Unknown Error"
 
-        Log.e("test", "Inner Error Code: $innerErrorCode, Error Msg: $errorMsg")
-        smsStateReporter.postErrorMessage(errorMsg)
-        smsStateReporter.postErrorCode(innerErrorCode)
-        smsStateReporter.setExceptionState()
+        Log.e(TAG, "Inner Error Code: $innerErrorCode, Error Msg: $errorMsg")
+        return errorMsg
     }
 
     fun getInnerErrorCode(decryptedMsg: String): Int? {

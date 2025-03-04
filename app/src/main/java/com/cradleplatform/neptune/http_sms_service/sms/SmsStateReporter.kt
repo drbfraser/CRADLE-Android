@@ -21,7 +21,6 @@ class SmsStateReporter @Inject constructor(
         const val SMS_REQUEST_NUMBER_KEY = "requestNumber"
     }
 
-    private var smsFormatter: SMSFormatter = SMSFormatter()
     private lateinit var smsSender: SMSSender
     val state = MutableLiveData<SmsTransmissionStates>(SmsTransmissionStates.GETTING_READY_TO_SEND)
 
@@ -40,7 +39,7 @@ class SmsStateReporter @Inject constructor(
     val errorMessageToCollect = MutableLiveData("")
     val decryptedMsgLiveData = MutableLiveData("")
 
-    val milliseconds = 1000
+    private val milliseconds = 1000
     var totalToBeSent = 0
     var totalToBeReceived = 0
 
@@ -48,10 +47,10 @@ class SmsStateReporter @Inject constructor(
     private var received = 0
     private var decryptedMsg = ""
 
-    //Adjust this variable for the number of seconds before initial retry
+    // Adjust this variable for the number of seconds before initial retry
     var timeout: Long = 10
 
-    //Adjust this variable for the number of retry attempts
+    // Adjust this variable for the number of retry attempts
     var retriesAttempted = 0
     private var maxAttempts = 3
 
@@ -76,6 +75,7 @@ class SmsStateReporter @Inject constructor(
         totalToBeReceived = numberOfSmsToReceive
     }
 
+
     fun incrementSent() {
         totalSent.postValue(++sent)
     }
@@ -83,6 +83,7 @@ class SmsStateReporter @Inject constructor(
     fun incrementReceived() {
         totalReceived.postValue(++received)
     }
+
 
     fun getCurrentRequestNumber(): Int {
         return encryptedPreferences.getInt(SMS_REQUEST_NUMBER_KEY, 0)
@@ -98,17 +99,14 @@ class SmsStateReporter @Inject constructor(
         updateRequestNumber(newRequestNumber)
     }
 
-    fun postErrorMessage(msg: String) {
-        errorMsg.postValue(msg)
-        errorMessageToCollect.postValue(msg)
-    }
 
-    fun postErrorCode(code: Int) {
+    private fun setErrorStates(code: Int, msg: String) {
         errorCode.postValue(code)
         errorCodeToCollect.postValue(code)
-    }
 
-    fun setExceptionState() {
+        errorMsg.postValue(msg)
+        errorMessageToCollect.postValue(msg)
+
         state.postValue(SmsTransmissionStates.EXCEPTION)
         stateToCollect.postValue(SmsTransmissionStates.EXCEPTION)
     }
@@ -117,27 +115,29 @@ class SmsStateReporter @Inject constructor(
         val smsErrorHandler = SmsErrorHandler(smsKeyManager, this)
 
         if (outerErrorCode != null) {
-            smsErrorHandler.handleOuterError(outerErrorCode, msg)
-            return
-        }
+            val errorMsg = smsErrorHandler.handleOuterError(outerErrorCode, msg)
+            setErrorStates(outerErrorCode, errorMsg)
+        } else {
+            val smsKey = smsKeyManager.retrieveSmsKey()!!
+            val decodedMessage = SMSFormatter.decodeMsg(msg, smsKey.key)
 
-        val smsKey = smsKeyManager.retrieveSmsKey()!!
-        SMSFormatter.decodeMsg(msg, smsKey.key).let {
-            val innerErrorCode = smsErrorHandler.getInnerErrorCode(it)
+            val innerErrorCode = smsErrorHandler.getInnerErrorCode(decodedMessage)
             if (innerErrorCode != null) {
-                smsErrorHandler.handleInnerError(innerErrorCode, it)
+                val errorMsg = smsErrorHandler.handleInnerError(innerErrorCode, decodedMessage)
+                setErrorStates(innerErrorCode, errorMsg)
                 return
             }
 
-            decryptedMsg = it
-            decryptedMsgLiveData.postValue(it)
+            decryptedMsg = decodedMessage
+            decryptedMsgLiveData.postValue(decodedMessage)
             // TODO: Do something with the JSON object sent back. As for now, it is the same
             //  data that was sent out. Compare and make sure everything was correct?
             // val mappedJson = JSONObject(decryptedMsg)
-            Log.d("SmsStateReporter", "Decrypted Message: $it")
+            Log.d("SmsStateReporter", "Decrypted Message: $decodedMessage")
+
+            state.postValue(SmsTransmissionStates.DONE)
+            stateToCollect.postValue(SmsTransmissionStates.DONE)
         }
-        state.postValue(SmsTransmissionStates.DONE)
-        stateToCollect.postValue(SmsTransmissionStates.DONE)
     }
 
     fun setSmsSender(sender: SMSSender) {
