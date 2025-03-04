@@ -15,13 +15,11 @@ class SmsErrorHandler @Inject constructor(
         private const val TAG = "SmsErrorHandler"
     }
 
-
     private fun handleRequestNumberMismatch(errorResponse: SmsRelayErrorResponse) {
         val expectedRequestNumber = errorResponse.expectedRequestNumber
         smsStateReporter.updateRequestNumber(expectedRequestNumber ?: 0)
         Log.d(TAG, "Request Number Mismatch - Updating to $expectedRequestNumber")
     }
-
 
     private fun shouldDecryptRelayError(errCode: Int): Boolean {
         val encryptedErrorCodes = listOf(REQUEST_NUMBER_MISMATCH)
@@ -57,7 +55,6 @@ class SmsErrorHandler @Inject constructor(
 
         return errorMsg
     }
-
 
     private data class InnerRequestData(
         val code: Int?,

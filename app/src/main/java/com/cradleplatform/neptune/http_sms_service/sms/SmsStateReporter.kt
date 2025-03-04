@@ -75,7 +75,6 @@ class SmsStateReporter @Inject constructor(
         totalToBeReceived = numberOfSmsToReceive
     }
 
-
     fun incrementSent() {
         totalSent.postValue(++sent)
     }
@@ -83,7 +82,6 @@ class SmsStateReporter @Inject constructor(
     fun incrementReceived() {
         totalReceived.postValue(++received)
     }
-
 
     fun getCurrentRequestNumber(): Int {
         return encryptedPreferences.getInt(SMS_REQUEST_NUMBER_KEY, 0)
@@ -98,7 +96,6 @@ class SmsStateReporter @Inject constructor(
         val newRequestNumber = (currentRequestNumber + 1) % MAX_REQUEST_NUMBER
         updateRequestNumber(newRequestNumber)
     }
-
 
     private fun setErrorStates(code: Int, msg: String) {
         errorCode.postValue(code)
