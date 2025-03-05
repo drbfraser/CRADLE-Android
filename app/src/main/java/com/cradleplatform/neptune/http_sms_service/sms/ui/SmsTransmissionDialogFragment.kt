@@ -91,8 +91,6 @@ class SmsTransmissionDialogFragment : DialogFragment() {
         viewModel.smsStateReporter.state.observe(viewLifecycleOwner) { state ->
             if ( state == SmsTransmissionStates.DONE) {
                 positiveButton.isEnabled = true
-            } else if (state == SmsTransmissionStates.EXCEPTION){
-                retryButton.isVisible = true
             } else if (state == SmsTransmissionStates.TIME_OUT) {
                 positiveButton.isVisible = false
                 retryButton.isVisible = true
@@ -107,6 +105,7 @@ class SmsTransmissionDialogFragment : DialogFragment() {
                 in 400..599 -> {
                     successFailMessage.visibility = View.VISIBLE
                     successFailMessage.text = "We had an issue sending the data. Please retry or try again later."
+                    retryButton.isVisible = true
                 }
                 425 -> {
                     successFailMessage.visibility = View.VISIBLE
@@ -130,6 +129,7 @@ class SmsTransmissionDialogFragment : DialogFragment() {
         negativeButton.setOnClickListener {
             // TODO: kill/interrupt transmission, reverse DB modifications
             viewModel.smsSender.reset()
+            viewModel.smsStateReporter.initException()
             dismiss()
         }
         retryButton.setOnClickListener {

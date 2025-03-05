@@ -85,6 +85,13 @@ class SmsStateReporter @Inject constructor(
         stateToCollect.postValue(SmsTransmissionStates.RETRANSMISSION)
     }
 
+    fun initException() {
+        state.postValue(SmsTransmissionStates.EXCEPTION)
+        stateToCollect.postValue(SmsTransmissionStates.EXCEPTION)
+        errorCode.postValue(null)
+        errorCodeToCollect.postValue(null)
+    }
+
     fun incrementSent() {
         totalSent.postValue(++sent)
     }
@@ -137,8 +144,8 @@ class SmsStateReporter @Inject constructor(
                 requestNumberRetries++
                 Log.d("SmsStateReporter", "Error Code: $errCode, Request Number Mismatch, Retransmission $requestNumberRetries/$maxRequestNumberRetries")
             } else {
-                state.postValue(SmsTransmissionStates.EXCEPTION)
-                stateToCollect.postValue(SmsTransmissionStates.EXCEPTION)
+                state.postValue(SmsTransmissionStates.WAITING_FOR_USER_RESPONSE)
+                stateToCollect.postValue(SmsTransmissionStates.WAITING_FOR_USER_RESPONSE)
             }
         } else {
             // Successful status code from server
