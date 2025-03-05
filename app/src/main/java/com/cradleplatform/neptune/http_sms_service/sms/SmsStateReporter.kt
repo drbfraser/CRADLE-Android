@@ -39,6 +39,9 @@ class SmsStateReporter @Inject constructor(
     val errorMsg = MutableLiveData<String>("")
     val errorMessageToCollect = MutableLiveData("")
     val decryptedMsgLiveData = MutableLiveData("")
+    val retryRequested = MutableLiveData(false)
+    val cancelRequested = MutableLiveData(false)
+
 
     val milliseconds = 1000
     var totalToBeSent = 0
@@ -54,7 +57,7 @@ class SmsStateReporter @Inject constructor(
     var maxAttempts = 3
 
     var requestNumberRetries = 0
-    var maxRequestNumberRetries = 1
+    var maxRequestNumberRetries = 5
 
     val retry = MutableLiveData<Boolean>(false)
 
@@ -75,6 +78,11 @@ class SmsStateReporter @Inject constructor(
         state.postValue((SmsTransmissionStates.RECEIVING_SERVER_RESPONSE))
         totalReceived.postValue(1)
         totalToBeReceived = numberOfSmsToReceive
+    }
+
+    fun initRetransmission() {
+        state.postValue(SmsTransmissionStates.RETRANSMISSION)
+        stateToCollect.postValue(SmsTransmissionStates.RETRANSMISSION)
     }
 
     fun incrementSent() {
@@ -125,8 +133,7 @@ class SmsStateReporter @Inject constructor(
             errorCodeToCollect.postValue(errCode!!)
             if (errCode == SmsErrorHandler.REQUEST_NUMBER_MISMATCH
                     && requestNumberRetries < maxRequestNumberRetries) {
-                state.postValue(SmsTransmissionStates.RETRANSMISSION)
-                stateToCollect.postValue(SmsTransmissionStates.RETRANSMISSION)
+                initRetransmission()
                 requestNumberRetries++
                 Log.d("SmsStateReporter", "Error Code: $errCode, Request Number Mismatch, Retransmission $requestNumberRetries/$maxRequestNumberRetries")
             } else {
@@ -179,7 +186,6 @@ class SmsStateReporter @Inject constructor(
     }
 
     fun resetStateReporter() {
-        state.postValue((SmsTransmissionStates.GETTING_READY_TO_SEND))
         sent = 0
         totalSent.postValue(0)
         received = 0

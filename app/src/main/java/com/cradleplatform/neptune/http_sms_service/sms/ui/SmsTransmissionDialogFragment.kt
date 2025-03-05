@@ -89,8 +89,10 @@ class SmsTransmissionDialogFragment : DialogFragment() {
             }
         }
         viewModel.smsStateReporter.state.observe(viewLifecycleOwner) { state ->
-            if (state == SmsTransmissionStates.EXCEPTION || state == SmsTransmissionStates.DONE) {
+            if ( state == SmsTransmissionStates.DONE) {
                 positiveButton.isEnabled = true
+            } else if (state == SmsTransmissionStates.EXCEPTION){
+                retryButton.isVisible = true
             } else if (state == SmsTransmissionStates.TIME_OUT) {
                 positiveButton.isVisible = false
                 retryButton.isVisible = true
@@ -102,9 +104,9 @@ class SmsTransmissionDialogFragment : DialogFragment() {
             // Display response code from server
             when (it) {
                 // TODO: Currently no error code is in SMS received
-                400 -> {
+                in 400..599 -> {
                     successFailMessage.visibility = View.VISIBLE
-                    successFailMessage.text = "Failed: 400"
+                    successFailMessage.text = "We had an issue sending the data. Please retry or try again later."
                 }
                 425 -> {
                     successFailMessage.visibility = View.VISIBLE
@@ -131,10 +133,7 @@ class SmsTransmissionDialogFragment : DialogFragment() {
             dismiss()
         }
         retryButton.setOnClickListener {
-            viewModel.smsSender.reset()
-            viewModel.smsStateReporter.resetStateReporter()
-            viewModel.smsSender.queueRelayContent(viewModel.smsSender.data)
-            receiveProgressMessage.isVisible = true
+            viewModel.smsStateReporter.initRetransmission()
         }
     }
 
