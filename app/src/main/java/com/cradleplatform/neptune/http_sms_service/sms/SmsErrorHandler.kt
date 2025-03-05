@@ -2,7 +2,8 @@ package com.cradleplatform.neptune.http_sms_service.sms
 
 import android.util.Log
 import com.cradleplatform.neptune.manager.SmsKeyManager
-import com.cradleplatform.neptune.model.SmsRelayErrorResponse
+import com.cradleplatform.neptune.model.SmsRelayErrorResponse425
+import com.cradleplatform.neptune.model.DecryptedSmsResponse
 import com.google.gson.Gson
 import javax.inject.Inject
 
@@ -15,7 +16,7 @@ class SmsErrorHandler @Inject constructor(
         private const val TAG = "SmsErrorHandler"
     }
 
-    private fun handleRequestNumberMismatch(errorResponse: SmsRelayErrorResponse) {
+    private fun handleRequestNumberMismatch(errorResponse: SmsRelayErrorResponse425) {
         val expectedRequestNumber = errorResponse.expectedRequestNumber
         smsStateReporter.updateRequestNumber(expectedRequestNumber ?: 0)
         Log.d(TAG, "Request Number Mismatch - Updating to $expectedRequestNumber")
@@ -28,8 +29,10 @@ class SmsErrorHandler @Inject constructor(
 
     private fun handleEncryptedRelayError(errCode: Int, encryptedMsg: String): String {
         val smsKey = smsKeyManager.retrieveSmsKey()!!
-        val errorJsonString = SMSFormatter.decodeMsg(encryptedMsg, smsKey.key)
-        val errorResponse = Gson().fromJson(errorJsonString, SmsRelayErrorResponse::class.java)
+        val decodedMsg = SMSFormatter.decodeMsg(encryptedMsg, smsKey.key)
+        val decryptedSmsResponse = Gson().fromJson(decodedMsg, DecryptedSmsResponse::class.java)
+        val errorResponse =
+            Gson().fromJson(decryptedSmsResponse.body, SmsRelayErrorResponse425::class.java)
 
         Log.e(
             TAG,
@@ -56,22 +59,18 @@ class SmsErrorHandler @Inject constructor(
         return errorMsg
     }
 
-    private data class InnerRequestData(
-        val code: Int?,
+    private data class InnerRequestError(
         val description: String?
     )
 
-    fun handleInnerError(innerErrorCode: Int, decryptedMsg: String): String {
-        val innerRequestData = Gson().fromJson(decryptedMsg, InnerRequestData::class.java)
-        val errorMsg = innerRequestData.description ?: "Unknown Error"
+    fun handleInnerError(innerRequestResponse: DecryptedSmsResponse): String {
+        val innerRequestError =
+            Gson().fromJson(innerRequestResponse.body, InnerRequestError::class.java)
+        val errorMsg = innerRequestError.description ?: "Unknown Error"
 
-        Log.e(TAG, "Inner Error Code: $innerErrorCode, Error Msg: $errorMsg")
+        Log.e(TAG, "Inner Error Code: ${innerRequestResponse.code}, Error Msg: $errorMsg")
         return errorMsg
     }
 
-    fun getInnerErrorCode(decryptedMsg: String): Int? {
-        val innerRequestError = Gson().fromJson(decryptedMsg, InnerRequestData::class.java)
-        val innerStatusCode = innerRequestError.code
-        return if (innerStatusCode.toString().first() == '4') innerStatusCode else null
-    }
+    fun isErrorCode(code: Int): Boolean = code.toString().first() == '4'
 }

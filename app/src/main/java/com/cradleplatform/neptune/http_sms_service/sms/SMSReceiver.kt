@@ -34,7 +34,8 @@ class SMSReceiver @Inject constructor(
 
     private var smsFormatter: SMSFormatter = SMSFormatter()
 
-    val intentFilter = IntentFilter()
+    private val intentFilter = IntentFilter()
+
     init {
         intentFilter.addAction("android.provider.Telephony.SMS_RECEIVED")
         intentFilter.priority = Int.MAX_VALUE
@@ -117,12 +118,17 @@ class SMSReceiver @Inject constructor(
             else if (smsFormatter.isRestMessage(messageBody)) {
 
                 if (smsFormatter.getMessageNumber(messageBody) <= totalMessages &&
-                    numberReceivedMessages < totalMessages) {
+                    numberReceivedMessages < totalMessages
+                ) {
                     numberReceivedMessages += 1
                     smsStateReporter.incrementReceived()
                     smsStateReporter.retry.postValue(false)
                     relayData += smsFormatter.getRestMessageString(messageBody)
-                    smsSender.sendAckMessage(requestIdentifier, numberReceivedMessages - 1, totalMessages)
+                    smsSender.sendAckMessage(
+                        requestIdentifier,
+                        numberReceivedMessages - 1,
+                        totalMessages
+                    )
                 }
                 check()
             }

@@ -4,6 +4,8 @@ import android.content.SharedPreferences
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import com.cradleplatform.neptune.manager.SmsKeyManager
+import com.cradleplatform.neptune.model.DecryptedSmsResponse
+import com.google.gson.Gson
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -118,10 +120,11 @@ class SmsStateReporter @Inject constructor(
             val smsKey = smsKeyManager.retrieveSmsKey()!!
             val decodedMessage = SMSFormatter.decodeMsg(msg, smsKey.key)
 
-            val innerErrorCode = smsErrorHandler.getInnerErrorCode(decodedMessage)
-            if (innerErrorCode != null) {
-                val errorMsg = smsErrorHandler.handleInnerError(innerErrorCode, decodedMessage)
-                setErrorStates(innerErrorCode, errorMsg)
+            val innerRequestResponse =
+                Gson().fromJson(decodedMessage, DecryptedSmsResponse::class.java)
+            if (smsErrorHandler.isErrorCode(innerRequestResponse.code)) {
+                val errorMsg = smsErrorHandler.handleInnerError(innerRequestResponse)
+                setErrorStates(innerRequestResponse.code, errorMsg)
                 return
             }
 
