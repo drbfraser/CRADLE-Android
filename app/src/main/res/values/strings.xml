@@ -732,7 +732,10 @@
     <string name="form_maximum_lines_allowed">Maximum %1$s lines allowed</string>
     <string name="form_generic_field_exceeds_line_limit">Some fields exceed line limit</string>
     <string name="form_field_exceeds_line_limit">%s exceeds line limit</string>
-
+    <string name="error_number_out_of_range">%1$s must be between %2$.1f and %3$.1f</string>
+    <string name="error_number_too_low">%1$s must be at least %2$.1f</string>
+    <string name="error_number_too_high">%1$s cannot be greater than %2$.1f</string>
+    <string name="error_invalid_number">%1$s has an invalid number</string>
 
     <!-- User Phone Strings -->
     <string name="phone_new_number_detected">A new number has been detected</string>

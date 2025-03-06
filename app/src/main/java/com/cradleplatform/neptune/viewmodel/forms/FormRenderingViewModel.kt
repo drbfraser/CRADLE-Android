@@ -303,6 +303,34 @@ class FormRenderingViewModel @Inject constructor(
                     return Pair(false, toastText)
                 }
             }
+            /**
+             * If there's a number field, ensure that numMin <= number entered <= munMax
+             */
+            if (it.questionType == QuestionTypeEnum.INTEGER || it.questionType == QuestionTypeEnum.DECIMAL) {
+                val numAnswer = answer?.numericAnswer?.toDouble()
+                if (numAnswer != null) {
+                    if (it.numMin != null && numAnswer < it.numMin!!.toDouble()) {
+                        val toastText = createInvalidInputToast(
+                            InvalidInputTypeEnum.NUMBER_OUT_OF_RANGE,
+                            it,
+                            languageSelected,
+                            context,
+                            minValue = it.numMin
+                        )
+                        return Pair(false, toastText)
+                    }
+                    if (it.numMax != null && numAnswer > it.numMax!!) {
+                        val toastText = createInvalidInputToast(
+                            InvalidInputTypeEnum.NUMBER_OUT_OF_RANGE,
+                            it,
+                            languageSelected,
+                            context,
+                            maxValue = it.numMax
+                        )
+                        return Pair(false, toastText)
+                    }
+                }
+            }
         }
         return Pair(true, null)
     }
@@ -311,7 +339,9 @@ class FormRenderingViewModel @Inject constructor(
         errorType: InvalidInputTypeEnum,
         question: Question,
         languageSelected: String,
-        context: Context
+        context: Context,
+        minValue: Double? = null,
+        maxValue: Double? = null
     ): String {
         val questionText = question.languageVersions?.find { lang ->
             lang.language == languageSelected
@@ -336,6 +366,19 @@ class FormRenderingViewModel @Inject constructor(
                         context.getString(R.string.form_field_exceeds_line_limit),
                         questionText
                     )
+                }
+            }
+
+            InvalidInputTypeEnum.NUMBER_OUT_OF_RANGE -> {
+                when {
+                    minValue != null && maxValue != null ->
+                        context.getString(R.string.error_number_out_of_range, questionText, minValue, maxValue)
+                    minValue != null ->
+                        context.getString(R.string.error_number_too_low, questionText, minValue)
+                    maxValue != null ->
+                        context.getString(R.string.error_number_too_high, questionText, maxValue)
+                    else ->
+                        context.getString(R.string.error_invalid_number, questionText)
                 }
             }
         }
@@ -467,5 +510,6 @@ class FormRenderingViewModel @Inject constructor(
 
 enum class InvalidInputTypeEnum {
     REQUIRED_FIELD,
-    STRING_MAX_LINES
+    STRING_MAX_LINES,
+    NUMBER_OUT_OF_RANGE
 }
