@@ -43,15 +43,14 @@ class SmsTransmissionDialogFragment : DialogFragment() {
         val sendProgressMessage = view.findViewById<TextView>(R.id.sendProgressMessage)
         val receiveProgressMessage = view.findViewById<TextView>(R.id.receiveProgressMessage)
         val successFailMessage = view.findViewById<TextView>(R.id.successErrorMessage)
-        val positiveButton = view.findViewById<Button>(R.id.btnPositive)
-        val negativeButton = view.findViewById<Button>(R.id.btnNegative)
+        val continueButton = view.findViewById<Button>(R.id.btnPositive)
+        val cancelButton = view.findViewById<Button>(R.id.btnNegative)
         val retryButton = view.findViewById<Button>(R.id.retry_fail)
         val retryTimer = view.findViewById<TextView>(R.id.retryTimer)
         val countDownIntervalMilli: Long = 1000
         // Set initial values or customize views
-        positiveButton.isEnabled = false
-        retryButton.isVisible = false
-        successFailMessage.visibility = View.GONE
+        continueButton.isEnabled = false
+
         viewModel.stateString.observe(viewLifecycleOwner) {
             stateMessage.text = it
         }
@@ -89,10 +88,15 @@ class SmsTransmissionDialogFragment : DialogFragment() {
             }
         }
         viewModel.smsStateReporter.state.observe(viewLifecycleOwner) { state ->
-            if ( state == SmsTransmissionStates.DONE) {
-                positiveButton.isEnabled = true
+            if (state == SmsTransmissionStates.GETTING_READY_TO_SEND) {
+                sendProgressMessage.isVisible = true
+                receiveProgressMessage.isVisible = true
+                successFailMessage.isVisible = false
+                retryButton.isVisible = false
+            } else if (state == SmsTransmissionStates.DONE) {
+                continueButton.isEnabled = true
             } else if (state == SmsTransmissionStates.TIME_OUT) {
-                positiveButton.isVisible = false
+                continueButton.isVisible = false
                 retryButton.isVisible = true
                 sendProgressMessage.text = "No response from SMS server"
                 receiveProgressMessage.isVisible = false
@@ -101,32 +105,33 @@ class SmsTransmissionDialogFragment : DialogFragment() {
         viewModel.smsStateReporter.errorCode.observe(viewLifecycleOwner) {
             // Display response code from server
             when (it) {
-                // TODO: Currently no error code is in SMS received
                 in 400..599 -> {
-                    successFailMessage.visibility = View.VISIBLE
+                    successFailMessage.isVisible = true
                     successFailMessage.text = "We had an issue sending the data. Please retry or try again later."
                     retryButton.isVisible = true
+                    sendProgressMessage.isVisible = false
+                    receiveProgressMessage.isVisible = false
                 }
                 425 -> {
-                    successFailMessage.visibility = View.VISIBLE
+                    successFailMessage.isVisible = true
                     successFailMessage.text = "Performing request number update. Re-sending transmission."
                 }
                 200 -> {
-                    successFailMessage.visibility = View.VISIBLE
+                    successFailMessage.isVisible = true
                     successFailMessage.text = "Success: 200"
                 }
                 else -> {
-                    successFailMessage.visibility = View.GONE
+                    successFailMessage.isVisible = false
                 }
             }
         }
         // Set click listeners
-        positiveButton.setOnClickListener {
+        continueButton.setOnClickListener {
             dismiss()
 
             // TODO: We want manually exit Activity/Fragments so user can review the result
         }
-        negativeButton.setOnClickListener {
+        cancelButton.setOnClickListener {
             // TODO: kill/interrupt transmission, reverse DB modifications
             viewModel.smsSender.reset()
             viewModel.smsStateReporter.initException()

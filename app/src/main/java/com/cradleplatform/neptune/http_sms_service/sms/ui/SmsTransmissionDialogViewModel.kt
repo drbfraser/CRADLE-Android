@@ -28,6 +28,7 @@ class SmsTransmissionDialogViewModel @Inject constructor(
             SmsTransmissionStates.DONE -> "Finished."
             SmsTransmissionStates.EXCEPTION -> "Something went wrong."
             SmsTransmissionStates.TIME_OUT -> "Timed out, no response"
+            SmsTransmissionStates.WAITING_FOR_USER_RESPONSE -> "Please confirm"
             else -> "Unknown state"
         }
     }
