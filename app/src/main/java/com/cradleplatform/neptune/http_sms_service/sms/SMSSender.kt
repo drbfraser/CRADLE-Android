@@ -47,7 +47,8 @@ class SMSSender @Inject constructor(
                 if (smsRelayQueue.isEmpty()) {
                     val finishedMsg = appContext.getString(R.string.sms_all_sent)
                     smsStateReporter.state.postValue(
-                        SmsTransmissionStates.WAITING_FOR_SERVER_RESPONSE)
+                        SmsTransmissionStates.WAITING_FOR_SERVER_RESPONSE
+                    )
                     Handler(Looper.getMainLooper()).post {
                         Toast.makeText(
                             appContext, finishedMsg,
@@ -70,13 +71,6 @@ class SMSSender @Inject constructor(
                     relayPhoneNumber, UserViewModel.USER_PHONE_NUMBER,
                     packetMsgDivided, null, null
                 )
-
-//                Handler(Looper.getMainLooper()).post {
-//                    Toast.makeText(
-//                        appContext, appContext.getString(R.string.sms_packet_sent),
-//                        Toast.LENGTH_LONG
-//                    ).show()
-//                }
             } catch (ex: Exception) {
                 Handler(Looper.getMainLooper()).post {
                     Toast.makeText(
@@ -129,6 +123,7 @@ class SMSSender @Inject constructor(
     fun changeShowDialog(bool: Boolean) {
         showDialog = bool
     }
+
     fun reset() {
         smsRelayQueue.clear()
         showDialog = true

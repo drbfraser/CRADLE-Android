@@ -14,6 +14,8 @@ class SmsErrorHandler @Inject constructor(
     companion object {
         private const val REQUEST_NUMBER_MISMATCH = 425
         private const val TAG = "SmsErrorHandler"
+
+        fun isErrorCode(code: Int): Boolean = code >= 400
     }
 
     private fun handleRequestNumberMismatch(errorResponse: SmsRelayErrorResponse425) {
@@ -71,6 +73,4 @@ class SmsErrorHandler @Inject constructor(
         Log.e(TAG, "Inner Error Code: ${innerRequestResponse.code}, Error Msg: $errorMsg")
         return errorMsg
     }
-
-    fun isErrorCode(code: Int): Boolean = code.toString().first() == '4'
 }

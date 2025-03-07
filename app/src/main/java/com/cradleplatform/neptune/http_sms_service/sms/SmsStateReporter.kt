@@ -19,6 +19,7 @@ class SmsStateReporter @Inject constructor(
     private val encryptedPreferences: SharedPreferences
 ) {
     companion object {
+        private const val TAG = "SmsStateReporter"
         private const val MAX_REQUEST_NUMBER = 999999
         const val SMS_REQUEST_NUMBER_KEY = "requestNumber"
     }
@@ -122,7 +123,7 @@ class SmsStateReporter @Inject constructor(
 
             val innerRequestResponse =
                 Gson().fromJson(decodedMessage, DecryptedSmsResponse::class.java)
-            if (smsErrorHandler.isErrorCode(innerRequestResponse.code)) {
+            if (SmsErrorHandler.isErrorCode(innerRequestResponse.code)) {
                 val errorMsg = smsErrorHandler.handleInnerError(innerRequestResponse)
                 setErrorStates(innerRequestResponse.code, errorMsg)
                 return
@@ -133,7 +134,7 @@ class SmsStateReporter @Inject constructor(
             // TODO: Do something with the JSON object sent back. As for now, it is the same
             //  data that was sent out. Compare and make sure everything was correct?
             // val mappedJson = JSONObject(decryptedMsg)
-            Log.d("SmsStateReporter", "Decrypted Message: $decodedMessage")
+            Log.d(TAG, "Decrypted Message: $decodedMessage")
 
             state.postValue(SmsTransmissionStates.DONE)
             stateToCollect.postValue(SmsTransmissionStates.DONE)
