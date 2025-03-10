@@ -132,7 +132,11 @@
     <string name="save_locally_positive_button">Save Locally</string>
     <string name="discard_draft">Discard Draft</string>
 
-    <!-- SMS Text Message Referral - SMS content-->
+    <!-- SMS Relay -->
+    <string name="send_sms_dialog_retry_message"> Data has been saved on local device.
+        Retry the action or perform a sync later using an internet connection (WiFi, 3G, etc.).</string>
+
+
     <!-- NOTE: May not want to translate, as sent to doctors -->
     <!-- TODO: Use translatable="false" if you need to enforce this, or create separate
             SMS-only strings that are not translatable -->

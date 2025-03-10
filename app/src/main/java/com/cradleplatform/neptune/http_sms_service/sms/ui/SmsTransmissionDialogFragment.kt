@@ -20,6 +20,15 @@ class SmsTransmissionDialogFragment : DialogFragment() {
 
     private val viewModel: SmsTransmissionDialogViewModel by viewModels()
     private lateinit var timer: CountDownTimer
+    private lateinit var stateMessage: TextView
+    private lateinit var sendProgressMessage: TextView
+    private lateinit var receiveProgressMessage: TextView
+    private lateinit var successFailMessage: TextView
+    private lateinit var retryOrSyncMessage: TextView
+    private lateinit var continueButton: Button
+    private lateinit var cancelButton: Button
+    private lateinit var retryButton: Button
+    private lateinit var retryTimer: TextView
 
     companion object {
         const val TAG = "SmsTransmissionDialogFragment"
@@ -39,17 +48,18 @@ class SmsTransmissionDialogFragment : DialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         // Access views from the layout
-        val stateMessage = view.findViewById<TextView>(R.id.stateMessage)
-        val sendProgressMessage = view.findViewById<TextView>(R.id.sendProgressMessage)
-        val receiveProgressMessage = view.findViewById<TextView>(R.id.receiveProgressMessage)
-        val successFailMessage = view.findViewById<TextView>(R.id.successErrorMessage)
-        val continueButton = view.findViewById<Button>(R.id.btnPositive)
-        val cancelButton = view.findViewById<Button>(R.id.btnNegative)
-        val retryButton = view.findViewById<Button>(R.id.retry_fail)
-        val retryTimer = view.findViewById<TextView>(R.id.retryTimer)
+        stateMessage = view.findViewById<TextView>(R.id.stateMessage)
+        sendProgressMessage = view.findViewById<TextView>(R.id.sendProgressMessage)
+        receiveProgressMessage = view.findViewById<TextView>(R.id.receiveProgressMessage)
+        successFailMessage = view.findViewById<TextView>(R.id.successErrorMessage)
+        retryOrSyncMessage = view.findViewById<TextView>(R.id.retryMessage)
+        continueButton = view.findViewById<Button>(R.id.btnPositive)
+        cancelButton = view.findViewById<Button>(R.id.btnNegative)
+        retryButton = view.findViewById<Button>(R.id.retry_fail)
+        retryTimer = view.findViewById<TextView>(R.id.retryTimer)
         val countDownIntervalMilli: Long = 1000
-        // Set initial values or customize views
-        continueButton.isEnabled = false
+
+        resetUI()
 
         viewModel.stateString.observe(viewLifecycleOwner) {
             stateMessage.text = it
@@ -91,7 +101,6 @@ class SmsTransmissionDialogFragment : DialogFragment() {
             if (state == SmsTransmissionStates.GETTING_READY_TO_SEND) {
                 sendProgressMessage.isVisible = true
                 receiveProgressMessage.isVisible = true
-                successFailMessage.isVisible = false
                 retryButton.isVisible = false
             } else if (state == SmsTransmissionStates.DONE) {
                 continueButton.isEnabled = true
@@ -105,16 +114,18 @@ class SmsTransmissionDialogFragment : DialogFragment() {
         viewModel.smsStateReporter.errorCode.observe(viewLifecycleOwner) {
             // Display response code from server
             when (it) {
-                in 400..599 -> {
-                    successFailMessage.isVisible = true
-                    successFailMessage.text = "We had an issue sending the data. Please retry or try again later."
-                    retryButton.isVisible = true
-                    sendProgressMessage.isVisible = false
-                    receiveProgressMessage.isVisible = false
-                }
                 425 -> {
                     successFailMessage.isVisible = true
                     successFailMessage.text = "Performing request number update. Re-sending transmission."
+                }
+                in 400..599 -> {
+                    successFailMessage.isVisible = true
+                    successFailMessage.text = "Error: ${viewModel.smsStateReporter.errorMsg.value}"
+                    retryOrSyncMessage.isVisible = true
+                    retryButton.isVisible = true
+                    sendProgressMessage.isVisible = false
+                    receiveProgressMessage.isVisible = false
+                    continueButton.isVisible = false
                 }
                 200 -> {
                     successFailMessage.isVisible = true
@@ -134,12 +145,24 @@ class SmsTransmissionDialogFragment : DialogFragment() {
         cancelButton.setOnClickListener {
             // TODO: kill/interrupt transmission, reverse DB modifications
             viewModel.smsSender.reset()
-            viewModel.smsStateReporter.initException()
+            viewModel.smsStateReporter.clearErrorCode()
             dismiss()
         }
         retryButton.setOnClickListener {
             viewModel.smsStateReporter.initRetransmission()
+            viewModel.smsStateReporter.clearErrorCode()
+            resetUI()
         }
+    }
+
+    private fun resetUI() {
+        // Set initial values or customize views
+        continueButton.isEnabled = false
+        successFailMessage.isVisible = false
+        retryButton.isVisible = false
+        sendProgressMessage.isVisible = true
+        receiveProgressMessage.isVisible = true
+        retryOrSyncMessage.isVisible =false
     }
 
     override fun onDestroy() {

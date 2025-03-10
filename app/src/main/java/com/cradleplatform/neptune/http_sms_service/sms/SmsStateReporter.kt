@@ -88,6 +88,9 @@ class SmsStateReporter @Inject constructor(
     fun initException() {
         state.postValue(SmsTransmissionStates.EXCEPTION)
         stateToCollect.postValue(SmsTransmissionStates.EXCEPTION)
+    }
+
+    fun clearErrorCode() {
         errorCode.postValue(null)
         errorCodeToCollect.postValue(null)
     }
