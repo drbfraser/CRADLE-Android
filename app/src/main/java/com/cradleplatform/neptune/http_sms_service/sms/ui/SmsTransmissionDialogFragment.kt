@@ -57,85 +57,10 @@ class SmsTransmissionDialogFragment : DialogFragment() {
         cancelButton = view.findViewById<Button>(R.id.btnNegative)
         retryButton = view.findViewById<Button>(R.id.retry_fail)
         retryTimer = view.findViewById<TextView>(R.id.retryTimer)
-        val countDownIntervalMilli: Long = 1000
 
         resetUI()
+        setupObservers()
 
-        viewModel.stateString.observe(viewLifecycleOwner) {
-            stateMessage.text = it
-        }
-        viewModel.sendProgress.observe(viewLifecycleOwner) {
-            sendProgressMessage.text = it
-        }
-        viewModel.receiveProgress.observe(viewLifecycleOwner) {
-            receiveProgressMessage.text = it
-        }
-        viewModel.smsStateReporter.retry.observe(viewLifecycleOwner) {
-            val smsStateReporter = viewModel.smsStateReporter
-            if (it) {
-                if (::timer.isInitialized) {
-                    timer.cancel()
-                }
-                retryTimer.isVisible = true
-                timer = object : CountDownTimer(
-                    smsStateReporter.timeout * 1000 * (smsStateReporter.retriesAttempted + 1),
-                    countDownIntervalMilli
-                ) {
-                    override fun onTick(timeRemaining: Long) {
-                        val seconds = timeRemaining / 1000
-                        val text = "Retry attempt: ${smsStateReporter.retriesAttempted}" +
-                            ", retrying in $seconds"
-                        retryTimer.text = text
-                    }
-                    override fun onFinish() {
-                        retryTimer.isVisible = false
-                    }
-                }.start()
-            } else {
-                if (::timer.isInitialized) {
-                    timer.cancel()
-                }
-            }
-        }
-        viewModel.smsStateReporter.state.observe(viewLifecycleOwner) { state ->
-            if (state == SmsTransmissionStates.GETTING_READY_TO_SEND) {
-                sendProgressMessage.isVisible = true
-                receiveProgressMessage.isVisible = true
-                retryButton.isVisible = false
-            } else if (state == SmsTransmissionStates.DONE) {
-                continueButton.isEnabled = true
-            } else if (state == SmsTransmissionStates.TIME_OUT) {
-                continueButton.isVisible = false
-                retryButton.isVisible = true
-                sendProgressMessage.text = "No response from SMS server"
-                receiveProgressMessage.isVisible = false
-            }
-        }
-        viewModel.smsStateReporter.errorCode.observe(viewLifecycleOwner) {
-            // Display response code from server
-            when (it) {
-                425 -> {
-                    successFailMessage.isVisible = true
-                    successFailMessage.text = "Performing request number update. Re-sending transmission."
-                }
-                in 400..599 -> {
-                    successFailMessage.isVisible = true
-                    successFailMessage.text = "Error: ${viewModel.smsStateReporter.errorMsg.value}"
-                    retryOrSyncMessage.isVisible = true
-                    retryButton.isVisible = true
-                    sendProgressMessage.isVisible = false
-                    receiveProgressMessage.isVisible = false
-                    continueButton.isVisible = false
-                }
-                200 -> {
-                    successFailMessage.isVisible = true
-                    successFailMessage.text = "Success: 200"
-                }
-                else -> {
-                    successFailMessage.isVisible = false
-                }
-            }
-        }
         // Set click listeners
         continueButton.setOnClickListener {
             dismiss()
@@ -163,6 +88,86 @@ class SmsTransmissionDialogFragment : DialogFragment() {
         sendProgressMessage.isVisible = true
         receiveProgressMessage.isVisible = true
         retryOrSyncMessage.isVisible =false
+    }
+
+    private fun setupObservers() {
+        viewModel.stateString.observe(viewLifecycleOwner) {
+            stateMessage.text = it
+        }
+        viewModel.sendProgress.observe(viewLifecycleOwner) {
+            sendProgressMessage.text = it
+        }
+        viewModel.receiveProgress.observe(viewLifecycleOwner) {
+            receiveProgressMessage.text = it
+        }
+        viewModel.smsStateReporter.retry.observe(viewLifecycleOwner) { retry ->
+            if (retry) startRetryTimer() else cancelRetryTimer()
+        }
+        viewModel.smsStateReporter.state.observe(viewLifecycleOwner) { state ->
+            if (state == SmsTransmissionStates.TIME_OUT) {
+                continueButton.isVisible = false
+                retryButton.isVisible = true
+                sendProgressMessage.text = "Error: Request timed out. No response from SMS server. Retry the action or try again later."
+                sendProgressMessage.isVisible = false
+                receiveProgressMessage.isVisible = false
+            }
+        }
+        viewModel.smsStateReporter.errorCode.observe(viewLifecycleOwner) { errorCode ->
+            // Display response code from server
+            if (errorCode != null) {
+                handleErrorCodeUI(errorCode)
+            }
+        }
+    }
+
+    private fun handleErrorCodeUI(errorCode: Int) {
+        successFailMessage.isVisible = true
+        when (errorCode) {
+            425 -> {
+                successFailMessage.text = "Performing request number update. Re-sending transmission."
+            }
+            in 400..599 -> {
+                successFailMessage.text = "Error: ${viewModel.smsStateReporter.errorMsg.value}"
+                retryOrSyncMessage.isVisible = true
+                retryButton.isVisible = true
+                sendProgressMessage.isVisible = false
+                receiveProgressMessage.isVisible = false
+                continueButton.isVisible = false
+            }
+            200 -> {
+                successFailMessage.text = "Success: 200"
+            }
+            else -> {
+                successFailMessage.isVisible = false
+            }
+        }
+    }
+
+    private fun startRetryTimer() {
+        val smsStateReporter = viewModel.smsStateReporter
+        val countDownIntervalMilli: Long = 1000
+        cancelRetryTimer()
+        retryTimer.isVisible = true
+        timer = object : CountDownTimer(
+            smsStateReporter.timeout * 1000 * (smsStateReporter.retriesAttempted + 1),
+            countDownIntervalMilli
+        ) {
+            override fun onTick(timeRemaining: Long) {
+                val seconds = timeRemaining / 1000
+                val text = "Retry attempt: ${smsStateReporter.retriesAttempted}" +
+                        ", retrying in $seconds"
+                retryTimer.text = text
+            }
+            override fun onFinish() {
+                retryTimer.isVisible = false
+            }
+        }.start()
+    }
+
+    private fun cancelRetryTimer() {
+        if (::timer.isInitialized) {
+            timer.cancel()
+        }
     }
 
     override fun onDestroy() {
