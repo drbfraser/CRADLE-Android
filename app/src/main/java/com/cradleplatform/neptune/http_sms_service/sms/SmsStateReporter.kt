@@ -25,6 +25,7 @@ class SmsStateReporter @Inject constructor(
     }
 
     private lateinit var smsSender: SMSSender
+    private val smsErrorHandler = SmsErrorHandler(smsKeyManager, this)
     val state = MutableLiveData<SmsTransmissionStates>(SmsTransmissionStates.GETTING_READY_TO_SEND)
 
     // For "ToCollect" variables, see:
@@ -112,8 +113,6 @@ class SmsStateReporter @Inject constructor(
     }
 
     fun handleResponse(msg: String, outerErrorCode: Int?) {
-        val smsErrorHandler = SmsErrorHandler(smsKeyManager, this)
-
         if (outerErrorCode != null) {
             val errorMsg = smsErrorHandler.handleOuterError(outerErrorCode, msg)
             setErrorStates(outerErrorCode, errorMsg)
