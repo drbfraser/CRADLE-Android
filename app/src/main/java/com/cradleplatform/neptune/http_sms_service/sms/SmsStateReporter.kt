@@ -34,8 +34,8 @@ class SmsStateReporter @Inject constructor(
     private var timeoutThread: Thread? = null
     val totalSent = MutableLiveData<Int>(0)
     val totalReceived = MutableLiveData<Int>(0)
-    val errorCode = MutableLiveData<Int?>(0)
-    val errorCodeToCollect = MutableLiveData(0)
+    val statusCode = MutableLiveData<Int?>(0)
+    val statusCodeToCollect = MutableLiveData(0)
     val errorMsg = MutableLiveData<String>("")
     val errorMessageToCollect = MutableLiveData("")
     val decryptedMsgLiveData = MutableLiveData("")
@@ -83,16 +83,24 @@ class SmsStateReporter @Inject constructor(
     fun initRetransmission() {
         state.postValue(SmsTransmissionStates.RETRANSMISSION)
         stateToCollect.postValue(SmsTransmissionStates.RETRANSMISSION)
+        clearStatusCode()
     }
 
     fun initException() {
         state.postValue(SmsTransmissionStates.EXCEPTION)
         stateToCollect.postValue(SmsTransmissionStates.EXCEPTION)
+        clearStatusCode()
     }
 
-    fun clearErrorCode() {
-        errorCode.postValue(null)
-        errorCodeToCollect.postValue(null)
+    fun initDone() {
+        state.postValue(SmsTransmissionStates.DONE)
+        stateToCollect.postValue(SmsTransmissionStates.DONE)
+        clearStatusCode()
+    }
+
+    fun clearStatusCode() {
+        statusCode.postValue(0)
+        statusCodeToCollect.postValue(0)
     }
 
     fun incrementSent() {
@@ -117,11 +125,6 @@ class SmsStateReporter @Inject constructor(
         updateRequestNumber(newRequestNumber)
     }
 
-    fun postException(code: Int) {
-        errorCode.postValue(code)
-        state.postValue(SmsTransmissionStates.EXCEPTION)
-    }
-
     fun handleResponse(msg: String, errCode: Int?) {
         if (errCode != null) {
             val smsErrorHandler = SmsErrorHandler(smsKeyManager, this)
@@ -139,8 +142,8 @@ class SmsStateReporter @Inject constructor(
                 Log.d("SmsStateReporter", "Error Code: $errCode Error Msg: $msg")
             }
             // Error status code from server on outer API call
-            errorCode.postValue(errCode!!)
-            errorCodeToCollect.postValue(errCode!!)
+            statusCode.postValue(errCode!!)
+            statusCodeToCollect.postValue(errCode!!)
             if (errCode == SmsErrorHandler.REQUEST_NUMBER_MISMATCH
                     && requestNumberRetries < maxRequestNumberRetries) {
                 initRetransmission()
@@ -164,10 +167,10 @@ class SmsStateReporter @Inject constructor(
                     Log.d("SmsStateReporter", "Decrypted Message: $it")
                     // if failed, post exception instead of
                     // else it's DONE
-                    errorCode.postValue(null)
-                    errorCodeToCollect.postValue(null)
-                    state.postValue(SmsTransmissionStates.DONE)
-                    stateToCollect.postValue(SmsTransmissionStates.DONE)
+                    statusCode.postValue(200)
+                    statusCodeToCollect.postValue(200)
+                    state.postValue(SmsTransmissionStates.WAITING_FOR_USER_RESPONSE)
+                    stateToCollect.postValue(SmsTransmissionStates.WAITING_FOR_USER_RESPONSE)
                 }
         }
     }

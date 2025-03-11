@@ -181,6 +181,7 @@ open class PatientReferralActivity : AppCompatActivity() {
                             applicationContext,
                             "Error: Referral upload failed..."
                         )
+                        finish()
                     }
                 }
             }

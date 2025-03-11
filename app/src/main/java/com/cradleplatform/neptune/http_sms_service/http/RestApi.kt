@@ -126,14 +126,16 @@ class RestApi(
             val flowCollectJob = launch {
                 smsStateReporter.stateToCollect.asFlow().collect { state ->
                     when (state) {
+                        SmsTransmissionStates.WAITING_FOR_USER_RESPONSE -> {
+                            smsStateReporter.incrementRequestNumber()
+                        }
+
                         SmsTransmissionStates.DONE -> {
                             /* TODO: Check code of SMS response. */
                             Log.d("RestApi", "DONE successful transmission state.")
                             val response =
                                 JacksonMapper.mapper.readValue(smsStateReporter.decryptedMsgLiveData.value,
                                     object : TypeReference<T>() {})
-
-                            smsStateReporter.incrementRequestNumber()
 
                             channel.send(
                                 NetworkResult.Success(
@@ -146,7 +148,7 @@ class RestApi(
                             channel.send(
                                 NetworkResult.Failure(
                                     smsStateReporter.errorMessageToCollect.value!!.toByteArray(),
-                                    smsStateReporter.errorCodeToCollect.value!!
+                                    smsStateReporter.statusCodeToCollect.value!!
                                 )
                             )
                         }
@@ -186,7 +188,7 @@ class RestApi(
             channel.close()
             smsStateReporter.stateToCollect.postValue(SmsTransmissionStates.GETTING_READY_TO_SEND)
             smsStateReporter.errorMessageToCollect.postValue("")
-            smsStateReporter.errorCodeToCollect.postValue(0)
+            smsStateReporter.statusCodeToCollect.postValue(0)
             teardownSmsReceiver()
         }
     }
@@ -201,10 +203,8 @@ class RestApi(
         val json = smsDataProcessor.processRequestDataToJSON(
             method, url, headers, body
         )
-        Log.d("LCDEBUG", "NEW SMS JSON CREATED")
         smsSender.queueRelayContent(json).let { enqueueSuccessful ->
             if (enqueueSuccessful) {
-                Log.d("LCDEBUG", "SENDING SMS MESSAGE")
                 smsSender.sendSmsMessage(false)
             }
         }

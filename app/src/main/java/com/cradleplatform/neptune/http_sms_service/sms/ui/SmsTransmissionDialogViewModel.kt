@@ -8,7 +8,6 @@ import com.cradleplatform.neptune.http_sms_service.sms.SmsStateReporter
 import com.cradleplatform.neptune.http_sms_service.sms.SmsTransmissionStates
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
-import kotlin.times
 
 /**
  * Generate formatted String based on SmsStateReporter
@@ -25,8 +24,8 @@ class SmsTransmissionDialogViewModel @Inject constructor(
             SmsTransmissionStates.SENDING_TO_RELAY_SERVER -> "Sending..."
             SmsTransmissionStates.WAITING_FOR_SERVER_RESPONSE -> "Waiting for confirmation..."
             SmsTransmissionStates.RECEIVING_SERVER_RESPONSE -> "Receiving confirmation..."
-            SmsTransmissionStates.DONE -> "Finished."
-            SmsTransmissionStates.EXCEPTION -> "Something went wrong."
+            SmsTransmissionStates.DONE -> "Processing, please wait..."
+            SmsTransmissionStates.EXCEPTION -> "Handling error, exiting soon..."
             SmsTransmissionStates.TIME_OUT -> "Timed out, no response"
             SmsTransmissionStates.WAITING_FOR_USER_RESPONSE -> "Please confirm"
             else -> "Unknown state"
@@ -42,7 +41,7 @@ class SmsTransmissionDialogViewModel @Inject constructor(
         val denominator = smsStateReporter.totalToBeReceived.toString()
         "Receiving $numerator/$denominator"
     }
-    val errorString: LiveData<String> = smsStateReporter.errorCode.map {
+    val errorString: LiveData<String> = smsStateReporter.statusCode.map {
         when (it) {
             // TODO: finish this
             404 -> "Failed"

@@ -63,26 +63,36 @@ class SmsTransmissionDialogFragment : DialogFragment() {
 
         // Set click listeners
         continueButton.setOnClickListener {
-            dismiss()
-
+            viewModel.smsStateReporter.initDone()
+            continueButton.isEnabled = false
             // TODO: We want manually exit Activity/Fragments so user can review the result
         }
         cancelButton.setOnClickListener {
             // TODO: kill/interrupt transmission, reverse DB modifications
+            if (viewModel.smsStateReporter.state.value == SmsTransmissionStates.WAITING_FOR_USER_RESPONSE) {
+                viewModel.smsStateReporter.initException()
+                cancelButton.isEnabled = false
+                retryButton.isEnabled = false
+            } else {
+                dismiss()
+            }
+
             viewModel.smsSender.reset()
-            viewModel.smsStateReporter.clearErrorCode()
-            dismiss()
         }
         retryButton.setOnClickListener {
+            viewModel.smsStateReporter.resetStateReporter()
             viewModel.smsStateReporter.initRetransmission()
-            viewModel.smsStateReporter.clearErrorCode()
             resetUI()
         }
     }
 
     private fun resetUI() {
         // Set initial values or customize views
-        continueButton.isEnabled = false
+        continueButton.isEnabled = true
+        cancelButton.isEnabled = true
+        retryButton.isEnabled = true
+        continueButton.isVisible = false
+        cancelButton.isVisible = true
         successFailMessage.isVisible = false
         retryButton.isVisible = false
         sendProgressMessage.isVisible = true
@@ -107,40 +117,47 @@ class SmsTransmissionDialogFragment : DialogFragment() {
             if (state == SmsTransmissionStates.TIME_OUT) {
                 continueButton.isVisible = false
                 retryButton.isVisible = true
-                sendProgressMessage.text = "Error: Request timed out. No response from SMS server. Retry the action or try again later."
-                sendProgressMessage.isVisible = false
-                receiveProgressMessage.isVisible = false
+                successFailMessage.text = "Error: Request timed out. No response from SMS server. Retry the action or try again later."
+                hideProgressMessages()
             }
         }
-        viewModel.smsStateReporter.errorCode.observe(viewLifecycleOwner) { errorCode ->
+        viewModel.smsStateReporter.statusCode.observe(viewLifecycleOwner) { statusCode ->
             // Display response code from server
-            if (errorCode != null) {
-                handleErrorCodeUI(errorCode)
+            if (statusCode != null) {
+                handleStatusCodeUI(statusCode)
             }
         }
     }
 
-    private fun handleErrorCodeUI(errorCode: Int) {
+    private fun handleStatusCodeUI(statusCode: Int) {
         successFailMessage.isVisible = true
-        when (errorCode) {
+        when (statusCode) {
             425 -> {
                 successFailMessage.text = "Performing request number update. Re-sending transmission."
             }
             in 400..599 -> {
+                hideProgressMessages()
                 successFailMessage.text = "Error: ${viewModel.smsStateReporter.errorMsg.value}"
                 retryOrSyncMessage.isVisible = true
                 retryButton.isVisible = true
-                sendProgressMessage.isVisible = false
-                receiveProgressMessage.isVisible = false
                 continueButton.isVisible = false
             }
             200 -> {
-                successFailMessage.text = "Success: 200"
+                hideProgressMessages()
+                successFailMessage.text = "Success! Data has been successfully transmitted."
+                cancelButton.isVisible = false
+                continueButton.isVisible = true
             }
             else -> {
                 successFailMessage.isVisible = false
+                retryOrSyncMessage.isVisible = false
             }
         }
+    }
+
+    private fun hideProgressMessages() {
+        sendProgressMessage.isVisible = false
+        receiveProgressMessage.isVisible = false
     }
 
     private fun startRetryTimer() {
