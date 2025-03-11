@@ -101,10 +101,6 @@ class RestApi(
     // TODO: This only handles the case for endpoints that return status code 200 when successful.
     //       Additional logic is necessary for if an endpoint has multiple successful status codes
     //       (e.g. 200 and 201)
-    /* TODO: Currently, the [NetworkResult] will be returned as a [NetworkResult.Success] if a
-    *   response from the SMS Relay App is received, but it isn't looking at the actual [code]
-    *   field of the decoded message. So even if the relayed request fails and gets an error status
-    *    code, the [NetworkResult] will still be reported as successful. */
     private suspend inline fun <reified T> handleSmsRequest(
         method: Http.Method,
         url: String,
@@ -1168,7 +1164,6 @@ class RestApi(
                         },
                     )
                 }
-
                 Protocol.SMS -> {
                     handleSmsRequest(
                         method, url, headers, body

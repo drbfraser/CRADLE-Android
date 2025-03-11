@@ -34,7 +34,8 @@ class SMSReceiver @Inject constructor(
 
     private var smsFormatter: SMSFormatter = SMSFormatter()
 
-    val intentFilter = IntentFilter()
+    private val intentFilter = IntentFilter()
+
     init {
         intentFilter.addAction("android.provider.Telephony.SMS_RECEIVED")
         intentFilter.priority = Int.MAX_VALUE
@@ -76,11 +77,9 @@ class SMSReceiver @Inject constructor(
         val pdus = data?.get("pdus") as Array<*>
 
         for (element in pdus) {
-            // if smsMessage is null, we continue to the next one
             val smsMessage = SmsMessage.createFromPdu(element as ByteArray?) ?: continue
-            val isMessageFromRelayPhone = smsMessage.originatingAddress.equals(relayPhoneNumber)
 
-            // is message is not from relay phone continue to next one
+            val isMessageFromRelayPhone = smsMessage.originatingAddress.equals(relayPhoneNumber)
             if (!isMessageFromRelayPhone) {
                 continue
             }
@@ -88,25 +87,26 @@ class SMSReceiver @Inject constructor(
             val messageBody = smsMessage.messageBody
 
             // send next part of the message when ACK is received
-            if (smsFormatter.isAckMessage(messageBody)
-            ) {
+            if (smsFormatter.isAckMessage(messageBody)) {
                 smsSender.sendSmsMessage(true)
                 smsStateReporter.incrementSent()
             }
             // start storing message data and send ACK message
             else if (smsFormatter.isFirstReplyMessage(messageBody)) {
                 isError = smsFormatter.isFirstReplyError(messageBody)
-                requestIdentifier = smsFormatter.getRequestIdentifier(messageBody)
-                smsFormatter.getTotalNumMessages(messageBody)
-                    .let {
-                        totalMessages = it
-                        smsStateReporter.initReceiving(it)
-                    }
-                relayData = smsFormatter.getFirstMessageString(messageBody)
-                numberReceivedMessages = 1
                 if (isError == true) {
                     errorCode = smsFormatter.getErrorCode(messageBody)
                 }
+
+                requestIdentifier = smsFormatter.getRequestIdentifier(messageBody)
+                relayData = smsFormatter.getFirstMessageString(messageBody)
+
+                smsFormatter.getTotalNumMessages(messageBody).let {
+                    totalMessages = it
+                    smsStateReporter.initReceiving(it)
+                }
+
+                numberReceivedMessages = 1
                 smsSender.sendAckMessage(
                     requestIdentifier,
                     numberReceivedMessages - 1,
@@ -118,12 +118,17 @@ class SMSReceiver @Inject constructor(
             else if (smsFormatter.isRestMessage(messageBody)) {
 
                 if (smsFormatter.getMessageNumber(messageBody) <= totalMessages &&
-                    numberReceivedMessages < totalMessages) {
+                    numberReceivedMessages < totalMessages
+                ) {
                     numberReceivedMessages += 1
                     smsStateReporter.incrementReceived()
                     smsStateReporter.retry.postValue(false)
                     relayData += smsFormatter.getRestMessageString(messageBody)
-                    smsSender.sendAckMessage(requestIdentifier, numberReceivedMessages - 1, totalMessages)
+                    smsSender.sendAckMessage(
+                        requestIdentifier,
+                        numberReceivedMessages - 1,
+                        totalMessages
+                    )
                 }
                 check()
             }
