@@ -3,6 +3,7 @@ package com.cradleplatform.neptune.activities.patients
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
@@ -24,6 +25,7 @@ import com.cradleplatform.neptune.utilities.CustomToast
 import com.cradleplatform.neptune.utilities.Protocol
 import com.cradleplatform.neptune.viewmodel.patients.PatientReferralViewModel
 import com.cradleplatform.neptune.viewmodel.patients.ReferralFlowSaveResult
+import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -106,6 +108,18 @@ open class PatientReferralActivity : AppCompatActivity() {
         super.onDestroy()
     }
 
+    private fun showReferralUploadError() {
+        Snackbar.make(
+            findViewById(android.R.id.content),
+            "Error: Referral Upload Failed",
+            Snackbar.LENGTH_INDEFINITE
+        )
+            .setBackgroundTint(Color.RED)
+            .setActionTextColor(Color.WHITE)
+            .setAction("Dismiss") {}
+            .show()
+    }
+
     private fun populateCurrentPatient() {
         val tmpPatient = if (intent.hasExtra(EXTRA_PATIENT_ID)) {
             // Assertion here should be safe due to hasExtra check
@@ -148,6 +162,7 @@ open class PatientReferralActivity : AppCompatActivity() {
                             "Error: Referral upload failed..."
                         )
                         Log.e(TAG, "HTTP Referral upload failed!")
+                        showReferralUploadError()
                     }
                 }
             }
@@ -157,7 +172,7 @@ open class PatientReferralActivity : AppCompatActivity() {
         sendViaSMS.setOnClickListener {
             triedSendingViaSms = true
             val referral = viewModel.buildReferral(currPatient)
-            openSmsTransmissionDialog()
+            val dialog = openSmsTransmissionDialog()
             lifecycleScope.launch {
                 Toast.makeText(
                     applicationContext,
@@ -166,6 +181,7 @@ open class PatientReferralActivity : AppCompatActivity() {
                 ).show()
 
                 val result = referralUploadManager.uploadReferral(referral, currPatient, Protocol.SMS)
+//                dialog.dismiss()
                 when (result) {
                     is ReferralFlowSaveResult.SaveSuccessful -> {
                         CustomToast.shortToast(
@@ -177,10 +193,7 @@ open class PatientReferralActivity : AppCompatActivity() {
                     }
                     else -> {
                         Log.e(TAG, "SMS Referral upload failed!")
-                        CustomToast.shortToast(
-                            applicationContext,
-                            "Error: Referral upload failed..."
-                        )
+                        showReferralUploadError()
                         finish()
                     }
                 }

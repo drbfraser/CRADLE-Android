@@ -4,6 +4,8 @@ import android.content.SharedPreferences
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import com.cradleplatform.neptune.manager.SmsKeyManager
+import com.cradleplatform.neptune.model.DecryptedSmsResponse
+import com.google.gson.Gson
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -17,12 +19,13 @@ class SmsStateReporter @Inject constructor(
     private val encryptedPreferences: SharedPreferences
 ) {
     companion object {
+        private const val TAG = "SmsStateReporter"
         private const val MAX_REQUEST_NUMBER = 999999
         const val SMS_REQUEST_NUMBER_KEY = "requestNumber"
     }
 
-    private var smsFormatter: SMSFormatter = SMSFormatter()
     private lateinit var smsSender: SMSSender
+    private val smsErrorHandler = SmsErrorHandler(smsKeyManager, this)
     val state = MutableLiveData<SmsTransmissionStates>(SmsTransmissionStates.GETTING_READY_TO_SEND)
 
     // For "ToCollect" variables, see:
@@ -34,30 +37,29 @@ class SmsStateReporter @Inject constructor(
     private var timeoutThread: Thread? = null
     val totalSent = MutableLiveData<Int>(0)
     val totalReceived = MutableLiveData<Int>(0)
-    val statusCode = MutableLiveData<Int?>(0)
+    val statusCode = MutableLiveData<Int>(0)
     val statusCodeToCollect = MutableLiveData(0)
-    val errorMsg = MutableLiveData<String>("")
+    val errorMsg = MutableLiveData("")
     val errorMessageToCollect = MutableLiveData("")
     val decryptedMsgLiveData = MutableLiveData("")
-    val retryRequested = MutableLiveData(false)
-    val cancelRequested = MutableLiveData(false)
 
-
-    val milliseconds = 1000
+    private val milliseconds = 1000
     var totalToBeSent = 0
     var totalToBeReceived = 0
 
     private var sent = 0
     private var received = 0
     private var decryptedMsg = ""
-    //Adjust this variable for the number of seconds before initial retry
-    var timeout: Long = 10
-    //Adjust this variable for the number of retry attempts
-    var retriesAttempted = 0
-    var maxAttempts = 3
 
-    var requestNumberRetries = 0
-    var maxRequestNumberRetries = 5
+    // Adjust this variable for the number of seconds before initial retry
+    var timeout: Long = 10
+
+    // Adjust this variable for the number of retry attempts
+    var retriesAttempted = 0
+    private var maxAttempts = 3
+
+    private var requestNumberRetries = 0
+    private var maxRequestNumberRetries = 5
 
     val retry = MutableLiveData<Boolean>(false)
 
@@ -125,53 +127,56 @@ class SmsStateReporter @Inject constructor(
         updateRequestNumber(newRequestNumber)
     }
 
-    fun handleResponse(msg: String, errCode: Int?) {
-        if (errCode != null) {
-            val smsErrorHandler = SmsErrorHandler(smsKeyManager, this)
+    fun setSuccessStates(code: Int) {
+        statusCode.postValue(code)
+        statusCodeToCollect.postValue(code)
 
-            if (smsErrorHandler.shouldDecryptError(errCode)) {
-                // Handling encrypted error
-                val responseMsg = smsErrorHandler.handleEncryptedError(errCode, msg)
-                errorMsg.postValue(responseMsg)
-                errorMessageToCollect.postValue(responseMsg)
-                Log.d("SmsStateReporter", "Error Code: $errCode Decrypted Error Msg: $responseMsg")
-            } else {
-                // Handling unencrypted error
-                errorMsg.postValue(msg)
-                errorMessageToCollect.postValue(msg)
-                Log.d("SmsStateReporter", "Error Code: $errCode Error Msg: $msg")
-            }
-            // Error status code from server on outer API call
-            statusCode.postValue(errCode!!)
-            statusCodeToCollect.postValue(errCode!!)
-            if (errCode == SmsErrorHandler.REQUEST_NUMBER_MISMATCH
-                    && requestNumberRetries < maxRequestNumberRetries) {
+        state.postValue(SmsTransmissionStates.WAITING_FOR_USER_RESPONSE)
+        stateToCollect.postValue(SmsTransmissionStates.WAITING_FOR_USER_RESPONSE)
+    }
+
+    fun setErrorStates(code: Int, msg: String) {
+        errorMsg.postValue(msg)
+        errorMessageToCollect.postValue(msg)
+
+        statusCode.postValue(code)
+        statusCodeToCollect.postValue(code)
+
+        state.postValue(SmsTransmissionStates.WAITING_FOR_USER_RESPONSE)
+        stateToCollect.postValue(SmsTransmissionStates.WAITING_FOR_USER_RESPONSE)
+    }
+
+    fun handleResponse(msg: String, outerErrorCode: Int?) {
+        if (outerErrorCode != null) {
+            val errorMsg = smsErrorHandler.handleOuterError(outerErrorCode, msg)
+
+            if (outerErrorCode == SmsErrorHandler.REQUEST_NUMBER_MISMATCH
+                && requestNumberRetries < maxRequestNumberRetries) {
                 initRetransmission()
                 requestNumberRetries++
-                Log.d("SmsStateReporter", "Error Code: $errCode, Request Number Mismatch, Retransmission $requestNumberRetries/$maxRequestNumberRetries")
             } else {
-                state.postValue(SmsTransmissionStates.WAITING_FOR_USER_RESPONSE)
-                stateToCollect.postValue(SmsTransmissionStates.WAITING_FOR_USER_RESPONSE)
+                setErrorStates(outerErrorCode, errorMsg)
             }
         } else {
-            // Successful status code from server
             val smsKey = smsKeyManager.retrieveSmsKey()!!
-            SMSFormatter.decodeMsg(msg, smsKey.key)
-                .let {
-                    decryptedMsg = it
-                    decryptedMsgLiveData.postValue(it)
-//                val mappedJson = JSONObject(decryptedMsg)
-                    // TODO: Do something with the JSON object sent back. As for now, it is the same
-                    //  data that was sent out. Compare and make sure everything was correct?
-                    Log.d("SmsStateReporter", "200 Status Code From Server")
-                    Log.d("SmsStateReporter", "Decrypted Message: $it")
-                    // if failed, post exception instead of
-                    // else it's DONE
-                    statusCode.postValue(200)
-                    statusCodeToCollect.postValue(200)
-                    state.postValue(SmsTransmissionStates.WAITING_FOR_USER_RESPONSE)
-                    stateToCollect.postValue(SmsTransmissionStates.WAITING_FOR_USER_RESPONSE)
-                }
+            val decodedMessage = SMSFormatter.decodeMsg(msg, smsKey.key)
+
+            val innerRequestResponse =
+                Gson().fromJson(decodedMessage, DecryptedSmsResponse::class.java)
+            if (SmsErrorHandler.isErrorCode(innerRequestResponse.code)) {
+                val errorMsg = smsErrorHandler.handleInnerError(innerRequestResponse)
+                setErrorStates(innerRequestResponse.code, errorMsg)
+                return
+            }
+
+            decryptedMsg = decodedMessage
+            decryptedMsgLiveData.postValue(decodedMessage)
+            // TODO: Do something with the JSON object sent back. As for now, it is the same
+            //  data that was sent out. Compare and make sure everything was correct?
+            // val mappedJson = JSONObject(decryptedMsg)
+            Log.d(TAG, "Decrypted Message: $decodedMessage")
+
+            setSuccessStates(200)
         }
     }
 
