@@ -157,10 +157,6 @@ open class PatientReferralActivity : AppCompatActivity() {
                         finish()
                     }
                     else -> {
-                        CustomToast.shortToast(
-                            applicationContext,
-                            "Error: Referral upload failed..."
-                        )
                         Log.e(TAG, "HTTP Referral upload failed!")
                         showReferralUploadError()
                     }
@@ -181,7 +177,6 @@ open class PatientReferralActivity : AppCompatActivity() {
                 ).show()
 
                 val result = referralUploadManager.uploadReferral(referral, currPatient, Protocol.SMS)
-//                dialog.dismiss()
                 when (result) {
                     is ReferralFlowSaveResult.SaveSuccessful -> {
                         CustomToast.shortToast(

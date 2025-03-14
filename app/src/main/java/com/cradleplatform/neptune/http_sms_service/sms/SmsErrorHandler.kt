@@ -58,7 +58,6 @@ class SmsErrorHandler @Inject constructor(
             Log.d(TAG, "Error Code: $outerErrorCode Error Msg: $msg")
         }
 
-
         return errorMsg
     }
 

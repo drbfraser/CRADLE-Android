@@ -128,7 +128,6 @@ class RestApi(
 
                         SmsTransmissionStates.DONE -> {
                             /* TODO: Check code of SMS response. */
-                            Log.d("RestApi", "DONE successful transmission state.")
                             val response =
                                 JacksonMapper.mapper.readValue(smsStateReporter.decryptedMsgLiveData.value,
                                     object : TypeReference<T>() {})
@@ -150,7 +149,7 @@ class RestApi(
                         }
 
                         SmsTransmissionStates.RETRANSMISSION -> {
-                            Log.d("RestApi", "In Retransmission State, will process and send SMS again")
+                            Log.d(TAG, "In Retransmission state, will process and send SMS again")
                             smsStateReporter.state.postValue(SmsTransmissionStates.GETTING_READY_TO_SEND)
                             smsStateReporter.stateToCollect.postValue(SmsTransmissionStates.GETTING_READY_TO_SEND)
                             processAndSendSms(method, url, headers, body)

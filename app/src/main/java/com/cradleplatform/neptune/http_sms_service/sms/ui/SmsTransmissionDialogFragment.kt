@@ -115,7 +115,6 @@ class SmsTransmissionDialogFragment : DialogFragment() {
             if (retry) startRetryTimer() else cancelRetryTimer()
         }
         viewModel.smsStateReporter.state.observe(viewLifecycleOwner) { state ->
-            Log.d("LCDEBUG","STATE CHANGED TO $state")
             if (state == SmsTransmissionStates.TIME_OUT) {
                 continueButton.isVisible = false
                 retryButton.isVisible = true
@@ -124,7 +123,6 @@ class SmsTransmissionDialogFragment : DialogFragment() {
             }
         }
         viewModel.smsStateReporter.statusCode.observe(viewLifecycleOwner) { statusCode ->
-            Log.d("LCDEBUG","STATUS CODE CHANGED TO $statusCode")
             // Display response code from server
             if (statusCode != null) {
                 handleStatusCodeUI(statusCode)

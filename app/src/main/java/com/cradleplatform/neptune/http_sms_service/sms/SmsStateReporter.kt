@@ -59,7 +59,7 @@ class SmsStateReporter @Inject constructor(
     private var maxAttempts = 3
 
     private var requestNumberRetries = 0
-    private var maxRequestNumberRetries = 5
+    private var maxRequestNumberRetries = 2
 
     val retry = MutableLiveData<Boolean>(false)
 
