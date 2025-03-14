@@ -97,7 +97,7 @@ class SmsTransmissionDialogFragment : DialogFragment() {
         retryButton.isVisible = false
         sendProgressMessage.isVisible = true
         receiveProgressMessage.isVisible = true
-        retryOrSyncMessage.isVisible =false
+        retryOrSyncMessage.isVisible = false
     }
 
     private fun setupObservers() {
@@ -117,7 +117,8 @@ class SmsTransmissionDialogFragment : DialogFragment() {
             if (state == SmsTransmissionStates.TIME_OUT) {
                 continueButton.isVisible = false
                 retryButton.isVisible = true
-                successFailMessage.text = "Error: Request timed out. No response from SMS server. Retry the action or try again later."
+                successFailMessage.text = "Error: No response from SMS server."
+                retryOrSyncMessage.isVisible = true
                 hideProgressMessages()
             }
         }
@@ -176,7 +177,7 @@ class SmsTransmissionDialogFragment : DialogFragment() {
             override fun onTick(timeRemaining: Long) {
                 val seconds = timeRemaining / 1000
                 val text = "Retry attempt: ${smsStateReporter.retriesAttempted}" +
-                        ", retrying in $seconds"
+                    ", retrying in $seconds"
                 retryTimer.text = text
             }
             override fun onFinish() {

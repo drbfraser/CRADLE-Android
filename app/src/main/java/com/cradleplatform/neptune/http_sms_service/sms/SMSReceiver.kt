@@ -142,7 +142,7 @@ class SMSReceiver @Inject constructor(
         // resetting vars if process finished
         if (numberReceivedMessages == totalMessages) {
             smsStateReporter.handleResponse(relayData, errorCode)
-            Log.d("SmsReceiver","Total Messages received $numberReceivedMessages")
+            Log.d("SmsReceiver", "Total Messages received $numberReceivedMessages")
             smsSender.reset()
             reset()
             smsStateReporter.resetStateReporter()

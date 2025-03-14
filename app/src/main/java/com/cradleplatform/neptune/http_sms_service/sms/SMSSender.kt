@@ -7,7 +7,6 @@ import android.os.Looper
 import android.telephony.SmsManager
 import android.util.Log
 import android.widget.Toast
-import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.manager.SmsKeyManager
 import com.cradleplatform.neptune.http_sms_service.sms.SMSFormatter.Companion.encodeMsg
 import com.cradleplatform.neptune.http_sms_service.sms.SMSFormatter.Companion.formatSMS
