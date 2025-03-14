@@ -98,6 +98,7 @@ class SmsTransmissionDialogFragment : DialogFragment() {
         sendProgressMessage.isVisible = true
         receiveProgressMessage.isVisible = true
         retryOrSyncMessage.isVisible = false
+        isRequestMismatch = false
     }
 
     private fun setupObservers() {
