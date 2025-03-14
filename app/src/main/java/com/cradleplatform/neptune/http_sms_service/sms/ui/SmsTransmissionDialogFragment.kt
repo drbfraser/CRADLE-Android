@@ -81,7 +81,6 @@ class SmsTransmissionDialogFragment : DialogFragment() {
             viewModel.smsSender.reset()
         }
         retryButton.setOnClickListener {
-            viewModel.smsStateReporter.resetStateReporter()
             viewModel.smsStateReporter.initRetransmission()
             resetUI()
         }

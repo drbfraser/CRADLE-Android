@@ -74,6 +74,7 @@ class SmsStateReporter @Inject constructor(
         retriesAttempted = 0
         smsSender.changeShowDialog(true)
         timeoutFunction(timeout, 0)
+        clearStatusCode()
     }
 
     fun initReceiving(numberOfSmsToReceive: Int) {
@@ -85,7 +86,6 @@ class SmsStateReporter @Inject constructor(
     fun initRetransmission() {
         state.postValue(SmsTransmissionStates.RETRANSMISSION)
         stateToCollect.postValue(SmsTransmissionStates.RETRANSMISSION)
-        clearStatusCode()
     }
 
     fun initException() {
@@ -152,6 +152,8 @@ class SmsStateReporter @Inject constructor(
 
             if (outerErrorCode == SmsErrorHandler.REQUEST_NUMBER_MISMATCH
                 && requestNumberRetries < maxRequestNumberRetries) {
+                statusCode.postValue(SmsErrorHandler.REQUEST_NUMBER_MISMATCH)
+                statusCodeToCollect.postValue(SmsErrorHandler.REQUEST_NUMBER_MISMATCH)
                 initRetransmission()
                 requestNumberRetries++
             } else {
