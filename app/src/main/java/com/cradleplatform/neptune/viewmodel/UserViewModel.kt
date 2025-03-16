@@ -32,6 +32,8 @@ class UserViewModel @Inject constructor(
 ) : AndroidViewModel(application) {
 
     companion object {
+        const val TAG = "UserViewModel"
+
         const val ACCESS_TOKEN_KEY = "accessToken"
         const val EMAIL_KEY = "email"
         const val USERNAME = "username"
@@ -96,7 +98,7 @@ class UserViewModel @Inject constructor(
      * Updates the user's phone numbers in the platform's database and the
      * current user's phone number.
      *
-     * @param phoneNumber The new phone number to be associated with the user.
+     * @param newPhoneNumber The new phone number to be associated with the user.
      */
     fun updateUserPhoneNumbers(newPhoneNumber: String) {
         // Add the user's phone number to the database.
