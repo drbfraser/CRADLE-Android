@@ -176,6 +176,7 @@ dependencies {
     kapt "com.google.dagger:hilt-android-compiler:$hilt_version"
     implementation "androidx.hilt:hilt-work:$hilt_jetpack_version"
     kapt "androidx.hilt:hilt-compiler:$hilt_jetpack_version"
+    androidTestImplementation 'com.google.dagger:hilt-android-testing:2.51.1'
     kaptAndroidTest "androidx.hilt:hilt-compiler:$hilt_jetpack_version"
 
     def jackson_version = "2.12.3"
@@ -218,13 +219,19 @@ dependencies {
     testImplementation 'io.mockk:mockk:1.13.8'
     testImplementation 'org.mockito:mockito-core:5.6.0'
     testImplementation 'org.mockito:mockito-inline:5.2.0'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
+
+
+    def espresso_version = '3.3.0'
+    androidTestImplementation "androidx.test.espresso:espresso-core:$espresso_version"
     // https://github.com/android/testing-samples/tree/master/ui/espresso/IdlingResourceSample
-    implementation 'androidx.test.espresso:espresso-idling-resource:3.3.0'
-    androidTestImplementation 'androidx.test.espresso:espresso-contrib:3.3.0'
+    implementation "androidx.test.espresso:espresso-idling-resource:$espresso_version"
+    androidTestImplementation "androidx.test.espresso:espresso-contrib:$espresso_version"
     androidTestImplementation "io.mockk:mockk-android:1.11.0"
     testImplementation "com.squareup.okhttp3:mockwebserver:$okhttp_version"
     testImplementation "androidx.arch.core:core-testing:2.2.0"
+
+    // https://developer.android.com/training/testing/espresso/intents
+    androidTestImplementation "androidx.test.espresso:espresso-intents:$espresso_version"
 
     detekt "io.gitlab.arturbosch.detekt:detekt-formatting:$detekt_version"
     detekt "io.gitlab.arturbosch.detekt:detekt-cli:$detekt_version"
