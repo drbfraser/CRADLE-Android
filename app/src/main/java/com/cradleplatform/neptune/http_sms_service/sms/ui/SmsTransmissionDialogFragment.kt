@@ -192,7 +192,7 @@ class SmsTransmissionDialogFragment : DialogFragment() {
             override fun onTick(timeRemaining: Long) {
                 val seconds = timeRemaining / 1000
                 val text = "Retry attempt: ${smsStateReporter.retriesAttempted}" +
-                        ", retrying in $seconds"
+                    ", retrying in $seconds"
                 retryTimer.text = text
             }
 
