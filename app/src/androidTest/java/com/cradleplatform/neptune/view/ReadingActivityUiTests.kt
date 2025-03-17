@@ -36,6 +36,7 @@ import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.utilities.UnixTimestamp
 import com.cradleplatform.neptune.activities.dashboard.DashBoardActivity
 import com.cradleplatform.neptune.activities.newPatient.ReadingActivity
+import com.cradleplatform.neptune.testutils.grantPermissions
 import org.hamcrest.Description
 import org.hamcrest.Matcher
 import org.hamcrest.Matchers.allOf
@@ -65,12 +66,7 @@ class ReadingActivityUiTests {
 
     @Rule
     @JvmField
-    val mGrantPermissionRule: GrantPermissionRule =
-        GrantPermissionRule.grant(
-            "android.permission.INTERNET",
-            "android.permission.ACCESS_NETWORK_STATE",
-            "android.permission.CAMERA"
-        )
+    val mGrantPermissionRule: GrantPermissionRule = grantPermissions()
 
     @Before
     fun before() {
