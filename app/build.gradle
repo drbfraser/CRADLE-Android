@@ -45,7 +45,10 @@ android {
         // Set the base name for the compiled APKs.
         project.ext.set("archivesBaseName", "CRADLE");
 
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        // testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        /** https://developer.android.com/training/dependency-injection/hilt-testing#ui-test */
+        testInstrumentationRunner "com.cradleplatform.neptune.testutils.CustomTestRunner"
+
         // testBuildType "release"
         vectorDrawables.useSupportLibrary = true
 
@@ -176,7 +179,7 @@ dependencies {
     kapt "com.google.dagger:hilt-android-compiler:$hilt_version"
     implementation "androidx.hilt:hilt-work:$hilt_jetpack_version"
     kapt "androidx.hilt:hilt-compiler:$hilt_jetpack_version"
-    androidTestImplementation 'com.google.dagger:hilt-android-testing:2.51.1'
+    androidTestImplementation "com.google.dagger:hilt-android-testing:$hilt_version"
     kaptAndroidTest "androidx.hilt:hilt-compiler:$hilt_jetpack_version"
 
     def jackson_version = "2.12.3"
