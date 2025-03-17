@@ -69,9 +69,6 @@ class SmsTransmissionDialogFragment : DialogFragment() {
 
     private fun resetUI() {
         // Set initial values or customize views
-        continueButton.isEnabled = true
-        cancelButton.isEnabled = true
-        retryButton.isEnabled = true
         continueButton.isVisible = false
         cancelButton.isVisible = true
         successFailMessage.isVisible = false
@@ -116,15 +113,15 @@ class SmsTransmissionDialogFragment : DialogFragment() {
     private fun setupClickListeners() {
         continueButton.setOnClickListener {
             viewModel.smsStateReporter.initDone()
-            continueButton.isEnabled = false
+            continueButton.isVisible = false
             // TODO: We want manually exit Activity/Fragments so user can review the result
         }
         cancelButton.setOnClickListener {
             // TODO: kill/interrupt transmission, reverse DB modifications
             if (viewModel.smsStateReporter.state.value == SmsTransmissionStates.WAITING_FOR_USER_RESPONSE) {
                 viewModel.smsStateReporter.initException()
-                cancelButton.isEnabled = false
-                retryButton.isEnabled = false
+                cancelButton.isVisible = false
+                retryButton.isVisible = false
             } else {
                 dismiss()
             }

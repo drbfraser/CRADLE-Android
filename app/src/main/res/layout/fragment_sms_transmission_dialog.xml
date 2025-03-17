@@ -97,7 +97,8 @@
                 android:layout_weight="1"
                 android:backgroundTint="@color/redDown"
                 android:enabled="true"
-                android:text="Cancel" />
+                android:text="Cancel"
+                android:textColor="@color/white" />
 
             <Button
                 android:id="@+id/btnPositive"
@@ -108,7 +109,8 @@
                 android:layout_weight="1"
                 android:backgroundTint="@color/success_green"
                 android:enabled="true"
-                android:text="Continue" />
+                android:text="Continue"
+                android:textColor="@color/white" />
 
             <Button
                 android:id="@+id/retry_fail"
@@ -117,7 +119,6 @@
                 android:layout_gravity="center"
                 android:layout_margin="10dp"
                 android:layout_weight="1"
-                android:backgroundTint="@color/recommended"
                 android:enabled="true"
                 android:text="retry" />
 
