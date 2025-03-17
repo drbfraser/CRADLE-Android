@@ -61,7 +61,6 @@ class SmsStateReporter @Inject constructor(
 
     private var requestNumberRetries = 0
 
-
     val retry = MutableLiveData<Boolean>(false)
 
     fun initSending(numberOfSmsToSend: Int) {
