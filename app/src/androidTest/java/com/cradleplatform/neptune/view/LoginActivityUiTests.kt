@@ -70,8 +70,6 @@ class LoginActivityUiTests {
 
     @Test
     fun loginActivity_successfulLogin() {
-        /** We need to set LAST_VERSION_TO_COMPLETE_WIZARD tin shared prefs to avoid prompt for
-         * giving permission. */
         onView(withId(R.id.emailEditText))
             .perform(click())
             .perform(typeText("admin"))
