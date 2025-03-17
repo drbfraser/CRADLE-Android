@@ -34,14 +34,7 @@ object WorkManagerModule {
     @Singleton
     fun provideWorkManager(
         @ApplicationContext context: Context,
-        workerFactory: HiltWorkerFactory
     ): WorkManager {
-        WorkManager.initialize(
-            context,
-            Configuration.Builder()
-                .setWorkerFactory(workerFactory)
-                .build()
-        )
         return WorkManager.getInstance(context)
     }
 }

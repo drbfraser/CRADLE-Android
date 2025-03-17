@@ -84,6 +84,7 @@ class CradleApplication : Application(), Configuration.Provider {
 
     private var hasNetworkBeenDisconnected: Boolean = false
 
+    /** https://developer.android.com/develop/background-work/background-tasks/persistent/configuration/custom-configuration#on-demand */
     override fun getWorkManagerConfiguration(): Configuration = Configuration.Builder()
         .setWorkerFactory(workerFactory)
         .build()
@@ -129,6 +130,7 @@ class CradleApplication : Application(), Configuration.Provider {
                 ) {
                     // new activity created; force its orientation to portrait
                     activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+
 
                     /**
                      *Regarding launchPinActivity
