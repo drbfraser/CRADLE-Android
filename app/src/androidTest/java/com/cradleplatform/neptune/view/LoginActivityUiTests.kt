@@ -1,6 +1,8 @@
 package com.cradleplatform.neptune.view
 
-import android.Manifest
+import android.content.Context
+import android.content.SharedPreferences
+import androidx.preference.PreferenceManager
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.IdlingRegistry
 import androidx.test.espresso.IdlingResource
@@ -21,35 +23,60 @@ import androidx.test.rule.GrantPermissionRule
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.activities.authentication.LoginActivity
 import com.cradleplatform.neptune.activities.dashboard.DashBoardActivity
+import com.cradleplatform.neptune.activities.introduction.IntroActivity.Companion.LAST_VERSION_TO_COMPLETE_WIZARD
+import com.cradleplatform.neptune.di.SharedPreferencesModule
+import com.cradleplatform.neptune.testutils.grantPermissions
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.android.testing.HiltAndroidTest
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.UninstallModules
+import dagger.hilt.components.SingletonComponent
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import javax.inject.Singleton
 
+@UninstallModules(SharedPreferencesModule::class)
+@HiltAndroidTest
 @LargeTest
 @RunWith(AndroidJUnit4::class)
 class LoginActivityUiTests {
+
+    @Module
+    @InstallIn(SingletonComponent::class)
+    class TestModule {
+        @Singleton
+        @Provides
+        fun providesSharedPreferences(@ApplicationContext context: Context): SharedPreferences {
+            /** To avoid the "Grant Permissions" intro screen, we need to set
+             * `LAST_VERSION_TO_COMPLETE_WIZARD` in shared preferences.
+             * We can create a new SharedPreferences to inject so as to avoid polluting the
+             * default SharedPreferences. */
+            val sharedPreferences = context.getSharedPreferences("ui-test", Context.MODE_PRIVATE)
+            sharedPreferences.edit().putLong(LAST_VERSION_TO_COMPLETE_WIZARD, 1)
+            return sharedPreferences
+        }
+    }
+
+    // https://developer.android.com/training/dependency-injection/hilt-testing#ui-test
+    @get:Rule(order = 0)
+    var hiltRule = HiltAndroidRule(this)
+
     // https://developer.android.com/guide/components/activities/testing
-    @get:Rule
+    @get:Rule(order = 1)
     var activityScenarioRule = activityScenarioRule<LoginActivity>()
 
     private lateinit var idlingResource: IdlingResource
 
     @Rule
     @JvmField
-    val mGrantPermissionRule: GrantPermissionRule =
-        GrantPermissionRule.grant(
-            Manifest.permission.CAMERA,
-            Manifest.permission.INTERNET,
-            Manifest.permission.ACCESS_NETWORK_STATE,
-            Manifest.permission.SEND_SMS,
-            Manifest.permission.RECEIVE_SMS,
-            Manifest.permission.READ_SMS,
-            Manifest.permission.SEND_SMS,
-            Manifest.permission.READ_PHONE_STATE,
-            Manifest.permission.READ_PHONE_NUMBERS
-        )
+    val mGrantPermissionRule: GrantPermissionRule = grantPermissions()
+
 
     @Before
     fun before() {
@@ -70,6 +97,8 @@ class LoginActivityUiTests {
 
     @Test
     fun loginActivity_successfulLogin() {
+        /** To avoid the "Grant Permissions" intro screen, we need to set
+         * `LAST_VERSION_TO_COMPLETE_WIZARD` in shared prefs. */
         onView(withId(R.id.emailEditText))
             .perform(click())
             .perform(typeText("admin"))
