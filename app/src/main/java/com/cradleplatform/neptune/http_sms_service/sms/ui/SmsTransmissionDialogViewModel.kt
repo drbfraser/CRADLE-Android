@@ -19,7 +19,7 @@ class SmsTransmissionDialogViewModel @Inject constructor(
     val smsSender: SMSSender
 ) : ViewModel() {
 
-    val stateString = MediatorLiveData<String>(). apply {
+    val stateString = MediatorLiveData<String>().apply {
         addSource(smsStateReporter.state) { setStateString() }
         addSource(smsStateReporter.statusCode) { setStateString() }
     }
@@ -38,28 +38,15 @@ class SmsTransmissionDialogViewModel @Inject constructor(
             SmsTransmissionStates.TIME_OUT -> "Timed out, no response."
             SmsTransmissionStates.WAITING_FOR_USER_RESPONSE -> {
                 when (statusCode) {
-                    200 -> "Success! Please confirm."
-                    in 400..599 -> "Error occurred, please review."
-                    else -> "Please confirm."
+                    200 -> "Success! Please Confirm"
+                    in 400..599 -> "Error Occurred, Please Review"
+                    else -> "Please Confirm"
                 }
             }
+
             else -> "Unknown state"
         }
     }
-
-//    val stateString: LiveData<String> = smsStateReporter.state.map {
-//        when (it) {
-//            SmsTransmissionStates.GETTING_READY_TO_SEND -> "Queuing SMS to be sent..."
-//            SmsTransmissionStates.SENDING_TO_RELAY_SERVER -> "Sending..."
-//            SmsTransmissionStates.WAITING_FOR_SERVER_RESPONSE -> "Waiting for confirmation..."
-//            SmsTransmissionStates.RECEIVING_SERVER_RESPONSE -> "Receiving confirmation..."
-//            SmsTransmissionStates.DONE -> "Processing, please wait..."
-//            SmsTransmissionStates.EXCEPTION -> "Handling error, exiting soon..."
-//            SmsTransmissionStates.TIME_OUT -> "Timed out, no response"
-//            SmsTransmissionStates.WAITING_FOR_USER_RESPONSE -> "Please confirm"
-//            else -> "Unknown state"
-//        }
-//    }
 
     val sendProgress: LiveData<String> = smsStateReporter.totalSent.map {
         val numerator = it.toString()

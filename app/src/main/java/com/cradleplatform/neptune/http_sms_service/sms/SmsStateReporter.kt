@@ -22,6 +22,7 @@ class SmsStateReporter @Inject constructor(
         private const val TAG = "SmsStateReporter"
         private const val MAX_REQUEST_NUMBER = 999999
         const val SMS_REQUEST_NUMBER_KEY = "requestNumber"
+        private const val MAX_REQUEST_NUM_RETRIES = 2
     }
 
     private lateinit var smsSender: SMSSender
@@ -59,7 +60,7 @@ class SmsStateReporter @Inject constructor(
     private var maxAttempts = 3
 
     private var requestNumberRetries = 0
-    private var maxRequestNumberRetries = 2
+
 
     val retry = MutableLiveData<Boolean>(false)
 
@@ -127,7 +128,7 @@ class SmsStateReporter @Inject constructor(
         updateRequestNumber(newRequestNumber)
     }
 
-    fun setSuccessStates(code: Int) {
+    private fun setSuccessStates(code: Int) {
         statusCode.postValue(code)
         statusCodeToCollect.postValue(code)
 
@@ -135,7 +136,7 @@ class SmsStateReporter @Inject constructor(
         stateToCollect.postValue(SmsTransmissionStates.WAITING_FOR_USER_RESPONSE)
     }
 
-    fun setErrorStates(code: Int, msg: String) {
+    private fun setErrorStates(code: Int, msg: String) {
         errorMsg.postValue(msg)
         errorMessageToCollect.postValue(msg)
 
@@ -151,7 +152,8 @@ class SmsStateReporter @Inject constructor(
             val errorMsg = smsErrorHandler.handleOuterError(outerErrorCode, msg)
 
             if (outerErrorCode == SmsErrorHandler.REQUEST_NUMBER_MISMATCH
-                && requestNumberRetries < maxRequestNumberRetries) {
+                && requestNumberRetries < MAX_REQUEST_NUM_RETRIES
+            ) {
                 statusCode.postValue(SmsErrorHandler.REQUEST_NUMBER_MISMATCH)
                 statusCodeToCollect.postValue(SmsErrorHandler.REQUEST_NUMBER_MISMATCH)
                 initRetransmission()

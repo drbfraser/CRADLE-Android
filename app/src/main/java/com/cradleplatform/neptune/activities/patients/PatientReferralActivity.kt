@@ -75,7 +75,8 @@ open class PatientReferralActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_referral, dataBindingComponent)
+        binding =
+            DataBindingUtil.setContentView(this, R.layout.activity_referral, dataBindingComponent)
         binding?.apply {
             viewModel = this@PatientReferralActivity.viewModel
             lifecycleOwner = this@PatientReferralActivity
@@ -146,7 +147,8 @@ open class PatientReferralActivity : AppCompatActivity() {
         sendViaHTTP.setOnClickListener {
             val referral = viewModel.buildReferral(currPatient)
             lifecycleScope.launch {
-                val result = referralUploadManager.uploadReferral(referral, currPatient, Protocol.HTTP)
+                val result =
+                    referralUploadManager.uploadReferral(referral, currPatient, Protocol.HTTP)
                 when (result) {
                     is ReferralFlowSaveResult.SaveSuccessful -> {
                         CustomToast.shortToast(
@@ -156,6 +158,7 @@ open class PatientReferralActivity : AppCompatActivity() {
                         Log.i(TAG, "HTTP Referral upload succeeded!")
                         finish()
                     }
+
                     else -> {
                         Log.e(TAG, "HTTP Referral upload failed!")
                         showReferralUploadError()
@@ -176,7 +179,8 @@ open class PatientReferralActivity : AppCompatActivity() {
                     Toast.LENGTH_SHORT
                 ).show()
 
-                val result = referralUploadManager.uploadReferral(referral, currPatient, Protocol.SMS)
+                val result =
+                    referralUploadManager.uploadReferral(referral, currPatient, Protocol.SMS)
                 when (result) {
                     is ReferralFlowSaveResult.SaveSuccessful -> {
                         CustomToast.shortToast(
@@ -184,21 +188,24 @@ open class PatientReferralActivity : AppCompatActivity() {
                             applicationContext.getString(R.string.referral_submitted)
                         )
                         Log.i(TAG, "SMS Referral upload succeeded!")
-                        finish()
                     }
+
                     else -> {
                         Log.e(TAG, "SMS Referral upload failed!")
                         showReferralUploadError()
-                        finish()
                     }
                 }
+                finish()
             }
         }
     }
 
     private fun openSmsTransmissionDialog(): SmsTransmissionDialogFragment {
         val smsTransmissionDialogFragment = SmsTransmissionDialogFragment()
-        smsTransmissionDialogFragment.show(supportFragmentManager, "$TAG::${SmsTransmissionDialogFragment.TAG}")
+        smsTransmissionDialogFragment.show(
+            supportFragmentManager,
+            "$TAG::${SmsTransmissionDialogFragment.TAG}"
+        )
         return smsTransmissionDialogFragment
     }
 }

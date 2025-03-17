@@ -1,5 +1,6 @@
 package com.cradleplatform.neptune.http_sms_service.sms.ui
 
+import android.graphics.Color
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.util.Log
@@ -8,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.viewModels
@@ -43,7 +45,8 @@ class SmsTransmissionDialogFragment : DialogFragment() {
         return inflater.inflate(
             R.layout.fragment_sms_transmission_dialog,
             container,
-            false)
+            false
+        )
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -61,29 +64,7 @@ class SmsTransmissionDialogFragment : DialogFragment() {
 
         resetUI()
         setupObservers()
-
-        // Set click listeners
-        continueButton.setOnClickListener {
-            viewModel.smsStateReporter.initDone()
-            continueButton.isEnabled = false
-            // TODO: We want manually exit Activity/Fragments so user can review the result
-        }
-        cancelButton.setOnClickListener {
-            // TODO: kill/interrupt transmission, reverse DB modifications
-            if (viewModel.smsStateReporter.state.value == SmsTransmissionStates.WAITING_FOR_USER_RESPONSE) {
-                viewModel.smsStateReporter.initException()
-                cancelButton.isEnabled = false
-                retryButton.isEnabled = false
-            } else {
-                dismiss()
-            }
-
-            viewModel.smsSender.reset()
-        }
-        retryButton.setOnClickListener {
-            viewModel.smsStateReporter.initRetransmission()
-            resetUI()
-        }
+        setupClickListeners()
     }
 
     private fun resetUI() {
@@ -99,6 +80,7 @@ class SmsTransmissionDialogFragment : DialogFragment() {
         receiveProgressMessage.isVisible = true
         retryOrSyncMessage.isVisible = false
         isRequestMismatch = false
+        stateMessage.setTextColor(Color.BLACK)
     }
 
     private fun setupObservers() {
@@ -131,27 +113,62 @@ class SmsTransmissionDialogFragment : DialogFragment() {
         }
     }
 
+    private fun setupClickListeners() {
+        continueButton.setOnClickListener {
+            viewModel.smsStateReporter.initDone()
+            continueButton.isEnabled = false
+            // TODO: We want manually exit Activity/Fragments so user can review the result
+        }
+        cancelButton.setOnClickListener {
+            // TODO: kill/interrupt transmission, reverse DB modifications
+            if (viewModel.smsStateReporter.state.value == SmsTransmissionStates.WAITING_FOR_USER_RESPONSE) {
+                viewModel.smsStateReporter.initException()
+                cancelButton.isEnabled = false
+                retryButton.isEnabled = false
+            } else {
+                dismiss()
+            }
+
+            viewModel.smsSender.reset()
+        }
+        retryButton.setOnClickListener {
+            viewModel.smsStateReporter.initRetransmission()
+            resetUI()
+        }
+    }
+
     private fun handleStatusCodeUI(statusCode: Int) {
         successFailMessage.isVisible = true
         when (statusCode) {
             425 -> {
                 isRequestMismatch = true
-                successFailMessage.text = "Performing request number update. Re-sending transmission."
+                successFailMessage.text =
+                    "Performing request number update. Re-sending transmission."
             }
+
             in 400..599 -> {
                 hideProgressMessages()
+                stateMessage.setTextColor(Color.RED)
                 successFailMessage.text = "Error: ${viewModel.smsStateReporter.errorMsg.value}"
                 retryOrSyncMessage.isVisible = true
                 retryButton.isVisible = true
                 continueButton.isVisible = false
             }
+
             200 -> {
                 hideProgressMessages()
+                stateMessage.setTextColor(
+                    ContextCompat.getColor(
+                        requireContext(),
+                        R.color.success_green
+                    )
+                )
                 successFailMessage.text = "Success! Data has been successfully transmitted."
                 cancelButton.isVisible = false
                 continueButton.isVisible = true
                 isRequestMismatch = false
             }
+
             else -> {
                 if (!isRequestMismatch) {
                     successFailMessage.isVisible = false
@@ -178,9 +195,10 @@ class SmsTransmissionDialogFragment : DialogFragment() {
             override fun onTick(timeRemaining: Long) {
                 val seconds = timeRemaining / 1000
                 val text = "Retry attempt: ${smsStateReporter.retriesAttempted}" +
-                    ", retrying in $seconds"
+                        ", retrying in $seconds"
                 retryTimer.text = text
             }
+
             override fun onFinish() {
                 retryTimer.isVisible = false
             }
