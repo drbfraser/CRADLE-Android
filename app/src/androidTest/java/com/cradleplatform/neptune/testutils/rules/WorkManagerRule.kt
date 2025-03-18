@@ -1,4 +1,4 @@
-package com.cradleplatform.neptune.testutils
+package com.cradleplatform.neptune.testutils.rules
 
 import android.util.Log
 import androidx.test.platform.app.InstrumentationRegistry
