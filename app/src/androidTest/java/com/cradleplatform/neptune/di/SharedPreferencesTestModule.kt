@@ -5,6 +5,7 @@ import android.content.SharedPreferences
 import android.util.Log
 import com.cradleplatform.neptune.BuildConfig
 import com.cradleplatform.neptune.activities.introduction.IntroActivity.Companion.LAST_VERSION_TO_COMPLETE_WIZARD
+import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -22,16 +23,16 @@ import javax.inject.Singleton
     replaces = [SharedPreferencesModule::class]
 )
 class SharedPreferencesTestModule {
-    @Provides
     @Singleton
-    fun providesSharedPreferences(@ApplicationContext context: Context): SharedPreferences {
+    @Provides
+    fun bindSharedPreferences(@ApplicationContext context: Context): SharedPreferences {
         /** To avoid the "Grant Permissions" intro screen, we need to set
          * `LAST_VERSION_TO_COMPLETE_WIZARD` in shared preferences.
          * We can create a new SharedPreferences to inject so as to avoid polluting the
          * default SharedPreferences. */
         val sharedPreferences = context.getSharedPreferences("ui-test", Context.MODE_PRIVATE)
-        val verCodeComplete = BuildConfig.VERSION_CODE.toLong()
-        sharedPreferences.edit().putLong(LAST_VERSION_TO_COMPLETE_WIZARD, verCodeComplete)
+        sharedPreferences.edit().putLong(LAST_VERSION_TO_COMPLETE_WIZARD, BuildConfig.VERSION_CODE.toLong()).apply()
+        val verCodeComplete = sharedPreferences.getLong(LAST_VERSION_TO_COMPLETE_WIZARD, -1)
         Log.i("SharedPreferencesTestModule", "------- Creating SharedPreferencesTestModule! -------")
         Log.i("SharedPreferencesTestModule", "verCodeCompleted: $verCodeComplete")
         return sharedPreferences
