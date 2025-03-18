@@ -13,6 +13,10 @@ import org.junit.runners.model.Statement
  * https://stackoverflow.com/questions/63671323/hilt-instrumentation-test-with-workmanager-not-working
  * */
 class WorkManagerRule : TestRule {
+    companion object {
+        const val TAG =  "WorkManagerRule"
+    }
+
     override fun apply(base: Statement?, description: Description?): Statement {
         return object : Statement() {
             override fun evaluate() {
@@ -29,7 +33,7 @@ class WorkManagerRule : TestRule {
                 try {
                     base?.evaluate()
                 } finally {
-                    Log.d("WorkManagerRule", "Teardown")
+                    Log.d(TAG, "Teardown")
                 }
             }
 
