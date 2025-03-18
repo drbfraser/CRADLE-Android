@@ -21,7 +21,7 @@ import androidx.test.rule.GrantPermissionRule
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.activities.authentication.LoginActivity
 import com.cradleplatform.neptune.activities.dashboard.DashBoardActivity
-import com.cradleplatform.neptune.testutils.WorkManagerRule
+import com.cradleplatform.neptune.testutils.rules.WorkManagerRule
 import com.cradleplatform.neptune.testutils.grantPermissions
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -52,7 +52,6 @@ class LoginActivityUiTests {
     @JvmField
     val mGrantPermissionRule: GrantPermissionRule = grantPermissions()
 
-
     @Before
     fun before() {
         hiltRule.inject()
@@ -73,14 +72,13 @@ class LoginActivityUiTests {
 
     @Test
     fun loginActivity_successfulLogin() {
-        /** To avoid the "Grant Permissions" intro screen, we need to set
-         * `LAST_VERSION_TO_COMPLETE_WIZARD` in shared prefs. */
         onView(withId(R.id.emailEditText))
             .perform(click())
             .perform(typeText("admin"))
             .perform(pressImeActionButton())
 
         onView(withId(R.id.passwordEditText))
+            .perform(click())
             .perform(typeTextIntoFocusedView("cradle-admin"))
             .perform(pressImeActionButton())
 
