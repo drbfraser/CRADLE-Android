@@ -80,7 +80,6 @@ class CradleApplication : Application(), Configuration.Provider {
 
     private var hasNetworkBeenDisconnected: Boolean = false
 
-    /** https://developer.android.com/develop/background-work/background-tasks/persistent/configuration/custom-configuration#on-demand */
     override fun getWorkManagerConfiguration(): Configuration = Configuration.Builder()
         .setWorkerFactory(workerFactory)
         .build()
