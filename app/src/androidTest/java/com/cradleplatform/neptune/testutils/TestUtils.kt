@@ -7,7 +7,7 @@ import androidx.test.rule.GrantPermissionRule
 import androidx.test.runner.AndroidJUnitRunner
 import dagger.hilt.android.testing.HiltTestApplication
 
-fun grantPermissions() = GrantPermissionRule.grant(
+fun grantPermissions(): GrantPermissionRule = GrantPermissionRule.grant(
         Manifest.permission.CAMERA,
         Manifest.permission.INTERNET,
         Manifest.permission.ACCESS_NETWORK_STATE,
