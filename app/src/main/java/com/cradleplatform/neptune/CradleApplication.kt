@@ -127,7 +127,6 @@ class CradleApplication : Application(), Configuration.Provider {
                     // new activity created; force its orientation to portrait
                     activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 
-
                     /**
                      *Regarding launchPinActivity
                      *Thread is required since there is a race condition with internal mutexes
