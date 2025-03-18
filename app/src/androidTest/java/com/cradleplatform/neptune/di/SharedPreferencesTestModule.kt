@@ -32,9 +32,6 @@ class SharedPreferencesTestModule {
          * default SharedPreferences. */
         val sharedPreferences = context.getSharedPreferences("ui-test", Context.MODE_PRIVATE)
         sharedPreferences.edit().putLong(LAST_VERSION_TO_COMPLETE_WIZARD, BuildConfig.VERSION_CODE.toLong()).apply()
-        val verCodeComplete = sharedPreferences.getLong(LAST_VERSION_TO_COMPLETE_WIZARD, -1)
-        Log.i("SharedPreferencesTestModule", "------- Creating SharedPreferencesTestModule! -------")
-        Log.i("SharedPreferencesTestModule", "verCodeCompleted: $verCodeComplete")
         return sharedPreferences
     }
 }
