@@ -3,6 +3,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -242,10 +243,10 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
 
     private fun checkPinIfPinSet() {
         val pinCodePrefKey = getString(R.string.key_pin_shared_key)
-        val pinPassSharedPreferences = getString(R.string.key_pin_shared_pref)
         val defaultPinCode = getString(R.string.key_pin_default_pin)
-        val sharedPref = getSharedPreferences(pinPassSharedPreferences, Context.MODE_PRIVATE) ?: return
-        if (sharedPref.getString(pinCodePrefKey, defaultPinCode) == defaultPinCode) {
+        val pin = sharedPreferences.getString(pinCodePrefKey, defaultPinCode)
+        Log.d(TAG, "PIN: $pin")
+        if (pin == defaultPinCode) {
             AlertDialog.Builder(this@DashBoardActivity)
                 .setMessage(R.string.dash_pin_not_set)
                 .setCancelable(true)

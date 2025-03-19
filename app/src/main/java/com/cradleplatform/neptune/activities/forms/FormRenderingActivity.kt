@@ -230,7 +230,6 @@ class FormRenderingActivity : AppCompatActivity() {
 
         builder.setNegativeButton(R.string.SMS) { _, _ ->
             formSubmission(languageSelected, Protocol.SMS)
-            // SMSSender will finish this activity, so we don't need to do it here
         }
         builder.show()
     }
