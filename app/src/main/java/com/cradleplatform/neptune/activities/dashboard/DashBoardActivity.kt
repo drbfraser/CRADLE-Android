@@ -81,23 +81,23 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
         // Disable entering StatsActivity without network connectivity.
         val statView = findViewById<View>(R.id.statConstraintLayout)
         val statImg = statView.findViewById<ImageButton>(R.id.statImg)
-        val statCardview: CardView = statView.findViewById(R.id.statCardView)
+        val statCardView: CardView = statView.findViewById(R.id.statCardView)
         val isNetworkAvailable = networkStateManager.getInternetConnectivityStatus()
 
         isNetworkAvailable.observe(this) {
             when (it) {
                 true -> {
                     statImg.alpha = OPACITY_FULL
-                    statCardview.alpha = OPACITY_FULL
+                    statCardView.alpha = OPACITY_FULL
                     statView.isClickable = true
-                    statCardview.isClickable = true
+                    statCardView.isClickable = true
                     statImg.isClickable = true
                 }
                 false -> {
                     statImg.alpha = OPACITY_HALF
-                    statCardview.alpha = OPACITY_HALF
+                    statCardView.alpha = OPACITY_HALF
                     statView.isClickable = false
-                    statCardview.isClickable = false
+                    statCardView.isClickable = false
                     statImg.isClickable = false
                 }
             }
