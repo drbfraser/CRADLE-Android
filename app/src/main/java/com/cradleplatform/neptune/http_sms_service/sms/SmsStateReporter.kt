@@ -91,12 +91,14 @@ class SmsStateReporter @Inject constructor(
     fun initException() {
         state.postValue(SmsTransmissionStates.EXCEPTION)
         stateToCollect.postValue(SmsTransmissionStates.EXCEPTION)
+        resetRequestNumberRetries()
         clearStatusCode()
     }
 
     fun initDone() {
         state.postValue(SmsTransmissionStates.DONE)
         stateToCollect.postValue(SmsTransmissionStates.DONE)
+        resetRequestNumberRetries()
         clearStatusCode()
     }
 
@@ -125,6 +127,10 @@ class SmsStateReporter @Inject constructor(
         val currentRequestNumber = getCurrentRequestNumber()
         val newRequestNumber = (currentRequestNumber + 1) % MAX_REQUEST_NUMBER
         updateRequestNumber(newRequestNumber)
+    }
+
+    private fun resetRequestNumberRetries() {
+        requestNumberRetries = 0
     }
 
     private fun setSuccessStates(code: Int) {
@@ -213,7 +219,6 @@ class SmsStateReporter @Inject constructor(
         totalReceived.postValue(0)
         totalToBeReceived = 0
         retriesAttempted = 0
-        requestNumberRetries = 0
         timeoutThread?.interrupt()
     }
 

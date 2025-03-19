@@ -10,6 +10,7 @@ import com.cradleplatform.neptune.ext.jackson.parseObject
 import com.cradleplatform.neptune.ext.jackson.parseObjectArray
 import com.cradleplatform.neptune.http_sms_service.sms.SMSReceiver
 import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
+import com.cradleplatform.neptune.http_sms_service.sms.SmsErrorHandler
 import com.cradleplatform.neptune.http_sms_service.sms.SmsStateReporter
 import com.cradleplatform.neptune.http_sms_service.sms.SmsTransmissionStates
 import com.cradleplatform.neptune.http_sms_service.sms.utils.SMSDataProcessor
@@ -123,7 +124,9 @@ class RestApi(
                 smsStateReporter.stateToCollect.asFlow().collect { state ->
                     when (state) {
                         SmsTransmissionStates.WAITING_FOR_USER_RESPONSE -> {
-                            smsStateReporter.incrementRequestNumber()
+                            if (smsStateReporter.statusCode.value != SmsErrorHandler.REQUEST_NUMBER_MISMATCH) {
+                                smsStateReporter.incrementRequestNumber()
+                            }
                         }
 
                         SmsTransmissionStates.DONE -> {

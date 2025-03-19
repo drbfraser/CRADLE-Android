@@ -1,5 +1,6 @@
 package com.cradleplatform.neptune.http_sms_service.sms.ui
 
+import android.content.res.ColorStateList
 import android.graphics.Color
 import android.os.Bundle
 import android.os.CountDownTimer
@@ -78,6 +79,9 @@ class SmsTransmissionDialogFragment : DialogFragment() {
         retryOrSyncMessage.isVisible = false
         isRequestMismatch = false
         stateMessage.setTextColor(Color.BLACK)
+        cancelButton.backgroundTintList =
+            ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.redDown))
+        cancelButton.setTextColor(Color.WHITE)
     }
 
     private fun setupObservers() {
@@ -136,42 +140,43 @@ class SmsTransmissionDialogFragment : DialogFragment() {
 
     private fun handleStatusCodeUI(statusCode: Int) {
         successFailMessage.isVisible = true
-        when (statusCode) {
-            425 -> {
-                isRequestMismatch = true
-                successFailMessage.text =
-                    "Performing request number update. Re-sending transmission."
-            }
-
-            in 400..599 -> {
-                hideProgressMessages()
-                stateMessage.setTextColor(Color.RED)
-                successFailMessage.text = "Error: ${viewModel.smsStateReporter.errorMsg.value}"
-                retryOrSyncMessage.isVisible = true
-                retryButton.isVisible = true
-                continueButton.isVisible = false
-            }
-
-            200 -> {
-                hideProgressMessages()
-                stateMessage.setTextColor(
-                    ContextCompat.getColor(
-                        requireContext(),
-                        R.color.success_green
-                    )
+        if (statusCode == 425 &&
+            viewModel.smsStateReporter.state.value != SmsTransmissionStates.WAITING_FOR_USER_RESPONSE
+        ) {
+            isRequestMismatch = true
+            successFailMessage.text =
+                "Performing request number update. Re-sending transmission."
+        } else if (statusCode in 400..599 &&
+            viewModel.smsStateReporter.state.value == SmsTransmissionStates.WAITING_FOR_USER_RESPONSE
+        ) {
+            hideProgressMessages()
+            stateMessage.setTextColor(Color.RED)
+            successFailMessage.text = "Error: ${viewModel.smsStateReporter.errorMsg.value}"
+            retryOrSyncMessage.isVisible = true
+            retryButton.isVisible = true
+            continueButton.isVisible = false
+            retryTimer.isVisible = false
+            cancelButton.backgroundTintList = ColorStateList.valueOf(Color.TRANSPARENT)
+            cancelButton.setTextColor(Color.RED)
+            cancelButton.elevation = 0f
+            cancelButton.stateListAnimator = null
+        } else if (statusCode == 200) {
+            hideProgressMessages()
+            stateMessage.setTextColor(
+                ContextCompat.getColor(
+                    requireContext(),
+                    R.color.success_green
                 )
-                successFailMessage.text = "Success! Data has been successfully transmitted."
-                cancelButton.isVisible = false
-                continueButton.isVisible = true
-                isRequestMismatch = false
+            )
+            successFailMessage.text = "Success! Data has been successfully transmitted."
+            cancelButton.isVisible = false
+            continueButton.isVisible = true
+            isRequestMismatch = false
+        } else {
+            if (!isRequestMismatch) {
+                successFailMessage.isVisible = false
             }
-
-            else -> {
-                if (!isRequestMismatch) {
-                    successFailMessage.isVisible = false
-                }
-                retryOrSyncMessage.isVisible = false
-            }
+            retryOrSyncMessage.isVisible = false
         }
     }
 
@@ -191,7 +196,7 @@ class SmsTransmissionDialogFragment : DialogFragment() {
         ) {
             override fun onTick(timeRemaining: Long) {
                 val seconds = timeRemaining / 1000
-                val text = "Retry attempt: ${smsStateReporter.retriesAttempted}" +
+                val text = "SMS Message Retry Attempt: ${smsStateReporter.retriesAttempted + 1}" +
                     ", retrying in $seconds"
                 retryTimer.text = text
             }
