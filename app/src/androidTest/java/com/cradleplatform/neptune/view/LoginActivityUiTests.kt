@@ -17,12 +17,11 @@ import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.rules.activityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
-import androidx.test.rule.GrantPermissionRule
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.activities.authentication.LoginActivity
 import com.cradleplatform.neptune.activities.dashboard.DashBoardActivity
 import com.cradleplatform.neptune.testutils.rules.WorkManagerRule
-import com.cradleplatform.neptune.testutils.grantPermissions
+import com.cradleplatform.neptune.testutils.rules.GrantRuntimePermissionsRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltAndroidRule
 import org.junit.After
@@ -46,11 +45,15 @@ class LoginActivityUiTests {
     @get:Rule(order = 2)
     var activityScenarioRule = activityScenarioRule<LoginActivity>()
 
+
+    @get:Rule(order = 3)
+    var grantPermissionRule = GrantRuntimePermissionsRule()
+
     private lateinit var idlingResource: IdlingResource
 
-    @Rule
-    @JvmField
-    val mGrantPermissionRule: GrantPermissionRule = grantPermissions()
+//    @Rule
+//    @JvmField
+//    val mGrantPermissionRule: GrantPermissionRule = grantPermissions()
 
     @Before
     fun before() {

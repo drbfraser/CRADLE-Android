@@ -37,6 +37,9 @@ import com.cradleplatform.neptune.utilities.UnixTimestamp
 import com.cradleplatform.neptune.activities.dashboard.DashBoardActivity
 import com.cradleplatform.neptune.activities.newPatient.ReadingActivity
 import com.cradleplatform.neptune.testutils.grantPermissions
+import com.cradleplatform.neptune.testutils.rules.GrantRuntimePermissionsRule
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import org.hamcrest.Description
 import org.hamcrest.Matcher
 import org.hamcrest.Matchers.allOf
@@ -50,23 +53,26 @@ import org.junit.runner.RunWith
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 
+@HiltAndroidTest
 @LargeTest
 @RunWith(AndroidJUnit4::class)
 class ReadingActivityUiTests {
-
     private val context: Context = InstrumentationRegistry.getInstrumentation().targetContext
 
+    // https://developer.android.com/training/dependency-injection/hilt-testing#ui-test
+    @get:Rule(order = 0)
+    var hiltRule = HiltAndroidRule(this)
+
     // https://developer.android.com/guide/components/activities/testing
-    @get:Rule
+    @get:Rule(order = 1)
     var activityScenarioRule = activityScenarioRule<DashBoardActivity>()
+
+    @get:Rule(order = 1)
+    var grantPermissionRule = GrantRuntimePermissionsRule()
 
     private lateinit var idlingResource: IdlingResource
 
     private var currentActivity: Activity? = null
-
-    @Rule
-    @JvmField
-    val mGrantPermissionRule: GrantPermissionRule = grantPermissions()
 
     @Before
     fun before() {

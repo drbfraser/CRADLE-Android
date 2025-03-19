@@ -26,7 +26,6 @@ class WorkManagerRule : TestRule {
                     .setExecutor(SynchronousExecutor())
 //                    .setWorkerFactory()
                     .build()
-//                WorkManagerTestInitHelper.initializeTestWorkManager(context, config)
                 if (!WorkManager.isInitialized()) {
                     WorkManager.initialize(context, config)
                 }
