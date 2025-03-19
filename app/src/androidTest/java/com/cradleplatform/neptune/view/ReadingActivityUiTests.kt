@@ -31,12 +31,10 @@ import androidx.test.ext.junit.rules.activityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
 import androidx.test.platform.app.InstrumentationRegistry
-import androidx.test.rule.GrantPermissionRule
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.utilities.UnixTimestamp
 import com.cradleplatform.neptune.activities.dashboard.DashBoardActivity
 import com.cradleplatform.neptune.activities.newPatient.ReadingActivity
-import com.cradleplatform.neptune.testutils.grantPermissions
 import com.cradleplatform.neptune.testutils.rules.GrantRuntimePermissionsRule
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
