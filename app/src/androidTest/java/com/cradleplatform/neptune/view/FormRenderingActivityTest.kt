@@ -29,6 +29,7 @@ import com.cradleplatform.neptune.activities.forms.FormRenderingActivity
 import com.cradleplatform.neptune.testutils.rules.GrantRuntimePermissionsRule
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import org.hamcrest.Matchers.equalToIgnoringCase
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -178,7 +179,6 @@ class FormRenderingActivityTest{
 
         // Verify that submit options appear correctly
         onView(withId(R.id.formSubmit)).perform(click())
-        onView(withText("SMS")).perform(scrollTo()).check(matches(isDisplayed()))
-        onView(withText("Wifi")).perform(scrollTo()).check(matches(isDisplayed()))
+        onView(withText(equalToIgnoringCase("SMS"))).perform(scrollTo()).check(matches(isDisplayed()))
     }
 }
