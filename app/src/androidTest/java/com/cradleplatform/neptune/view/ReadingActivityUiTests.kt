@@ -4,6 +4,7 @@ import android.app.Activity
 import android.app.Application
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.HorizontalScrollView
@@ -36,6 +37,7 @@ import com.cradleplatform.neptune.utilities.UnixTimestamp
 import com.cradleplatform.neptune.activities.dashboard.DashBoardActivity
 import com.cradleplatform.neptune.activities.newPatient.ReadingActivity
 import com.cradleplatform.neptune.testutils.rules.GrantRuntimePermissionsRule
+import com.jakewharton.threetenabp.AndroidThreeTen
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import org.hamcrest.Description
@@ -72,8 +74,13 @@ class ReadingActivityUiTests {
 
     private var currentActivity: Activity? = null
 
+    companion object {
+        const val TAG = "ReadingActivityUiTests"
+    }
+
     @Before
     fun before() {
+        AndroidThreeTen.init(context);
         val lock = ReentrantLock()
         val isReadingActivityCondition = lock.newCondition()
 
