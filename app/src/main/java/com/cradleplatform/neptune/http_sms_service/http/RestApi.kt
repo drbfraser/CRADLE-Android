@@ -10,6 +10,7 @@ import com.cradleplatform.neptune.ext.jackson.parseObject
 import com.cradleplatform.neptune.ext.jackson.parseObjectArray
 import com.cradleplatform.neptune.http_sms_service.sms.SMSReceiver
 import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
+import com.cradleplatform.neptune.http_sms_service.sms.SmsErrorHandler
 import com.cradleplatform.neptune.http_sms_service.sms.SmsStateReporter
 import com.cradleplatform.neptune.http_sms_service.sms.SmsTransmissionStates
 import com.cradleplatform.neptune.http_sms_service.sms.utils.SMSDataProcessor
@@ -111,14 +112,7 @@ class RestApi(
         setupSmsReceiver()
 
         try {
-            val json = smsDataProcessor.processRequestDataToJSON(
-                method, url, headers, body
-            )
-            smsSender.queueRelayContent(json).let { enqueueSuccessful ->
-                if (enqueueSuccessful) {
-                    smsSender.sendSmsMessage(false)
-                }
-            }
+            processAndSendSms(method, url, headers, body)
 
             /**
              * `collect()` will suspend until the flow is complete, but this flow will continue
@@ -129,13 +123,17 @@ class RestApi(
             val flowCollectJob = launch {
                 smsStateReporter.stateToCollect.asFlow().collect { state ->
                     when (state) {
+                        SmsTransmissionStates.WAITING_FOR_USER_RESPONSE -> {
+                            if (smsStateReporter.statusCode.value != SmsErrorHandler.REQUEST_NUMBER_MISMATCH) {
+                                smsStateReporter.incrementRequestNumber()
+                            }
+                        }
+
                         SmsTransmissionStates.DONE -> {
                             /* TODO: Check code of SMS response. */
                             val response =
                                 JacksonMapper.mapper.readValue(smsStateReporter.decryptedMsgLiveData.value,
                                     object : TypeReference<T>() {})
-
-                            smsStateReporter.incrementRequestNumber()
 
                             channel.send(
                                 NetworkResult.Success(
@@ -148,9 +146,16 @@ class RestApi(
                             channel.send(
                                 NetworkResult.Failure(
                                     smsStateReporter.errorMessageToCollect.value!!.toByteArray(),
-                                    smsStateReporter.errorCodeToCollect.value!!
+                                    smsStateReporter.statusCodeToCollect.value!!
                                 )
                             )
+                        }
+
+                        SmsTransmissionStates.RETRANSMISSION -> {
+                            Log.d(TAG, "In Retransmission state, will process and send SMS again")
+                            smsStateReporter.state.postValue(SmsTransmissionStates.GETTING_READY_TO_SEND)
+                            smsStateReporter.stateToCollect.postValue(SmsTransmissionStates.GETTING_READY_TO_SEND)
+                            processAndSendSms(method, url, headers, body)
                         }
 
                         SmsTransmissionStates.TIME_OUT -> {
@@ -181,8 +186,25 @@ class RestApi(
             channel.close()
             smsStateReporter.stateToCollect.postValue(SmsTransmissionStates.GETTING_READY_TO_SEND)
             smsStateReporter.errorMessageToCollect.postValue("")
-            smsStateReporter.errorCodeToCollect.postValue(0)
+            smsStateReporter.statusCodeToCollect.postValue(0)
             teardownSmsReceiver()
+        }
+    }
+
+    private fun processAndSendSms(
+        method: Http.Method,
+        url: String,
+        headers: Map<String, String>,
+        body: ByteArray
+    ) {
+
+        val json = smsDataProcessor.processRequestDataToJSON(
+            method, url, headers, body
+        )
+        smsSender.queueRelayContent(json).let { enqueueSuccessful ->
+            if (enqueueSuccessful) {
+                smsSender.sendSmsMessage(false)
+            }
         }
     }
 

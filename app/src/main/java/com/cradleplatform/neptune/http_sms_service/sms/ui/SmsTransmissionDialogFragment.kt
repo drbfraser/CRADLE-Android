@@ -1,5 +1,7 @@
 package com.cradleplatform.neptune.http_sms_service.sms.ui
 
+import android.content.res.ColorStateList
+import android.graphics.Color
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.util.Log
@@ -8,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.viewModels
@@ -20,6 +23,16 @@ class SmsTransmissionDialogFragment : DialogFragment() {
 
     private val viewModel: SmsTransmissionDialogViewModel by viewModels()
     private lateinit var timer: CountDownTimer
+    private lateinit var stateMessage: TextView
+    private lateinit var sendProgressMessage: TextView
+    private lateinit var receiveProgressMessage: TextView
+    private lateinit var successFailMessage: TextView
+    private lateinit var retryOrSyncMessage: TextView
+    private lateinit var continueButton: Button
+    private lateinit var cancelButton: Button
+    private lateinit var retryButton: Button
+    private lateinit var retryTimer: TextView
+    private var isRequestMismatch = false
 
     companion object {
         const val TAG = "SmsTransmissionDialogFragment"
@@ -33,24 +46,45 @@ class SmsTransmissionDialogFragment : DialogFragment() {
         return inflater.inflate(
             R.layout.fragment_sms_transmission_dialog,
             container,
-            false)
+            false
+        )
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         // Access views from the layout
-        val stateMessage = view.findViewById<TextView>(R.id.stateMessage)
-        val sendProgressMessage = view.findViewById<TextView>(R.id.sendProgressMessage)
-        val receiveProgressMessage = view.findViewById<TextView>(R.id.receiveProgressMessage)
-        val successFailMessage = view.findViewById<TextView>(R.id.successErrorMessage)
-        val positiveButton = view.findViewById<Button>(R.id.btnPositive)
-        val negativeButton = view.findViewById<Button>(R.id.btnNegative)
-        val retryButton = view.findViewById<Button>(R.id.retry_fail)
-        val retryTimer = view.findViewById<TextView>(R.id.retryTimer)
-        val countDownIntervalMilli: Long = 1000
+        stateMessage = view.findViewById<TextView>(R.id.stateMessage)
+        sendProgressMessage = view.findViewById<TextView>(R.id.sendProgressMessage)
+        receiveProgressMessage = view.findViewById<TextView>(R.id.receiveProgressMessage)
+        successFailMessage = view.findViewById<TextView>(R.id.successErrorMessage)
+        retryOrSyncMessage = view.findViewById<TextView>(R.id.retryMessage)
+        continueButton = view.findViewById<Button>(R.id.btnPositive)
+        cancelButton = view.findViewById<Button>(R.id.btnNegative)
+        retryButton = view.findViewById<Button>(R.id.retry_fail)
+        retryTimer = view.findViewById<TextView>(R.id.retryTimer)
+
+        resetUI()
+        setupObservers()
+        setupClickListeners()
+    }
+
+    private fun resetUI() {
         // Set initial values or customize views
-        positiveButton.isEnabled = false
+        continueButton.isVisible = false
+        cancelButton.isVisible = true
+        successFailMessage.isVisible = false
         retryButton.isVisible = false
+        sendProgressMessage.isVisible = true
+        receiveProgressMessage.isVisible = true
+        retryOrSyncMessage.isVisible = false
+        isRequestMismatch = false
+        stateMessage.setTextColor(Color.BLACK)
+        cancelButton.backgroundTintList =
+            ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.redDown))
+        cancelButton.setTextColor(Color.WHITE)
+    }
+
+    private fun setupObservers() {
         viewModel.stateString.observe(viewLifecycleOwner) {
             stateMessage.text = it
         }
@@ -60,76 +94,122 @@ class SmsTransmissionDialogFragment : DialogFragment() {
         viewModel.receiveProgress.observe(viewLifecycleOwner) {
             receiveProgressMessage.text = it
         }
-        viewModel.smsStateReporter.retry.observe(viewLifecycleOwner) {
-            val smsStateReporter = viewModel.smsStateReporter
-            if (it) {
-                if (::timer.isInitialized) {
-                    timer.cancel()
-                }
-                retryTimer.isVisible = true
-                timer = object : CountDownTimer(
-                    smsStateReporter.timeout * 1000 * (smsStateReporter.retriesAttempted + 1),
-                    countDownIntervalMilli
-                ) {
-                    override fun onTick(timeRemaining: Long) {
-                        val seconds = timeRemaining / 1000
-                        val text = "Retry attempt: ${smsStateReporter.retriesAttempted}" +
-                            ", retrying in $seconds"
-                        retryTimer.text = text
-                    }
-                    override fun onFinish() {
-                        retryTimer.isVisible = false
-                    }
-                }.start()
-            } else {
-                if (::timer.isInitialized) {
-                    timer.cancel()
-                }
-            }
+        viewModel.smsStateReporter.retry.observe(viewLifecycleOwner) { retry ->
+            if (retry) startRetryTimer() else cancelRetryTimer()
         }
         viewModel.smsStateReporter.state.observe(viewLifecycleOwner) { state ->
-            if (state == SmsTransmissionStates.EXCEPTION || state == SmsTransmissionStates.DONE) {
-                positiveButton.isEnabled = true
-            } else if (state == SmsTransmissionStates.TIME_OUT) {
-                positiveButton.isVisible = false
+            if (state == SmsTransmissionStates.TIME_OUT) {
+                continueButton.isVisible = false
                 retryButton.isVisible = true
-                sendProgressMessage.text = "No response from SMS server"
-                receiveProgressMessage.isVisible = false
+                successFailMessage.text = "Error: No response from SMS server."
+                retryOrSyncMessage.isVisible = true
+                hideProgressMessages()
             }
         }
-        viewModel.smsStateReporter.errorCode.observe(viewLifecycleOwner) {
+        viewModel.smsStateReporter.statusCode.observe(viewLifecycleOwner) { statusCode ->
             // Display response code from server
-            when (it) {
-                // TODO: Currently no error code is in SMS received
-                400 -> {
-                    successFailMessage.visibility = View.VISIBLE
-                    successFailMessage.text = "Failed: 400"
-                }
-                200 -> {
-                    successFailMessage.visibility = View.VISIBLE
-                    successFailMessage.text = "Success: 200"
-                }
-                else -> {
-                    successFailMessage.visibility = View.GONE
-                }
+            if (statusCode != null) {
+                handleStatusCodeUI(statusCode)
             }
         }
-        // Set click listeners
-        positiveButton.setOnClickListener {
-            dismiss()
+    }
 
+    private fun setupClickListeners() {
+        continueButton.setOnClickListener {
+            viewModel.smsStateReporter.initDone()
+            continueButton.isVisible = false
             // TODO: We want manually exit Activity/Fragments so user can review the result
         }
-        negativeButton.setOnClickListener {
+        cancelButton.setOnClickListener {
             // TODO: kill/interrupt transmission, reverse DB modifications
+            if (viewModel.smsStateReporter.state.value == SmsTransmissionStates.WAITING_FOR_USER_RESPONSE) {
+                viewModel.smsStateReporter.initException()
+                cancelButton.isVisible = false
+                retryButton.isVisible = false
+            } else {
+                dismiss()
+            }
+
             viewModel.smsSender.reset()
-            dismiss()
         }
         retryButton.setOnClickListener {
-            viewModel.smsSender.reset()
-            viewModel.smsStateReporter.resetStateReporter()
-            viewModel.smsSender.queueRelayContent(viewModel.smsSender.data)
-            receiveProgressMessage.isVisible = true
+            viewModel.smsStateReporter.initRetransmission()
+            resetUI()
+        }
+    }
+
+    private fun handleStatusCodeUI(statusCode: Int) {
+        successFailMessage.isVisible = true
+        if (statusCode == 425 &&
+            viewModel.smsStateReporter.state.value != SmsTransmissionStates.WAITING_FOR_USER_RESPONSE
+        ) {
+            isRequestMismatch = true
+            successFailMessage.text =
+                "Performing request number update. Re-sending transmission."
+        } else if (statusCode in 400..599 &&
+            viewModel.smsStateReporter.state.value == SmsTransmissionStates.WAITING_FOR_USER_RESPONSE
+        ) {
+            hideProgressMessages()
+            stateMessage.setTextColor(Color.RED)
+            successFailMessage.text = "Error: ${viewModel.smsStateReporter.errorMsg.value}"
+            retryOrSyncMessage.isVisible = true
+            retryButton.isVisible = true
+            continueButton.isVisible = false
+            retryTimer.isVisible = false
+            cancelButton.backgroundTintList = ColorStateList.valueOf(Color.TRANSPARENT)
+            cancelButton.setTextColor(Color.RED)
+            cancelButton.elevation = 0f
+            cancelButton.stateListAnimator = null
+        } else if (statusCode == 200) {
+            hideProgressMessages()
+            stateMessage.setTextColor(
+                ContextCompat.getColor(
+                    requireContext(),
+                    R.color.success_green
+                )
+            )
+            successFailMessage.text = "Success! Data has been successfully transmitted."
+            cancelButton.isVisible = false
+            continueButton.isVisible = true
+            isRequestMismatch = false
+        } else {
+            if (!isRequestMismatch) {
+                successFailMessage.isVisible = false
+            }
+            retryOrSyncMessage.isVisible = false
+        }
+    }
+
+    private fun hideProgressMessages() {
+        sendProgressMessage.isVisible = false
+        receiveProgressMessage.isVisible = false
+    }
+
+    private fun startRetryTimer() {
+        val smsStateReporter = viewModel.smsStateReporter
+        val countDownIntervalMilli: Long = 1000
+        cancelRetryTimer()
+        retryTimer.isVisible = true
+        timer = object : CountDownTimer(
+            smsStateReporter.timeout * 1000 * (smsStateReporter.retriesAttempted + 1),
+            countDownIntervalMilli
+        ) {
+            override fun onTick(timeRemaining: Long) {
+                val seconds = timeRemaining / 1000
+                val text = "SMS Message Retry Attempt: ${smsStateReporter.retriesAttempted + 1}" +
+                    ", retrying in $seconds"
+                retryTimer.text = text
+            }
+
+            override fun onFinish() {
+                retryTimer.isVisible = false
+            }
+        }.start()
+    }
+
+    private fun cancelRetryTimer() {
+        if (::timer.isInitialized) {
+            timer.cancel()
         }
     }
 

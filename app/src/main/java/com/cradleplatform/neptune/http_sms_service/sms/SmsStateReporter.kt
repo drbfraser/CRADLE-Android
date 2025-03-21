@@ -22,6 +22,7 @@ class SmsStateReporter @Inject constructor(
         private const val TAG = "SmsStateReporter"
         private const val MAX_REQUEST_NUMBER = 999999
         const val SMS_REQUEST_NUMBER_KEY = "requestNumber"
+        private const val MAX_REQUEST_NUM_RETRIES = 2
     }
 
     private lateinit var smsSender: SMSSender
@@ -37,9 +38,9 @@ class SmsStateReporter @Inject constructor(
     private var timeoutThread: Thread? = null
     val totalSent = MutableLiveData<Int>(0)
     val totalReceived = MutableLiveData<Int>(0)
-    val errorCode = MutableLiveData<Int>(0)
-    val errorCodeToCollect = MutableLiveData(0)
-    private val errorMsg = MutableLiveData<String>("")
+    val statusCode = MutableLiveData<Int>(0)
+    val statusCodeToCollect = MutableLiveData(0)
+    val errorMsg = MutableLiveData("")
     val errorMessageToCollect = MutableLiveData("")
     val decryptedMsgLiveData = MutableLiveData("")
 
@@ -58,6 +59,8 @@ class SmsStateReporter @Inject constructor(
     var retriesAttempted = 0
     private var maxAttempts = 3
 
+    private var requestNumberRetries = 0
+
     val retry = MutableLiveData<Boolean>(false)
 
     fun initSending(numberOfSmsToSend: Int) {
@@ -71,12 +74,37 @@ class SmsStateReporter @Inject constructor(
         retriesAttempted = 0
         smsSender.changeShowDialog(true)
         timeoutFunction(timeout, 0)
+        clearStatusCode()
     }
 
     fun initReceiving(numberOfSmsToReceive: Int) {
         state.postValue((SmsTransmissionStates.RECEIVING_SERVER_RESPONSE))
         totalReceived.postValue(1)
         totalToBeReceived = numberOfSmsToReceive
+    }
+
+    fun initRetransmission() {
+        state.postValue(SmsTransmissionStates.RETRANSMISSION)
+        stateToCollect.postValue(SmsTransmissionStates.RETRANSMISSION)
+    }
+
+    fun initException() {
+        state.postValue(SmsTransmissionStates.EXCEPTION)
+        stateToCollect.postValue(SmsTransmissionStates.EXCEPTION)
+        resetRequestNumberRetries()
+        clearStatusCode()
+    }
+
+    fun initDone() {
+        state.postValue(SmsTransmissionStates.DONE)
+        stateToCollect.postValue(SmsTransmissionStates.DONE)
+        resetRequestNumberRetries()
+        clearStatusCode()
+    }
+
+    fun clearStatusCode() {
+        statusCode.postValue(0)
+        statusCodeToCollect.postValue(0)
     }
 
     fun incrementSent() {
@@ -101,21 +129,43 @@ class SmsStateReporter @Inject constructor(
         updateRequestNumber(newRequestNumber)
     }
 
-    private fun setErrorStates(code: Int, msg: String) {
-        errorCode.postValue(code)
-        errorCodeToCollect.postValue(code)
+    private fun resetRequestNumberRetries() {
+        requestNumberRetries = 0
+    }
 
+    private fun setSuccessStates(code: Int) {
+        statusCode.postValue(code)
+        statusCodeToCollect.postValue(code)
+
+        state.postValue(SmsTransmissionStates.WAITING_FOR_USER_RESPONSE)
+        stateToCollect.postValue(SmsTransmissionStates.WAITING_FOR_USER_RESPONSE)
+    }
+
+    private fun setErrorStates(code: Int, msg: String) {
         errorMsg.postValue(msg)
         errorMessageToCollect.postValue(msg)
 
-        state.postValue(SmsTransmissionStates.EXCEPTION)
-        stateToCollect.postValue(SmsTransmissionStates.EXCEPTION)
+        statusCode.postValue(code)
+        statusCodeToCollect.postValue(code)
+
+        state.postValue(SmsTransmissionStates.WAITING_FOR_USER_RESPONSE)
+        stateToCollect.postValue(SmsTransmissionStates.WAITING_FOR_USER_RESPONSE)
     }
 
     fun handleResponse(msg: String, outerErrorCode: Int?) {
         if (outerErrorCode != null) {
             val errorMsg = smsErrorHandler.handleOuterError(outerErrorCode, msg)
-            setErrorStates(outerErrorCode, errorMsg)
+
+            if (outerErrorCode == SmsErrorHandler.REQUEST_NUMBER_MISMATCH
+                && requestNumberRetries < MAX_REQUEST_NUM_RETRIES
+            ) {
+                statusCode.postValue(SmsErrorHandler.REQUEST_NUMBER_MISMATCH)
+                statusCodeToCollect.postValue(SmsErrorHandler.REQUEST_NUMBER_MISMATCH)
+                initRetransmission()
+                requestNumberRetries++
+            } else {
+                setErrorStates(outerErrorCode, errorMsg)
+            }
         } else {
             val smsKey = smsKeyManager.retrieveSmsKey()!!
             val decodedMessage = SMSFormatter.decodeMsg(msg, smsKey.key)
@@ -135,8 +185,7 @@ class SmsStateReporter @Inject constructor(
             // val mappedJson = JSONObject(decryptedMsg)
             Log.d(TAG, "Decrypted Message: $decodedMessage")
 
-            state.postValue(SmsTransmissionStates.DONE)
-            stateToCollect.postValue(SmsTransmissionStates.DONE)
+            setSuccessStates(200)
         }
     }
 
@@ -164,7 +213,6 @@ class SmsStateReporter @Inject constructor(
     }
 
     fun resetStateReporter() {
-        state.postValue((SmsTransmissionStates.GETTING_READY_TO_SEND))
         sent = 0
         totalSent.postValue(0)
         received = 0

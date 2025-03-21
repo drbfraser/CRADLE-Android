@@ -1,6 +1,7 @@
 package com.cradleplatform.neptune.http_sms_service.sms.ui
 
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
 import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
@@ -8,7 +9,6 @@ import com.cradleplatform.neptune.http_sms_service.sms.SmsStateReporter
 import com.cradleplatform.neptune.http_sms_service.sms.SmsTransmissionStates
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
-import kotlin.times
 
 /**
  * Generate formatted String based on SmsStateReporter
@@ -19,18 +19,35 @@ class SmsTransmissionDialogViewModel @Inject constructor(
     val smsSender: SMSSender
 ) : ViewModel() {
 
-    val stateString: LiveData<String> = smsStateReporter.state.map {
-        when (it) {
+    val stateString = MediatorLiveData<String>().apply {
+        addSource(smsStateReporter.state) { setStateString() }
+        addSource(smsStateReporter.statusCode) { setStateString() }
+    }
+
+    private fun MediatorLiveData<String>.setStateString() {
+        val state = smsStateReporter.state.value
+        val statusCode = smsStateReporter.statusCode.value
+
+        this.value = when (state) {
             SmsTransmissionStates.GETTING_READY_TO_SEND -> "Queuing SMS to be sent..."
             SmsTransmissionStates.SENDING_TO_RELAY_SERVER -> "Sending..."
             SmsTransmissionStates.WAITING_FOR_SERVER_RESPONSE -> "Waiting for confirmation..."
             SmsTransmissionStates.RECEIVING_SERVER_RESPONSE -> "Receiving confirmation..."
-            SmsTransmissionStates.DONE -> "Finished."
-            SmsTransmissionStates.EXCEPTION -> "Something went wrong."
-            SmsTransmissionStates.TIME_OUT -> "Timed out, no response"
+            SmsTransmissionStates.DONE -> "Processing, please wait..."
+            SmsTransmissionStates.EXCEPTION -> "Handling error, exiting soon..."
+            SmsTransmissionStates.TIME_OUT -> "Timed out, no response."
+            SmsTransmissionStates.WAITING_FOR_USER_RESPONSE -> {
+                when (statusCode) {
+                    200 -> "Success! Please Confirm"
+                    in 400..599 -> "Error Occurred, Please Review"
+                    else -> "Please Confirm"
+                }
+            }
+
             else -> "Unknown state"
         }
     }
+
     val sendProgress: LiveData<String> = smsStateReporter.totalSent.map {
         val numerator = it.toString()
         val denominator = smsStateReporter.totalToBeSent.toString()
@@ -41,7 +58,7 @@ class SmsTransmissionDialogViewModel @Inject constructor(
         val denominator = smsStateReporter.totalToBeReceived.toString()
         "Receiving $numerator/$denominator"
     }
-    val errorString: LiveData<String> = smsStateReporter.errorCode.map {
+    val errorString: LiveData<String> = smsStateReporter.statusCode.map {
         when (it) {
             // TODO: finish this
             404 -> "Failed"

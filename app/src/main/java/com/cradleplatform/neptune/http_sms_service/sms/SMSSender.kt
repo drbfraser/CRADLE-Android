@@ -5,8 +5,8 @@ import android.content.SharedPreferences
 import android.os.Handler
 import android.os.Looper
 import android.telephony.SmsManager
+import android.util.Log
 import android.widget.Toast
-import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.manager.SmsKeyManager
 import com.cradleplatform.neptune.http_sms_service.sms.SMSFormatter.Companion.encodeMsg
 import com.cradleplatform.neptune.http_sms_service.sms.SMSFormatter.Companion.formatSMS
@@ -21,6 +21,10 @@ class SMSSender @Inject constructor(
     private val appContext: Context,
     private val smsStateReporter: SmsStateReporter,
 ) {
+    companion object {
+        private const val TAG = "SmsSender"
+    }
+
     private var smsRelayQueue = ArrayDeque<String>()
     var showDialog = true
     var data = ""
@@ -45,16 +49,10 @@ class SMSSender @Inject constructor(
             if (acknowledged) {
                 smsRelayQueue.removeFirst()
                 if (smsRelayQueue.isEmpty()) {
-                    val finishedMsg = appContext.getString(R.string.sms_all_sent)
+                    Log.d(TAG, "All packets sent from queue.")
                     smsStateReporter.state.postValue(
                         SmsTransmissionStates.WAITING_FOR_SERVER_RESPONSE
                     )
-                    Handler(Looper.getMainLooper()).post {
-                        Toast.makeText(
-                            appContext, finishedMsg,
-                            Toast.LENGTH_LONG
-                        ).show()
-                    }
                     return
                 }
             }
@@ -103,17 +101,6 @@ class SMSSender @Inject constructor(
             Handler(Looper.getMainLooper()).post {
                 Toast.makeText(
                     appContext, ex.message.toString(),
-                    Toast.LENGTH_LONG
-                ).show()
-            }
-        }
-        if (ackNumber == numFragments - 1) {
-            // TODO: Determine if it's better to exit Activity here or when nothing is left
-            // in the relay list (see if (smsRelayMsgList.isEmpty()))
-            val finishedMsg = appContext.getString(R.string.sms_all_sent)
-            Handler(Looper.getMainLooper()).post {
-                Toast.makeText(
-                    appContext, finishedMsg,
                     Toast.LENGTH_LONG
                 ).show()
             }

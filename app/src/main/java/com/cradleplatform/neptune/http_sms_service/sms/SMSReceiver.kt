@@ -22,6 +22,10 @@ class SMSReceiver @Inject constructor(
     private val smsStateReporter: SmsStateReporter,
 ) : BroadcastReceiver() {
 
+    companion object {
+        private const val TAG = "SmsReceiver"
+    }
+
     // Get relayPhoneNumber
     private lateinit var relayPhoneNumber: String
 
@@ -142,7 +146,7 @@ class SMSReceiver @Inject constructor(
         // resetting vars if process finished
         if (numberReceivedMessages == totalMessages) {
             smsStateReporter.handleResponse(relayData, errorCode)
-            Log.d("Search: Total Messages received", numberReceivedMessages.toString())
+            Log.d(TAG, "Total Messages received $numberReceivedMessages")
             smsSender.reset()
             reset()
             smsStateReporter.resetStateReporter()

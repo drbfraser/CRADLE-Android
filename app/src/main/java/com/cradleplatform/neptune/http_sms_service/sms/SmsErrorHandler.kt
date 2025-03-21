@@ -12,7 +12,7 @@ class SmsErrorHandler @Inject constructor(
     private val smsStateReporter: SmsStateReporter
 ) {
     companion object {
-        private const val REQUEST_NUMBER_MISMATCH = 425
+        const val REQUEST_NUMBER_MISMATCH = 425
         private const val TAG = "SmsErrorHandler"
 
         fun isErrorCode(code: Int): Boolean = code >= 400
