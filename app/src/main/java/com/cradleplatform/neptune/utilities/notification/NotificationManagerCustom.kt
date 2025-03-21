@@ -17,8 +17,8 @@ import java.util.concurrent.TimeUnit
 
 class NotificationManagerCustom {
     companion object {
-        private lateinit var channelID: String
-        private const val TAG = "MyNotificationManager"
+        private const val CHANNEL_ID = "CRADLE"
+        private const val TAG = "NotificationManagerCustom"
 
         // https://developer.android.com/training/notify-user/build-notification#Priority
         fun createNotificationChannel(context: Context) {
@@ -35,7 +35,6 @@ class NotificationManagerCustom {
                 ).apply {
                     description = descriptionText
                 }
-                channelID = context.resources.getString(R.string.notification_id)
                 // Register the channel with the system
                 val notificationManager: NotificationManager =
                     context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -61,7 +60,7 @@ class NotificationManagerCustom {
             else
                 PendingIntent.getActivity(context, 0, intent, 0)
 
-            val builder = NotificationCompat.Builder(context, channelID)
+            val builder = NotificationCompat.Builder(context, CHANNEL_ID)
                 .setSmallIcon(R.drawable.cradle_for_icon_512x512)
                 .setContentTitle(title)
                 .setContentText(msg)
@@ -114,7 +113,7 @@ class NotificationManagerCustom {
             else
                 PendingIntent.getActivity(context, 0, intent, 0)
 
-            val builder = NotificationCompat.Builder(context, channelID)
+            val builder = NotificationCompat.Builder(context, CHANNEL_ID)
                 .setSmallIcon(R.drawable.cradle_for_icon_512x512)
                 .setContentTitle(title)
                 .setContentText(msg)
