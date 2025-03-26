@@ -190,14 +190,14 @@ class ReadingActivityUiTests {
                 context.resources.getStringArray(R.array.sex)[2] // Gender: Other
             )
 
-            
+
             checkEnabled(R.id.reading_next_button, shouldBeEnabled = true)
             clickIfEnabled(R.id.reading_next_button, doScrollTo = false)
 
             clickCheckboxWithText(context.resources.getStringArray(R.array.reading_symptoms)[5])
 
             clickIfEnabled(R.id.reading_next_button, doScrollTo = false)
-            
+
 
             typeTextInMaterialTextField(
                 viewIdRes = R.id.systolic_text,
@@ -212,31 +212,11 @@ class ReadingActivityUiTests {
                 textToEnter = "87"
             )
 
-            selectMaterialSpinnerItem(
-                R.id.blood_auto_complete_text,
-                "NAD"
-            )
-            selectMaterialSpinnerItem(
-                R.id.protein_auto_complete_text,
-                "NAD"
-            )
-            selectMaterialSpinnerItem(
-                R.id.glucose_auto_complete_text,
-                "NAD"
-            )
-            selectMaterialSpinnerItem(
-                R.id.nitrites_auto_complete_text,
-                "NAD"
-            )
-            selectMaterialSpinnerItem(
-                R.id.leukocytes_auto_complete_text,
-                "NAD"
-            )
-
             clickIfEnabled(R.id.reading_next_button, doScrollTo = false)
 
             clickIfEnabled(R.id.save_reading_button)
         }
+
 
         onView(withId(R.id.patientCardView)).perform(scrollTo(), click())
 
@@ -253,6 +233,7 @@ class ReadingActivityUiTests {
             .check(matches(withText("567")))
         onView(withId(R.id.patientAge))
             .check(matches(withText(context.getString(R.string.patient_profile_age_about_n_years_old, 32))))
+
     }
 
     /**
