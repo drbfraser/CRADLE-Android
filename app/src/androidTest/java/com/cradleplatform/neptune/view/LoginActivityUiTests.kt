@@ -51,9 +51,6 @@ class LoginActivityUiTests {
 
     private lateinit var idlingResource: IdlingResource
 
-//    @Rule
-//    @JvmField
-//    val mGrantPermissionRule: GrantPermissionRule = grantPermissions()
 
     @Before
     fun before() {
