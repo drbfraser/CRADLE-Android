@@ -1,19 +1,14 @@
 package com.cradleplatform.neptune.view
 
-import android.app.Activity
-import android.app.Application
+
 import android.content.Context
 import android.content.Intent
-import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.HorizontalScrollView
 import android.widget.ScrollView
-import androidx.core.content.ContextCompat.startActivity
 import androidx.core.widget.NestedScrollView
 import androidx.recyclerview.widget.RecyclerView
-import androidx.test.core.app.ApplicationProvider.getApplicationContext
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.IdlingRegistry
 import androidx.test.espresso.IdlingResource
@@ -21,12 +16,9 @@ import androidx.test.espresso.ViewAction
 import androidx.test.espresso.action.ScrollToAction
 import androidx.test.espresso.action.ViewActions
 import androidx.test.espresso.action.ViewActions.click
-import androidx.test.espresso.action.ViewActions.scrollTo
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.contrib.RecyclerViewActions
 import androidx.test.espresso.intent.Intents
-import androidx.test.espresso.intent.Intents.intended
-import androidx.test.espresso.intent.matcher.IntentMatchers.hasComponent
 import androidx.test.espresso.matcher.ViewMatchers
 import androidx.test.espresso.matcher.ViewMatchers.isAssignableFrom
 import androidx.test.espresso.matcher.ViewMatchers.isDescendantOfA
@@ -36,14 +28,11 @@ import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.rules.activityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
-import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.utilities.UnixTimestamp
-import com.cradleplatform.neptune.activities.dashboard.DashBoardActivity
 import com.cradleplatform.neptune.activities.newPatient.ReadingActivity
 import com.cradleplatform.neptune.activities.patients.PatientsActivity
-import com.cradleplatform.neptune.testutils.TestUtils
 import com.cradleplatform.neptune.testutils.rules.GrantRuntimePermissionsRule
 import com.jakewharton.threetenabp.AndroidThreeTen
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -58,13 +47,16 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import java.util.concurrent.locks.ReentrantLock
-import kotlin.concurrent.withLock
 
 @HiltAndroidTest
 @LargeTest
 @RunWith(AndroidJUnit4::class)
 class ReadingActivityUiTests {
+    companion object {
+        const val TAG = "ReadingActivityUiTests"
+        val intent = ReadingActivity.makeIntentForNewReading(getInstrumentation().targetContext)
+    }
+
     private val context: Context = getInstrumentation().targetContext
 
     // https://developer.android.com/training/dependency-injection/hilt-testing#ui-test
@@ -73,66 +65,30 @@ class ReadingActivityUiTests {
 
     // https://developer.android.com/guide/components/activities/testing
     @get:Rule(order = 1)
-    var activityScenarioRule = activityScenarioRule<DashBoardActivity>()
+    var activityScenarioRule = activityScenarioRule<ReadingActivity>(intent)
 
-    @get:Rule(order = 1)
+    @get:Rule(order = 2)
     var grantPermissionRule = GrantRuntimePermissionsRule()
 
     private lateinit var idlingResource: IdlingResource
-
-    private var currentActivity: Activity? = null
-
-    companion object {
-        const val TAG = "ReadingActivityUiTests"
-    }
 
     @Before
     fun before() {
         hiltRule.inject()
         AndroidThreeTen.init(context);
         Intents.init()
-        val lock = ReentrantLock()
-        val isReadingActivityCondition = lock.newCondition()
 
         activityScenarioRule.scenario.onActivity { activity ->
-            activity.application.registerActivityLifecycleCallbacks(
-                object : Application.ActivityLifecycleCallbacks {
-                    override fun onActivityResumed(activity: Activity) {
-                        lock.withLock {
-                            currentActivity = activity
-                            isReadingActivityCondition.signal()
-                        }
-                    }
-                    override fun onActivityCreated(activity: Activity, savedState: Bundle?) {
-                    }
-                    override fun onActivityStarted(activity: Activity) {
-                    }
-                    override fun onActivityPaused(activity: Activity) {
-                    }
-                    override fun onActivityStopped(activity: Activity) {
-                    }
-                    override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {
-                    }
-                    override fun onActivityDestroyed(activity: Activity) {
-                    }
-            })
-
-            val intent = ReadingActivity.makeIntentForNewReading(activity)
-            startActivity(activity, intent, null)
+            idlingResource = activity.getIdlingResource()
+            IdlingRegistry.getInstance().register(idlingResource)
         }
 
-        lock.withLock {
-            while (currentActivity == null) {
-                isReadingActivityCondition.await()
-            }
-        }
-        idlingResource = (currentActivity as ReadingActivity).getIdlingResource()
-        IdlingRegistry.getInstance().register(idlingResource)
     }
 
     @After
     fun after() {
         IdlingRegistry.getInstance().unregister(idlingResource)
+        Intents.release()
     }
 
     @Test
@@ -227,12 +183,10 @@ class ReadingActivityUiTests {
             clickIfEnabled(R.id.save_reading_button)
         }
 
-        /** Clicking on the button to go to the patients list activity doesn't work for some reason,
-         * but starting the activity this way does. */
+
         val patientsListIntent = Intent(context, PatientsActivity::class.java)
-        val currentActivity = TestUtils.getCurrentActivity()
-        currentActivity?.startActivity(patientsListIntent)
-        intended(hasComponent(PatientsActivity::class.java.name))
+        patientsListIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        context.startActivity(patientsListIntent)
 
         onView(withId(R.id.patientListRecyclerview))
             .perform(
