@@ -65,7 +65,7 @@ import kotlin.concurrent.withLock
 @LargeTest
 @RunWith(AndroidJUnit4::class)
 class ReadingActivityUiTests {
-    private val context: Context = InstrumentationRegistry.getInstrumentation().targetContext
+    private val context: Context = getInstrumentation().targetContext
 
     // https://developer.android.com/training/dependency-injection/hilt-testing#ui-test
     @get:Rule(order = 0)
@@ -229,7 +229,6 @@ class ReadingActivityUiTests {
 
         /** Clicking on the button to go to the patients list activity doesn't work for some reason,
          * but starting the activity this way does. */
-        val context = getApplicationContext<Context>()
         val patientsListIntent = Intent(context, PatientsActivity::class.java)
         val currentActivity = TestUtils.getCurrentActivity()
         currentActivity?.startActivity(patientsListIntent)
