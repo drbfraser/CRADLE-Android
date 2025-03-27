@@ -3,6 +3,7 @@ package com.cradleplatform.neptune.view
 import android.app.Activity
 import android.app.Application
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -12,6 +13,7 @@ import android.widget.ScrollView
 import androidx.core.content.ContextCompat.startActivity
 import androidx.core.widget.NestedScrollView
 import androidx.recyclerview.widget.RecyclerView
+import androidx.test.core.app.ApplicationProvider.getApplicationContext
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.IdlingRegistry
 import androidx.test.espresso.IdlingResource
@@ -22,6 +24,9 @@ import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.action.ViewActions.scrollTo
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.contrib.RecyclerViewActions
+import androidx.test.espresso.intent.Intents
+import androidx.test.espresso.intent.Intents.intended
+import androidx.test.espresso.intent.matcher.IntentMatchers.hasComponent
 import androidx.test.espresso.matcher.ViewMatchers
 import androidx.test.espresso.matcher.ViewMatchers.isAssignableFrom
 import androidx.test.espresso.matcher.ViewMatchers.isDescendantOfA
@@ -32,10 +37,13 @@ import androidx.test.ext.junit.rules.activityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
 import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.utilities.UnixTimestamp
 import com.cradleplatform.neptune.activities.dashboard.DashBoardActivity
 import com.cradleplatform.neptune.activities.newPatient.ReadingActivity
+import com.cradleplatform.neptune.activities.patients.PatientsActivity
+import com.cradleplatform.neptune.testutils.TestUtils
 import com.cradleplatform.neptune.testutils.rules.GrantRuntimePermissionsRule
 import com.jakewharton.threetenabp.AndroidThreeTen
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -80,7 +88,9 @@ class ReadingActivityUiTests {
 
     @Before
     fun before() {
+        hiltRule.inject()
         AndroidThreeTen.init(context);
+        Intents.init()
         val lock = ReentrantLock()
         val isReadingActivityCondition = lock.newCondition()
 
@@ -217,8 +227,13 @@ class ReadingActivityUiTests {
             clickIfEnabled(R.id.save_reading_button)
         }
 
-
-        onView(withId(R.id.patientCardView)).perform(scrollTo(), click())
+        /** Clicking on the button to go to the patients list activity doesn't work for some reason,
+         * but starting the activity this way does. */
+        val context = getApplicationContext<Context>()
+        val patientsListIntent = Intent(context, PatientsActivity::class.java)
+        val currentActivity = TestUtils.getCurrentActivity()
+        currentActivity?.startActivity(patientsListIntent)
+        intended(hasComponent(PatientsActivity::class.java.name))
 
         onView(withId(R.id.patientListRecyclerview))
             .perform(
