@@ -24,7 +24,6 @@ class WorkManagerRule : TestRule {
                 val config = Configuration.Builder()
                     .setMinimumLoggingLevel(Log.DEBUG)
                     .setExecutor(SynchronousExecutor())
-//                    .setWorkerFactory()
                     .build()
                 if (!WorkManager.isInitialized()) {
                     WorkManager.initialize(context, config)
