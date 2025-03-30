@@ -180,5 +180,6 @@ class FormRenderingActivityTest{
         // Verify that submit options appear correctly
         onView(withId(R.id.formSubmit)).perform(click())
         onView(withText(equalToIgnoringCase("SMS"))).perform(scrollTo()).check(matches(isDisplayed()))
+        onView(withText(equalToIgnoringCase("SAVE AND SEND LATER"))).perform(scrollTo()).check(matches(isDisplayed()))
     }
 }
