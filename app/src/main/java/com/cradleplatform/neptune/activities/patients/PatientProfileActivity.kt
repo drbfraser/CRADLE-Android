@@ -4,6 +4,7 @@ import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.view.Menu
@@ -15,6 +16,7 @@ import android.widget.LinearLayout
 import android.widget.RadioGroup
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import androidx.core.content.ContextCompat
@@ -43,11 +45,13 @@ import com.cradleplatform.neptune.activities.newPatient.ReadingActivity.Companio
 import com.cradleplatform.neptune.activities.newPatient.ReadingActivity.Companion.makeIntentForRecheck
 import com.cradleplatform.neptune.activities.forms.SavedFormsActivity
 import com.cradleplatform.neptune.adapters.patients.ReadingRecyclerViewAdapter
+import com.cradleplatform.neptune.utilities.makeSuccessSnackbar
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -180,7 +184,8 @@ open class PatientProfileActivity : AppCompatActivity() {
     private fun changeAddReadingButtonColorIfNeeded(): Boolean {
         val button: Button = findViewById(R.id.newPatientReadingButton)
         return if (patientReadings.isNotEmpty()
-            && Util.isRecheckNeededNow(patientReadings[0].dateRetestNeeded)) {
+            && Util.isRecheckNeededNow(patientReadings[0].dateRetestNeeded)
+        ) {
             button.backgroundTintList = ContextCompat.getColorStateList(this, R.color.redDown)
             button.text = getString(R.string.new_reading_is_required_now)
             true
@@ -418,13 +423,27 @@ open class PatientProfileActivity : AppCompatActivity() {
         return readings.sortedWith(comparator)
     }
 
+    private val newReferralLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == RESULT_OK) {
+                val showSnackbar = result.data?.getBooleanExtra("SHOW_SNACKBAR", false) ?: false
+                if (showSnackbar) {
+                    makeSuccessSnackbar(
+                        findViewById(android.R.id.content),
+                        "Referral submitted!"
+                    ).show()
+                }
+            }
+        }
+
     private fun createNewReferral() {
         val intent = PatientReferralActivity.makeIntentForPatient(
             this@PatientProfileActivity,
             currPatient
         )
-        startActivity(intent)
+        newReferralLauncher.launch(intent)
     }
+
     private fun createNewReading() {
         val intent = makeIntentForNewReadingExistingPatient(
             this@PatientProfileActivity,
@@ -481,7 +500,8 @@ open class PatientProfileActivity : AppCompatActivity() {
     private suspend fun setupSeeSavedFormsButton() {
         val createFormButton = findViewById<Button>(R.id.seeSavedFormsButton)
         val responsesForPatient = formResponseManager.searchForDraftFormsByPatientId(currPatient.id)
-        createFormButton.visibility = if (!responsesForPatient.isNullOrEmpty()) View.VISIBLE else View.GONE
+        createFormButton.visibility =
+            if (!responsesForPatient.isNullOrEmpty()) View.VISIBLE else View.GONE
         createFormButton.setOnClickListener {
             val intent = SavedFormsActivity.makeIntent(
                 this@PatientProfileActivity,
@@ -495,8 +515,10 @@ open class PatientProfileActivity : AppCompatActivity() {
 
     private suspend fun setupSeeSubmittedFormsButton() {
         val createFormButton = findViewById<Button>(R.id.seeSubmittedFormsButton)
-        val responsesForPatient = formResponseManager.searchForSubmittedFormsByPatientId(currPatient.id)
-        createFormButton.visibility = if (!responsesForPatient.isNullOrEmpty()) View.VISIBLE else View.GONE
+        val responsesForPatient =
+            formResponseManager.searchForSubmittedFormsByPatientId(currPatient.id)
+        createFormButton.visibility =
+            if (!responsesForPatient.isNullOrEmpty()) View.VISIBLE else View.GONE
         createFormButton.setOnClickListener {
             val intent = SavedFormsActivity.makeIntent(
                 this@PatientProfileActivity,
