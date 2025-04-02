@@ -3,7 +3,6 @@ package com.cradleplatform.neptune.activities.patients
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
-import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
@@ -26,7 +25,6 @@ import com.cradleplatform.neptune.utilities.Protocol
 import com.cradleplatform.neptune.utilities.makeErrorSnackbar
 import com.cradleplatform.neptune.viewmodel.patients.PatientReferralViewModel
 import com.cradleplatform.neptune.viewmodel.patients.ReferralFlowSaveResult
-import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -139,6 +137,8 @@ open class PatientReferralActivity : AppCompatActivity() {
     }
 
     private fun setupSendButtons() {
+        fun setNetworkErrorResult() = setResult(RESULT_OK, Intent().putExtra("NETWORK_ERROR", true))
+
         val sendViaHTTP = findViewById<Button>(R.id.send_web_button)
         sendViaHTTP.setOnClickListener {
             val referral = viewModel.buildReferral(currPatient)
@@ -148,7 +148,12 @@ open class PatientReferralActivity : AppCompatActivity() {
                 when (result) {
                     is ReferralFlowSaveResult.SaveSuccessful -> {
                         Log.i(TAG, "HTTP Referral upload succeeded!")
-                        setResult(RESULT_OK, Intent().putExtra("SHOW_SNACKBAR", true))
+                        finish()
+                    }
+
+                    is ReferralFlowSaveResult.NetworkError -> {
+                        Log.e(TAG, "HTTP Referral upload failed due to network error!")
+                        setNetworkErrorResult()
                         finish()
                     }
 
@@ -165,6 +170,7 @@ open class PatientReferralActivity : AppCompatActivity() {
             triedSendingViaSms = true
             val referral = viewModel.buildReferral(currPatient)
             openSmsTransmissionDialog()
+
             lifecycleScope.launch {
                 Toast.makeText(
                     applicationContext,
@@ -176,8 +182,12 @@ open class PatientReferralActivity : AppCompatActivity() {
                     referralUploadManager.uploadReferral(referral, currPatient, Protocol.SMS)
                 when (result) {
                     is ReferralFlowSaveResult.SaveSuccessful -> {
-                        setResult(RESULT_OK, Intent().putExtra("SHOW_SNACKBAR", true))
                         Log.i(TAG, "SMS Referral upload succeeded!")
+                    }
+
+                    is ReferralFlowSaveResult.NetworkError -> {
+                        Log.e(TAG, "HTTP Referral upload failed due to network error!")
+                        setNetworkErrorResult()
                     }
 
                     else -> {
