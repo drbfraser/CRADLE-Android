@@ -2118,6 +2118,12 @@ sealed interface ReferralFlowSaveResult {
     }
 
     /**
+     * Indicates when a referral successfully saved locally, but a network error occurred when
+     * attempting to communicate with the server
+     */
+    object NetworkError: ReferralFlowSaveResult
+
+    /**
      * Indicates when a referral dialog is required.
      */
     object ReferralRequired : ReferralFlowSaveResult

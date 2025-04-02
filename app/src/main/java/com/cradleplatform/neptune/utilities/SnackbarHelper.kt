@@ -25,28 +25,41 @@ class SnackbarHelper {
                 .show()
         }
 
-        @RequiresApi(Build.VERSION_CODES.M)
-        fun showSnackbarWithError(activity: Activity, message: String) {
-            Snackbar
-                .make(
-                    activity.findViewById(android.R.id.content),
-                    message,
-                    Snackbar.LENGTH_INDEFINITE
-                )
-                .setAction(activity.getString(android.R.string.ok), View.OnClickListener { })
-                .setAnimationMode(BaseTransientBottomBar.ANIMATION_MODE_FADE)
-                .setActionTextColor(activity.getColor(R.color.redDown))
-                .show()
-        }
+//        @RequiresApi(Build.VERSION_CODES.M)
+//        fun showSnackbarWithError(activity: Activity, message: String) {
+//            Snackbar
+//                .make(
+//                    activity.findViewById(android.R.id.content),
+//                    message,
+//                    Snackbar.LENGTH_INDEFINITE
+//                )
+//                .setAction(activity.getString(android.R.string.ok), View.OnClickListener { })
+//                .setAnimationMode(BaseTransientBottomBar.ANIMATION_MODE_FADE)
+//                .setActionTextColor(activity.getColor(R.color.redDown))
+//                .show()
+//        }
     }
 }
 
 fun makeSuccessSnackbar(view: View, text: CharSequence): Snackbar {
+    val green = Color.parseColor("#4CAF50")
     return Snackbar.make(
         view,
         text,
-        Snackbar.LENGTH_SHORT
-    ).setBackgroundTint(Color.parseColor("#4CAF50"))
+        Snackbar.LENGTH_LONG
+    ).setBackgroundTint(green)
+}
+
+fun makeWarningSnackbar(view: View, text: CharSequence): Snackbar {
+    val orange = Color.parseColor("#ec942c")
+    return Snackbar.make(
+        view,
+        text,
+        Snackbar.LENGTH_INDEFINITE
+    )
+        .setBackgroundTint(orange)
+        .setActionTextColor(Color.WHITE)
+        .setAction("Dismiss") {}
 }
 
 fun makeErrorSnackbar(view: View, text: CharSequence): Snackbar {

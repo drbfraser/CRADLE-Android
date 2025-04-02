@@ -1,5 +1,6 @@
 package com.cradleplatform.neptune.manager
 
+import android.util.Log
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
 import com.cradleplatform.neptune.model.Patient
@@ -32,7 +33,7 @@ class ReferralUploadManager @Inject constructor(
         * been deleted on the server, we probably want the referral upload to fail, rather than
         * recreating a patient that was deleted on the server. This would be in keeping with the
         * strategy of deferring to the server.
-        * */
+        */
 
         /* Before, to check if the patient exists on the server, a GET request was made to the
          * server. A much simpler way of checking would be to check the `lastServerUpdate` field
@@ -43,25 +44,20 @@ class ReferralUploadManager @Inject constructor(
 
         /* If the patient exists on the server, we only need to upload the referral.
          * Otherwise, we need to upload the patient with the referral.
-         * */
-        if (patientExistsOnServer) {
-            val result = restApi.postReferral(referral, protocol)
-            return when (result) {
-                is NetworkResult.Success -> {
-                    updatePatientLastEdited(patient)
-                    ReferralFlowSaveResult.SaveSuccessful.NoSmsNeeded
-                }
-                else -> ReferralFlowSaveResult.ErrorUploadingReferral
+         */
+        val uploadResult = if (patientExistsOnServer) restApi.postReferral(
+            referral,
+            protocol
+        ) else restApi.postPatient(PatientAndReferrals(patient, listOf(referral)), protocol)
+
+        return when (uploadResult) {
+            is NetworkResult.Success -> {
+                updatePatientLastEdited(patient)
+                ReferralFlowSaveResult.SaveSuccessful.NoSmsNeeded
             }
-        } else {
-            val result = restApi.postPatient(PatientAndReferrals(patient, listOf(referral)), protocol)
-            return when (result) {
-                is NetworkResult.Success -> {
-                    updatePatientLastEdited(patient)
-                    ReferralFlowSaveResult.SaveSuccessful.NoSmsNeeded
-                }
-                else -> ReferralFlowSaveResult.ErrorUploadingReferral
-            }
+
+            is NetworkResult.NetworkException -> ReferralFlowSaveResult.NetworkError
+            else -> ReferralFlowSaveResult.ErrorUploadingReferral
         }
     }
 

@@ -46,12 +46,12 @@ import com.cradleplatform.neptune.activities.newPatient.ReadingActivity.Companio
 import com.cradleplatform.neptune.activities.forms.SavedFormsActivity
 import com.cradleplatform.neptune.adapters.patients.ReadingRecyclerViewAdapter
 import com.cradleplatform.neptune.utilities.makeSuccessSnackbar
+import com.cradleplatform.neptune.utilities.makeWarningSnackbar
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -426,8 +426,13 @@ open class PatientProfileActivity : AppCompatActivity() {
     private val newReferralLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == RESULT_OK) {
-                val showSnackbar = result.data?.getBooleanExtra("SHOW_SNACKBAR", false) ?: false
-                if (showSnackbar) {
+                val isNetworkError = result.data?.getBooleanExtra("NETWORK_ERROR", false) ?: false
+                if (isNetworkError) {
+                    makeWarningSnackbar(
+                        findViewById(android.R.id.content),
+                        "Referral saved locally, but could not reach the server. Please check your connection."
+                    ).show()
+                } else {
                     makeSuccessSnackbar(
                         findViewById(android.R.id.content),
                         "Referral submitted!"
