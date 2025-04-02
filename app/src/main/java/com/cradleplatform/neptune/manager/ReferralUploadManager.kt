@@ -65,7 +65,7 @@ class ReferralUploadManager @Inject constructor(
         }
     }
 
-    suspend fun updatePatientLastEdited(patient: Patient) {
+    private suspend fun updatePatientLastEdited(patient: Patient) {
         patient.lastServerUpdate = patient.lastEdited
         patientManager.add(patient)
     }

@@ -23,6 +23,7 @@ import com.cradleplatform.neptune.manager.ReferralUploadManager
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.utilities.CustomToast
 import com.cradleplatform.neptune.utilities.Protocol
+import com.cradleplatform.neptune.utilities.makeErrorSnackbar
 import com.cradleplatform.neptune.viewmodel.patients.PatientReferralViewModel
 import com.cradleplatform.neptune.viewmodel.patients.ReferralFlowSaveResult
 import com.google.android.material.snackbar.Snackbar
@@ -110,15 +111,10 @@ open class PatientReferralActivity : AppCompatActivity() {
     }
 
     private fun showReferralUploadError() {
-        Snackbar.make(
+        makeErrorSnackbar(
             findViewById(android.R.id.content),
-            "Error: Referral Upload Failed",
-            Snackbar.LENGTH_INDEFINITE
-        )
-            .setBackgroundTint(Color.RED)
-            .setActionTextColor(Color.WHITE)
-            .setAction("Dismiss") {}
-            .show()
+            "Error: Referral Upload Failed"
+        ).show()
     }
 
     private fun populateCurrentPatient() {
@@ -151,11 +147,8 @@ open class PatientReferralActivity : AppCompatActivity() {
                     referralUploadManager.uploadReferral(referral, currPatient, Protocol.HTTP)
                 when (result) {
                     is ReferralFlowSaveResult.SaveSuccessful -> {
-                        CustomToast.shortToast(
-                            applicationContext,
-                            applicationContext.getString(R.string.referral_submitted)
-                        )
                         Log.i(TAG, "HTTP Referral upload succeeded!")
+                        setResult(RESULT_OK, Intent().putExtra("SHOW_SNACKBAR", true))
                         finish()
                     }
 
@@ -171,7 +164,7 @@ open class PatientReferralActivity : AppCompatActivity() {
         sendViaSMS.setOnClickListener {
             triedSendingViaSms = true
             val referral = viewModel.buildReferral(currPatient)
-            val dialog = openSmsTransmissionDialog()
+            openSmsTransmissionDialog()
             lifecycleScope.launch {
                 Toast.makeText(
                     applicationContext,
@@ -183,10 +176,7 @@ open class PatientReferralActivity : AppCompatActivity() {
                     referralUploadManager.uploadReferral(referral, currPatient, Protocol.SMS)
                 when (result) {
                     is ReferralFlowSaveResult.SaveSuccessful -> {
-                        CustomToast.shortToast(
-                            applicationContext,
-                            applicationContext.getString(R.string.referral_submitted)
-                        )
+                        setResult(RESULT_OK, Intent().putExtra("SHOW_SNACKBAR", true))
                         Log.i(TAG, "SMS Referral upload succeeded!")
                     }
 
@@ -200,12 +190,11 @@ open class PatientReferralActivity : AppCompatActivity() {
         }
     }
 
-    private fun openSmsTransmissionDialog(): SmsTransmissionDialogFragment {
+    private fun openSmsTransmissionDialog() {
         val smsTransmissionDialogFragment = SmsTransmissionDialogFragment()
         smsTransmissionDialogFragment.show(
             supportFragmentManager,
             "$TAG::${SmsTransmissionDialogFragment.TAG}"
         )
-        return smsTransmissionDialogFragment
     }
 }

@@ -1,6 +1,7 @@
 package com.cradleplatform.neptune.utilities
 
 import android.app.Activity
+import android.graphics.Color
 import android.os.Build
 import android.view.View
 import androidx.annotation.RequiresApi
@@ -38,4 +39,23 @@ class SnackbarHelper {
                 .show()
         }
     }
+}
+
+fun makeSuccessSnackbar(view: View, text: CharSequence): Snackbar {
+    return Snackbar.make(
+        view,
+        text,
+        Snackbar.LENGTH_SHORT
+    ).setBackgroundTint(Color.parseColor("#4CAF50"))
+}
+
+fun makeErrorSnackbar(view: View, text: CharSequence): Snackbar {
+    return Snackbar.make(
+        view,
+        text,
+        Snackbar.LENGTH_INDEFINITE
+    )
+        .setBackgroundTint(Color.RED)
+        .setActionTextColor(Color.WHITE)
+        .setAction("Dismiss") {}
 }
