@@ -137,6 +137,7 @@ open class PatientReferralActivity : AppCompatActivity() {
     }
 
     private fun setupSendButtons() {
+        fun setSuccessResult() = setResult(RESULT_OK)
         fun setNetworkErrorResult() = setResult(RESULT_OK, Intent().putExtra("NETWORK_ERROR", true))
 
         val sendViaHTTP = findViewById<Button>(R.id.send_web_button)
@@ -148,6 +149,7 @@ open class PatientReferralActivity : AppCompatActivity() {
                 when (result) {
                     is ReferralFlowSaveResult.SaveSuccessful -> {
                         Log.i(TAG, "HTTP Referral upload succeeded!")
+                        setSuccessResult()
                         finish()
                     }
 
@@ -183,6 +185,7 @@ open class PatientReferralActivity : AppCompatActivity() {
                 when (result) {
                     is ReferralFlowSaveResult.SaveSuccessful -> {
                         Log.i(TAG, "SMS Referral upload succeeded!")
+                        setSuccessResult()
                     }
 
                     is ReferralFlowSaveResult.NetworkError -> {
