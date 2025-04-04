@@ -19,6 +19,8 @@ jobs:
     steps:
       - name: Check Permissions
         run: |
+          whoami
+          groups
           ls -la /
 
   display_github_contexts:
