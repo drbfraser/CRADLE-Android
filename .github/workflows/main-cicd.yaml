@@ -145,7 +145,7 @@ jobs:
         run: |
           echo "ANDROID_HOME = $ANDROID_HOME"
           ls $ANDROID_HOME
-          $ANDROID_HOME/cmdline-tools/sdkmanager --list
+          ls $ANDROID_HOME/cmdline-tools
         working-directory: ${{ env.CUSTOM_WORKSPACE }}
       - name: Download Build Artifacts
         uses: actions/download-artifact@v3
