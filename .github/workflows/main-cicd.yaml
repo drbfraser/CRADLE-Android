@@ -143,13 +143,13 @@ jobs:
     runs-on: [self-hosted, docker]
     container:
       image: sahilmodak/cradle-mobile
-      options: --user root
+      options: |
+        --user root
+        # --group-add
     needs: [build]
     outputs:
       test_results: ui-test-results/
     steps:
-      - name: Set Permissions
-        run: chown -R root:root /__w/
       - name: Info
         run: |
           whoami
