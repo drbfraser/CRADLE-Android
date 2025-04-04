@@ -13,6 +13,14 @@ env:
   CUSTOM_WORKSPACE: /isolated-build/repo
 
 jobs:
+  info:
+    name: Info
+    runs-on: [self-hosted]
+    steps:
+      - name: Check Permissions
+        run: |
+          ls -la /
+
   display_github_contexts:
     name: Display github Contexts
     runs-on: [self-hosted, docker]
