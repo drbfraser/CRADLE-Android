@@ -9,14 +9,14 @@ on:
   pull_request:
     branches: [main]
   workflow_dispatch:
-env: 
+env:
   CUSTOM_WORKSPACE: /isolated-build/repo
 
 jobs:
   display_github_contexts:
     name: Display github Contexts
     runs-on: [self-hosted, docker]
-    container: 
+    container:
       image: node:14
     steps:
       - uses: bfraser/cicd/actions/debug_display_contexts@v1
@@ -29,25 +29,26 @@ jobs:
     steps:
       - name: Checkout repository into Container
         uses: bfraser/cicd/actions/checkout@v1
-        with: 
+        with:
           path: ${{ env.CUSTOM_WORKSPACE }}
       - name: Run static code analysis
         run: ./gradlew detekt --info --stacktrace
         working-directory: ${{ env.CUSTOM_WORKSPACE }}
-    
+
   build:
     name: Build and Assemble Debug APK
     runs-on: [self-hosted, docker]
     container:
       image: sahilmodak/cradle-mobile
-    outputs: 
+    outputs:
       db_version_artifact: latest_db_version.json
-    steps: 
+      build-artifacts: mobile-build-artifacts.tar.gz
+    steps:
       - name: Checkout repository into Container
         uses: bfraser/cicd/actions/checkout@v1
-        with: 
+        with:
           path: ${{ env.CUSTOM_WORKSPACE }}
-      - name: Remove current database chema JSON
+      - name: Remove current database schema JSON
         run: rm app/schemas/com.cradleplatform.neptune.database.CradleDatabase/*.json
         working-directory: ${{ env.CUSTOM_WORKSPACE }}
       - name: Assemble Debug APK
@@ -60,10 +61,18 @@ jobs:
         id: get-db-version
         run: echo "::set-output name=version::$(scripts/get-latest-db-version.sh)"
         working-directory: ${{ env.CUSTOM_WORKSPACE }}
+      - name: Archive Build Artifacts
+        run: tar -czvf ./mobile-build-artifacts.tar.gz ./build/libs
+        working-directory: ${{ env.CUSTOM_WORKSPACE }}
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: ${{ env.CUSTOM_WORKSPACE }}/mobile-build-artifacts.tar.gz
 
       # The below "Validate Database JSON" steps were in their own job; however,
       # since these jobs are run in a container, downloading the .json file
-      # with actions/download-artifact@v2 caused EACCES errors in the home folder. 
+      # with actions/download-artifact@v2 caused EACCES errors in the home folder.
       # Steps moved here to simplify CI/CD operation and tasks.
       - name: Validate Database JSON - Copy Latest DB Version JSON
         run: cp "app/schemas/com.cradleplatform.neptune.database.CradleDatabase/${{ steps.get-db-version.outputs.version }}.json" .
@@ -93,130 +102,164 @@ jobs:
     runs-on: [self-hosted, docker]
     container:
       image: sahilmodak/cradle-mobile
-    needs: [ build ]
-    outputs: 
+    needs: [build]
+    outputs:
       test_results: test-results/
-    steps: 
+    steps:
       - name: Checkout repository into Container
         uses: bfraser/cicd/actions/checkout@v1
-        with: 
+        with:
           path: ${{ env.CUSTOM_WORKSPACE }}
       - name: Run Local Unit Tests
         run: ./gradlew test
         working-directory: ${{ env.CUSTOM_WORKSPACE }}
       - name: Persist Test Results
         uses: actions/upload-artifact@v2
-        with: 
+        with:
           name: test_results
           path: ${{ env.CUSTOM_WORKSPACE }}/app/build/test-results/
 
+  ui_tests:
+    name: Run Instrumented UI Tests
+    runs-on: [self-hosted, docker]
+    container:
+      image: sahilmodak/cradle-mobile
+    needs: [build]
+    outputs:
+      test_results: ui-test-results/
+    steps:
+      - name: Checkout repository into Container
+        uses: bfraser/cicd/actions/checkout@v1
+        with:
+          path: ${{ env.CUSTOM_WORKSPACE }}
+      - name: Check ENV vars
+        run: |
+          echo "ANDROID_HOME = $ANDROID_HOME"
+          ls $ANDROID_HOME
+          $ANDROID_HOME/cmdline-tools/sdkmanager --list
+        working-directory: ${{ env.CUSTOM_WORKSPACE }}
+      - name: Create Emulator
+        run: echo 'TODO Create Emulator'
+        working-directory: ${{ env.CUSTOM_WORKSPACE }}
+      - name: Start Emulator
+        run: echo 'TODO Start Emulator'
+        working-directory: ${{ env.CUSTOM_WORKSPACE }}
+      - name: Run UI Tests
+        run: |
+          echo 'TODO Run UI Tests'
+          # ./gradlew connectedCheck # Run instrumented tests
+        working-directory: ${{ env.CUSTOM_WORKSPACE }}
+      # - name: Persist Test Results
+      #   uses: actions/upload-artifact@v2
+      #   with:
+      #     name: ui_test_results
+      #     path: ${{ env.CUSTOM_WORKSPACE }}/app/build/ui-test-results/
 
-######################
-# Scheduled jobs
-######################
+  ######################
+  # Scheduled jobs
+  ######################
 
-# Run Firebase Test Lab on Google Cloud for instrumented tests (database migration test, UI tests, etc.)
-# https://console.firebase.google.com/project/cradle-vsa/testlab/
-#
-# A service account needs to be created on GCP (under IAM & Admin). A key for the service account's
-# needs to be generated and stored in a pipeline variable as GCLOUD_SERVICE_ACCOUNT_KEY. See
-# https://console.cloud.google.com/iam-admin/serviceaccounts?project=cradle-vsa&supportedpurview=project.
-#
-# More references: https://firebase.google.com/docs/test-lab/android/continuous
+  # Run Firebase Test Lab on Google Cloud for instrumented tests (database migration test, UI tests, etc.)
+  # https://console.firebase.google.com/project/cradle-vsa/testlab/
+  #
+  # A service account needs to be created on GCP (under IAM & Admin). A key for the service account's
+  # needs to be generated and stored in a pipeline variable as GCLOUD_SERVICE_ACCOUNT_KEY. See
+  # https://console.cloud.google.com/iam-admin/serviceaccounts?project=cradle-vsa&supportedpurview=project.
+  #
+  # More references: https://firebase.google.com/docs/test-lab/android/continuous
 
   firebase_test_lab:
-      name: Firebase Test Lab
+    name: Firebase Test Lab
 
-      # This job is not running because it hasn't been set up properly.
-      # It should be run regularly.
-      if: false
-      runs-on: [self-hosted, docker]
-      container:
-        image: sahilmodak/cradle-mobile
-      needs: [ build ]
-      # (Derived from the gcloud CLI help pages)
-      # A list of DIMENSION=VALUE pairs which specify a target device to test
-      # against. This flag may be repeated to specify multiple devices.
-      #
-      # The four device dimensions are: model, version, locale, and orientation.
-      # If any dimensions are omitted, they will use a default value. The default
-      # value, and all possible values, for each dimension can be found with
-      # the list command for that dimension, such as $ gcloud firebase test
-      # android models list. --device is now the preferred way to specify test
-      # devices and may not be used in conjunction with --devices-ids,
-      # --os-version-ids, --locales, or --orientations. Omitting all of the
-      # preceding dimension-related flags will run tests against a single
-      # device using defaults for all four device dimensions.
-      #
-      # Examples:
-      #     - model=Nexus6
-      #     - version=23,orientation=portrait
-      #     - model=shamu,version=22,locale=zh_CN,orientation=default
-      #
-      # Keep in mind: The free plan has a daily quota of 5 test runs with physical devices,
-      # and 10 test runs with virtual devices. See https://firebase.google.com/docs/test-lab/usage-quotas-pricing
-      # The quotas reset at midnight PST.
-      # Also, this is a space-separated list!
-      strategy: 
-        matrix:
-          device: 
-            - model: "Pixel2"
-              version: "26"
-            - model: "Pixel2"
-              version: "28"
-            - model: "hwALE-H"
-              version: "21"
-      env:
-        GCLOUD_SERVICE_ACCOUNT_KEY: ${{ secrets.GCLOUD_SERVICE_ACCOUNT_KEY }}
-        GCLOUD_SDK_VERSION: 336.0.0
-        TARGET_DEVICES: ${{ matrix.device.model }}=Pixel2,${{ matrix.device.version }}
-      steps: 
-        - name: Checkout repository into Container
-          uses: bfraser/cicd/actions/checkout@v1
-          with: 
-            path: ${{ env.CUSTOM_WORKSPACE }}
-        - name: Install Google Cloud SDK
-          run: |
-            if [ ! -f "google-cloud-sdk-${GCLOUD_SDK_VERSION}-linux-x86_64.tar.gz" ]; then
-              curl -O "https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${GCLOUD_SDK_VERSION}-linux-x86_64.tar.gz"
-            fi
-            tar -xzf "google-cloud-sdk-${GCLOUD_SDK_VERSION}-linux-x86_64.tar.gz"
-          working-directory: ${{ env.CUSTOM_WORKSPACE }}
-        - name: Authenticate with Google Cloud
-          run: |
-            echo "${GCLOUD_SERVICE_ACCOUNT_KEY}" > cradle-vsa-gitlab.json
-            account=$(jq -r .client_email cradle-vsa-gitlab.json)
-            project_id=$(jq -r .project_id cradle-vsa-gitlab.json)
-            ./google-cloud-sdk/bin/gcloud auth activate-service-account "$account" --key-file=cradle-vsa-gitlab.json --project="$project_id"
-          working-directory: ${{ env.CUSTOM_WORKSPACE }}
-        - name: Show Available Test Models
-          run: /google-cloud-sdk/bin/gcloud firebase test android models list
-          working-directory: ${{ env.CUSTOM_WORKSPACE }}
-        - name: Assemble Debug APK
-          run: ./gradlew :app:assembleDebug :app:assembleDebugAndroidTest
-          working-directory: ${{ env.CUSTOM_WORKSPACE }}
-        - name: Run Firebase Test Lab
-          run: |
-            device_option="${{ matrix.device.model }}=${{ matrix.device.version }}"
-            ./google-cloud-sdk/bin/gcloud firebase test android run \
-              --type instrumentation \
-              --app app/build/outputs/apk/debug/app-debug.apk \
-              --test app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk \
-              --device="${device_option}" \
-              2>&1 | tee output.log
-            result=${PIPESTATUS[0]}
-            if [ $result -ne 0 ]; then
-              exit 1
-            fi
-          shell: bash
-          working-directory: ${{ env.CUSTOM_WORKSPACE }}
-        - name: Download Test Results
-          run: |
-            gcs_bucket=$(sed -ne "s/^Raw results will be stored in your GCS bucket at \[https:\/\/console\.developers\.google\.com\/storage\/browser\/\(.*\)\]$/\1/p" output.log)
-            gcs_bucket_path="gs://$gcs_bucket"
-            device_result_dir="${{ matrix.device.model }}-${{ matrix.device.version }}"
-            mkdir -p "gcstestresults/${device_result_dir}"
-            fullpath="${gcs_bucket_path}/${device_result_dir}/**/test*.xml"
-            ./google-cloud-sdk/bin/gsutil cp "$fullpath" "
-          working-directory: ${{ env.CUSTOM_WORKSPACE }}
-          
+    # This job is not running because it hasn't been set up properly.
+    # It should be run regularly.
+    if: false
+    runs-on: [self-hosted, docker]
+    container:
+      image: sahilmodak/cradle-mobile
+    needs: [build]
+    # (Derived from the gcloud CLI help pages)
+    # A list of DIMENSION=VALUE pairs which specify a target device to test
+    # against. This flag may be repeated to specify multiple devices.
+    #
+    # The four device dimensions are: model, version, locale, and orientation.
+    # If any dimensions are omitted, they will use a default value. The default
+    # value, and all possible values, for each dimension can be found with
+    # the list command for that dimension, such as $ gcloud firebase test
+    # android models list. --device is now the preferred way to specify test
+    # devices and may not be used in conjunction with --devices-ids,
+    # --os-version-ids, --locales, or --orientations. Omitting all of the
+    # preceding dimension-related flags will run tests against a single
+    # device using defaults for all four device dimensions.
+    #
+    # Examples:
+    #     - model=Nexus6
+    #     - version=23,orientation=portrait
+    #     - model=shamu,version=22,locale=zh_CN,orientation=default
+    #
+    # Keep in mind: The free plan has a daily quota of 5 test runs with physical devices,
+    # and 10 test runs with virtual devices. See https://firebase.google.com/docs/test-lab/usage-quotas-pricing
+    # The quotas reset at midnight PST.
+    # Also, this is a space-separated list!
+    strategy:
+      matrix:
+        device:
+          - model: 'Pixel2'
+            version: '26'
+          - model: 'Pixel2'
+            version: '28'
+          - model: 'hwALE-H'
+            version: '21'
+    env:
+      GCLOUD_SERVICE_ACCOUNT_KEY: ${{ secrets.GCLOUD_SERVICE_ACCOUNT_KEY }}
+      GCLOUD_SDK_VERSION: 336.0.0
+      TARGET_DEVICES: ${{ matrix.device.model }}=Pixel2,${{ matrix.device.version }}
+    steps:
+      - name: Checkout repository into Container
+        uses: bfraser/cicd/actions/checkout@v1
+        with:
+          path: ${{ env.CUSTOM_WORKSPACE }}
+      - name: Install Google Cloud SDK
+        run: |
+          if [ ! -f "google-cloud-sdk-${GCLOUD_SDK_VERSION}-linux-x86_64.tar.gz" ]; then
+            curl -O "https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${GCLOUD_SDK_VERSION}-linux-x86_64.tar.gz"
+          fi
+          tar -xzf "google-cloud-sdk-${GCLOUD_SDK_VERSION}-linux-x86_64.tar.gz"
+        working-directory: ${{ env.CUSTOM_WORKSPACE }}
+      - name: Authenticate with Google Cloud
+        run: |
+          echo "${GCLOUD_SERVICE_ACCOUNT_KEY}" > cradle-vsa-gitlab.json
+          account=$(jq -r .client_email cradle-vsa-gitlab.json)
+          project_id=$(jq -r .project_id cradle-vsa-gitlab.json)
+          ./google-cloud-sdk/bin/gcloud auth activate-service-account "$account" --key-file=cradle-vsa-gitlab.json --project="$project_id"
+        working-directory: ${{ env.CUSTOM_WORKSPACE }}
+      - name: Show Available Test Models
+        run: /google-cloud-sdk/bin/gcloud firebase test android models list
+        working-directory: ${{ env.CUSTOM_WORKSPACE }}
+      - name: Assemble Debug APK
+        run: ./gradlew :app:assembleDebug :app:assembleDebugAndroidTest
+        working-directory: ${{ env.CUSTOM_WORKSPACE }}
+      - name: Run Firebase Test Lab
+        run: |
+          device_option="${{ matrix.device.model }}=${{ matrix.device.version }}"
+          ./google-cloud-sdk/bin/gcloud firebase test android run \
+            --type instrumentation \
+            --app app/build/outputs/apk/debug/app-debug.apk \
+            --test app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk \
+            --device="${device_option}" \
+            2>&1 | tee output.log
+          result=${PIPESTATUS[0]}
+          if [ $result -ne 0 ]; then
+            exit 1
+          fi
+        shell: bash
+        working-directory: ${{ env.CUSTOM_WORKSPACE }}
+      - name: Download Test Results
+        run: |
+          gcs_bucket=$(sed -ne "s/^Raw results will be stored in your GCS bucket at \[https:\/\/console\.developers\.google\.com\/storage\/browser\/\(.*\)\]$/\1/p" output.log)
+          gcs_bucket_path="gs://$gcs_bucket"
+          device_result_dir="${{ matrix.device.model }}-${{ matrix.device.version }}"
+          mkdir -p "gcstestresults/${device_result_dir}"
+          fullpath="${gcs_bucket_path}/${device_result_dir}/**/test*.xml"
+          ./google-cloud-sdk/bin/gsutil cp "$fullpath" "
+        working-directory: ${{ env.CUSTOM_WORKSPACE }}
