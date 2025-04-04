@@ -143,13 +143,14 @@ jobs:
     runs-on: [self-hosted, docker]
     container:
       image: sahilmodak/cradle-mobile
-      options: --user 65534
+      # options: --user root
     needs: [build]
     outputs:
       test_results: ui-test-results/
     steps:
       - name: Info
         run: |
+          whoami
           groups
           echo "ls -la"
           ls -la
