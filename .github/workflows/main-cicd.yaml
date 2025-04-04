@@ -42,7 +42,7 @@ jobs:
       image: sahilmodak/cradle-mobile
     outputs:
       db_version_artifact: latest_db_version.json
-      build-artifact: mobile-build-artifact.tar.gz
+      build-artifact: build-artifact.tar.gz
     steps:
       - name: Checkout repository into Container
         uses: bfraser/cicd/actions/checkout@v1
@@ -61,14 +61,22 @@ jobs:
         id: get-db-version
         run: echo "::set-output name=version::$(scripts/get-latest-db-version.sh)"
         working-directory: ${{ env.CUSTOM_WORKSPACE }}
+      - name: List Build Dir
+        run: ls -la ./build/libs
+        working-directory: ${{ env.CUSTOM_WORKSPACE }}
+      - name: Install Tar
+        run: |
+          apt update
+          apt install tar gzip
+        working-directory: ${{ env.CUSTOM_WORKSPACE }}
       - name: Archive Build Artifact
-        run: tar -czvf ./mobile-build-artifact.tar.gz ./build/libs
+        run: tar -czvf ./build-artifact.tar.gz ./build/libs
         working-directory: ${{ env.CUSTOM_WORKSPACE }}
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v2
         with:
           name: build-artifact
-          path: ${{ env.CUSTOM_WORKSPACE }}/mobile-build-artifact.tar.gz
+          path: ${{ env.CUSTOM_WORKSPACE }}/build-artifact.tar.gz
 
       # The below "Validate Database JSON" steps were in their own job; however,
       # since these jobs are run in a container, downloading the .json file
@@ -143,6 +151,11 @@ jobs:
         with:
           name: build-artifact
           path: ${{ env.CUSTOM_WORKSPACE }}
+      - name: Install Tar
+        run: |
+          apt update
+          apt install tar gzip
+        working-directory: ${{ env.CUSTOM_WORKSPACE }}
       - name: Unarchive Build Artifact
         run: tar -xvzf build-artifact.tar.gz
         working-directory: ${{ env.CUSTOM_WORKSPACE }}
