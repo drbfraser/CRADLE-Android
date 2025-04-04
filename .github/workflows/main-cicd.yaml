@@ -150,9 +150,7 @@ jobs:
     steps:
       - name: Info
         run: |
-          whoami
           groups
-          pwd
           echo "ls -la"
           ls -la
           echo "ls -la /"
