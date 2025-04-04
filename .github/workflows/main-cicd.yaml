@@ -133,6 +133,7 @@ jobs:
     runs-on: [self-hosted, docker]
     container:
       image: sahilmodak/cradle-mobile
+      options: --user root
     needs: [build]
     outputs:
       test_results: ui-test-results/
