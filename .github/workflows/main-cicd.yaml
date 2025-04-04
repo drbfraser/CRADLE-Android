@@ -42,7 +42,7 @@ jobs:
       image: sahilmodak/cradle-mobile
     outputs:
       db_version_artifact: latest_db_version.json
-      build-artifacts: mobile-build-artifacts.tar.gz
+      build-artifact: mobile-build-artifact.tar.gz
     steps:
       - name: Checkout repository into Container
         uses: bfraser/cicd/actions/checkout@v1
@@ -61,14 +61,14 @@ jobs:
         id: get-db-version
         run: echo "::set-output name=version::$(scripts/get-latest-db-version.sh)"
         working-directory: ${{ env.CUSTOM_WORKSPACE }}
-      - name: Archive Build Artifacts
-        run: tar -czvf ./mobile-build-artifacts.tar.gz ./build/libs
+      - name: Archive Build Artifact
+        run: tar -czvf ./mobile-build-artifact.tar.gz ./build/libs
         working-directory: ${{ env.CUSTOM_WORKSPACE }}
-      - name: Upload Build Artifacts
-        uses: actions/upload-artifact@v4
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v2
         with:
-          name: build-artifacts
-          path: ${{ env.CUSTOM_WORKSPACE }}/mobile-build-artifacts.tar.gz
+          name: build-artifact
+          path: ${{ env.CUSTOM_WORKSPACE }}/mobile-build-artifact.tar.gz
 
       # The below "Validate Database JSON" steps were in their own job; however,
       # since these jobs are run in a container, downloading the .json file
@@ -132,11 +132,19 @@ jobs:
         uses: bfraser/cicd/actions/checkout@v1
         with:
           path: ${{ env.CUSTOM_WORKSPACE }}
-      - name: Check ENV vars
+      - name: Check ENV Vars
         run: |
           echo "ANDROID_HOME = $ANDROID_HOME"
           ls $ANDROID_HOME
           $ANDROID_HOME/cmdline-tools/sdkmanager --list
+        working-directory: ${{ env.CUSTOM_WORKSPACE }}
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-artifact
+          path: ${{ env.CUSTOM_WORKSPACE }}
+      - name: Unarchive Build Artifact
+        run: tar -xvzf build-artifact.tar.gz
         working-directory: ${{ env.CUSTOM_WORKSPACE }}
       - name: Create Emulator
         run: echo 'TODO Create Emulator'
