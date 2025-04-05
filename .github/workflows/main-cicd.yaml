@@ -151,7 +151,6 @@ jobs:
       - name: Info
         run: |
           whoami
-          groups
           echo "ls -la"
           ls -la
           echo "ls -la /"
