@@ -173,8 +173,7 @@ jobs:
         working-directory: ${{ env.CUSTOM_WORKSPACE }}
       - name: Install tar
         run: |
-          apt update
-          apt install tar
+          yum install tar
         working-directory: ${{ env.CUSTOM_WORKSPACE }}
       - name: Setup upterm session
         uses: lhotari/action-upterm@v1
