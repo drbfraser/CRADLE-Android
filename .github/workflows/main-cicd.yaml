@@ -140,8 +140,7 @@ jobs:
 
   ui_tests:
     name: Run Instrumented UI Tests
-    runs-on: [ubuntu-latest, docker]
-    # runs-on: [self-hosted, docker]
+    runs-on: [self-hosted, docker]
     container:
       image: sahilmodak/cradle-mobile
       options: --user root --group-add 65534
