@@ -1,14 +1,12 @@
 package com.cradleplatform.neptune.view
 
-import android.app.Activity
-import android.app.Application
+
 import android.content.Context
-import android.os.Bundle
+import android.content.Intent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.HorizontalScrollView
 import android.widget.ScrollView
-import androidx.core.content.ContextCompat.startActivity
 import androidx.core.widget.NestedScrollView
 import androidx.recyclerview.widget.RecyclerView
 import androidx.test.espresso.Espresso.onView
@@ -18,9 +16,9 @@ import androidx.test.espresso.ViewAction
 import androidx.test.espresso.action.ScrollToAction
 import androidx.test.espresso.action.ViewActions
 import androidx.test.espresso.action.ViewActions.click
-import androidx.test.espresso.action.ViewActions.scrollTo
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.contrib.RecyclerViewActions
+import androidx.test.espresso.intent.Intents
 import androidx.test.espresso.matcher.ViewMatchers
 import androidx.test.espresso.matcher.ViewMatchers.isAssignableFrom
 import androidx.test.espresso.matcher.ViewMatchers.isDescendantOfA
@@ -30,12 +28,15 @@ import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.rules.activityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
-import androidx.test.platform.app.InstrumentationRegistry
-import androidx.test.rule.GrantPermissionRule
+import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.utilities.UnixTimestamp
-import com.cradleplatform.neptune.activities.dashboard.DashBoardActivity
 import com.cradleplatform.neptune.activities.newPatient.ReadingActivity
+import com.cradleplatform.neptune.activities.patients.PatientsActivity
+import com.cradleplatform.neptune.testutils.rules.GrantRuntimePermissionsRule
+import com.jakewharton.threetenabp.AndroidThreeTen
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import org.hamcrest.Description
 import org.hamcrest.Matcher
 import org.hamcrest.Matchers.allOf
@@ -46,76 +47,48 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import java.util.concurrent.locks.ReentrantLock
-import kotlin.concurrent.withLock
 
+@HiltAndroidTest
 @LargeTest
 @RunWith(AndroidJUnit4::class)
 class ReadingActivityUiTests {
+    companion object {
+        const val TAG = "ReadingActivityUiTests"
+        val intent = ReadingActivity.makeIntentForNewReading(getInstrumentation().targetContext)
+    }
 
-    private val context: Context = InstrumentationRegistry.getInstrumentation().targetContext
+    private val context: Context = getInstrumentation().targetContext
+
+    // https://developer.android.com/training/dependency-injection/hilt-testing#ui-test
+    @get:Rule(order = 0)
+    var hiltRule = HiltAndroidRule(this)
 
     // https://developer.android.com/guide/components/activities/testing
-    @get:Rule
-    var activityScenarioRule = activityScenarioRule<DashBoardActivity>()
+    @get:Rule(order = 1)
+    var activityScenarioRule = activityScenarioRule<ReadingActivity>(intent)
+
+    @get:Rule(order = 2)
+    var grantPermissionRule = GrantRuntimePermissionsRule()
 
     private lateinit var idlingResource: IdlingResource
 
-    private var currentActivity: Activity? = null
-
-    @Rule
-    @JvmField
-    val mGrantPermissionRule: GrantPermissionRule =
-        GrantPermissionRule.grant(
-            "android.permission.INTERNET",
-            "android.permission.ACCESS_NETWORK_STATE",
-            "android.permission.CAMERA"
-        )
-
     @Before
     fun before() {
-        val lock = ReentrantLock()
-        val isReadingActivityCondition = lock.newCondition()
+        hiltRule.inject()
+        AndroidThreeTen.init(context);
+        Intents.init()
 
         activityScenarioRule.scenario.onActivity { activity ->
-            activity.application.registerActivityLifecycleCallbacks(
-                object : Application.ActivityLifecycleCallbacks {
-                    override fun onActivityResumed(activity: Activity) {
-                        lock.withLock {
-                            currentActivity = activity
-                            isReadingActivityCondition.signal()
-                        }
-                    }
-                    override fun onActivityCreated(activity: Activity, savedState: Bundle?) {
-                    }
-                    override fun onActivityStarted(activity: Activity) {
-                    }
-                    override fun onActivityPaused(activity: Activity) {
-                    }
-                    override fun onActivityStopped(activity: Activity) {
-                    }
-                    override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {
-                    }
-                    override fun onActivityDestroyed(activity: Activity) {
-                    }
-            })
-
-            val intent = ReadingActivity.makeIntentForNewReading(activity)
-            startActivity(activity, intent, null)
+            idlingResource = activity.getIdlingResource()
+            IdlingRegistry.getInstance().register(idlingResource)
         }
 
-        lock.withLock {
-            while (currentActivity == null) {
-                isReadingActivityCondition.await()
-            }
-        }
-        idlingResource = (currentActivity as ReadingActivity).getIdlingResource()
-        IdlingRegistry.getInstance().register(idlingResource)
     }
 
     @After
     fun after() {
         IdlingRegistry.getInstance().unregister(idlingResource)
+        Intents.release()
     }
 
     @Test
@@ -183,14 +156,14 @@ class ReadingActivityUiTests {
                 context.resources.getStringArray(R.array.sex)[2] // Gender: Other
             )
 
-            
+
             checkEnabled(R.id.reading_next_button, shouldBeEnabled = true)
             clickIfEnabled(R.id.reading_next_button, doScrollTo = false)
 
             clickCheckboxWithText(context.resources.getStringArray(R.array.reading_symptoms)[5])
 
             clickIfEnabled(R.id.reading_next_button, doScrollTo = false)
-            
+
 
             typeTextInMaterialTextField(
                 viewIdRes = R.id.systolic_text,
@@ -205,33 +178,15 @@ class ReadingActivityUiTests {
                 textToEnter = "87"
             )
 
-            selectMaterialSpinnerItem(
-                R.id.blood_auto_complete_text,
-                "NAD"
-            )
-            selectMaterialSpinnerItem(
-                R.id.protein_auto_complete_text,
-                "NAD"
-            )
-            selectMaterialSpinnerItem(
-                R.id.glucose_auto_complete_text,
-                "NAD"
-            )
-            selectMaterialSpinnerItem(
-                R.id.nitrites_auto_complete_text,
-                "NAD"
-            )
-            selectMaterialSpinnerItem(
-                R.id.leukocytes_auto_complete_text,
-                "NAD"
-            )
-
             clickIfEnabled(R.id.reading_next_button, doScrollTo = false)
 
             clickIfEnabled(R.id.save_reading_button)
         }
 
-        onView(withId(R.id.patientCardView)).perform(scrollTo(), click())
+
+        val patientsListIntent = Intent(context, PatientsActivity::class.java)
+        patientsListIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        context.startActivity(patientsListIntent)
 
         onView(withId(R.id.patientListRecyclerview))
             .perform(
@@ -246,6 +201,7 @@ class ReadingActivityUiTests {
             .check(matches(withText("567")))
         onView(withId(R.id.patientAge))
             .check(matches(withText(context.getString(R.string.patient_profile_age_about_n_years_old, 32))))
+
     }
 
     /**

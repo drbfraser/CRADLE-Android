@@ -13,7 +13,6 @@ import android.content.pm.ActivityInfo
 import android.os.Bundle
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
-import androidx.work.WorkManager
 import com.cradleplatform.neptune.http_sms_service.DataTransmissionState
 import com.cradleplatform.neptune.http_sms_service.sms.RelayRequestCounter
 import com.cradleplatform.neptune.manager.LoginManager
@@ -71,9 +70,6 @@ class CradleApplication : Application(), Configuration.Provider {
     lateinit var loginManager: LoginManager
 
     @Inject
-    lateinit var workManager: WorkManager
-
-    @Inject
     lateinit var periodicSyncer: PeriodicSyncer
     @Inject
     lateinit var networkStateManager: NetworkStateManager
@@ -109,7 +105,7 @@ class CradleApplication : Application(), Configuration.Provider {
         networkMonitor.registerNetworkCallbackEvents()
 
         // Initiate PeriodicSyncer
-        periodicSyncer = PeriodicSyncer(sharedPref, workManager, this)
+        periodicSyncer = PeriodicSyncer(sharedPref, this)
         if (loginManager.isLoggedIn()) {
             periodicSyncer.startPeriodicSync()
         }

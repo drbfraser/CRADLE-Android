@@ -21,7 +21,6 @@ import javax.inject.Singleton
 @Singleton
 class PeriodicSyncer @Inject constructor(
     private val sharedPreferences: SharedPreferences,
-    private val workManager: WorkManager,
     @ApplicationContext private val context: Context
 ) {
     /**
@@ -45,7 +44,7 @@ class PeriodicSyncer @Inject constructor(
             putString(LAST_SYNC_JOB_UUID, workRequest.id.toString())
         }
 
-        workManager.enqueueUniquePeriodicWork(
+        WorkManager.getInstance(context).enqueueUniquePeriodicWork(
             PERIODIC_WORK_NAME, ExistingPeriodicWorkPolicy.KEEP, workRequest
         )
         Log.d(TAG, "Unique periodic work ${workRequest.id} enqueued")

@@ -3,6 +3,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -81,23 +82,23 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
         // Disable entering StatsActivity without network connectivity.
         val statView = findViewById<View>(R.id.statConstraintLayout)
         val statImg = statView.findViewById<ImageButton>(R.id.statImg)
-        val statCardview: CardView = statView.findViewById(R.id.statCardView)
+        val statCardView: CardView = statView.findViewById(R.id.statCardView)
         val isNetworkAvailable = networkStateManager.getInternetConnectivityStatus()
 
         isNetworkAvailable.observe(this) {
             when (it) {
                 true -> {
                     statImg.alpha = OPACITY_FULL
-                    statCardview.alpha = OPACITY_FULL
+                    statCardView.alpha = OPACITY_FULL
                     statView.isClickable = true
-                    statCardview.isClickable = true
+                    statCardView.isClickable = true
                     statImg.isClickable = true
                 }
                 false -> {
                     statImg.alpha = OPACITY_HALF
-                    statCardview.alpha = OPACITY_HALF
+                    statCardView.alpha = OPACITY_HALF
                     statView.isClickable = false
-                    statCardview.isClickable = false
+                    statCardView.isClickable = false
                     statImg.isClickable = false
                 }
             }
@@ -242,10 +243,10 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
 
     private fun checkPinIfPinSet() {
         val pinCodePrefKey = getString(R.string.key_pin_shared_key)
-        val pinPassSharedPreferences = getString(R.string.key_pin_shared_pref)
         val defaultPinCode = getString(R.string.key_pin_default_pin)
-        val sharedPref = getSharedPreferences(pinPassSharedPreferences, Context.MODE_PRIVATE) ?: return
-        if (sharedPref.getString(pinCodePrefKey, defaultPinCode) == defaultPinCode) {
+        val pin = sharedPreferences.getString(pinCodePrefKey, defaultPinCode)
+        Log.d(TAG, "PIN: $pin")
+        if (pin == defaultPinCode) {
             AlertDialog.Builder(this@DashBoardActivity)
                 .setMessage(R.string.dash_pin_not_set)
                 .setCancelable(true)
@@ -305,6 +306,8 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     companion object {
+        const val TAG = "DashBoardActivity"
+
         const val READING_ACTIVITY_DONE = 12345
         const val OPACITY_HALF = 0.5f
         const val OPACITY_FULL = 1.0f
