@@ -161,25 +161,23 @@ jobs:
           ls -la /__w/_temp/
           echo "ls -la /__w/_temp/_runner_file_commands/"
           ls -la /__w/_temp/_runner_file_commands/
-          # chmod a+rwx /__w/_temp/_runner_file_commands/
-      - name: Cleanup old checkout
-        run: chmod +w -R ${GITHUB_WORKSPACE}; rm -rf ${GITHUB_WORKSPACE}/*;
-      - name: Info
-        run: |
-          whoami
-          echo "ls -la"
-          ls -la
-          echo "ls -la /"
-          ls -la /
-      - name: Checkout repository into Container
-        uses: bfraser/cicd/actions/checkout@v1
+      - uses: actions/checkout@v3
         with:
           path: ${{ env.CUSTOM_WORKSPACE }}
+      # - name: Checkout repository into Container
+      #   uses: bfraser/cicd/actions/checkout@v1
+      #   with:
+      #     path: ${{ env.CUSTOM_WORKSPACE }}
       - name: Check ENV Vars
         run: |
           echo "ANDROID_HOME = $ANDROID_HOME"
           ls $ANDROID_HOME
           ls $ANDROID_HOME/cmdline-tools
+        working-directory: ${{ env.CUSTOM_WORKSPACE }}
+      - name: Install tar
+        run: |
+          apt update
+          apt install tar
         working-directory: ${{ env.CUSTOM_WORKSPACE }}
       - name: Setup upterm session
         uses: lhotari/action-upterm@v1
