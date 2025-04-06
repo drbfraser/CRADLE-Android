@@ -118,8 +118,7 @@ jobs:
 
   test:
     name: Run Local Unit Tests
-    # runs-on: [self-hosted, docker]
-    runs-on: [ubuntu-latest, docker]
+    runs-on: [self-hosted, docker]
     container:
       image: sahilmodak/cradle-mobile
     needs: [build]
@@ -141,7 +140,8 @@ jobs:
 
   ui_tests:
     name: Run Instrumented UI Tests
-    runs-on: [self-hosted, docker]
+    runs-on: [ubuntu-latest, docker]
+    # runs-on: [self-hosted, docker]
     container:
       image: sahilmodak/cradle-mobile
       options: --user root --group-add 65534
