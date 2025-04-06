@@ -118,7 +118,8 @@ jobs:
 
   test:
     name: Run Local Unit Tests
-    runs-on: [self-hosted, docker]
+    # runs-on: [self-hosted, docker]
+    runs-on: [ubuntu-latest, docker]
     container:
       image: sahilmodak/cradle-mobile
     needs: [build]
@@ -161,6 +162,7 @@ jobs:
           ls -la /__w/_temp/
           echo "ls -la /__w/_temp/_runner_file_commands/"
           ls -la /__w/_temp/_runner_file_commands/
+          # chmod a+rwx /__w/_temp/_runner_file_commands/
       - name: Checkout repository into Container
         uses: bfraser/cicd/actions/checkout@v1
         with:
