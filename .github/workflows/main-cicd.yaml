@@ -161,13 +161,10 @@ jobs:
           ls -la /__w/_temp/
           echo "ls -la /__w/_temp/_runner_file_commands/"
           ls -la /__w/_temp/_runner_file_commands/
-      - uses: actions/checkout@v3
+      - name: Checkout repository into Container
+        uses: bfraser/cicd/actions/checkout@v1
         with:
           path: ${{ env.CUSTOM_WORKSPACE }}
-      # - name: Checkout repository into Container
-      #   uses: bfraser/cicd/actions/checkout@v1
-      #   with:
-      #     path: ${{ env.CUSTOM_WORKSPACE }}
       - name: Check ENV Vars
         run: |
           echo "ANDROID_HOME = $ANDROID_HOME"
