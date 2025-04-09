@@ -17,8 +17,6 @@
 package com.cradleplatform.neptune.di
 
 import android.content.Context
-import androidx.hilt.work.HiltWorkerFactory
-import androidx.work.Configuration
 import androidx.work.WorkManager
 import dagger.Module
 import dagger.Provides
@@ -34,14 +32,7 @@ object WorkManagerModule {
     @Singleton
     fun provideWorkManager(
         @ApplicationContext context: Context,
-        workerFactory: HiltWorkerFactory
     ): WorkManager {
-        WorkManager.initialize(
-            context,
-            Configuration.Builder()
-                .setWorkerFactory(workerFactory)
-                .build()
-        )
         return WorkManager.getInstance(context)
     }
 }

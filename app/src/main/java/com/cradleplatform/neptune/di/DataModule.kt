@@ -2,7 +2,6 @@ package com.cradleplatform.neptune.di
 
 import android.content.Context
 import android.content.SharedPreferences
-import androidx.preference.PreferenceManager
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import com.cradleplatform.neptune.database.CradleDatabase
@@ -123,12 +122,6 @@ class DataModule {
     @Singleton
     fun provideHealthCentreService(database: CradleDatabase): HealthFacilityManager {
         return HealthFacilityManager(database)
-    }
-
-    @Provides
-    @Singleton
-    fun providesSharedPreferences(@ApplicationContext context: Context): SharedPreferences {
-        return PreferenceManager.getDefaultSharedPreferences(context)
     }
 
     @Provides

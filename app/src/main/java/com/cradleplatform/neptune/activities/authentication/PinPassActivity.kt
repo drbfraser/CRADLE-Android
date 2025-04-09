@@ -1,6 +1,5 @@
 package com.cradleplatform.neptune.activities.authentication
 
-import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
@@ -14,13 +13,17 @@ import androidx.core.widget.doAfterTextChanged
 import com.cradleplatform.neptune.CradleApplication
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.activities.dashboard.DashBoardActivity
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class PinPassActivity : AppCompatActivity() {
     lateinit var app: CradleApplication
 
     private lateinit var pinCodePrefKey: String
-    private lateinit var pinPassSharedPreferences: String
-    private lateinit var sharedPref: SharedPreferences
+
+    @Inject
+    lateinit var sharedPreferences: SharedPreferences
 
     private val extraChangePin = "isChangePin"
 
@@ -32,12 +35,11 @@ class PinPassActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_pin_pass)
         pinCodePrefKey = getString(R.string.key_pin_shared_key)
-        pinPassSharedPreferences = getString(R.string.key_pin_shared_pref)
+
         //Default Pin is aaaa
         defaultPinCode = getString(R.string.key_pin_default_pin)
         val isChangePinActive = intent.getBooleanExtra(extraChangePin, true)
-        sharedPref = getSharedPreferences(pinPassSharedPreferences, Context.MODE_PRIVATE) ?: return
-        pinCode = sharedPref.getString(pinCodePrefKey, defaultPinCode)!!
+        pinCode = sharedPreferences.getString(pinCodePrefKey, defaultPinCode)!!
 
         if (!isChangePinActive) {
             app = this.application as CradleApplication
@@ -106,7 +108,7 @@ class PinPassActivity : AppCompatActivity() {
                     passText.setText("")
                 } else if (confirmPin && passText.text.toString().length == 4) {
                     if (passText.text.toString() == tempPin) {
-                        with(sharedPref.edit()) {
+                        with(sharedPreferences.edit()) {
                             putString(pinCodePrefKey, tempPin)
                             apply()
                         }

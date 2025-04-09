@@ -26,15 +26,26 @@ import com.cradleplatform.neptune.model.QuestionTypeEnum
 import com.cradleplatform.neptune.model.VisibleCondition
 import com.cradleplatform.neptune.activities.dashboard.DashBoardActivity
 import com.cradleplatform.neptune.activities.forms.FormRenderingActivity
+import com.cradleplatform.neptune.testutils.rules.GrantRuntimePermissionsRule
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
+import org.hamcrest.Matchers.equalToIgnoringCase
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
+@HiltAndroidTest
 @RunWith(AndroidJUnit4ClassRunner::class)
 class FormRenderingActivityTest{
+    // https://developer.android.com/training/dependency-injection/hilt-testing#ui-test
+    @get:Rule(order = 0)
+    var hiltRule = HiltAndroidRule(this)
 
-    @get:Rule
+    @get:Rule(order = 1)
     var activityScenarioRule = activityScenarioRule<DashBoardActivity>()
+
+    @get:Rule(order = 2)
+    var grantPermissionRule = GrantRuntimePermissionsRule()
 
     // Takes a list of questions and starts the forms activity with those questions.
     private fun startActivityWithQuestions(questions: List<Question>){
@@ -168,7 +179,7 @@ class FormRenderingActivityTest{
 
         // Verify that submit options appear correctly
         onView(withId(R.id.formSubmit)).perform(click())
-        onView(withText("SMS")).perform(scrollTo()).check(matches(isDisplayed()))
-        onView(withText("Wifi")).perform(scrollTo()).check(matches(isDisplayed()))
+        onView(withText(equalToIgnoringCase("SMS"))).perform(scrollTo()).check(matches(isDisplayed()))
+        onView(withText(equalToIgnoringCase("SAVE AND SEND LATER"))).perform(scrollTo()).check(matches(isDisplayed()))
     }
 }
