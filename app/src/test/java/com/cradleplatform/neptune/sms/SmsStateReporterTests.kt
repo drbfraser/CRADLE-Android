@@ -90,7 +90,7 @@ class SmsStateReporterTests {
     }
 
     @Test
-    fun `handleResponse should update to error state if max request number mismatch retries is reached`() {
+    fun `handleResponse should update to error state once max request number mismatch retries is reached`() {
         val mockResponse = "Mock Response"
         val errorCode = 425
         val errorMsg = "Mocked request number error"
