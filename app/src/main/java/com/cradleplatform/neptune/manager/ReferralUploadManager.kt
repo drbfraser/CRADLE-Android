@@ -1,6 +1,5 @@
 package com.cradleplatform.neptune.manager
 
-import android.util.Log
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
 import com.cradleplatform.neptune.model.Patient
