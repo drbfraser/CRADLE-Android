@@ -216,9 +216,11 @@ class PatientReadingViewModel @Inject constructor(
                         }
                         decompose(patient, reading)
                     }
+
                     ReadingActivity.LaunchReason.LAUNCH_REASON_EXISTINGNEW -> {
                         decompose(patient)
                     }
+
                     ReadingActivity.LaunchReason.LAUNCH_REASON_RECHECK -> {
                         decompose(patient)
                         originalReadingId = readingId
@@ -232,6 +234,7 @@ class PatientReadingViewModel @Inject constructor(
                             previousReadingIds.value = this
                         }
                     }
+
                     else -> {
                         error("invalid launch reason")
                     }
@@ -528,9 +531,11 @@ class PatientReadingViewModel @Inject constructor(
                             // We don't want to show an excessive amount of decimal places.
                             DecimalFormat("#.####").format(gestationalAge.ageFromNow.asMonths())
                         }
+
                         is GestationalAgeWeeks -> {
                             gestationalAge.ageFromNow.weeks.toString()
                         }
+
                         else -> {
                             // If it's missing, default to nothing.
                             ""
@@ -787,8 +792,10 @@ class PatientReadingViewModel @Inject constructor(
 
     /** Used in two-way Data Binding with VitalSignsFragment */
     val bloodPressureSystolicInput = MutableLiveData<Int?>()
+
     /** Used in two-way Data Binding with VitalSignsFragment */
     val bloodPressureDiastolicInput = MutableLiveData<Int?>()
+
     /** Used in two-way Data Binding with VitalSignsFragment */
     val bloodPressureHeartRateInput = MutableLiveData<Int?>()
 
@@ -799,16 +806,22 @@ class PatientReadingViewModel @Inject constructor(
      * @see LiveDataInitializationManager.setupUrineTestAndSourcesLiveData
      */
     val urineTest: MediatorLiveData<UrineTest?> = readingBuilder.get<UrineTest?>(Reading::urineTest)
+
     /** Used in two-way Data Binding with VitalSignsFragment */
     val isUsingUrineTest = MutableLiveData<Boolean>()
+
     /** Used in two-way Data Binding with VitalSignsFragment */
     val urineTestLeukocytesInput = MutableLiveData<String>()
+
     /** Used in two-way Data Binding with VitalSignsFragment */
     val urineTestNitritesInput = MutableLiveData<String>()
+
     /** Used in two-way Data Binding with VitalSignsFragment */
     val urineTestGlucoseInput = MutableLiveData<String>()
+
     /** Used in two-way Data Binding with VitalSignsFragment */
     val urineTestProteinInput = MutableLiveData<String>()
+
     /** Used in two-way Data Binding with VitalSignsFragment */
     val urineTestBloodInput = MutableLiveData<String>()
 
@@ -985,10 +998,12 @@ class PatientReadingViewModel @Inject constructor(
 
                     return@withContext ReadingFlowError.NO_ERROR to null
                 }
+
                 R.id.symptomsFragment -> {
                     // The symptoms fragment has no blockers.
                     return@withContext ReadingFlowError.NO_ERROR to null
                 }
+
                 R.id.vitalSignsFragment -> {
                     return@withContext if (validateVitalSignsAndBuildReading()) {
                         ReadingFlowError.NO_ERROR to null
@@ -996,6 +1011,7 @@ class PatientReadingViewModel @Inject constructor(
                         ReadingFlowError.ERROR_INVALID_FIELDS to null
                     }
                 }
+
                 else -> {
                     return@withContext ReadingFlowError.NO_ERROR to null
                 }
@@ -1092,6 +1108,7 @@ class PatientReadingViewModel @Inject constructor(
                                     }
                                 }
                             }
+
                             R.id.symptomsFragment -> {
                                 Log.d(
                                     TAG,
@@ -1099,6 +1116,7 @@ class PatientReadingViewModel @Inject constructor(
                                 )
                                 value = true
                             }
+
                             R.id.vitalSignsFragment -> {
                                 Log.d(
                                     TAG,
@@ -1112,6 +1130,7 @@ class PatientReadingViewModel @Inject constructor(
                                 addSource(isUsingUrineTest) { launchVitalSignsFragmentVerifyJob() }
                                 addSource(urineTest) { launchVitalSignsFragmentVerifyJob() }
                             }
+
                             R.id.loadingFragment -> return@launch
                             else -> return@launch
                         }
@@ -1310,8 +1329,11 @@ class PatientReadingViewModel @Inject constructor(
      * Checks if a patient has been synced to the server.
      */
     fun isPatientSynced(): Boolean {
-        val lastServerUpdate = runBlocking { patientManager.getPatientById(
-            patientId.value.toString())?.lastServerUpdate }
+        val lastServerUpdate = runBlocking {
+            patientManager.getPatientById(
+                patientId.value.toString()
+            )?.lastServerUpdate
+        }
         return lastServerUpdate != null
     }
 
@@ -1340,7 +1362,8 @@ class PatientReadingViewModel @Inject constructor(
         referralComment: String,
         healthFacilityName: String
     ): ReadingFlowSaveResult {
-        val saveResult = saveManager.saveWithReferral(referralOption, referralComment, healthFacilityName)
+        val saveResult =
+            saveManager.saveWithReferral(referralOption, referralComment, healthFacilityName)
         if (saveResult is ReadingFlowSaveResult.SaveSuccessful) {
             originalReadingId?.let { readingManager.clearDateRecheckVitalsAndMarkForUpload(it) }
         }
@@ -1501,7 +1524,10 @@ class PatientReadingViewModel @Inject constructor(
                         // Upload patient and reading to the server, with the referral embedded in
                         // the reading.
                         val result =
-                            readingUploadManager.uploadReferralViaWebCoupled(patient, readingFromBuilder)
+                            readingUploadManager.uploadReferralViaWebCoupled(
+                                patient,
+                                readingFromBuilder
+                            )
                         if (result is NetworkResult.Success) {
                             // Save the patient and reading in local database
                             // Note: If patient already exists on server, then
@@ -1523,6 +1549,7 @@ class PatientReadingViewModel @Inject constructor(
                             return@withContext ReadingFlowSaveResult.ErrorUploadingReferral
                         }
                     }
+
                     ReferralOption.SMS -> {
                         // If we're just sending by SMS, we first store it locally in the database
                         // and then have the DialogFragment that calls this to launch an SMS intent.
@@ -1542,6 +1569,7 @@ class PatientReadingViewModel @Inject constructor(
                             PatientAndReadings(patient, listOf(readingFromBuilder))
                         )
                     }
+
                     else -> error("unreachable")
                 }
             }
@@ -1650,13 +1678,16 @@ class PatientReadingViewModel @Inject constructor(
                         ZonedDateTime.now().toEpochSecond() +
                             TimeUnit.MINUTES.toSeconds(DEFAULT_VITALS_RECHECK_INTERVAL_IN_MIN)
                     }
+
                     R.id.recheck_vitals_after_radio_button -> {
                         ZonedDateTime.now().toEpochSecond()
                     }
+
                     R.id.dont_recheck_vitals_radio_button -> {
                         // Remove date if none selected.
                         null
                     }
+
                     else -> {
                         value
                     }
@@ -1759,8 +1790,10 @@ class PatientReadingViewModel @Inject constructor(
             val newAdvice = when {
                 retestGroup.isRetestRecommendedNow ->
                     app.getString(R.string.brief_advice_retest_now)
+
                 retestGroup.isRetestRecommendedIn15Min ->
                     app.getString(R.string.brief_advice_retest_after15)
+
                 else ->
                     retestGroup.mostRecentReadingAnalysis.getBriefAdviceText(app)
             }
@@ -1970,9 +2003,11 @@ class PatientReadingViewModel @Inject constructor(
                         is Patient.Companion -> {
                             patientBuilder.publicMap
                         }
+
                         is Reading.Companion -> {
                             readingBuilder.publicMap
                         }
+
                         else -> {
                             null
                         }
@@ -2121,7 +2156,7 @@ sealed interface ReferralFlowSaveResult {
      * Indicates when a referral successfully saved locally, but a network error occurred when
      * attempting to communicate with the server
      */
-    object NetworkError: ReferralFlowSaveResult
+    object NetworkError : ReferralFlowSaveResult
 
     /**
      * Indicates when a referral dialog is required.
