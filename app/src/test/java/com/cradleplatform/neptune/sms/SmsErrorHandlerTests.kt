@@ -9,6 +9,7 @@ import com.cradleplatform.neptune.http_sms_service.sms.SmsErrorHandler
 import com.cradleplatform.neptune.http_sms_service.sms.SmsStateReporter
 import com.cradleplatform.neptune.manager.SmsKeyManager
 import com.cradleplatform.neptune.model.DecryptedSmsResponse
+import com.cradleplatform.neptune.model.SmsRelayErrorResponse425
 import com.google.gson.Gson
 import io.mockk.every
 import io.mockk.mockk
@@ -56,19 +57,10 @@ class SmsErrorHandlerTests {
         val decryptedErrorMsg = "Decrypted error message"
         val expectedRequestNum = 0
 
-        val errorResponseJson = """
-            {
-                "message": "$decryptedErrorMsg",
-                "expectedRequestNumber": $expectedRequestNum
-            }
-        """
-
-        val decryptedSmsResponseJson = """
-            {
-                "code": $errorCode,
-                "body": ${Gson().toJson(errorResponseJson)}
-            }
-        """
+        val errorResponseJson = SmsRelayErrorResponse425(decryptedErrorMsg, expectedRequestNum)
+        val decryptedSmsResponseJson = Gson().toJson(
+            DecryptedSmsResponse(errorCode, Gson().toJson(errorResponseJson))
+        )
 
         mockkObject(SMSFormatter)
         every { SMSFormatter.decodeMsg(any(), any()) } returns decryptedSmsResponseJson
@@ -82,8 +74,8 @@ class SmsErrorHandlerTests {
     fun `handleInnerError should return error message from inner error`() {
         val errorCode = 401
         val errorMsg = "Mock error message"
-        val descriptionJson = """{ "description": "$errorMsg" }"""
-        val decryptedResponse = DecryptedSmsResponse(errorCode, descriptionJson)
+        val descriptionJson = SmsErrorHandler.InnerRequestError(errorMsg)
+        val decryptedResponse = DecryptedSmsResponse(errorCode, Gson().toJson(descriptionJson))
 
         val result = smsErrorHandler.handleInnerError(decryptedResponse)
 
@@ -94,11 +86,12 @@ class SmsErrorHandlerTests {
     fun `handleInnerError should return Unknown Error when description is missing`() {
         val errorCode = 401
         val emptyBodyDescriptionJson = "{}"
+        val expectedMsg = "Unknown Error"
         val decryptedResponse = DecryptedSmsResponse(errorCode, emptyBodyDescriptionJson)
 
         val result = smsErrorHandler.handleInnerError(decryptedResponse)
 
-        Assertions.assertEquals("Unknown Error", result)
+        Assertions.assertEquals(expectedMsg, result)
     }
 
 
