@@ -75,6 +75,7 @@ class SmsSenderTests {
     @Test
     fun `sendSmsMessage should send SMS if acknowledged is false`() {
         val mockPacketList = mutableListOf("mockPacket1", "mockPacket2")
+        val mockMessage = "mock SMS message"
         every { SMSFormatter.formatSMS(any(), any()) } returns mockPacketList
 
         // Inject mock queue
@@ -83,7 +84,7 @@ class SmsSenderTests {
         queueField.isAccessible = true
         queueField.set(smsSender, smsRelayQueue)
 
-        val result = smsSender.queueRelayContent("mocked message")
+        val result = smsSender.queueRelayContent(mockMessage)
         Assertions.assertTrue(result)
 
         Assertions.assertEquals(2, smsRelayQueue.size)
@@ -104,6 +105,7 @@ class SmsSenderTests {
     @Test
     fun `sendSmsMessage should send all SMS messages and properly handle acknowledgements`() {
         val mockStateLiveData = mockk<MutableLiveData<SmsTransmissionStates>>(relaxed = true)
+        val mockMessage = "mock SMS message"
         every { smsStateReporter.state } returns mockStateLiveData
 
         val mockPacketList = mutableListOf("mockPacket1", "mockPacket2")
@@ -116,7 +118,7 @@ class SmsSenderTests {
         queueField.set(smsSender, smsRelayQueue)
 
         // Queue messages to send
-        smsSender.queueRelayContent("mock SMS message")
+        smsSender.queueRelayContent(mockMessage)
 
         // Send initial message
         smsSender.sendSmsMessage(false)

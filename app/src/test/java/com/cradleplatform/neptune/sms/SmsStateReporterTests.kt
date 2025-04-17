@@ -2,6 +2,7 @@ package com.cradleplatform.neptune.sms
 
 import android.content.SharedPreferences
 import android.util.Log
+import com.cradleplatform.neptune.http_sms_service.sms.SMSFormatter
 import com.cradleplatform.neptune.http_sms_service.sms.SmsErrorHandler.InnerRequestError
 import com.cradleplatform.neptune.http_sms_service.sms.SmsStateReporter
 import com.cradleplatform.neptune.http_sms_service.sms.SmsTransmissionStates
@@ -32,7 +33,7 @@ class SmsStateReporterTests {
         every { Log.d(any(), any()) } returns 0
         every { Log.e(any(), any()) } returns 0
 
-        mockkConstructor(Gson::class)
+        mockkObject(SMSFormatter)
 
         smsStateReporter = SmsStateReporter(smsKeyManager, sharedPreferences)
     }
@@ -43,8 +44,9 @@ class SmsStateReporterTests {
     }
 
     @Test
-    fun `handleResponse should handle outer error and update error state`() {
-        val relayData = "Unable to verify message from (+15555215556). Either the App and server don't agree on the security key or the message was corrupted."
+    fun `handleResponse should identify outer error and update error state`() {
+        val relayData =
+            "Unable to verify message from (+15555215556). Either the App and server don't agree on the security key or the message was corrupted."
         val errorCode = 401
 
         smsStateReporter.handleResponse(relayData, errorCode)
@@ -65,16 +67,21 @@ class SmsStateReporterTests {
     }
 
     @Test
-    fun `handleResponse should handle request number mismatch and start retransmission`() {
-        val relayData = "Unable to verify message from (+15555215556). Either the App and server don't agree on the security key or the message was corrupted."
+    fun `handleResponse should identify request number mismatch and start retransmission`() {
+        val mockEncryptedResponse = "Mock encrypted error"
         val errorCode = 425
         val errorMsg = "Mocked request number error"
         val expectedRequestNum = 0
 
-        every { anyConstructed<Gson>().fromJson(any<String>(), SmsRelayErrorResponse425::class.java) } returns SmsRelayErrorResponse425(errorMsg, expectedRequestNum)
-        every { anyConstructed<Gson>().fromJson(any<String>(), DecryptedSmsResponse::class.java) } returns DecryptedSmsResponse(errorCode, errorMsg)
+        val innerBody = SmsRelayErrorResponse425(errorMsg, expectedRequestNum)
 
-        smsStateReporter.handleResponse(relayData, errorCode)
+        val decryptedInnerResponseJson = Gson().toJson(
+            DecryptedSmsResponse(errorCode, Gson().toJson(innerBody))
+        )
+
+        every { SMSFormatter.decodeMsg(any(), any()) } returns decryptedInnerResponseJson
+
+        smsStateReporter.handleResponse(mockEncryptedResponse, errorCode)
 
         Assertions.assertEquals(
             SmsTransmissionStates.RETRANSMISSION,
@@ -90,17 +97,22 @@ class SmsStateReporterTests {
     }
 
     @Test
-    fun `handleResponse should update to error state once max request number mismatch retries is reached`() {
-        val mockResponse = "Mock Response"
+    fun `handleResponse should update to error state after max request number mismatch retries`() {
+        val mockEncryptedResponse = "Mock encrypted response"
         val errorCode = 425
         val errorMsg = "Mocked request number error"
         val expectedRequestNum = 0
 
-        every { anyConstructed<Gson>().fromJson(any<String>(), SmsRelayErrorResponse425::class.java) } returns SmsRelayErrorResponse425(errorMsg, expectedRequestNum)
-        every { anyConstructed<Gson>().fromJson(any<String>(), DecryptedSmsResponse::class.java) } returns DecryptedSmsResponse(errorCode, errorMsg)
+        val innerBody = SmsRelayErrorResponse425(errorMsg, expectedRequestNum)
+
+        val decryptedInnerResponseJson = Gson().toJson(
+            DecryptedSmsResponse(errorCode, Gson().toJson(innerBody))
+        )
+
+        every { SMSFormatter.decodeMsg(any(), any()) } returns decryptedInnerResponseJson
 
         // Attempt # 1
-        smsStateReporter.handleResponse(mockResponse, errorCode)
+        smsStateReporter.handleResponse(mockEncryptedResponse, errorCode)
 
         Assertions.assertEquals(
             SmsTransmissionStates.RETRANSMISSION,
@@ -114,7 +126,7 @@ class SmsStateReporterTests {
         Assertions.assertEquals(errorCode, smsStateReporter.statusCodeToCollect.value)
 
         // Attempt #2
-        smsStateReporter.handleResponse(mockResponse, errorCode)
+        smsStateReporter.handleResponse(mockEncryptedResponse, errorCode)
 
         Assertions.assertEquals(
             SmsTransmissionStates.RETRANSMISSION,
@@ -128,7 +140,7 @@ class SmsStateReporterTests {
         Assertions.assertEquals(errorCode, smsStateReporter.statusCodeToCollect.value)
 
         // Attempt #3
-        smsStateReporter.handleResponse(mockResponse, errorCode)
+        smsStateReporter.handleResponse(mockEncryptedResponse, errorCode)
 
         Assertions.assertEquals(
             SmsTransmissionStates.WAITING_FOR_USER_RESPONSE,
@@ -147,15 +159,20 @@ class SmsStateReporterTests {
 
 
     @Test
-    fun `handleResponse should handle inner error and update error state`() {
-        val decodedMsg = """{"code": 400, "msg": "Invalid data"}"""
+    fun `handleResponse should detect inner error and update error states`() {
+        val mockOuterResponse = "Mock successful outer response"
         val errorMsg = "Mocked inner request error"
         val errorCode = 400
 
-        every { anyConstructed<Gson>().fromJson(any<String>(), DecryptedSmsResponse::class.java) } returns DecryptedSmsResponse(errorCode, "Mocked error message")
-        every { anyConstructed<Gson>().fromJson(any<String>(), InnerRequestError::class.java) } returns InnerRequestError(errorMsg)
+        val innerBody = InnerRequestError(errorMsg)
+        val innerBodyJson = Gson().toJson(innerBody)
 
-        smsStateReporter.handleResponse(decodedMsg, null)
+        val decryptedInnerResponse = DecryptedSmsResponse(errorCode, innerBodyJson)
+        val decryptedInnerResponseJson = Gson().toJson(decryptedInnerResponse)
+
+        every { SMSFormatter.decodeMsg(any(), any()) } returns decryptedInnerResponseJson
+
+        smsStateReporter.handleResponse(mockOuterResponse, null)
 
         Assertions.assertEquals(
             SmsTransmissionStates.WAITING_FOR_USER_RESPONSE,
@@ -174,8 +191,12 @@ class SmsStateReporterTests {
     @Test
     fun `handleResponse should handle successful response and update state`() {
         val successCode = 200
+        val successMsg = "Success message"
 
-        every { anyConstructed<Gson>().fromJson(any<String>(), DecryptedSmsResponse::class.java) } returns DecryptedSmsResponse(successCode, "Mocked successful message")
+        val decryptedInnerResponse = DecryptedSmsResponse(200, successMsg)
+        val decryptedInnerResponseJson = Gson().toJson(decryptedInnerResponse)
+
+        every { SMSFormatter.decodeMsg(any(), any()) } returns decryptedInnerResponseJson
 
         smsStateReporter.handleResponse("mockMsg", null)
 
