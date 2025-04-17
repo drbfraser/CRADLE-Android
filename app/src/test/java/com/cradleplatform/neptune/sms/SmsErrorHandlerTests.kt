@@ -1,8 +1,5 @@
 package com.cradleplatform.neptune.sms
 
-import android.content.Context
-import android.content.SharedPreferences
-import android.telephony.SmsManager
 import android.util.Log
 import com.cradleplatform.neptune.http_sms_service.sms.SMSFormatter
 import com.cradleplatform.neptune.http_sms_service.sms.SmsErrorHandler

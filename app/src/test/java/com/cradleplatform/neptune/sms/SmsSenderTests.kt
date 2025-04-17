@@ -10,7 +10,6 @@ import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
 import com.cradleplatform.neptune.http_sms_service.sms.SmsStateReporter
 import com.cradleplatform.neptune.http_sms_service.sms.SmsTransmissionStates
 import com.cradleplatform.neptune.manager.SmsKeyManager
-import com.cradleplatform.neptune.utilities.extensions.InstantExecutorExtension
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
@@ -21,11 +20,7 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
 
-// Reference for annotation to handle liveData object posting:
-// https://stackoverflow.com/questions/45988310/setvalue-and-postvalue-on-mutablelivedata-in-unittest
-@ExtendWith(InstantExecutorExtension::class)
 class SmsSenderTests {
     private val smsKeyManager = mockk<SmsKeyManager>(relaxed = true)
     private val sharedPreferences = mockk<SharedPreferences>(relaxed = true)
