@@ -107,7 +107,7 @@ class Http(
     suspend inline fun <T> makeRequest(
         method: Method,
         url: String,
-        headers: Map<String, String>,
+        headers: Map<String, String> = mapOf(),
         requestBody: RequestBody? = null,
         crossinline inputStreamReader: suspend (InputStream) -> T
     ): NetworkResult<T> = withContext(Dispatchers.IO) {

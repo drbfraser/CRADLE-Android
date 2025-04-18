@@ -105,7 +105,7 @@ class RestApi(
     private suspend inline fun <reified T> handleSmsRequest(
         method: Http.Method,
         url: String,
-        headers: Map<String, String>,
+        headers: Map<String, String> = mapOf(),
         body: ByteArray = Gson().toJson(JsonObject()).toByteArray(),
     ): NetworkResult<T> = withContext(IO) {
         val channel = Channel<NetworkResult<T>>()
@@ -536,7 +536,6 @@ class RestApi(
     ): NetworkResult<Unit> = withContext(IO) {
         val method = Http.Method.GET
         val url = urlManager.getAllAssessments
-        val headers = makeAuthorizationHeader()
 
         when (protocol) {
             Protocol.HTTP -> {
@@ -544,7 +543,7 @@ class RestApi(
 
                 http.makeRequest(method = method,
                     url = url,
-                    headers = headers,
+                    headers = makeAuthorizationHeader(),
                     inputStreamReader = { inputStream ->
                         try {
                             val reader = JacksonMapper.readerForAssessment
@@ -571,7 +570,8 @@ class RestApi(
             Protocol.SMS -> {
                 try {
                     val networkResult = handleSmsRequest<List<Assessment>>(
-                        method, url, headers
+                        method = method,
+                        url = url,
                     )
 
                     when (networkResult) {
@@ -617,19 +617,18 @@ class RestApi(
         withContext(IO) {
             val method = Http.Method.GET
             val url = urlManager.getPatient(id)
-            val headers = makeAuthorizationHeader()
 
             when (protocol) {
                 Protocol.HTTP -> {
                     http.makeRequest(method = method,
                         url = url,
-                        headers = headers,
+                        headers = makeAuthorizationHeader(),
                         inputStreamReader = { JacksonMapper.readerForPatientAndReadings.readValue(it) })
                 }
 
                 Protocol.SMS -> {
                     handleSmsRequest<PatientAndReadings>(
-                        method, url, headers
+                        method, url
                     )
                 }
             }
@@ -648,19 +647,18 @@ class RestApi(
         withContext(IO) {
             val method = Http.Method.GET
             val url = urlManager.getPatientInfo(id)
-            val headers = makeAuthorizationHeader()
 
             when (protocol) {
                 Protocol.HTTP -> {
                     http.makeRequest(method = Http.Method.GET,
                         url = urlManager.getPatientInfo(id),
-                        headers = headers,
+                        headers = makeAuthorizationHeader(),
                         inputStreamReader = { JacksonMapper.readerForPatient.readValue(it) })
                 }
 
                 Protocol.SMS -> {
                     handleSmsRequest<Patient>(
-                        method, url, headers
+                        method, url
                     )
                 }
             }
@@ -681,13 +679,12 @@ class RestApi(
     ): NetworkResult<List<GlobalPatient>> = withContext(IO) {
         val method = Http.Method.GET
         val url = urlManager.getGlobalPatientSearch(searchString)
-        val headers = makeAuthorizationHeader()
 
         when (protocol) {
             Protocol.HTTP -> {
                 http.makeRequest(method = method,
                     url = url,
-                    headers = headers,
+                    headers = makeAuthorizationHeader(),
                     inputStreamReader = {
                         JacksonMapper.createGlobalPatientsListReader().readValue(it)
                     })
@@ -695,7 +692,7 @@ class RestApi(
 
             Protocol.SMS -> {
                 handleSmsRequest<List<GlobalPatient>>(
-                    method, url, headers
+                    method, url
                 )
             }
         }
@@ -712,19 +709,18 @@ class RestApi(
         withContext(IO) {
             val method = Http.Method.GET
             val url = urlManager.getReading(id)
-            val headers = makeAuthorizationHeader()
 
             when (protocol) {
                 Protocol.HTTP -> {
                     http.makeRequest(method = Http.Method.GET,
                         url = urlManager.getReading(id),
-                        headers = headers,
+                        headers = makeAuthorizationHeader(),
                         inputStreamReader = { JacksonMapper.readerForReading.readValue(it) })
                 }
 
                 Protocol.SMS -> {
                     handleSmsRequest<Reading>(
-                        method, url, headers
+                        method, url
                     )
                 }
             }
@@ -741,13 +737,12 @@ class RestApi(
         withContext(IO) {
             val method = Http.Method.GET
             val url = urlManager.getAssessmentById(id)
-            val headers = makeAuthorizationHeader()
 
             when (protocol) {
                 Protocol.HTTP -> {
                     http.makeRequest(method = method,
                         url = url,
-                        headers = headers,
+                        headers = makeAuthorizationHeader(),
                         inputStreamReader = {
                             JacksonMapper.createReader<Assessment>().readValue(it)
                         })
@@ -755,7 +750,7 @@ class RestApi(
 
                 Protocol.SMS -> {
                     handleSmsRequest<Assessment>(
-                        method, url, headers
+                        method, url
                     )
                 }
             }
@@ -778,19 +773,18 @@ class RestApi(
     ): NetworkResult<Statistics> = withContext(IO) {
         val method = Http.Method.GET
         val url = urlManager.getStatisticsForFacilityBetween(date1, date2, filterFacility.name)
-        val headers = makeAuthorizationHeader()
 
         when (protocol) {
             Protocol.HTTP -> {
                 http.makeRequest(method = method,
                     url = url,
-                    headers = headers,
+                    headers = makeAuthorizationHeader(),
                     inputStreamReader = { JacksonMapper.mapper.readValue(it) })
             }
 
             Protocol.SMS -> {
                 handleSmsRequest<Statistics>(
-                    method, url, headers
+                    method, url
                 )
             }
         }
@@ -813,19 +807,18 @@ class RestApi(
     ): NetworkResult<Statistics> = withContext(IO) {
         val method = Http.Method.GET
         val url = urlManager.getStatisticsForUserBetween(date1, date2, userID)
-        val headers = makeAuthorizationHeader()
 
         when (protocol) {
             Protocol.HTTP -> {
                 http.makeRequest(method = method,
                     url = url,
-                    headers = headers,
+                    headers = makeAuthorizationHeader(),
                     inputStreamReader = { JacksonMapper.mapper.readValue(it) })
             }
 
             Protocol.SMS -> {
                 handleSmsRequest<Statistics>(
-                    method, url, headers
+                    method, url
                 )
             }
         }
@@ -847,13 +840,12 @@ class RestApi(
     ): NetworkResult<Statistics> = withContext(IO) {
         val method = Http.Method.GET
         val url = urlManager.getAllStatisticsBetween(date1, date2)
-        val headers = makeAuthorizationHeader()
 
         when (protocol) {
             Protocol.HTTP -> {
                 http.makeRequest(method = method,
                     url = url,
-                    headers = headers,
+                    headers = makeAuthorizationHeader(),
                     inputStreamReader = { JacksonMapper.mapper.readValue(it) })
             }
 
@@ -861,7 +853,6 @@ class RestApi(
                 handleSmsRequest<Statistics>(
                     method,
                     url,
-                    headers,
                 )
             }
         }
@@ -890,14 +881,13 @@ class RestApi(
         val body = createWriter<PatientAndReadings>().writeValueAsBytes(patient)
         val method = Http.Method.POST
         val url = urlManager.postPatient
-        val headers = makeAuthorizationHeader()
 
         when (protocol) {
             Protocol.HTTP -> {
                 http.makeRequest(
                     method = method,
                     url = url,
-                    headers = headers,
+                    headers = makeAuthorizationHeader(),
                     requestBody = buildJsonRequestBody(body),
                     inputStreamReader = { input ->
                         JacksonMapper.readerForPatientAndReadings.readValue(input)
@@ -907,7 +897,9 @@ class RestApi(
 
             Protocol.SMS -> {
                 handleSmsRequest<PatientAndReadings>(
-                    method, url, headers, body
+                    method = method,
+                    url = url,
+                    body = body,
                 )
             }
         }
@@ -939,14 +931,13 @@ class RestApi(
         val body = createWriter<PatientAndReferrals>().writeValueAsBytes(patient)
         val method = Http.Method.POST
         val url = urlManager.postPatient
-        val headers = makeAuthorizationHeader()
 
         when (protocol) {
             Protocol.HTTP -> {
                 http.makeRequest(
                     method = method,
                     url = url,
-                    headers = headers,
+                    headers = makeAuthorizationHeader(),
                     requestBody = buildJsonRequestBody(body),
                     inputStreamReader = { input ->
                         JacksonMapper.readerForPatientAndReferrals.readValue(input)
@@ -956,7 +947,9 @@ class RestApi(
 
             Protocol.SMS -> {
                 handleSmsRequest(
-                    method, url, headers, body
+                    method = method,
+                    url = url,
+                    body = body,
                 )
             }
         }
@@ -977,14 +970,13 @@ class RestApi(
         val body = gson.toJson(mFormResponse).toByteArray()
         val method = Http.Method.POST
         val url = urlManager.uploadFormResponse
-        val headers = makeAuthorizationHeader()
 
         when (protocol) {
             Protocol.HTTP -> {
                 http.makeRequest(
                     method = method,
                     url = url,
-                    headers = headers,
+                    headers = makeAuthorizationHeader(),
                     requestBody = buildJsonRequestBody(body),
                     inputStreamReader = {},
                 )
@@ -992,7 +984,9 @@ class RestApi(
 
             Protocol.SMS -> {
                 handleSmsRequest(
-                    method, url, headers, body
+                    method = method,
+                    url = url,
+                    body = body,
                 )
             }
         }
@@ -1012,14 +1006,13 @@ class RestApi(
             val body = JacksonMapper.writerForPatient.writeValueAsBytes(patient)
             val method = Http.Method.PUT
             val url = urlManager.getPatientInfoOnly(patient.id)
-            val headers = makeAuthorizationHeader()
 
             when (protocol) {
                 Protocol.HTTP -> {
                     return@withContext http.makeRequest(
                         method = method,
                         url = url,
-                        headers = headers,
+                        headers = makeAuthorizationHeader(),
                         requestBody = buildJsonRequestBody(body),
                         inputStreamReader = {},
                     )
@@ -1027,7 +1020,9 @@ class RestApi(
 
                 Protocol.SMS -> {
                     return@withContext handleSmsRequest(
-                        method, url, headers, body
+                        method = method,
+                        url = url,
+                        body = body,
                     )
                 }
             }
@@ -1061,14 +1056,13 @@ class RestApi(
         val body = buffer.readByteArray()
         val method = Http.Method.POST
         val url = urlManager.postMedicalRecord(patient.id)
-        val headers = makeAuthorizationHeader()
 
         when (protocol) {
             Protocol.HTTP -> {
                 http.makeRequest(
                     method = method,
                     url = url,
-                    headers = headers,
+                    headers = makeAuthorizationHeader(),
                     requestBody = requestBody,
                     inputStreamReader = {},
                 )
@@ -1076,7 +1070,9 @@ class RestApi(
 
             Protocol.SMS -> {
                 handleSmsRequest(
-                    method, url, headers, body
+                    method = method,
+                    url = url,
+                    body = body,
                 )
             }
         }
@@ -1094,14 +1090,13 @@ class RestApi(
             val body = JacksonMapper.writerForReading.writeValueAsBytes(reading)
             val method = Http.Method.POST
             val url = urlManager.postReading
-            val headers = makeAuthorizationHeader()
 
             when (protocol) {
                 Protocol.HTTP -> {
                     http.makeRequest(
                         method = method,
                         url = url,
-                        headers = headers,
+                        headers = makeAuthorizationHeader(),
                         requestBody = buildJsonRequestBody(body),
                         inputStreamReader = { input ->
                             JacksonMapper.readerForReading.readValue(
@@ -1113,7 +1108,9 @@ class RestApi(
 
                 Protocol.SMS -> {
                     handleSmsRequest(
-                        method, url, headers, body
+                        method = method,
+                        url = url,
+                        body = body,
                     )
                 }
             }
@@ -1133,14 +1130,13 @@ class RestApi(
         val body = JacksonMapper.writerForAssessment.writeValueAsBytes(assessment)
         val method = Http.Method.POST
         val url = urlManager.postAssessment
-        val headers = makeAuthorizationHeader()
 
         when (protocol) {
             Protocol.HTTP -> {
                 http.makeRequest(
                     method = method,
                     url = url,
-                    headers = headers,
+                    headers = makeAuthorizationHeader(),
                     requestBody = buildJsonRequestBody(body),
                     inputStreamReader = { input ->
                         JacksonMapper.readerForAssessment.readValue(
@@ -1152,7 +1148,9 @@ class RestApi(
 
             Protocol.SMS -> {
                 handleSmsRequest(
-                    method, url, headers, body
+                    method = method,
+                    url = url,
+                    body = body,
                 )
             }
         }
@@ -1170,14 +1168,13 @@ class RestApi(
             val body = JacksonMapper.writerForReferral.writeValueAsBytes(referral)
             val method = Http.Method.POST
             val url = urlManager.postReferral
-            val headers = makeAuthorizationHeader()
 
             when (protocol) {
                 Protocol.HTTP -> {
                     http.makeRequest(
                         method = method,
                         url = url,
-                        headers = headers,
+                        headers = makeAuthorizationHeader(),
                         requestBody = buildJsonRequestBody(body),
                         inputStreamReader = { input ->
                             JacksonMapper.readerForReferral.readValue(
@@ -1188,7 +1185,9 @@ class RestApi(
                 }
                 Protocol.SMS -> {
                     handleSmsRequest(
-                        method, url, headers, body
+                        method = method,
+                        url = url,
+                        body = body,
                     )
                 }
             }
@@ -1229,20 +1228,22 @@ class RestApi(
         val body = buffer.readByteArray()
         val method = Http.Method.POST
         val url = urlManager.postPregnancy(patient.id)
-        val headers = makeAuthorizationHeader()
 
         when (protocol) {
             Protocol.HTTP -> {
-                http.makeRequest(method = method,
+                http.makeRequest(
+                    method = method,
                     url = url,
-                    headers = headers,
+                    headers = makeAuthorizationHeader(),
                     requestBody = requestBody,
                     inputStreamReader = { JacksonMapper.mapper.readValue(it) })
             }
 
             Protocol.SMS -> {
                 handleSmsRequest(
-                    method, url, headers, body
+                    method = method,
+                    url = url,
+                    body = body,
                 )
             }
         }
@@ -1264,20 +1265,23 @@ class RestApi(
         val body = buffer.readByteArray()
         val method = Http.Method.PUT
         val url = urlManager.putPregnancy(patient.pregnancyId.toString())
-        val headers = makeAuthorizationHeader()
 
         when (protocol) {
             Protocol.HTTP -> {
-                http.makeRequest(method = method,
+                http.makeRequest(
+                    method = method,
                     url = url,
-                    headers = headers,
+                    headers = makeAuthorizationHeader(),
                     requestBody = requestBody,
-                    inputStreamReader = { JacksonMapper.mapper.readValue(it) })
+                    inputStreamReader = { JacksonMapper.mapper.readValue(it) }
+                )
             }
 
             Protocol.SMS -> {
                 handleSmsRequest(
-                    method, url, headers, body
+                    method = method,
+                    url = url,
+                    body = body,
                 )
             }
         }
@@ -1301,20 +1305,23 @@ class RestApi(
         val body = buffer.readByteArray()
         val method = Http.Method.POST
         val url = urlManager.postUserPhoneNumber(userID)
-        val headers = makeAuthorizationHeader()
 
         when (protocol) {
             Protocol.HTTP -> {
-                http.makeRequest(method = method,
+                http.makeRequest(
+                    method = method,
                     url = url,
-                    headers = headers,
+                    headers = makeAuthorizationHeader(),
                     requestBody = requestBody,
-                    inputStreamReader = {})
+                    inputStreamReader = {},
+                )
             }
 
             Protocol.SMS -> {
                 handleSmsRequest(
-                    method, url, headers, body
+                    method = method,
+                    url = url,
+                    body = body,
                 )
             }
         }
@@ -1324,13 +1331,13 @@ class RestApi(
         withContext(IO) {
             val method = Http.Method.GET
             val url = urlManager.getAllRelayPhoneNumbers()
-            val headers = makeAuthorizationHeader()
 
             when (protocol) {
                 Protocol.HTTP -> {
-                    http.makeRequest(method = method,
+                    http.makeRequest(
+                        method = method,
                         url = url,
-                        headers = headers,
+                        headers = makeAuthorizationHeader(),
                         inputStreamReader = {
                             JacksonMapper.readerForRelayPhoneNumberResponse.readValue(
                                 it
@@ -1340,7 +1347,8 @@ class RestApi(
 
                 Protocol.SMS -> {
                     handleSmsRequest(
-                        method, url, headers
+                        method = method,
+                        url = url,
                     )
                 }
             }
@@ -1349,11 +1357,10 @@ class RestApi(
     suspend fun getCurrentSmsKey(userID: Int): NetworkResult<SmsKey> = withContext(IO) {
         val method = Http.Method.GET
         val url = urlManager.smsKey(userID)
-        val headers = makeAuthorizationHeader()
 
         http.makeRequest(method = method,
             url = url,
-            headers = headers,
+            headers = makeAuthorizationHeader(),
             inputStreamReader = { JacksonMapper.createReader<SmsKey>().readValue<SmsKey>(it) })
     }
 
@@ -1366,13 +1373,14 @@ class RestApi(
         requestBody.writeTo(buffer)
         val method = Http.Method.PUT
         val url = urlManager.smsKey(userID)
-        val headers = makeAuthorizationHeader()
 
-        http.makeRequest(method = method,
+        http.makeRequest(
+            method = method,
             url = url,
-            headers = headers,
+            headers = makeAuthorizationHeader(),
             requestBody = requestBody,
-            inputStreamReader = { JacksonMapper.createReader<SmsKey>().readValue<SmsKey>(it) })
+            inputStreamReader = { JacksonMapper.createReader<SmsKey>().readValue<SmsKey>(it) }
+        )
     }
 
     suspend fun getNewSmsKey(userID: Int): NetworkResult<SmsKey?> = withContext(IO) {
@@ -1384,11 +1392,11 @@ class RestApi(
         requestBody.writeTo(buffer)
         val method = Http.Method.POST
         val url = urlManager.smsKey(userID)
-        val headers = makeAuthorizationHeader()
 
-        http.makeRequest(method = method,
+        http.makeRequest(
+            method = method,
             url = url,
-            headers = headers,
+            headers = makeAuthorizationHeader(),
             requestBody = requestBody,
             inputStreamReader = {
                 try {
@@ -1417,14 +1425,13 @@ class RestApi(
             val body = "{\"patientId\":\"$patientId\"}".encodeToByteArray()
             val method = Http.Method.POST
             val url = urlManager.userPatientAssociation
-            val headers = makeAuthorizationHeader()
 
             when (protocol) {
                 Protocol.HTTP -> {
                     return@withContext http.makeRequest(
                         method = method,
                         url = url,
-                        headers = headers,
+                        headers = makeAuthorizationHeader(),
                         requestBody = buildJsonRequestBody(body),
                         inputStreamReader = {},
                     ).map { }
@@ -1432,7 +1439,9 @@ class RestApi(
 
                 Protocol.SMS -> {
                     return@withContext handleSmsRequest(
-                        method, url, headers, body
+                        method = method,
+                        url = url,
+                        body = body,
                     )
                 }
             }
@@ -1448,11 +1457,10 @@ class RestApi(
     suspend fun getAllHealthFacilities(
         healthFacilityChannel: SendChannel<HealthFacility>
     ): NetworkResult<Unit> = withContext(IO) {
-        val headers = makeAuthorizationHeader()
         http.makeRequest(
             method = Http.Method.GET,
             url = urlManager.healthFacilities,
-            headers = headers,
+            headers = makeAuthorizationHeader(),
             inputStreamReader = { inputStream ->
                 try {
                     val reader = JacksonMapper.readerForHealthFacility
@@ -1504,7 +1512,6 @@ class RestApi(
         val body = createWriter<List<Patient>>().writeValueAsBytes(patientsToUpload)
         val method = Http.Method.POST
         val url = urlManager.getPatientsSync(lastSyncTimestamp)
-        val headers = makeAuthorizationHeader()
 
         var totalPatientsDownloaded = 0
         var errors: String? = null
@@ -1515,7 +1522,7 @@ class RestApi(
                 http.makeRequest(
                     method = method,
                     url = url,
-                    headers = headers,
+                    headers = makeAuthorizationHeader(),
                     requestBody = buildJsonRequestBody(body),
                 ) { inputStream ->
                     try {
@@ -1571,7 +1578,8 @@ class RestApi(
             Protocol.SMS -> {
                 try {
                     val networkResult = handleSmsRequest<List<Patient>>(
-                        method, url, headers
+                        method = method,
+                        url = url,
                     )
 
                     val newNetworkResult: NetworkResult<Unit> = when (networkResult) {
@@ -1652,7 +1660,6 @@ class RestApi(
         val body = createWriter<List<Reading>>().writeValueAsBytes(readingsToUpload)
         val method = Http.Method.POST
         val url = urlManager.getReadingsSync(lastSyncTimestamp)
-        val headers = makeAuthorizationHeader()
 
         var totalReadingsDownloaded = 0
 
@@ -1662,7 +1669,7 @@ class RestApi(
                 http.makeRequest(
                     method = method,
                     url = url,
-                    headers = headers,
+                    headers = makeAuthorizationHeader(),
                     requestBody = buildJsonRequestBody(body)
                 ) { inputStream ->
                     Log.d(TAG, "Parsing readings now")
@@ -1717,7 +1724,8 @@ class RestApi(
             Protocol.SMS -> {
                 try {
                     val networkResult = handleSmsRequest<List<Reading>>(
-                        method, url, headers
+                        method = method,
+                        url = url,
                     )
 
                     val newNetworkResult: NetworkResult<Unit> = when (networkResult) {
@@ -1789,7 +1797,6 @@ class RestApi(
         val body = createWriter<List<Referral>>().writeValueAsBytes(referralsToUpload)
         val method = Http.Method.POST
         val url = urlManager.getReferralsSync(lastSyncTimestamp)
-        val headers = makeAuthorizationHeader()
 
         var totalReferralsDownloaded = 0
         var errors: String? = null
@@ -1800,7 +1807,7 @@ class RestApi(
                 http.makeRequest(
                     method = method,
                     url = url,
-                    headers = headers,
+                    headers = makeAuthorizationHeader(),
                     requestBody = buildJsonRequestBody(body),
                 ) { inputStream ->
 
@@ -1851,7 +1858,8 @@ class RestApi(
             Protocol.SMS -> {
                 try {
                     val networkResult = handleSmsRequest<List<Referral>>(
-                        method, url, headers
+                        method = method,
+                        url = url,
                     )
 
                     val newNetworkResult: NetworkResult<Unit> = when (networkResult) {
@@ -1925,7 +1933,6 @@ class RestApi(
         val body = createWriter<List<Assessment>>().writeValueAsBytes(assessmentsToUpload)
         val method = Http.Method.POST
         val url = urlManager.getAssessmentsSync(lastSyncTimestamp)
-        val headers = makeAuthorizationHeader()
 
         var totalAssessmentsDownloaded = 0
         var errors: String? = null
@@ -1936,7 +1943,7 @@ class RestApi(
                 http.makeRequest(
                     method = method,
                     url = url,
-                    headers = headers,
+                    headers = makeAuthorizationHeader(),
                     requestBody = buildJsonRequestBody(body),
                 ) { inputStream ->
 
@@ -1988,7 +1995,8 @@ class RestApi(
             Protocol.SMS -> {
                 try {
                     val networkResult = handleSmsRequest<List<Assessment>>(
-                        method, url, headers
+                        method = method,
+                        url = url,
                     )
 
                     val newNetworkResult: NetworkResult<Unit> = when (networkResult) {
@@ -2057,7 +2065,6 @@ class RestApi(
     ): HealthFacilitySyncResult = withContext(IO) {
         val method = Http.Method.GET
         val url = urlManager.healthFacilities
-        val headers = makeAuthorizationHeader()
 
         var totalHealthFacilitiesDownloaded = 0
 
@@ -2067,7 +2074,7 @@ class RestApi(
                 http.makeRequest(
                     method = method,
                     url = url,
-                    headers = headers,
+                    headers = makeAuthorizationHeader(),
                     inputStreamReader = { inputStream ->
                         try {
                             val reader = JacksonMapper.readerForHealthFacility
@@ -2104,7 +2111,8 @@ class RestApi(
             Protocol.SMS -> {
                 try {
                     val networkResult = handleSmsRequest<List<HealthFacility>>(
-                        method, url, headers
+                        method = method,
+                        url = url,
                     )
 
                     val newNetworkResult: NetworkResult<Unit> = when (networkResult) {
@@ -2169,7 +2177,6 @@ class RestApi(
     ): FormSyncResult = withContext(IO) {
         val method = Http.Method.GET
         val url = urlManager.getAllFormsAsSummary
-        val headers = makeAuthorizationHeader()
 
         var totalClassifications = 0
 
@@ -2178,7 +2185,7 @@ class RestApi(
                 var failedParse = false
                 http.makeRequest(method = method,
                     url = url,
-                    headers = headers,
+                    headers = makeAuthorizationHeader(),
                     inputStreamReader = { inputStream ->
 
                         try {
@@ -2220,7 +2227,8 @@ class RestApi(
             Protocol.SMS -> {
                 try {
                     val networkResult = handleSmsRequest<List<FormClassification>>(
-                        method, url, headers
+                        method = method,
+                        url = url,
                     )
 
                     val newNetworkResult: NetworkResult<Unit> = when (networkResult) {
