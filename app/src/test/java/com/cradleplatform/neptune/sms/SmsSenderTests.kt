@@ -28,6 +28,7 @@ class SmsSenderTests {
     private val smsStateReporter = mockk<SmsStateReporter>(relaxed = true)
     private val smsManager = mockk<SmsManager>(relaxed = true)
     private lateinit var smsSender: SMSSender
+    private lateinit var smsRelayQueue: ArrayDeque<String>
 
     @BeforeEach
     fun setUp() {
@@ -43,6 +44,8 @@ class SmsSenderTests {
         every { SMSFormatter.formatSMS(any(), any()) } returns mockPacketList
 
         smsSender = SMSSender(smsKeyManager, sharedPreferences, context, smsStateReporter)
+
+        smsRelayQueue = injectMockQueue()
     }
 
     @AfterEach
@@ -50,14 +53,17 @@ class SmsSenderTests {
         unmockkAll()
     }
 
-    @Test
-    fun `queueRelayContent should initialize sending and add packets to queue`() {
-        // Inject mock queue
+    private fun injectMockQueue(): ArrayDeque<String> {
         val smsRelayQueue = ArrayDeque<String>()
         val queueField = smsSender.javaClass.getDeclaredField("smsRelayQueue")
         queueField.isAccessible = true
         queueField.set(smsSender, smsRelayQueue)
 
+        return smsRelayQueue
+    }
+
+    @Test
+    fun `queueRelayContent should initialize sending and add packets to queue`() {
         val result = smsSender.queueRelayContent("mock message")
 
         verify {
@@ -70,12 +76,6 @@ class SmsSenderTests {
     @Test
     fun `sendSmsMessage should send SMS if acknowledged is false`() {
         val mockMessage = "mock SMS message"
-
-        // Inject mock queue
-        val smsRelayQueue = ArrayDeque<String>()
-        val queueField = smsSender.javaClass.getDeclaredField("smsRelayQueue")
-        queueField.isAccessible = true
-        queueField.set(smsSender, smsRelayQueue)
 
         val result = smsSender.queueRelayContent(mockMessage)
         Assertions.assertTrue(result)
@@ -100,12 +100,6 @@ class SmsSenderTests {
         val mockStateLiveData = mockk<MutableLiveData<SmsTransmissionStates>>(relaxed = true)
         val mockMessage = "mock SMS message"
         every { smsStateReporter.state } returns mockStateLiveData
-
-        // Inject mock queue
-        val smsRelayQueue = ArrayDeque<String>()
-        val queueField = smsSender.javaClass.getDeclaredField("smsRelayQueue")
-        queueField.isAccessible = true
-        queueField.set(smsSender, smsRelayQueue)
 
         // Queue messages to send
         smsSender.queueRelayContent(mockMessage)
