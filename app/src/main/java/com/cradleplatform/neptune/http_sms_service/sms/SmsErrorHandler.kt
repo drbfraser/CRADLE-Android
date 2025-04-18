@@ -61,7 +61,7 @@ class SmsErrorHandler @Inject constructor(
         return errorMsg
     }
 
-    private data class InnerRequestError(
+    data class InnerRequestError(
         val description: String?
     )
 
