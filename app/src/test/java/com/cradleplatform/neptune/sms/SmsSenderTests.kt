@@ -39,6 +39,9 @@ class SmsSenderTests {
         mockkStatic(SmsManager::class)
         every { SmsManager.getDefault() } returns smsManager
 
+        val mockPacketList = mutableListOf("mockPacket1", "mockPacket2")
+        every { SMSFormatter.formatSMS(any(), any()) } returns mockPacketList
+
         smsSender = SMSSender(smsKeyManager, sharedPreferences, context, smsStateReporter)
     }
 
@@ -49,9 +52,6 @@ class SmsSenderTests {
 
     @Test
     fun `queueRelayContent should initialize sending and add packets to queue`() {
-        val mockPacketList = mutableListOf("mockPacket1", "mockPacket2", "mockPacket3")
-        every { SMSFormatter.formatSMS(any(), any()) } returns mockPacketList
-
         // Inject mock queue
         val smsRelayQueue = ArrayDeque<String>()
         val queueField = smsSender.javaClass.getDeclaredField("smsRelayQueue")
@@ -64,14 +64,12 @@ class SmsSenderTests {
             smsStateReporter.initSending(any())
         }
         Assertions.assertTrue(result)
-        Assertions.assertEquals(3, smsRelayQueue.size)
+        Assertions.assertEquals(2, smsRelayQueue.size)
     }
 
     @Test
     fun `sendSmsMessage should send SMS if acknowledged is false`() {
-        val mockPacketList = mutableListOf("mockPacket1", "mockPacket2")
         val mockMessage = "mock SMS message"
-        every { SMSFormatter.formatSMS(any(), any()) } returns mockPacketList
 
         // Inject mock queue
         val smsRelayQueue = ArrayDeque<String>()
@@ -102,9 +100,6 @@ class SmsSenderTests {
         val mockStateLiveData = mockk<MutableLiveData<SmsTransmissionStates>>(relaxed = true)
         val mockMessage = "mock SMS message"
         every { smsStateReporter.state } returns mockStateLiveData
-
-        val mockPacketList = mutableListOf("mockPacket1", "mockPacket2")
-        every { SMSFormatter.formatSMS(any(), any()) } returns mockPacketList
 
         // Inject mock queue
         val smsRelayQueue = ArrayDeque<String>()

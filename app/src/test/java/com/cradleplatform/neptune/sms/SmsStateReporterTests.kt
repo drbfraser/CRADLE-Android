@@ -47,9 +47,9 @@ class SmsStateReporterTests {
     fun `handleResponse should identify outer error and update error state`() {
         val relayData =
             "Unable to verify message from (+15555215556). Either the App and server don't agree on the security key or the message was corrupted."
-        val errorCode = 401
+        val badRequestErrorCode = 400
 
-        smsStateReporter.handleResponse(relayData, errorCode)
+        smsStateReporter.handleResponse(relayData, badRequestErrorCode)
 
         Assertions.assertEquals(
             SmsTransmissionStates.WAITING_FOR_USER_RESPONSE,
@@ -61,27 +61,27 @@ class SmsStateReporterTests {
         )
         Assertions.assertEquals(relayData, smsStateReporter.errorMsg.value)
         Assertions.assertEquals(relayData, smsStateReporter.errorMessageToCollect.value)
-        Assertions.assertEquals(errorCode, smsStateReporter.statusCode.value)
-        Assertions.assertEquals(errorCode, smsStateReporter.statusCodeToCollect.value)
+        Assertions.assertEquals(badRequestErrorCode, smsStateReporter.statusCode.value)
+        Assertions.assertEquals(badRequestErrorCode, smsStateReporter.statusCodeToCollect.value)
 
     }
 
     @Test
     fun `handleResponse should identify request number mismatch and start retransmission`() {
         val mockEncryptedResponse = "Mock encrypted error"
-        val errorCode = 425
+        val requestNumMismatchErrorCode = 425
         val errorMsg = "Mocked request number error"
         val expectedRequestNum = 0
 
         val innerBody = SmsRelayErrorResponse425(errorMsg, expectedRequestNum)
 
         val decryptedInnerResponseJson = Gson().toJson(
-            DecryptedSmsResponse(errorCode, Gson().toJson(innerBody))
+            DecryptedSmsResponse(requestNumMismatchErrorCode, Gson().toJson(innerBody))
         )
 
         every { SMSFormatter.decodeMsg(any(), any()) } returns decryptedInnerResponseJson
 
-        smsStateReporter.handleResponse(mockEncryptedResponse, errorCode)
+        smsStateReporter.handleResponse(mockEncryptedResponse, requestNumMismatchErrorCode)
 
         Assertions.assertEquals(
             SmsTransmissionStates.RETRANSMISSION,
@@ -91,56 +91,50 @@ class SmsStateReporterTests {
             SmsTransmissionStates.RETRANSMISSION,
             smsStateReporter.stateToCollect.value
         )
-        Assertions.assertEquals(errorCode, smsStateReporter.statusCode.value)
-        Assertions.assertEquals(errorCode, smsStateReporter.statusCodeToCollect.value)
+        Assertions.assertEquals(requestNumMismatchErrorCode, smsStateReporter.statusCode.value)
+        Assertions.assertEquals(
+            requestNumMismatchErrorCode,
+            smsStateReporter.statusCodeToCollect.value
+        )
 
     }
 
     @Test
     fun `handleResponse should update to error state after max request number mismatch retries`() {
         val mockEncryptedResponse = "Mock encrypted response"
-        val errorCode = 425
+        val requestNumMismatchErrorCode = 425
         val errorMsg = "Mocked request number error"
         val expectedRequestNum = 0
+        val maxRetries = 2
 
         val innerBody = SmsRelayErrorResponse425(errorMsg, expectedRequestNum)
 
         val decryptedInnerResponseJson = Gson().toJson(
-            DecryptedSmsResponse(errorCode, Gson().toJson(innerBody))
+            DecryptedSmsResponse(requestNumMismatchErrorCode, Gson().toJson(innerBody))
         )
 
         every { SMSFormatter.decodeMsg(any(), any()) } returns decryptedInnerResponseJson
 
-        // Attempt # 1
-        smsStateReporter.handleResponse(mockEncryptedResponse, errorCode)
+        repeat(maxRetries) { retry ->
+            smsStateReporter.handleResponse(mockEncryptedResponse, requestNumMismatchErrorCode)
 
-        Assertions.assertEquals(
-            SmsTransmissionStates.RETRANSMISSION,
-            smsStateReporter.state.value
-        )
-        Assertions.assertEquals(
-            SmsTransmissionStates.RETRANSMISSION,
-            smsStateReporter.stateToCollect.value
-        )
-        Assertions.assertEquals(errorCode, smsStateReporter.statusCode.value)
-        Assertions.assertEquals(errorCode, smsStateReporter.statusCodeToCollect.value)
-
-        // Attempt #2
-        smsStateReporter.handleResponse(mockEncryptedResponse, errorCode)
-
-        Assertions.assertEquals(
-            SmsTransmissionStates.RETRANSMISSION,
-            smsStateReporter.state.value
-        )
-        Assertions.assertEquals(
-            SmsTransmissionStates.RETRANSMISSION,
-            smsStateReporter.stateToCollect.value
-        )
-        Assertions.assertEquals(errorCode, smsStateReporter.statusCode.value)
-        Assertions.assertEquals(errorCode, smsStateReporter.statusCodeToCollect.value)
+            Assertions.assertEquals(
+                SmsTransmissionStates.RETRANSMISSION,
+                smsStateReporter.state.value
+            )
+            Assertions.assertEquals(
+                SmsTransmissionStates.RETRANSMISSION,
+                smsStateReporter.stateToCollect.value
+            )
+            Assertions.assertEquals(requestNumMismatchErrorCode, smsStateReporter.statusCode.value)
+            Assertions.assertEquals(
+                requestNumMismatchErrorCode,
+                smsStateReporter.statusCodeToCollect.value
+            )
+        }
 
         // Attempt #3
-        smsStateReporter.handleResponse(mockEncryptedResponse, errorCode)
+        smsStateReporter.handleResponse(mockEncryptedResponse, requestNumMismatchErrorCode)
 
         Assertions.assertEquals(
             SmsTransmissionStates.WAITING_FOR_USER_RESPONSE,
@@ -153,8 +147,11 @@ class SmsStateReporterTests {
         Assertions.assertEquals(errorMsg, smsStateReporter.errorMsg.value)
         Assertions.assertEquals(errorMsg, smsStateReporter.errorMessageToCollect.value)
 
-        Assertions.assertEquals(errorCode, smsStateReporter.statusCode.value)
-        Assertions.assertEquals(errorCode, smsStateReporter.statusCodeToCollect.value)
+        Assertions.assertEquals(requestNumMismatchErrorCode, smsStateReporter.statusCode.value)
+        Assertions.assertEquals(
+            requestNumMismatchErrorCode,
+            smsStateReporter.statusCodeToCollect.value
+        )
     }
 
 
@@ -162,12 +159,12 @@ class SmsStateReporterTests {
     fun `handleResponse should detect inner error and update error states`() {
         val mockOuterResponse = "Mock successful outer response"
         val errorMsg = "Mocked inner request error"
-        val errorCode = 400
+        val badRequestErrorCode = 400
 
         val innerBody = InnerRequestError(errorMsg)
         val innerBodyJson = Gson().toJson(innerBody)
 
-        val decryptedInnerResponse = DecryptedSmsResponse(errorCode, innerBodyJson)
+        val decryptedInnerResponse = DecryptedSmsResponse(badRequestErrorCode, innerBodyJson)
         val decryptedInnerResponseJson = Gson().toJson(decryptedInnerResponse)
 
         every { SMSFormatter.decodeMsg(any(), any()) } returns decryptedInnerResponseJson
@@ -184,8 +181,8 @@ class SmsStateReporterTests {
         )
         Assertions.assertEquals(errorMsg, smsStateReporter.errorMsg.value)
         Assertions.assertEquals(errorMsg, smsStateReporter.errorMessageToCollect.value)
-        Assertions.assertEquals(errorCode, smsStateReporter.statusCode.value)
-        Assertions.assertEquals(errorCode, smsStateReporter.statusCodeToCollect.value)
+        Assertions.assertEquals(badRequestErrorCode, smsStateReporter.statusCode.value)
+        Assertions.assertEquals(badRequestErrorCode, smsStateReporter.statusCodeToCollect.value)
     }
 
     @Test
