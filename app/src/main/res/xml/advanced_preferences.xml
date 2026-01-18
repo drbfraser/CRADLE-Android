@@ -2,7 +2,8 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:title="Advanced">
-    <PreferenceCategory android:title="Network">
+    <PreferenceCategory android:title="Network"
+        app:iconSpaceReserved="false">
         <EditTextPreference
             android:defaultValue="@string/settings_default_server_hostname"
             android:key="@string/key_server_hostname"
@@ -21,7 +22,8 @@
             app:isPreferenceVisible="true" />
     </PreferenceCategory>
 
-    <PreferenceCategory android:title="Optical Character Recognition">
+    <PreferenceCategory android:title="Optical Character Recognition"
+        app:iconSpaceReserved="false">
         <SwitchPreference
             android:defaultValue="@string/settings_default_ocr_enabled"
             android:enabled="false"
@@ -34,7 +36,8 @@
             android:title="Show OCR debugging info" />
     </PreferenceCategory>
 
-    <PreferenceCategory android:title="Sync">
+    <PreferenceCategory android:title="Sync"
+        app:iconSpaceReserved="false">
         <SwitchPreference
             android:defaultValue="@string/settings_periodic_sync_enabled"
             android:enabled="true"

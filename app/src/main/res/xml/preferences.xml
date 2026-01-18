@@ -3,7 +3,8 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- Types: https://developer.android.com/guide/topics/ui/settings/components-and-attributes -->
 
-    <PreferenceCategory android:title="General">
+    <PreferenceCategory android:title="General"
+        app:iconSpaceReserved="false">
         <EditTextPreference
             android:defaultValue="@string/preference_name_summary"
             android:key="@string/key_vht_name"
@@ -28,7 +29,8 @@
             app:isPreferenceVisible="false" />
     </PreferenceCategory>
 
-    <PreferenceCategory android:title="Referrals">
+    <PreferenceCategory android:title="Referrals"
+        app:iconSpaceReserved="false">
         <Preference
             android:key="@string/key_health_facilities_settings_button"
             android:title="@string/preference_health_facilities_title" />
@@ -37,7 +39,8 @@
     <PreferenceCategory>
         <Preference
             android:key="@string/key_advanced_settings_settings_button"
-            android:title="@string/preference_advanced_title" />
+            android:title="@string/preference_advanced_title"
+            app:iconSpaceReserved="false"/>
 
         <Preference
             android:key="@string/key_connection_preference"
