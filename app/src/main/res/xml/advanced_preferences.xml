@@ -7,19 +7,22 @@
         <EditTextPreference
             android:defaultValue="@string/settings_default_server_hostname"
             android:key="@string/key_server_hostname"
-            android:title="Hostname" />
+            android:title="Hostname"
+            app:iconSpaceReserved="false"/>
 
         <EditTextPreference
             android:defaultValue="@string/settings_default_server_port"
             android:key="@string/key_server_port"
-            android:title="Port" />
+            android:title="Port"
+            app:iconSpaceReserved="false"/>
 
         <SwitchPreference
             android:defaultValue="@string/settings_default_server_use_https"
             android:enabled="true"
             android:key="@string/key_server_use_https"
             android:title="Use HTTPS"
-            app:isPreferenceVisible="true" />
+            app:isPreferenceVisible="true"
+            app:iconSpaceReserved="false"/>
     </PreferenceCategory>
 
     <PreferenceCategory android:title="Optical Character Recognition"
@@ -28,12 +31,14 @@
             android:defaultValue="@string/settings_default_ocr_enabled"
             android:enabled="false"
             android:key="setting_ocr_enabled"
-            android:title="Enable OCR" />
+            android:title="Enable OCR"
+            app:iconSpaceReserved="false"/>
         <SwitchPreference
             android:defaultValue="@string/settings_default_ocr_show_debug_info"
             android:enabled="false"
             android:key="setting_ocr_debug_enabled"
-            android:title="Show OCR debugging info" />
+            android:title="Show OCR debugging info"
+            app:iconSpaceReserved="false"/>
     </PreferenceCategory>
 
     <PreferenceCategory android:title="Sync"
@@ -42,6 +47,7 @@
             android:defaultValue="@string/settings_periodic_sync_enabled"
             android:enabled="true"
             android:key="@string/key_periodic_sync_enabled"
-            android:title="Enable periodic sync" />
+            android:title="Enable periodic sync"
+            app:iconSpaceReserved="false"/>
     </PreferenceCategory>
 </PreferenceScreen>

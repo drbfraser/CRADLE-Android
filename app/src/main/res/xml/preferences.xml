@@ -11,14 +11,16 @@
             android:selectAllOnFocus="false"
             android:singleLine="true"
             android:title="@string/preference_name_title"
-            app:selectable="false" />
+            app:selectable="false"
+            app:iconSpaceReserved="false"/>
         <EditTextPreference
             android:defaultValue="@string/preference_role_summary"
             android:key="@string/key_role"
             android:selectAllOnFocus="false"
             android:singleLine="true"
             android:title="@string/preference_role_title"
-            app:selectable="false" />
+            app:selectable="false"
+            app:iconSpaceReserved="false"/>
         <EditTextPreference
             android:defaultValue="Uganda"
             android:key="@string/key_region"
@@ -26,14 +28,16 @@
             android:singleLine="true"
             android:summary="@string/preference_region_summary"
             android:title="@string/preference_region_title"
-            app:isPreferenceVisible="false" />
+            app:isPreferenceVisible="false"
+            app:iconSpaceReserved="false"/>
     </PreferenceCategory>
 
     <PreferenceCategory android:title="Referrals"
         app:iconSpaceReserved="false">
         <Preference
             android:key="@string/key_health_facilities_settings_button"
-            android:title="@string/preference_health_facilities_title" />
+            android:title="@string/preference_health_facilities_title"
+            app:iconSpaceReserved="false"/>
     </PreferenceCategory>
 
     <PreferenceCategory>
@@ -45,22 +49,26 @@
         <Preference
             android:key="@string/key_connection_preference"
             android:summary="@string/change_connection_message"
-            android:title="@string/change_connection_method" />
+            android:title="@string/change_connection_method"
+            app:iconSpaceReserved="false"/>
 
         <Preference
             android:key="@string/key_change_pin"
             android:summary="@string/change_pin_message"
-            android:title="@string/change_pin_title" />
+            android:title="@string/change_pin_title"
+            app:iconSpaceReserved="false"/>
 
         <Preference
             android:key="@string/key_change_relay_phone_number"
             android:summary="@string/relay_phone_number_message"
-            android:title="@string/change_relay_phone_number_title" />
+            android:title="@string/change_relay_phone_number_title"
+            app:iconSpaceReserved="false"/>
 
         <Preference
             android:key="@string/key_sign_out"
             android:summary="@string/normal_signout_message"
-            android:title="@string/preference_sign_out_title" />
+            android:title="@string/preference_sign_out_title"
+            app:iconSpaceReserved="false"/>
 
     </PreferenceCategory>
 </PreferenceScreen>
