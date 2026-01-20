@@ -38,7 +38,7 @@ class PinPassActivity : AppCompatActivity() {
 
         //Default Pin is aaaa
         defaultPinCode = getString(R.string.key_pin_default_pin)
-        val isChangePinActive = intent.getBooleanExtra(extraChangePin, true)
+        val isChangePinActive = intent.getBooleanExtra(extraChangePin, false)
         pinCode = sharedPreferences.getString(pinCodePrefKey, defaultPinCode)!!
 
         if (!isChangePinActive) {
@@ -60,15 +60,13 @@ class PinPassActivity : AppCompatActivity() {
             setUpButtons(isChangePinActive)
         }
     }
-
     private fun setUpButtons(isChangePinActive: Boolean) {
         val forgotButton = findViewById<Button>(R.id.pinPassForgotButton)
 
         if (isChangePinActive) {
             forgotButton.text = getString(R.string.cancel)
             forgotButton.setOnClickListener {
-                val intent = Intent(this@PinPassActivity, DashBoardActivity::class.java)
-                startActivity(intent)
+                // Just go back instead of forcing navigation to DashBoardActivity
                 finish()
             }
         } else {
@@ -90,6 +88,7 @@ class PinPassActivity : AppCompatActivity() {
             }
         }
     }
+
 
     private fun setUpPIN(isChangePinActive: Boolean) {
         val headerLine = findViewById<TextView>(R.id.pinPassText)
@@ -113,8 +112,9 @@ class PinPassActivity : AppCompatActivity() {
                             apply()
                         }
                         Toast.makeText(this, getString(R.string.change_pin_act_pin_saved), Toast.LENGTH_LONG).show()
-                        val intent = Intent(this@PinPassActivity, DashBoardActivity::class.java)
-                        startActivity(intent)
+//                        val intent = Intent(this@PinPassActivity, DashBoardActivity::class.java)
+//                        startActivity(intent)
+                        // Finish activity after changing PIN
                         finish()
                     } else {
                         incorrectText.text = getString(R.string.change_pin_act_incorrect)
@@ -137,6 +137,11 @@ class PinPassActivity : AppCompatActivity() {
 
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
-        //Do not allow user to leave this screen until password is entered or app exited
+        val isChangePinActive = intent.getBooleanExtra(extraChangePin, true)
+        if (isChangePinActive) {
+            // Allow back navigation when changing PIN
+            super.onBackPressed()
+        }
+        // Do not allow user to leave this screen until password is entered when verifying PIN
     }
 }
