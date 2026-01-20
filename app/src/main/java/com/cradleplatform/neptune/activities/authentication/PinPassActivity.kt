@@ -50,9 +50,16 @@ class PinPassActivity : AppCompatActivity() {
                 val intent = Intent(this@PinPassActivity, LoginActivity::class.java)
                 startActivity(intent)
                 finish()
+                return
             }
 
-            app.pinPassActivityStarted()
+            // Only unlock mutex if it's actually locked (i.e., when coming from background, not initial launch)
+            if (app.lock.isLocked) {
+                app.pinPassActivityStarted()
+            } else {
+                // Just mark as active without unlocking
+                app.pinActivityActive = true
+            }
             setUpButtons(isChangePinActive)
             setUpPIN(isChangePinActive)
         } else {
@@ -126,6 +133,9 @@ class PinPassActivity : AppCompatActivity() {
             passText.doAfterTextChanged {
                 if (passText.text.toString() == pinCode) {
                     app.pinPassActivityFinished()
+                    // Launch DashBoardActivity after successful PIN verification
+                    val intent = Intent(this, DashBoardActivity::class.java)
+                    startActivity(intent)
                     finish()
                 } else if (passText.text.toString().length == 4) {
                     incorrectText.text = getString(R.string.pinpass_incorrect_password)
@@ -137,7 +147,7 @@ class PinPassActivity : AppCompatActivity() {
 
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
-        val isChangePinActive = intent.getBooleanExtra(extraChangePin, true)
+        val isChangePinActive = intent.getBooleanExtra(extraChangePin, false)
         if (isChangePinActive) {
             // Allow back navigation when changing PIN
             super.onBackPressed()
