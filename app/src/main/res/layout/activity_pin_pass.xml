@@ -4,20 +4,16 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-
     android:background="@drawable/dashboard_background">
 
-    <EditText
-        android:id="@+id/pinPassEdit"
-        android:layout_width="349dp"
-        android:layout_height="92dp"
-        android:ems="10"
-        android:inputType="numberPassword"
-        android:maxLength="4"
-        android:textAlignment="center"
-        android:textSize="48sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+    <Button
+        android:id="@+id/pinPassForgotButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:fontFamily="@font/ibm_plex_sans_regular"
+        android:text="@string/pinpass_forgot_pin"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -37,14 +33,22 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="1.0" />
 
-    <Button
-        android:id="@+id/pinPassForgotButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:text="@string/pinpass_forgot_pin"
-        android:fontFamily="@font/ibm_plex_sans_regular"
+    <EditText
+        android:id="@+id/pinPassEdit"
+        android:layout_width="349dp"
+        android:layout_height="92dp"
+        android:ems="10"
+        android:inputType="numberPassword"
+        android:maxLength="4"
+        android:textAlignment="center"
+        android:textSize="48sp"
+        android:textColor="@color/white"
+        android:textColorHint="#80FFFFFF"
+        android:hint="••••"
+        android:backgroundTint="@color/white"
+        android:importantForAutofill="no"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -52,8 +56,11 @@
         android:id="@+id/pinPassIncorrectText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
         android:textColor="@color/redDown"
-        app:layout_constraintBottom_toTopOf="@+id/pinPassEdit"
+        android:textSize="14sp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/pinPassEdit" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
