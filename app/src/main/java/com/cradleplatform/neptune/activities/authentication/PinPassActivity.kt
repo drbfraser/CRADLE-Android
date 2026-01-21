@@ -95,8 +95,6 @@ class PinPassActivity : AppCompatActivity() {
             }
         }
     }
-
-
     private fun setUpPIN(isChangePinActive: Boolean) {
         val headerLine = findViewById<TextView>(R.id.pinPassText)
         val passText = findViewById<EditText>(R.id.pinPassEdit)
@@ -119,8 +117,8 @@ class PinPassActivity : AppCompatActivity() {
                             apply()
                         }
                         Toast.makeText(this, getString(R.string.change_pin_act_pin_saved), Toast.LENGTH_LONG).show()
-//                        val intent = Intent(this@PinPassActivity, DashBoardActivity::class.java)
-//                        startActivity(intent)
+                        //  val intent = Intent(this@PinPassActivity, DashBoardActivity::class.java)
+                        //  startActivity(intent)
                         // Finish activity after changing PIN
                         finish()
                     } else {
