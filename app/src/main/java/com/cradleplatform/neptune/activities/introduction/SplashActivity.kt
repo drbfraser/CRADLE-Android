@@ -1,5 +1,6 @@
 package com.cradleplatform.neptune.activities.introduction
 
+import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
@@ -10,6 +11,7 @@ import com.cradleplatform.neptune.manager.UpdateManager
 import com.cradleplatform.neptune.utilities.SharedPreferencesMigration
 import com.cradleplatform.neptune.utilities.notification.NotificationManagerCustom
 import com.cradleplatform.neptune.activities.authentication.LoginActivity
+import com.cradleplatform.neptune.activities.authentication.PinPassActivity
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -47,6 +49,23 @@ class SplashActivity : AppCompatActivity() {
             updateManager.immediateUpdate(this@SplashActivity)
             delay(DELAY_MILLIS)
 
+            // Check if user is logged in and PIN is set
+            if (loginManager.isLoggedIn()) {
+                val pinCodePrefKey = getString(R.string.key_pin_shared_key)
+                val defaultPinCode = getString(R.string.key_pin_default_pin)
+                val pin = sharedPreferences.getString(pinCodePrefKey, defaultPinCode)
+
+                if (pin != defaultPinCode) {
+                    // PIN is set, require verification
+                    val intent = Intent(this@SplashActivity, PinPassActivity::class.java)
+                    intent.putExtra("isChangePin", false)
+                    startActivity(intent)
+                    finish()
+                    return@launch
+                }
+            }
+
+            // No PIN set or not logged in, continue to login/intro
             val intent = if (isMigrationSuccessful) {
                 LoginActivity.makeIntent(this@SplashActivity, shouldDisplayMessage = false)
             } else {

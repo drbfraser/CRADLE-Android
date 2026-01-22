@@ -165,7 +165,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 val intent = Intent(activity, PinPassActivity::class.java)
                 intent.putExtra("isChangePin", true)
                 startActivity(intent)
-                requireActivity().finishAffinity()
+                // requireActivity().finishAffinity()
                 true
             }
 
