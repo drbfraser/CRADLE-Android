@@ -89,6 +89,20 @@ class CradleApplication : Application(), Configuration.Provider {
      */
     val appCoroutineScope = CoroutineScope(Dispatchers.Main)
 
+    /**
+     * Determines if an activity should allow rotation.
+     * Activities that use ViewModels and support configuration changes should be added here.
+     */
+    private fun shouldAllowRotation(activity: Activity): Boolean {
+        return when (activity::class.java.simpleName) {
+            "LoginActivity" -> true
+            // Add other activities that should support rotation here
+            // "DashBoardActivity" -> true,
+            // "SettingsActivity" -> true,
+            else -> false
+        }
+    }
+
     override fun onCreate() {
         super.onCreate()
 
@@ -124,7 +138,10 @@ class CradleApplication : Application(), Configuration.Provider {
                     savedInstanceState: Bundle?
                 ) {
                     // new activity created; force its orientation to portrait
-                    activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+                    // Except for activities that should support rotation (like LoginActivity)
+                    if (!shouldAllowRotation(activity)) {
+                        activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+                    }
 
                     /**
                      *Regarding launchPinActivity
