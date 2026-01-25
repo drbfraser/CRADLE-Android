@@ -96,8 +96,8 @@ class CradleApplication : Application(), Configuration.Provider {
     private fun shouldAllowRotation(activity: Activity): Boolean {
         return when (activity::class.java.simpleName) {
             "LoginActivity" -> true
+            "DashBoardActivity" -> true
             // Add other activities that should support rotation here
-            // "DashBoardActivity" -> true,
             // "SettingsActivity" -> true,
             else -> false
         }
