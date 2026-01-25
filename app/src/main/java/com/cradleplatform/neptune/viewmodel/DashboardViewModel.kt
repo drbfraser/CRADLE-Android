@@ -165,10 +165,12 @@ class DashboardViewModel @Inject constructor(
                                 val smsKey = response.value
                                 if (smsKey != null) {
                                     smsKeyManager.storeSmsKey(smsKey)
-                                    _smsKeyUpdateResult.value = SmsKeyUpdateState.Success("Key update was successful")
+                                    _smsKeyUpdateResult.value =
+                                        SmsKeyUpdateState.Success("Key update was successful")
                                 }
                             }
-                            else -> _smsKeyUpdateResult.value = SmsKeyUpdateState.Error("Network Error: Key update unsuccessful")
+                            else -> _smsKeyUpdateResult.value =
+                                SmsKeyUpdateState.Error("Network Error: Key update unsuccessful")
                         }
                     }
                 }
@@ -214,4 +216,3 @@ sealed class SmsKeyUpdateState {
     data class Error(val message: String) : SmsKeyUpdateState()
     data class Warning(val daysUntilExpiry: Int) : SmsKeyUpdateState()
 }
-

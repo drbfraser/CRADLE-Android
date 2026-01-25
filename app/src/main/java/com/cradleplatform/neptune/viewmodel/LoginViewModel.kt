@@ -98,4 +98,3 @@ sealed class LoginState {
     data class Error(val statusCode: Int, val message: String?) : LoginState()
     data class NetworkError(val exception: Throwable) : LoginState()
 }
-
