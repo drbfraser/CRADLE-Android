@@ -3,152 +3,109 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.widget.ImageButton
-import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.cardview.widget.CardView
-import androidx.lifecycle.ViewModelProvider
 import com.cradleplatform.neptune.R
-import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
-import com.cradleplatform.neptune.http_sms_service.http.RestApi
-import com.cradleplatform.neptune.manager.SmsKeyManager
+import com.cradleplatform.neptune.databinding.ActivityDashBoardBinding
 import com.cradleplatform.neptune.sync.SyncReminderHelper
 import com.cradleplatform.neptune.sync.views.SyncActivity
 import com.cradleplatform.neptune.utilities.CustomToast
 import com.cradleplatform.neptune.utilities.Util
-import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager
 import com.cradleplatform.neptune.activities.education.EducationActivity
 import com.cradleplatform.neptune.activities.patients.PatientsActivity
 import com.cradleplatform.neptune.activities.newPatient.ReadingActivity
 import com.cradleplatform.neptune.activities.forms.SavedFormsActivity
 import com.cradleplatform.neptune.activities.statistics.StatsActivity
 import com.cradleplatform.neptune.activities.settings.SettingsActivity.Companion.makeSettingsActivityLaunchIntent
-import com.cradleplatform.neptune.manager.SmsKey
-import com.cradleplatform.neptune.viewmodel.UserViewModel
+import com.cradleplatform.neptune.viewmodel.DashboardViewModel
+import com.cradleplatform.neptune.viewmodel.SmsKeyUpdateState
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
+
+    private lateinit var binding: ActivityDashBoardBinding
+    private val viewModel: DashboardViewModel by viewModels()
+
     @Inject
     lateinit var sharedPreferences: SharedPreferences
-    @Inject
-    lateinit var networkStateManager: NetworkStateManager
-    private lateinit var userViewModel: UserViewModel
-
-    @Inject
-    lateinit var smsKeyManager: SmsKeyManager
-    @Inject
-    lateinit var restApi: RestApi
-
-    private val coroutineScope = CoroutineScope(Dispatchers.Main)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_dash_board)
-        checkPinIfPinSet()
+
+        binding = ActivityDashBoardBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        setupActionBar()
+        setupObservers()
         setupOnClickListener()
-
-        val actionBar = supportActionBar
-        if (actionBar != null) {
-            actionBar.setDisplayShowHomeEnabled(true)
-            actionBar.setDisplayUseLogoEnabled(true)
-            actionBar.title = ""
-        }
-
-        userViewModel = ViewModelProvider(this)[UserViewModel::class.java]
-        userViewModel.getNewNumber().let {
-            if (it.isNotEmpty()) {
-                showPhoneChangedDialog(it)
-            }
-            // else: getNewNumber returned null meaning new phone number has not been detected
-        }
-
-        networkCheck()
+        checkPinIfPinSet()
         setVersionName()
-        validateSmsKeyAndPerformActions()
+        viewModel.validateSmsKeyAndPerformActions()
     }
 
-    private fun networkCheck() {
-        // Disable entering StatsActivity without network connectivity.
-        val statView = findViewById<View>(R.id.statConstraintLayout)
-        val statImg = statView.findViewById<ImageButton>(R.id.statImg)
-        val statCardView: CardView = statView.findViewById(R.id.statCardView)
-        val isNetworkAvailable = networkStateManager.getInternetConnectivityStatus()
-
-        isNetworkAvailable.observe(this) {
-            when (it) {
-                true -> {
-                    statImg.alpha = OPACITY_FULL
-                    statCardView.alpha = OPACITY_FULL
-                    statView.isClickable = true
-                    statCardView.isClickable = true
-                    statImg.isClickable = true
-                }
-                false -> {
-                    statImg.alpha = OPACITY_HALF
-                    statCardView.alpha = OPACITY_HALF
-                    statView.isClickable = false
-                    statCardView.isClickable = false
-                    statImg.isClickable = false
-                }
-            }
+    private fun setupActionBar() {
+        supportActionBar?.apply {
+            setDisplayShowHomeEnabled(true)
+            setDisplayUseLogoEnabled(true)
+            title = ""
         }
     }
 
-    private fun validateSmsKeyAndPerformActions() {
-        // check SMS key validity only when there is internet connection
-        val isNetworkAvailable = networkStateManager.getInternetConnectivityStatus().value
-        if ((isNetworkAvailable != null) && isNetworkAvailable) {
-            val smsKeyStatus = smsKeyManager.validateSmsKey()
-            val userId = sharedPreferences.getInt(UserViewModel.USER_ID_KEY, -1)
-            if (smsKeyStatus == SmsKeyManager.KeyState.NOTFOUND) {
-                // User doesn't have a valid sms key
-                coroutineScope.launch {
-                    when (val response = restApi.getNewSmsKey(userId)) {
-                        is NetworkResult.Success -> {
-                            val smsKey = response.value
-                            if (smsKey != null) {
-                                smsKeyManager.storeSmsKey(smsKey)
-                                showToast("Key update was successful")
-                            }
-                        }
-                        else -> showToast("Network Error: Key update unsuccessful")
-                    }
-                }
-            }
-            if (smsKeyStatus == SmsKeyManager.KeyState.EXPIRED) {
-                // User's sms key is expired
-                if (userId != -1) {
-                    coroutineScope.launch {
-                        val response = restApi.refreshSmsKey(userId)
-                        handleSmsKeyUpdateResult(response)
-                    }
-                }
-            } else if (smsKeyStatus == SmsKeyManager.KeyState.WARN) {
-                // User's sms key is stale - Warn the user to refresh their SmsKey
-                val daysUntilExpiry = smsKeyManager.getDaysUntilExpiry()
-                showExpiryWarning(applicationContext, daysUntilExpiry)
-            }
+    private fun setupObservers() {
+        // Observe network state for enabling/disabling statistics
+        viewModel.isNetworkAvailable.observe(this) { isAvailable ->
+            updateStatisticsCardState(isAvailable)
+        }
+
+        // Observe SMS key update results
+        viewModel.smsKeyUpdateResult.observe(this) { state ->
+            handleSmsKeyUpdateState(state)
+        }
+
+        // Observe new phone number detection
+        viewModel.newPhoneNumber.observe(this) { newNumber ->
+            newNumber?.let { showPhoneChangedDialog(it) }
         }
     }
 
-    private fun handleSmsKeyUpdateResult(result: NetworkResult<SmsKey>) {
-        when (result) {
-            is NetworkResult.Success -> {
-                smsKeyManager.storeSmsKey(result.value)
-                showToast("Key update was successful")
+    private fun updateStatisticsCardState(isNetworkAvailable: Boolean) {
+        binding.statConstraintLayout.apply {
+            val alpha = if (isNetworkAvailable) OPACITY_FULL else OPACITY_HALF
+            val statImg = findViewById<View>(R.id.statImg)
+            val statCardView = findViewById<View>(R.id.statCardView)
+
+            statImg.alpha = alpha
+            statCardView.alpha = alpha
+            isClickable = isNetworkAvailable
+            statCardView.isClickable = isNetworkAvailable
+            statImg.isClickable = isNetworkAvailable
+        }
+    }
+
+    private fun handleSmsKeyUpdateState(state: SmsKeyUpdateState) {
+        when (state) {
+            is SmsKeyUpdateState.Success -> {
+                showToast(state.message)
+                viewModel.resetSmsKeyUpdateState()
             }
-            else -> showToast("Network Error: Key update unsuccessful")
+            is SmsKeyUpdateState.Error -> {
+                showToast(state.message)
+                viewModel.resetSmsKeyUpdateState()
+            }
+            is SmsKeyUpdateState.Warning -> {
+                showExpiryWarning(this, state.daysUntilExpiry)
+                viewModel.resetSmsKeyUpdateState()
+            }
+            is SmsKeyUpdateState.Idle -> {
+                // No action needed
+            }
         }
     }
 
@@ -171,18 +128,17 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
         )
 
         builder.setNegativeButton("Yes") { _, _ ->
-            userViewModel.updateUserPhoneNumbers(newPhoneNumber)
+            viewModel.updateUserPhoneNumber(newPhoneNumber)
         }
 
         builder.setPositiveButton("No") { _, _ ->
-            // Do nothing as user as clicked no
+            viewModel.dismissPhoneNumberDialog()
         }
         builder.show()
     }
 
     private fun setVersionName() {
-        val textView: TextView = findViewById(R.id.versionNameTextView)
-        textView.text = Util.getVersionName(this)
+        binding.versionNameTextView.text = Util.getVersionName(this)
     }
 
     override fun onRestart() {
@@ -199,60 +155,53 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     private fun setupOnClickListener() {
-        val patientView =
-            findViewById<View>(R.id.patientConstraintLayout)
-        val patientCardView: CardView = patientView.findViewById(R.id.patientCardView)
-        val patientImg = patientView.findViewById<ImageButton>(R.id.patientImg)
-        patientCardView.setOnClickListener(this)
-        patientImg.setOnClickListener(this)
+        // Patient card
+        binding.patientConstraintLayout.apply {
+            findViewById<View>(R.id.patientCardView).setOnClickListener(this@DashBoardActivity)
+            findViewById<View>(R.id.patientImg).setOnClickListener(this@DashBoardActivity)
+        }
 
-        val statView = findViewById<View>(R.id.statConstraintLayout)
-        val statCardview: CardView = statView.findViewById(R.id.statCardView)
-        val statImg = statView.findViewById<ImageButton>(R.id.statImg)
-        statCardview.setOnClickListener(this)
-        statImg.setOnClickListener(this)
+        // Stats card
+        binding.statConstraintLayout.apply {
+            findViewById<View>(R.id.statCardView).setOnClickListener(this@DashBoardActivity)
+            findViewById<View>(R.id.statImg).setOnClickListener(this@DashBoardActivity)
+        }
 
-        val syncView =
-            findViewById<View>(R.id.syncConstraintlayout)
-        val syncCardview: CardView = syncView.findViewById(R.id.syncCardView)
-        val syncImg = syncView.findViewById<ImageButton>(R.id.syncImg)
-        syncCardview.setOnClickListener(this)
-        syncImg.setOnClickListener(this)
+        // Sync card
+        binding.syncConstraintlayout.apply {
+            findViewById<View>(R.id.syncCardView).setOnClickListener(this@DashBoardActivity)
+            findViewById<View>(R.id.syncImg).setOnClickListener(this@DashBoardActivity)
+        }
 
-        val readingLayout =
-            findViewById<View>(R.id.readingConstraintLayout)
-        val readingCardView: CardView = readingLayout.findViewById(R.id.readingCardView)
-        val readImg = readingLayout.findViewById<ImageButton>(R.id.readingImg)
-        readingCardView.setOnClickListener(this)
-        readImg.setOnClickListener(this)
+        // Reading card
+        binding.readingConstraintLayout.apply {
+            findViewById<View>(R.id.readingCardView).setOnClickListener(this@DashBoardActivity)
+            findViewById<View>(R.id.readingImg).setOnClickListener(this@DashBoardActivity)
+        }
 
-        val helpLayout =
-            findViewById<View>(R.id.educationConstraintLayout)
-        val helpCardView: CardView = helpLayout.findViewById(R.id.educationCardView)
-        val helpImg = helpLayout.findViewById<ImageButton>(R.id.educationImg)
-        helpCardView.setOnClickListener(this)
-        helpImg.setOnClickListener(this)
+        // Education card
+        binding.educationConstraintLayout.apply {
+            findViewById<View>(R.id.educationCardView).setOnClickListener(this@DashBoardActivity)
+            findViewById<View>(R.id.educationImg).setOnClickListener(this@DashBoardActivity)
+        }
 
-        val formsLayout =
-            findViewById<View>(R.id.formsConstraintLayout)
-        val formsCardView: CardView = formsLayout.findViewById(R.id.formsCardView)
-        val formsImg = formsLayout.findViewById<ImageButton>(R.id.formsImg)
-        formsCardView.setOnClickListener(this)
-        formsImg.setOnClickListener(this)
+        // Forms card
+        binding.formsConstraintLayout.apply {
+            findViewById<View>(R.id.formsCardView).setOnClickListener(this@DashBoardActivity)
+            findViewById<View>(R.id.formsImg).setOnClickListener(this@DashBoardActivity)
+        }
     }
 
     private fun checkPinIfPinSet() {
         val pinCodePrefKey = getString(R.string.key_pin_shared_key)
         val defaultPinCode = getString(R.string.key_pin_default_pin)
-        val pin = sharedPreferences.getString(pinCodePrefKey, defaultPinCode)
-        Log.d(TAG, "PIN: $pin")
-        if (pin == defaultPinCode) {
+
+        if (viewModel.checkPinIfPinSet(pinCodePrefKey, defaultPinCode)) {
             AlertDialog.Builder(this@DashBoardActivity)
                 .setMessage(R.string.dash_pin_not_set)
                 .setCancelable(true)
                 .setTitle(R.string.warning)
-                .setPositiveButton(R.string.ok) { _, _ ->
-                }
+                .setPositiveButton(R.string.ok) { _, _ -> }
                 .show()
         }
     }
