@@ -9,16 +9,16 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="16dp">
+        android:padding="12dp">
 
         <TextView
             android:id="@+id/mainTitleDashBoard"
             style="@style/LargeTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="4dp"
             android:text="@string/app_name"
-            android:textSize="40sp"
+            android:textSize="32sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -27,23 +27,23 @@
             android:id="@+id/notice_card_view"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginTop="8dp"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="12dp"
+            android:layout_marginTop="4dp"
             android:foreground="?android:attr/selectableItemBackground"
             app:cardBackgroundColor="@color/colorOffWhite"
-            app:cardCornerRadius="8dp"
-            app:cardElevation="4dp"
+            app:cardCornerRadius="6dp"
+            app:cardElevation="3dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/mainTitleDashBoard"
-            app:layout_constraintWidth_max="600dp">
+            app:layout_constraintWidth_max="700dp">
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/notice_layout"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:padding="12dp">
+                android:padding="8dp">
 
                 <TextView
                     android:id="@+id/notice_text_view"
@@ -52,6 +52,7 @@
                     android:text="@string/dashboard_notice_alpha_build_message"
                     android:textAlignment="center"
                     android:textAppearance="@style/TextAppearance.Cradle.Body1"
+                    android:textSize="12sp"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
@@ -59,25 +60,25 @@
             </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- First row: Reading and Patient cards side by side -->
+        <!-- First row: Reading and Patient -->
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/readingConstraintLayout"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="10dp"
             android:layout_marginEnd="8dp"
             app:layout_constraintEnd_toStartOf="@+id/patientConstraintLayout"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/notice_card_view"
-            app:layout_constraintWidth_percent="0.25">
+            app:layout_constraintWidth_percent="0.33">
 
             <androidx.cardview.widget.CardView
                 android:id="@+id/readingCardView"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"
                 android:clickable="true"
-                android:contentDescription="@string/activity_patients_title"
+                android:contentDescription="@string/dashboard_new_patient"
                 android:focusable="true"
                 android:foreground="?android:attr/selectableItemBackground"
                 app:cardBackgroundColor="@color/colorOffWhite"
@@ -97,8 +98,8 @@
 
             <ImageButton
                 android:id="@+id/readingImg"
-                android:layout_width="80dp"
-                android:layout_height="80dp"
+                android:layout_width="95dp"
+                android:layout_height="95dp"
                 android:adjustViewBounds="true"
                 android:background="@drawable/round_background"
                 android:contentDescription="@string/dashboard_new_patient"
@@ -113,12 +114,11 @@
             <TextView
                 style="@style/DashboardCardText"
                 android:layout_width="0dp"
-                android:layout_marginStart="4dp"
-                android:layout_marginEnd="4dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
                 android:layout_marginBottom="8dp"
                 android:text="@string/dashboard_new_patient"
                 android:textAlignment="center"
-                android:textSize="12sp"
                 app:layout_constraintBottom_toBottomOf="@+id/readingCardView"
                 app:layout_constraintEnd_toEndOf="@+id/readingCardView"
                 app:layout_constraintStart_toStartOf="@+id/readingCardView"
@@ -134,11 +134,11 @@
             app:layout_constraintEnd_toStartOf="@+id/statConstraintLayout"
             app:layout_constraintStart_toEndOf="@+id/readingConstraintLayout"
             app:layout_constraintTop_toTopOf="@+id/readingConstraintLayout"
-            app:layout_constraintWidth_percent="0.25">
+            app:layout_constraintWidth_percent="0.33">
 
             <androidx.cardview.widget.CardView
                 android:id="@+id/patientCardView"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"
                 android:clickable="true"
@@ -162,8 +162,8 @@
 
             <ImageButton
                 android:id="@+id/patientImg"
-                android:layout_width="80dp"
-                android:layout_height="80dp"
+                android:layout_width="95dp"
+                android:layout_height="95dp"
                 android:adjustViewBounds="true"
                 android:background="@drawable/round_background"
                 android:contentDescription="@string/activity_patients_title"
@@ -178,11 +178,11 @@
             <TextView
                 style="@style/DashboardCardText"
                 android:layout_width="0dp"
-                android:layout_marginStart="4dp"
-                android:layout_marginEnd="4dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
                 android:layout_marginBottom="8dp"
                 android:text="@string/patients"
-                android:textSize="12sp"
+                android:textAlignment="center"
                 app:layout_constraintBottom_toBottomOf="@+id/patientCardView"
                 app:layout_constraintEnd_toEndOf="@+id/patientCardView"
                 app:layout_constraintStart_toStartOf="@+id/patientCardView"
@@ -194,15 +194,14 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:layout_marginEnd="8dp"
-            app:layout_constraintEnd_toStartOf="@+id/syncConstraintlayout"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/patientConstraintLayout"
             app:layout_constraintTop_toTopOf="@+id/readingConstraintLayout"
-            app:layout_constraintWidth_percent="0.25">
+            app:layout_constraintWidth_percent="0.33">
 
             <androidx.cardview.widget.CardView
                 android:id="@+id/statCardView"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"
                 android:clickable="true"
@@ -226,8 +225,8 @@
 
             <ImageButton
                 android:id="@+id/statImg"
-                android:layout_width="80dp"
-                android:layout_height="80dp"
+                android:layout_width="95dp"
+                android:layout_height="95dp"
                 android:adjustViewBounds="true"
                 android:background="@drawable/round_background"
                 android:contentDescription="@string/dashboard_statistics"
@@ -242,30 +241,32 @@
             <TextView
                 style="@style/DashboardCardText"
                 android:layout_width="0dp"
-                android:layout_marginStart="4dp"
-                android:layout_marginEnd="4dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
                 android:layout_marginBottom="8dp"
                 android:text="@string/dashboard_statistics"
-                android:textSize="12sp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
+                android:textAlignment="center"
+                app:layout_constraintBottom_toBottomOf="@+id/statCardView"
+                app:layout_constraintEnd_toEndOf="@+id/statCardView"
+                app:layout_constraintStart_toStartOf="@+id/statCardView"
                 app:layout_constraintTop_toBottomOf="@+id/statImg" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
+        <!-- Second row: Sync, Forms, and Education -->
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/syncConstraintlayout"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/statConstraintLayout"
-            app:layout_constraintTop_toTopOf="@+id/readingConstraintLayout"
-            app:layout_constraintWidth_percent="0.25">
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="8dp"
+            app:layout_constraintEnd_toStartOf="@+id/formsConstraintLayout"
+            app:layout_constraintStart_toStartOf="@+id/readingConstraintLayout"
+            app:layout_constraintTop_toBottomOf="@+id/readingConstraintLayout"
+            app:layout_constraintWidth_percent="0.33">
 
             <androidx.cardview.widget.CardView
                 android:id="@+id/syncCardView"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"
                 android:clickable="true"
@@ -281,7 +282,7 @@
                 app:layout_constraintTop_toTopOf="parent">
 
                 <ImageView
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:contentDescription="@string/dashboard_sync"
                     app:srcCompat="@drawable/card_36" />
@@ -289,8 +290,8 @@
 
             <ImageButton
                 android:id="@+id/syncImg"
-                android:layout_width="80dp"
-                android:layout_height="80dp"
+                android:layout_width="95dp"
+                android:layout_height="95dp"
                 android:adjustViewBounds="true"
                 android:background="@drawable/round_background"
                 android:contentDescription="@string/dashboard_sync"
@@ -305,32 +306,31 @@
             <TextView
                 style="@style/DashboardCardText"
                 android:layout_width="0dp"
-                android:layout_marginStart="4dp"
-                android:layout_marginEnd="4dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
                 android:layout_marginBottom="8dp"
                 android:text="@string/dashboard_sync"
-                android:textSize="12sp"
-                app:layout_constraintBottom_toBottomOf="parent"
+                android:textAlignment="center"
+                app:layout_constraintBottom_toBottomOf="@+id/syncCardView"
                 app:layout_constraintEnd_toEndOf="@+id/syncCardView"
                 app:layout_constraintStart_toStartOf="@+id/syncCardView"
-                app:layout_constraintTop_toBottomOf="@id/syncImg" />
+                app:layout_constraintTop_toBottomOf="@+id/syncImg" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <!-- Second row: Forms and Education cards -->
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/formsConstraintLayout"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginStart="8dp"
             android:layout_marginEnd="8dp"
             app:layout_constraintEnd_toStartOf="@+id/educationConstraintLayout"
-            app:layout_constraintStart_toStartOf="@+id/readingConstraintLayout"
-            app:layout_constraintTop_toBottomOf="@+id/readingConstraintLayout"
-            app:layout_constraintWidth_percent="0.25">
+            app:layout_constraintStart_toEndOf="@+id/syncConstraintlayout"
+            app:layout_constraintTop_toTopOf="@+id/syncConstraintlayout"
+            app:layout_constraintWidth_percent="0.33">
 
             <androidx.cardview.widget.CardView
                 android:id="@+id/formsCardView"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"
                 android:clickable="true"
@@ -354,8 +354,8 @@
 
             <ImageButton
                 android:id="@+id/formsImg"
-                android:layout_width="80dp"
-                android:layout_height="80dp"
+                android:layout_width="95dp"
+                android:layout_height="95dp"
                 android:adjustViewBounds="true"
                 android:background="@drawable/round_background"
                 android:contentDescription="@string/dashboard_forms"
@@ -370,14 +370,14 @@
             <TextView
                 style="@style/DashboardCardText"
                 android:layout_width="0dp"
-                android:layout_marginStart="4dp"
-                android:layout_marginEnd="4dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
                 android:layout_marginBottom="8dp"
                 android:text="@string/dashboard_forms"
-                android:textSize="12sp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
+                android:textAlignment="center"
+                app:layout_constraintBottom_toBottomOf="@+id/formsCardView"
+                app:layout_constraintEnd_toEndOf="@+id/formsCardView"
+                app:layout_constraintStart_toStartOf="@+id/formsCardView"
                 app:layout_constraintTop_toBottomOf="@+id/formsImg" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -386,18 +386,18 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            app:layout_constraintEnd_toEndOf="@+id/patientConstraintLayout"
+            app:layout_constraintEnd_toEndOf="@+id/statConstraintLayout"
             app:layout_constraintStart_toEndOf="@+id/formsConstraintLayout"
-            app:layout_constraintTop_toTopOf="@+id/formsConstraintLayout"
-            app:layout_constraintWidth_percent="0.25">
+            app:layout_constraintTop_toTopOf="@+id/syncConstraintlayout"
+            app:layout_constraintWidth_percent="0.33">
 
             <androidx.cardview.widget.CardView
                 android:id="@+id/educationCardView"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"
                 android:clickable="true"
-                android:contentDescription="@string/dashboard_forms"
+                android:contentDescription="@string/dashboard_education"
                 android:focusable="true"
                 android:foreground="?android:attr/selectableItemBackground"
                 app:cardBackgroundColor="@color/colorOffWhite"
@@ -417,8 +417,8 @@
 
             <ImageButton
                 android:id="@+id/educationImg"
-                android:layout_width="80dp"
-                android:layout_height="80dp"
+                android:layout_width="95dp"
+                android:layout_height="95dp"
                 android:adjustViewBounds="true"
                 android:background="@drawable/round_background"
                 android:contentDescription="@string/dashboard_education"
@@ -433,14 +433,14 @@
             <TextView
                 style="@style/DashboardCardText"
                 android:layout_width="0dp"
-                android:layout_marginStart="4dp"
-                android:layout_marginEnd="4dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
                 android:layout_marginBottom="8dp"
                 android:text="@string/dashboard_education"
-                android:textSize="12sp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
+                android:textAlignment="center"
+                app:layout_constraintBottom_toBottomOf="@+id/educationCardView"
+                app:layout_constraintEnd_toEndOf="@+id/educationCardView"
+                app:layout_constraintStart_toStartOf="@+id/educationCardView"
                 app:layout_constraintTop_toBottomOf="@+id/educationImg" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -448,16 +448,17 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:layout_marginEnd="16dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginEnd="12dp"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/educationConstraintLayout">
+            app:layout_constraintTop_toBottomOf="@+id/syncConstraintlayout">
 
             <TextView
                 android:id="@+id/versionTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/version"
+                android:textSize="12sp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -468,6 +469,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="6dp"
                 android:text="@string/not_available_n_slash_a"
+                android:textSize="12sp"
                 app:layout_constraintBottom_toBottomOf="@+id/versionTextView"
                 app:layout_constraintStart_toEndOf="@+id/versionTextView"
                 app:layout_constraintTop_toTopOf="@+id/versionTextView" />
