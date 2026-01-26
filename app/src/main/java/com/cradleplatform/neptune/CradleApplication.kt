@@ -22,6 +22,8 @@ import com.cradleplatform.neptune.sync.views.SyncActivity
 import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager
 import com.cradleplatform.neptune.utilities.notification.NotificationManagerGlobal
 import com.cradleplatform.neptune.activities.authentication.PinPassActivity
+import com.cradleplatform.neptune.activities.authentication.LoginActivity
+import com.cradleplatform.neptune.activities.dashboard.DashBoardActivity
 
 import com.jakewharton.threetenabp.AndroidThreeTen
 import dagger.hilt.android.HiltAndroidApp
@@ -94,11 +96,11 @@ class CradleApplication : Application(), Configuration.Provider {
      * Activities that use ViewModels and support configuration changes should be added here.
      */
     private fun shouldAllowRotation(activity: Activity): Boolean {
-        return when (activity::class.java.simpleName) {
-            "LoginActivity" -> true
-            "DashBoardActivity" -> true
-            // Add other activities that should support rotation here
-            // "SettingsActivity" -> true,
+        return when (activity) {
+            is LoginActivity,
+            is DashBoardActivity -> true
+            // Add other activities that should support rotation here, e.g.:
+            // is SettingsActivity -> true
             else -> false
         }
     }
@@ -246,7 +248,10 @@ class CradleApplication : Application(), Configuration.Provider {
 
     fun pinPassActivityStarted() {
         pinActivityActive = true
-        lock.unlock()
+        // Ensure we only unlock if the mutex is locked to avoid IllegalStateException
+        if (lock.isLocked) {
+            lock.unlock()
+        }
     }
 
     fun logOutofSession() {
