@@ -22,6 +22,8 @@ import com.cradleplatform.neptune.sync.views.SyncActivity
 import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager
 import com.cradleplatform.neptune.utilities.notification.NotificationManagerGlobal
 import com.cradleplatform.neptune.activities.authentication.PinPassActivity
+import com.cradleplatform.neptune.activities.authentication.LoginActivity
+import com.cradleplatform.neptune.activities.dashboard.DashBoardActivity
 
 import com.jakewharton.threetenabp.AndroidThreeTen
 import dagger.hilt.android.HiltAndroidApp
@@ -89,6 +91,20 @@ class CradleApplication : Application(), Configuration.Provider {
      */
     val appCoroutineScope = CoroutineScope(Dispatchers.Main)
 
+    /**
+     * Determines if an activity should allow rotation.
+     * Activities that use ViewModels and support configuration changes should be added here.
+     */
+    private fun shouldAllowRotation(activity: Activity): Boolean {
+        return when (activity) {
+            is LoginActivity,
+            is DashBoardActivity -> true
+            // Add other activities that should support rotation here, e.g.:
+            // is SettingsActivity -> true
+            else -> false
+        }
+    }
+
     override fun onCreate() {
         super.onCreate()
 
@@ -124,7 +140,10 @@ class CradleApplication : Application(), Configuration.Provider {
                     savedInstanceState: Bundle?
                 ) {
                     // new activity created; force its orientation to portrait
-                    activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+                    // Except for activities that should support rotation (like LoginActivity)
+                    if (!shouldAllowRotation(activity)) {
+                        activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+                    }
 
                     /**
                      *Regarding launchPinActivity
@@ -229,7 +248,10 @@ class CradleApplication : Application(), Configuration.Provider {
 
     fun pinPassActivityStarted() {
         pinActivityActive = true
-        lock.unlock()
+        // Ensure we only unlock if the mutex is locked to avoid IllegalStateException
+        if (lock.isLocked) {
+            lock.unlock()
+        }
     }
 
     fun logOutofSession() {
