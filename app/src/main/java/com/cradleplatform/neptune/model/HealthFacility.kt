@@ -10,8 +10,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 /**
  * A health facility database entity.
  *
- * @property id Identifier for this health facility; the entity's primary key.
- * @property name The name of the health facility.
+ * @property name The name of the health facility (primary key).
  * @property location The location of the health facility.
  * @property phoneNumber The phone number associated with this health facility.
  * @property about A description of the health facility.

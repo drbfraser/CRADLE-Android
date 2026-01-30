@@ -1,6 +1,5 @@
 package com.cradleplatform.neptune.activities.statistics
 
-import android.content.DialogInterface
 import android.content.Intent
 import android.content.SharedPreferences
 import android.graphics.Color
@@ -8,10 +7,6 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.widget.ArrayAdapter
-import android.widget.AutoCompleteTextView
-import android.widget.RadioButton
-import android.widget.RadioGroup
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
@@ -25,7 +20,6 @@ import com.cradleplatform.neptune.manager.HealthFacilityManager
 import com.cradleplatform.neptune.manager.ReadingManager
 import com.cradleplatform.neptune.model.HealthFacility
 import com.cradleplatform.neptune.model.Statistics
-import com.cradleplatform.neptune.model.UserRole
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.sync.workers.SyncAllWorker
 import com.cradleplatform.neptune.utilities.BarGraphValueFormatter
@@ -35,6 +29,7 @@ import com.cradleplatform.neptune.sync.SyncReminderHelper
 import com.cradleplatform.neptune.sync.views.SyncActivity
 import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager
 import com.cradleplatform.neptune.utilities.connectivity.api24.displayConnectivityToast
+import com.cradleplatform.neptune.fragments.statistics.StatsFilterDialogFragment
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.data.BarData
 import com.github.mikephil.charting.data.BarDataSet
@@ -42,8 +37,6 @@ import com.github.mikephil.charting.data.BarEntry
 import com.google.android.material.badge.BadgeDrawable
 import com.google.android.material.badge.BadgeUtils
 import com.google.android.material.datepicker.MaterialDatePicker
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.android.material.textfield.TextInputLayout
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.math.BigInteger
@@ -53,7 +46,7 @@ import javax.inject.Inject
 
 @Suppress("LargeClass")
 @AndroidEntryPoint
-class StatsActivity : AppCompatActivity() {
+class StatsActivity : AppCompatActivity(), StatsFilterDialogFragment.FilterSelectionListener {
     @Inject
     lateinit var readingManager: ReadingManager
     @Inject
@@ -236,144 +229,33 @@ class StatsActivity : AppCompatActivity() {
     }
 
     private fun setupFilterDialog() {
-        val builder = MaterialAlertDialogBuilder(this@StatsActivity)
-        builder.setTitle(getString(R.string.stats_activity_filter_header))
+        val dialogFragment = StatsFilterDialogFragment.newInstance()
+        dialogFragment.show(supportFragmentManager, StatsFilterDialogFragment.TAG)
+    }
 
-        val dialogView = layoutInflater.inflate(R.layout.dialog_stats_filter_picker, null)
-        builder.setView(dialogView)
-
-        val healthFacilityPicker = dialogView.findViewById<AutoCompleteTextView>(
-            R.id.health_facility_auto_complete_text
-        )
-        var healthFacilityPickerHasSelection = false
-        val healthFacilityLayout = dialogView.findViewById<TextInputLayout>(R.id.health_facility_input_layout)
-        val healthTextView = dialogView.findViewById<TextView>(R.id.filterPickerTextView)
-
-        var tmpCheckedItem = viewModel.savedFilterOption
-        var tmpHealthFacility: HealthFacility? = viewModel.savedHealthFacility
-
-        // Ignore any changes on "cancel"
-        builder.setNegativeButton(getString(android.R.string.cancel), null)
-        builder.setPositiveButton(getString(android.R.string.ok)) { _, _ ->
-            // OK was clicked, save the choice
-            // (and reload only if we are saving a new option):
-
-            if (tmpCheckedItem != viewModel.savedFilterOption) {
-                if (tmpCheckedItem == StatisticsFilterOptions.BYFACILITY) {
-                    updateUi(tmpCheckedItem, tmpHealthFacility, viewModel.savedStartTime, viewModel.savedEndTime)
-                } else {
-                    updateUi(
-                        tmpCheckedItem,
-                        viewModel.savedHealthFacility,
-                        viewModel.savedStartTime,
-                        viewModel.savedEndTime
-                    )
-                }
-            } else if (tmpCheckedItem == StatisticsFilterOptions.BYFACILITY) {
-                if (tmpHealthFacility?.name != viewModel.savedHealthFacility?.name) {
-                    // If user has selected a different health facility after previously
-                    // viewing another health facility:
-                    updateUi(tmpCheckedItem, tmpHealthFacility, viewModel.savedStartTime, viewModel.savedEndTime)
-                }
+    override fun onFilterSelected(
+        filterOption: StatisticsFilterOptions,
+        healthFacility: HealthFacility?
+    ) {
+        // Check if we need to update the UI based on the selected filter
+        if (filterOption != viewModel.savedFilterOption) {
+            if (filterOption == StatisticsFilterOptions.BYFACILITY) {
+                updateUi(filterOption, healthFacility, viewModel.savedStartTime, viewModel.savedEndTime)
+            } else {
+                updateUi(
+                    filterOption,
+                    viewModel.savedHealthFacility,
+                    viewModel.savedStartTime,
+                    viewModel.savedEndTime
+                )
+            }
+        } else if (filterOption == StatisticsFilterOptions.BYFACILITY) {
+            if (healthFacility?.name != viewModel.savedHealthFacility?.name) {
+                // If user has selected a different health facility after previously
+                // viewing another health facility:
+                updateUi(filterOption, healthFacility, viewModel.savedStartTime, viewModel.savedEndTime)
             }
         }
-
-        val dialog = builder.create()
-
-        val allStatsButton = dialogView.findViewById<RadioButton>(R.id.statFilterDialog_showAllButton)
-        val facilityButton = dialogView.findViewById<RadioButton>(R.id.statFilterDialog_healthFacilityButton)
-
-        // Button enable/disable based on role:
-        val roleString = sharedPreferences.getString(getString(R.string.key_role), UserRole.VHT.toString())
-        roleString?.let {
-            when (UserRole.safeValueOf(it)) {
-                UserRole.VHT -> {
-                    allStatsButton.isEnabled = false
-                    facilityButton.isEnabled = false
-                }
-                UserRole.CHO -> {
-                    allStatsButton.isEnabled = false
-                }
-                UserRole.HCW -> {
-                    allStatsButton.isEnabled = false
-                }
-                UserRole.UNKNOWN -> {
-                    healthTextView.text = getString(R.string.stats_activity_unknown_role)
-                    healthTextView.setTextColor(Color.RED)
-                    healthTextView.visibility = View.VISIBLE
-                }
-                else -> {
-                    // Leave them all open for ADMIN.
-                }
-            }
-        }
-
-        healthFacilityLayout.visibility = View.GONE
-        healthTextView.visibility = View.GONE
-
-        val facilityStringArray = viewModel.healthFacilityArray.map { it.name }.toTypedArray()
-        healthFacilityPicker.setAdapter(
-            ArrayAdapter(
-                this@StatsActivity,
-                R.layout.support_simple_spinner_dropdown_item,
-                facilityStringArray
-            )
-        )
-        healthFacilityPicker.setOnItemClickListener { _, _: View, position: Int, _: Long ->
-            tmpHealthFacility = viewModel.healthFacilityArray[position]
-            dialog.getButton(DialogInterface.BUTTON_POSITIVE).isEnabled = true
-            healthFacilityPickerHasSelection = true
-        }
-
-        // If we have already set a health facility previously, set it as selected
-        // if it is in the list of selected health facilities:
-        viewModel.savedHealthFacility?.let {
-            // False here means do not filter other values in the dropdown
-            // based on what we setText to...
-            healthFacilityPicker.setText(it.name, false)
-            healthFacilityPickerHasSelection = true
-            // tmpHealthFacility is already set to viewModel.savedHealthFacility
-            // so pressing "OK" essentially has no effect.
-        }
-
-        val buttonGroup = dialogView.findViewById<RadioGroup>(R.id.statFilterDialog_radioGroup)
-        when (viewModel.savedFilterOption) {
-            StatisticsFilterOptions.ALL -> buttonGroup.check(R.id.statFilterDialog_showAllButton)
-            StatisticsFilterOptions.JUSTME -> buttonGroup.check(R.id.statFilterDialog_userIDButton)
-            StatisticsFilterOptions.BYFACILITY -> {
-                buttonGroup.check(R.id.statFilterDialog_healthFacilityButton)
-                healthFacilityLayout.visibility = View.VISIBLE
-                healthTextView.visibility = View.VISIBLE
-            }
-        }
-
-        buttonGroup.setOnCheckedChangeListener { radioGroup: RadioGroup, _: Int ->
-            when (radioGroup.checkedRadioButtonId) {
-                R.id.statFilterDialog_healthFacilityButton -> {
-                    if (!healthFacilityPickerHasSelection) {
-                        // Disable positive button
-                        dialog.getButton(DialogInterface.BUTTON_POSITIVE).isEnabled = false
-                    }
-                    healthFacilityLayout.visibility = View.VISIBLE
-                    healthTextView.visibility = View.VISIBLE
-                    tmpCheckedItem = StatisticsFilterOptions.BYFACILITY
-                }
-                R.id.statFilterDialog_showAllButton -> {
-                    dialog.getButton(DialogInterface.BUTTON_POSITIVE).isEnabled = true
-                    healthFacilityLayout.visibility = View.GONE
-                    healthTextView.visibility = View.GONE
-                    tmpCheckedItem = StatisticsFilterOptions.ALL
-                }
-                R.id.statFilterDialog_userIDButton -> {
-                    dialog.getButton(DialogInterface.BUTTON_POSITIVE).isEnabled = true
-                    healthFacilityLayout.visibility = View.GONE
-                    healthTextView.visibility = View.GONE
-                    tmpCheckedItem = StatisticsFilterOptions.JUSTME
-                }
-            }
-        }
-
-        dialog.show()
     }
 
     private fun setupBasicStats(statsData: Statistics) {

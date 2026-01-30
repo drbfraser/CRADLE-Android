@@ -2,7 +2,9 @@ package com.cradleplatform.neptune.fragments.statistics
 
 import android.app.Dialog
 import android.content.DialogInterface
+import android.content.SharedPreferences
 import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.widget.ArrayAdapter
@@ -10,7 +12,6 @@ import android.widget.AutoCompleteTextView
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.TextView
-import androidx.core.os.bundleOf
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.activityViewModels
 import com.cradleplatform.neptune.R
@@ -21,10 +22,14 @@ import com.cradleplatform.neptune.viewmodel.statistics.StatsViewModel
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputLayout
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class StatsFilterDialogFragment : DialogFragment() {
     private val viewModel: StatsViewModel by activityViewModels()
+
+    @Inject
+    lateinit var sharedPreferences: SharedPreferences
 
     private var selectedFilterOption: StatisticsFilterOptions? = null
     private var selectedHealthFacility: HealthFacility? = null
@@ -42,8 +47,17 @@ class StatsFilterDialogFragment : DialogFragment() {
 
         // Restore state
         savedInstanceState?.let {
-            selectedFilterOption = it.getSerializable(KEY_FILTER_OPTION) as? StatisticsFilterOptions
-            selectedHealthFacility = it.getParcelable(KEY_HEALTH_FACILITY)
+            selectedFilterOption = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                it.getSerializable(KEY_FILTER_OPTION, StatisticsFilterOptions::class.java)
+            } else {
+                @Suppress("DEPRECATION")
+                it.getSerializable(KEY_FILTER_OPTION) as? StatisticsFilterOptions
+            }
+            // Get health facility name and find it from ViewModel
+            val facilityName = it.getString(KEY_HEALTH_FACILITY_NAME)
+            selectedHealthFacility = facilityName?.let { name ->
+                viewModel.healthFacilityArray.find { it.name == name }
+            }
             healthFacilityPickerHasSelection = it.getBoolean(KEY_HAS_SELECTION, false)
         }
 
@@ -101,10 +115,7 @@ class StatsFilterDialogFragment : DialogFragment() {
         val facilityButton = dialogView.findViewById<RadioButton>(R.id.statFilterDialog_healthFacilityButton)
 
         // Button enable/disable based on role
-        val roleString = requireActivity().getSharedPreferences(
-            getString(R.string.key_shared_pref_name),
-            android.content.Context.MODE_PRIVATE
-        ).getString(getString(R.string.key_role), UserRole.VHT.toString())
+        val roleString = sharedPreferences.getString(getString(R.string.key_role), UserRole.VHT.toString())
 
         roleString?.let {
             when (UserRole.safeValueOf(it)) {
@@ -196,14 +207,14 @@ class StatsFilterDialogFragment : DialogFragment() {
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putSerializable(KEY_FILTER_OPTION, selectedFilterOption)
-        outState.putParcelable(KEY_HEALTH_FACILITY, selectedHealthFacility)
+        outState.putString(KEY_HEALTH_FACILITY_NAME, selectedHealthFacility?.name)
         outState.putBoolean(KEY_HAS_SELECTION, healthFacilityPickerHasSelection)
     }
 
     companion object {
         const val TAG = "StatsFilterDialogFragment"
         private const val KEY_FILTER_OPTION = "filter_option"
-        private const val KEY_HEALTH_FACILITY = "health_facility"
+        private const val KEY_HEALTH_FACILITY_NAME = "health_facility_name"
         private const val KEY_HAS_SELECTION = "has_selection"
 
         fun newInstance(): StatsFilterDialogFragment {
