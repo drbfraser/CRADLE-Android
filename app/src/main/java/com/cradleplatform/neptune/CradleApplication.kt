@@ -24,6 +24,7 @@ import com.cradleplatform.neptune.utilities.notification.NotificationManagerGlob
 import com.cradleplatform.neptune.activities.authentication.PinPassActivity
 import com.cradleplatform.neptune.activities.authentication.LoginActivity
 import com.cradleplatform.neptune.activities.dashboard.DashBoardActivity
+import com.cradleplatform.neptune.activities.newPatient.ReadingActivity
 
 import com.jakewharton.threetenabp.AndroidThreeTen
 import dagger.hilt.android.HiltAndroidApp
@@ -98,7 +99,8 @@ class CradleApplication : Application(), Configuration.Provider {
     private fun shouldAllowRotation(activity: Activity): Boolean {
         return when (activity) {
             is LoginActivity,
-            is DashBoardActivity -> true
+            is DashBoardActivity,
+            is ReadingActivity -> true
             // Add other activities that should support rotation here, e.g.:
             // is SettingsActivity -> true
             else -> false
