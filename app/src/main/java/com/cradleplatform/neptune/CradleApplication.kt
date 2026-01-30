@@ -25,6 +25,7 @@ import com.cradleplatform.neptune.activities.authentication.PinPassActivity
 import com.cradleplatform.neptune.activities.authentication.LoginActivity
 import com.cradleplatform.neptune.activities.dashboard.DashBoardActivity
 import com.cradleplatform.neptune.activities.newPatient.ReadingActivity
+import com.cradleplatform.neptune.activities.statistics.StatsActivity
 
 import com.jakewharton.threetenabp.AndroidThreeTen
 import dagger.hilt.android.HiltAndroidApp
@@ -100,7 +101,8 @@ class CradleApplication : Application(), Configuration.Provider {
         return when (activity) {
             is LoginActivity,
             is DashBoardActivity,
-            is ReadingActivity -> true
+            is ReadingActivity,
+            is StatsActivity -> true
             // Add other activities that should support rotation here, e.g.:
             // is SettingsActivity -> true
             else -> false
