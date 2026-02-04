@@ -11,4 +11,3 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class EducationViewModel @Inject constructor() : ViewModel()
-

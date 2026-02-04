@@ -47,4 +47,3 @@ class VideoViewModel @Inject constructor(
         savedStateHandle[KEY_WAS_PLAYING] = isPlaying
     }
 }
-

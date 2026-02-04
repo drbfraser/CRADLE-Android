@@ -33,4 +33,3 @@ class PosterViewModel @Inject constructor(
         savedStateHandle[KEY_ZOOM_STATE] = state
     }
 }
-
