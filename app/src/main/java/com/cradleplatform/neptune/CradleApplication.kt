@@ -24,6 +24,9 @@ import com.cradleplatform.neptune.utilities.notification.NotificationManagerGlob
 import com.cradleplatform.neptune.activities.authentication.PinPassActivity
 import com.cradleplatform.neptune.activities.authentication.LoginActivity
 import com.cradleplatform.neptune.activities.dashboard.DashBoardActivity
+import com.cradleplatform.neptune.activities.education.EducationActivity
+import com.cradleplatform.neptune.activities.education.PosterActivity
+import com.cradleplatform.neptune.activities.education.VideoActivity
 import com.cradleplatform.neptune.activities.newPatient.ReadingActivity
 import com.cradleplatform.neptune.activities.statistics.StatsActivity
 
@@ -102,7 +105,10 @@ class CradleApplication : Application(), Configuration.Provider {
             is LoginActivity,
             is DashBoardActivity,
             is ReadingActivity,
-            is StatsActivity -> true
+            is StatsActivity,
+            is EducationActivity,
+            is VideoActivity,
+            is PosterActivity -> true
             // Add other activities that should support rotation here, e.g.:
             // is SettingsActivity -> true
             else -> false
