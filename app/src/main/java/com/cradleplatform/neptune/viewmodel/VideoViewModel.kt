@@ -16,6 +16,7 @@ class VideoViewModel @Inject constructor(
 
     companion object {
         private const val KEY_VIDEO_POSITION = "video_position"
+        private const val KEY_WAS_PLAYING = "was_playing"
     }
 
     /**
@@ -30,6 +31,20 @@ class VideoViewModel @Inject constructor(
      */
     fun saveVideoPosition(position: Int) {
         savedStateHandle[KEY_VIDEO_POSITION] = position
+    }
+
+    /**
+     * Get whether the video was playing before rotation
+     */
+    fun wasPlaying(): Boolean {
+        return savedStateHandle.get<Boolean>(KEY_WAS_PLAYING) ?: false
+    }
+
+    /**
+     * Save whether the video is currently playing
+     */
+    fun savePlayingState(isPlaying: Boolean) {
+        savedStateHandle[KEY_WAS_PLAYING] = isPlaying
     }
 }
 

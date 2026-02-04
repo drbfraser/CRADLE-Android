@@ -32,11 +32,10 @@ class VideoActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
-        // Save the current video position before configuration change or pause
+        // Save the current video position and playing state before configuration change or pause
         videoView?.let {
-            if (it.isPlaying) {
-                viewModel.saveVideoPosition(it.currentPosition)
-            }
+            viewModel.saveVideoPosition(it.currentPosition)
+            viewModel.savePlayingState(it.isPlaying)
         }
     }
 
@@ -51,6 +50,9 @@ class VideoActivity : AppCompatActivity() {
         videoView = findViewById<VideoView>(R.id.videoView)
 
         videoView?.apply {
+            // Hide the video view initially to prevent showing loading indicators
+            alpha = 0f
+
             // set preview image
             // gives the image; however, then does not show the video!
 //        videoView.setBackgroundResource(R.drawable.cradle_video_frame);
@@ -60,15 +62,23 @@ class VideoActivity : AppCompatActivity() {
 
             // Restore saved position or use default start location
             val savedPosition = viewModel.getVideoPosition()
+            val wasPlaying = viewModel.wasPlaying()
             val startPosition = if (savedPosition > 0) savedPosition else START_LOCATION_MS
 
             setOnPreparedListener {
                 seekTo(startPosition)
+                // Show the video view with a smooth fade-in
+                animate().alpha(1f).setDuration(200).start()
+                // Resume playing if it was playing before rotation
+                if (wasPlaying) {
+                    start()
+                }
             }
 
             setOnCompletionListener {
                 seekTo(START_LOCATION_MS)
                 viewModel.saveVideoPosition(START_LOCATION_MS)
+                viewModel.savePlayingState(false)
             }
         }
     }
