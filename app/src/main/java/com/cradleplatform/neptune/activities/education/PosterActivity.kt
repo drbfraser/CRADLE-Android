@@ -76,31 +76,48 @@ class PosterActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
-        // Save zoom and scroll position before configuration change or pause
+        // Save the entire zoom state using TouchImageView's built-in state management
         touchImageView?.let {
-            viewModel.saveZoomScale(it.currentZoom)
-            viewModel.saveScrollX(it.scrollX.toFloat())
-            viewModel.saveScrollY(it.scrollY.toFloat())
+            val state = Bundle()
+            it.onSaveInstanceState()?.let { savedState ->
+                state.putParcelable("touchImageViewState", savedState)
+                viewModel.saveZoomState(state)
+            }
         }
     }
 
     private fun setupPdfView(@DrawableRes imageId: Int) {
         touchImageView = findViewById<TouchImageView>(R.id.pdf_view_touch_image_view).apply {
+            // Hide initially to prevent loading flicker (same as video)
+            alpha = 0f
+
             setImageResource(imageId)
             setMaxZoomRatio(MAX_ZOOM_RATIO)
 
             // Restore saved state or use default values
-            val savedZoom = viewModel.getZoomScale()
-            val savedScrollX = viewModel.getScrollX()
-            val savedScrollY = viewModel.getScrollY()
+            val savedState = viewModel.getZoomState()
 
-            if (savedZoom != null && savedScrollX != null && savedScrollY != null) {
-                // Post the restoration to ensure the view is properly laid out first
-                post {
-                    setZoom(scale = savedZoom, focusX = savedScrollX, focusY = savedScrollY)
+            // Post the restoration to ensure the view is properly laid out first
+            post {
+                if (savedState != null) {
+                    // Restore the complete state from TouchImageView
+                    @Suppress("DEPRECATION")
+                    val touchImageViewState = savedState.getParcelable<android.os.Parcelable>("touchImageViewState")
+                    if (touchImageViewState != null) {
+                        onRestoreInstanceState(touchImageViewState)
+                    }
+                    // Fade in smoothly once restored
+                    postDelayed({
+                        animate().alpha(1f).setDuration(200).start()
+                    }, 150)
+                } else {
+                    // Default zoom for first time viewing
+                    setZoom(scale = DEFAULT_ZOOM_RATIO, focusX = 0f, focusY = 0f)
+                    // Fade in smoothly
+                    postDelayed({
+                        animate().alpha(1f).setDuration(200).start()
+                    }, 150)
                 }
-            } else {
-                setZoom(scale = DEFAULT_ZOOM_RATIO, focusX = 0f, focusY = 0f)
             }
         }
     }

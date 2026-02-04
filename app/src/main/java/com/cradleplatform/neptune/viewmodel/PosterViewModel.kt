@@ -1,5 +1,6 @@
 package com.cradleplatform.neptune.viewmodel
 
+import android.os.Bundle
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -15,51 +16,21 @@ class PosterViewModel @Inject constructor(
 ) : ViewModel() {
 
     companion object {
-        private const val KEY_ZOOM_SCALE = "zoom_scale"
-        private const val KEY_SCROLL_X = "scroll_x"
-        private const val KEY_SCROLL_Y = "scroll_y"
+        private const val KEY_ZOOM_STATE = "zoom_state"
     }
 
     /**
-     * Get the saved zoom scale
+     * Get the saved zoom state bundle
      */
-    fun getZoomScale(): Float? {
-        return savedStateHandle.get<Float>(KEY_ZOOM_SCALE)
+    fun getZoomState(): Bundle? {
+        return savedStateHandle.get<Bundle>(KEY_ZOOM_STATE)
     }
 
     /**
-     * Save the current zoom scale
+     * Save the zoom state bundle from TouchImageView
      */
-    fun saveZoomScale(scale: Float) {
-        savedStateHandle[KEY_ZOOM_SCALE] = scale
-    }
-
-    /**
-     * Get the saved scroll position X
-     */
-    fun getScrollX(): Float? {
-        return savedStateHandle.get<Float>(KEY_SCROLL_X)
-    }
-
-    /**
-     * Save the current scroll position X
-     */
-    fun saveScrollX(x: Float) {
-        savedStateHandle[KEY_SCROLL_X] = x
-    }
-
-    /**
-     * Get the saved scroll position Y
-     */
-    fun getScrollY(): Float? {
-        return savedStateHandle.get<Float>(KEY_SCROLL_Y)
-    }
-
-    /**
-     * Save the current scroll position Y
-     */
-    fun saveScrollY(y: Float) {
-        savedStateHandle[KEY_SCROLL_Y] = y
+    fun saveZoomState(state: Bundle) {
+        savedStateHandle[KEY_ZOOM_STATE] = state
     }
 }
 
