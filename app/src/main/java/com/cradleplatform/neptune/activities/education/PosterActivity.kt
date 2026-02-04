@@ -3,10 +3,13 @@ package com.cradleplatform.neptune.activities.education
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import androidx.activity.viewModels
 import androidx.annotation.DrawableRes
 import androidx.appcompat.app.AppCompatActivity
 import com.cradleplatform.neptune.R
+import com.cradleplatform.neptune.viewmodel.PosterViewModel
 import com.ortiz.touchview.TouchImageView
+import dagger.hilt.android.AndroidEntryPoint
 
 /**
  * We are using PDFs that are converted into PNG images appended on top of each other.
@@ -46,7 +49,11 @@ import com.ortiz.touchview.TouchImageView
  *     pngquant --quality=55-100 result-image.png
  *
  */
+@AndroidEntryPoint
 class PosterActivity : AppCompatActivity() {
+    private val viewModel: PosterViewModel by viewModels()
+    private var touchImageView: TouchImageView? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         check(DEFAULT_ZOOM_RATIO in 0f..MAX_ZOOM_RATIO)
         check(intent?.hasExtra(EXTRA_POSTER_RES_ID) == true)
@@ -67,11 +74,34 @@ class PosterActivity : AppCompatActivity() {
         }
     }
 
+    override fun onPause() {
+        super.onPause()
+        // Save zoom and scroll position before configuration change or pause
+        touchImageView?.let {
+            viewModel.saveZoomScale(it.currentZoom)
+            viewModel.saveScrollX(it.scrollX.toFloat())
+            viewModel.saveScrollY(it.scrollY.toFloat())
+        }
+    }
+
     private fun setupPdfView(@DrawableRes imageId: Int) {
-        findViewById<TouchImageView>(R.id.pdf_view_touch_image_view).apply {
+        touchImageView = findViewById<TouchImageView>(R.id.pdf_view_touch_image_view).apply {
             setImageResource(imageId)
             setMaxZoomRatio(MAX_ZOOM_RATIO)
-            setZoom(scale = DEFAULT_ZOOM_RATIO, focusX = 0f, focusY = 0f)
+
+            // Restore saved state or use default values
+            val savedZoom = viewModel.getZoomScale()
+            val savedScrollX = viewModel.getScrollX()
+            val savedScrollY = viewModel.getScrollY()
+
+            if (savedZoom != null && savedScrollX != null && savedScrollY != null) {
+                // Post the restoration to ensure the view is properly laid out first
+                post {
+                    setZoom(scale = savedZoom, focusX = savedScrollX, focusY = savedScrollY)
+                }
+            } else {
+                setZoom(scale = DEFAULT_ZOOM_RATIO, focusX = 0f, focusY = 0f)
+            }
         }
     }
 
