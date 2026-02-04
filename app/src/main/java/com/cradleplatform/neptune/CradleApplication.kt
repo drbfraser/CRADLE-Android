@@ -108,7 +108,8 @@ class CradleApplication : Application(), Configuration.Provider {
             is StatsActivity,
             is EducationActivity,
             is VideoActivity,
-            is PosterActivity -> true
+            is PosterActivity,
+            is SyncActivity -> true
             // Add other activities that should support rotation here, e.g.:
             // is SettingsActivity -> true
             else -> false

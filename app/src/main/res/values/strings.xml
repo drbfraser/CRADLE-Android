@@ -576,6 +576,8 @@
     <string name="sync_activity_status_uploading_assessments">Uploading assessments</string>
     <string name="sync_activity_status_downloading_assessments">Downloading assessments</string>
 
+    <string name="sync_activity_internet_connection_restored">Internet connection is restored and content is available to sync.</string>
+    <string name="sync_activity_no_internet_connection">No internet connection.</string>
     <string name="sync_activity_no_internet_connection_please_check_back_later">No internet connection; please check back later</string>
     <string name="sync_activity_sync_status_header">Sync Status</string>
     <string name="sync_activity_last_sync_result_header">Last Sync Result</string>
