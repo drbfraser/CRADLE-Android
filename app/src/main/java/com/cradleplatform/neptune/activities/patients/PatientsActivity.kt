@@ -32,7 +32,6 @@ import com.cradleplatform.neptune.sync.SyncReminderHelper
 import com.cradleplatform.neptune.sync.views.SyncActivity
 import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager
 import com.cradleplatform.neptune.utilities.connectivity.api24.displayConnectivityToast
-import com.cradleplatform.neptune.activities.dashboard.DashBoardActivity
 import com.google.android.material.badge.BadgeDrawable
 import com.google.android.material.badge.BadgeUtils
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
@@ -401,8 +400,8 @@ class PatientsActivity : AppCompatActivity() {
 
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
-
-        val intent = Intent(this, DashBoardActivity::class.java)
-        startActivity(intent)
+        // Just finish this activity to return to the previous activity in the back stack
+        // This will call onRestart() on DashBoardActivity instead of onCreate()
+        super.onBackPressed()
     }
 }
