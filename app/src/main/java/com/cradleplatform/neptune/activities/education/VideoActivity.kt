@@ -60,12 +60,11 @@ class VideoActivity : AppCompatActivity() {
             setVideoURI(uri)
             requestFocus()
 
-            // Restore saved position or use default start location
-            val savedPosition = viewModel.getVideoPosition()
-            val wasPlaying = viewModel.wasPlaying()
-            val startPosition = if (savedPosition > 0) savedPosition else START_LOCATION_MS
-
             setOnPreparedListener { mediaPlayer ->
+                // Restore saved position or use default start location (read fresh each time)
+                val savedPosition = viewModel.getVideoPosition()
+                val wasPlaying = viewModel.wasPlaying()
+                val startPosition = if (savedPosition > 0) savedPosition else START_LOCATION_MS
                 // Adjust video dimensions to maintain aspect ratio based on available screen space
                 val videoWidth = mediaPlayer.videoWidth
                 val videoHeight = mediaPlayer.videoHeight
