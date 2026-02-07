@@ -65,7 +65,28 @@ class VideoActivity : AppCompatActivity() {
             val wasPlaying = viewModel.wasPlaying()
             val startPosition = if (savedPosition > 0) savedPosition else START_LOCATION_MS
 
-            setOnPreparedListener {
+            setOnPreparedListener { mediaPlayer ->
+                // Adjust video dimensions to maintain aspect ratio
+                val videoWidth = mediaPlayer.videoWidth
+                val videoHeight = mediaPlayer.videoHeight
+
+                if (videoWidth > 0 && videoHeight > 0) {
+                    val videoAspectRatio = videoWidth.toFloat() / videoHeight.toFloat()
+                    val screenWidth = resources.displayMetrics.widthPixels
+                    val screenHeight = resources.displayMetrics.heightPixels
+
+                    // Calculate the proper dimensions
+                    val viewWidth = screenWidth - dpToPx(16) // Account for margins
+                    val viewHeight = (viewWidth / videoAspectRatio).toInt()
+
+                    // Update layout params
+                    layoutParams?.apply {
+                        width = viewWidth
+                        height = viewHeight
+                    }
+                    requestLayout()
+                }
+
                 seekTo(startPosition)
                 // Show the video view with a smooth fade-in
                 animate().alpha(1f).setDuration(200).start()
@@ -81,6 +102,10 @@ class VideoActivity : AppCompatActivity() {
                 viewModel.savePlayingState(false)
             }
         }
+    }
+
+    private fun dpToPx(dp: Int): Int {
+        return (dp * resources.displayMetrics.density).toInt()
     }
 
     companion object {
