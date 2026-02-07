@@ -66,23 +66,48 @@ class VideoActivity : AppCompatActivity() {
             val startPosition = if (savedPosition > 0) savedPosition else START_LOCATION_MS
 
             setOnPreparedListener { mediaPlayer ->
-                // Adjust video dimensions to maintain aspect ratio
+                // Adjust video dimensions to maintain aspect ratio based on available screen space
                 val videoWidth = mediaPlayer.videoWidth
                 val videoHeight = mediaPlayer.videoHeight
 
                 if (videoWidth > 0 && videoHeight > 0) {
                     val videoAspectRatio = videoWidth.toFloat() / videoHeight.toFloat()
+
+                    // Get total screen dimensions
                     val screenWidth = resources.displayMetrics.widthPixels
                     val screenHeight = resources.displayMetrics.heightPixels
 
-                    // Calculate the proper dimensions
-                    val viewWidth = screenWidth - dpToPx(16) // Account for margins
-                    val viewHeight = (viewWidth / videoAspectRatio).toInt()
+                    // Calculate space taken by other UI elements
+                    val actionBarHeight = supportActionBar?.height ?: 0
+                    val statusBarHeight = getStatusBarHeight()
+                    val headerView = findViewById<android.view.View>(R.id.textView9)
+                    val headerHeight = headerView?.height ?: 0
+                    val margins = dpToPx(16) // Top and bottom margins
+
+                    // Calculate available height for video
+                    val availableHeight = screenHeight - actionBarHeight - statusBarHeight - headerHeight - margins
+
+                    // Calculate available width (accounting for side margins)
+                    val availableWidth = screenWidth - dpToPx(16)
+
+                    // Determine dimensions based on aspect ratio to fit within available space
+                    var finalWidth: Int
+                    var finalHeight: Int
+
+                    if (availableWidth / videoAspectRatio <= availableHeight) {
+                        // Width is the limiting factor - fit to width
+                        finalWidth = availableWidth
+                        finalHeight = (finalWidth / videoAspectRatio).toInt()
+                    } else {
+                        // Height is the limiting factor - fit to height
+                        finalHeight = availableHeight
+                        finalWidth = (finalHeight * videoAspectRatio).toInt()
+                    }
 
                     // Update layout params
                     layoutParams?.apply {
-                        width = viewWidth
-                        height = viewHeight
+                        width = finalWidth
+                        height = finalHeight
                     }
                     requestLayout()
                 }
@@ -106,6 +131,15 @@ class VideoActivity : AppCompatActivity() {
 
     private fun dpToPx(dp: Int): Int {
         return (dp * resources.displayMetrics.density).toInt()
+    }
+
+    private fun getStatusBarHeight(): Int {
+        var result = 0
+        val resourceId = resources.getIdentifier("status_bar_height", "dimen", "android")
+        if (resourceId > 0) {
+            result = resources.getDimensionPixelSize(resourceId)
+        }
+        return result
     }
 
     companion object {
