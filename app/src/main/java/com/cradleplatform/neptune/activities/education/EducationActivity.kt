@@ -1,11 +1,17 @@
 package com.cradleplatform.neptune.activities.education
 
 import android.os.Bundle
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import com.cradleplatform.neptune.R
+import com.cradleplatform.neptune.viewmodel.EducationViewModel
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class EducationActivity : AppCompatActivity() {
+    private val viewModel: EducationViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_education)

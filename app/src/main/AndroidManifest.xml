@@ -80,7 +80,7 @@
         <activity
             android:name=".activities.newPatient.ReadingActivity"
             android:label="@string/title_activity_reading"
-            android:screenOrientation="portrait"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
             android:theme="@style/ReadingFlowTheme"
             android:windowSoftInputMode="adjustResize" />
         <activity

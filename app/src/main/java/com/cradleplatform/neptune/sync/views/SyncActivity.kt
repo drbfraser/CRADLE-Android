@@ -27,12 +27,25 @@ class SyncActivity : AppCompatActivity() {
 
     private var binding: ActivitySyncBinding? = null
 
+    // Track if this is the initial network observation to avoid showing toast on rotation
+    private var isInitialNetworkObservation = true
+    private var lastNetworkState: Boolean? = null
+
     @Inject
     lateinit var sharedPreferences: SharedPreferences
     lateinit var notificationManager: NotificationManagerCustom
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Restore state from savedInstanceState to persist across rotations
+        savedInstanceState?.let {
+            isInitialNetworkObservation = it.getBoolean(KEY_IS_INITIAL_NETWORK_OBSERVATION, true)
+            if (it.containsKey(KEY_LAST_NETWORK_STATE)) {
+                lastNetworkState = it.getBoolean(KEY_LAST_NETWORK_STATE)
+            }
+        }
+
         binding = DataBindingUtil.setContentView(this, R.layout.activity_sync)
         binding?.apply {
             viewModel = this@SyncActivity.viewModel
@@ -49,29 +62,47 @@ class SyncActivity : AppCompatActivity() {
         // Initialize the notification channel
         NotificationManagerCustom.createNotificationChannel(this)
 
+        setupSyncButton()
+        setupNetworkObserver()
+        setupSyncStatusObserver()
+    }
+
+    private fun setupSyncButton() {
         val syncButton = findViewById<Button>(R.id.sync_button)
         syncButton.setOnClickListener {
             syncButton.isEnabled = false
             viewModel.startSyncing()
         }
+    }
 
-        // Only if network is restored, notify user
+    private fun setupNetworkObserver() {
+        // Only show toast when network state actually changes, not on initial observation or rotation
         viewModel.isConnectedToInternet.observe(this) { isConnected ->
-            if (isConnected) {
-                Toast.makeText(
-                    this,
-                    "Internet connection is restored and content is available to sync.",
-                    Toast.LENGTH_LONG
-                ).show()
-            } else {
-                Toast.makeText(
-                    this,
-                    "No internet connection.",
-                    Toast.LENGTH_LONG
-                ).show()
+            if (isInitialNetworkObservation) {
+                // Skip the first observation (on activity creation/rotation)
+                isInitialNetworkObservation = false
+                lastNetworkState = isConnected
+            } else if (lastNetworkState != isConnected) {
+                // Only show toast if the network state has actually changed
+                lastNetworkState = isConnected
+                if (isConnected) {
+                    Toast.makeText(
+                        this,
+                        getString(R.string.sync_activity_internet_connection_restored),
+                        Toast.LENGTH_LONG
+                    ).show()
+                } else {
+                    Toast.makeText(
+                        this,
+                        getString(R.string.sync_activity_no_internet_connection),
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
             }
         }
+    }
 
+    private fun setupSyncStatusObserver() {
         showLastSyncStatus(null)
         viewModel.syncStatus.observe(this) { workInfo ->
             val syncStatusText = findViewById<TextView>(R.id.sync_status_text)
@@ -222,6 +253,15 @@ class SyncActivity : AppCompatActivity() {
         }
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        // Save state to persist across rotations
+        outState.putBoolean(KEY_IS_INITIAL_NETWORK_OBSERVATION, isInitialNetworkObservation)
+        lastNetworkState?.let {
+            outState.putBoolean(KEY_LAST_NETWORK_STATE, it)
+        }
+    }
+
     override fun onSupportNavigateUp(): Boolean {
         onBackPressed()
         return super.onSupportNavigateUp()
@@ -230,5 +270,7 @@ class SyncActivity : AppCompatActivity() {
     companion object {
         private const val TAG = "SyncActivity"
         const val LAST_SYNC_RESULT_MESSAGE = "lastSyncResultMessage"
+        private const val KEY_IS_INITIAL_NETWORK_OBSERVATION = "isInitialNetworkObservation"
+        private const val KEY_LAST_NETWORK_STATE = "lastNetworkState"
     }
 }

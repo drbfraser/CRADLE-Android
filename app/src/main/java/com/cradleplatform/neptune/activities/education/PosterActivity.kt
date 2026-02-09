@@ -3,10 +3,13 @@ package com.cradleplatform.neptune.activities.education
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import androidx.activity.viewModels
 import androidx.annotation.DrawableRes
 import androidx.appcompat.app.AppCompatActivity
 import com.cradleplatform.neptune.R
+import com.cradleplatform.neptune.viewmodel.PosterViewModel
 import com.ortiz.touchview.TouchImageView
+import dagger.hilt.android.AndroidEntryPoint
 
 /**
  * We are using PDFs that are converted into PNG images appended on top of each other.
@@ -46,7 +49,11 @@ import com.ortiz.touchview.TouchImageView
  *     pngquant --quality=55-100 result-image.png
  *
  */
+@AndroidEntryPoint
 class PosterActivity : AppCompatActivity() {
+    private val viewModel: PosterViewModel by viewModels()
+    private var touchImageView: TouchImageView? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         check(DEFAULT_ZOOM_RATIO in 0f..MAX_ZOOM_RATIO)
         check(intent?.hasExtra(EXTRA_POSTER_RES_ID) == true)
@@ -67,11 +74,51 @@ class PosterActivity : AppCompatActivity() {
         }
     }
 
+    override fun onPause() {
+        super.onPause()
+        // Save the entire zoom state using TouchImageView's built-in state management
+        touchImageView?.let {
+            val state = Bundle()
+            it.onSaveInstanceState()?.let { savedState ->
+                state.putParcelable("touchImageViewState", savedState)
+                viewModel.saveZoomState(state)
+            }
+        }
+    }
+
     private fun setupPdfView(@DrawableRes imageId: Int) {
-        findViewById<TouchImageView>(R.id.pdf_view_touch_image_view).apply {
+        touchImageView = findViewById<TouchImageView>(R.id.pdf_view_touch_image_view).apply {
+            // Hide initially to prevent loading flicker (same as video)
+            alpha = 0f
+
             setImageResource(imageId)
             setMaxZoomRatio(MAX_ZOOM_RATIO)
-            setZoom(scale = DEFAULT_ZOOM_RATIO, focusX = 0f, focusY = 0f)
+
+            // Restore saved state or use default values
+            val savedState = viewModel.getZoomState()
+
+            // Post the restoration to ensure the view is properly laid out first
+            post {
+                if (savedState != null) {
+                    // Restore the complete state from TouchImageView
+                    @Suppress("DEPRECATION")
+                    val touchImageViewState = savedState.getParcelable<android.os.Parcelable>("touchImageViewState")
+                    if (touchImageViewState != null) {
+                        onRestoreInstanceState(touchImageViewState)
+                    }
+                    // Fade in smoothly once restored
+                    postDelayed({
+                        animate().alpha(1f).setDuration(200).start()
+                    }, 150)
+                } else {
+                    // Default zoom for first time viewing
+                    setZoom(scale = DEFAULT_ZOOM_RATIO, focusX = 0f, focusY = 0f)
+                    // Fade in smoothly
+                    postDelayed({
+                        animate().alpha(1f).setDuration(200).start()
+                    }, 150)
+                }
+            }
         }
     }
 

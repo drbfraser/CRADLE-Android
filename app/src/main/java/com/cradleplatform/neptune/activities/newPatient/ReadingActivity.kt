@@ -26,7 +26,6 @@ import androidx.navigation.navOptions
 import androidx.test.espresso.IdlingResource
 import androidx.test.espresso.idling.CountingIdlingResource
 import com.cradleplatform.neptune.R
-import com.cradleplatform.neptune.activities.dashboard.DashBoardActivity
 import com.cradleplatform.neptune.databinding.ActivityReadingBinding
 import com.cradleplatform.neptune.ext.hideKeyboard
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
@@ -345,9 +344,8 @@ class ReadingActivity : AppCompatActivity(), ReferralDialogFragment.OnReadingSen
                 finish()
             }
             .setNegativeButton(R.string.discard_draft) { _, _ ->
-                val dashBoardIntent = Intent(this, DashBoardActivity::class.java)
-                dashBoardIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
-                startActivity(dashBoardIntent)
+                // Just finish this activity to return to the previous activity in the back stack
+                // This will call onRestart() on DashBoardActivity instead of onCreate()
                 finish()
             }
             .setNeutralButton(android.R.string.cancel, null)

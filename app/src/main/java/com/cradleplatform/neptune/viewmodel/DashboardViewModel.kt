@@ -42,6 +42,9 @@ class DashboardViewModel @Inject constructor(
 
     val isNetworkAvailable: LiveData<Boolean> = networkStateManager.getInternetConnectivityStatus()
 
+    // Track whether SMS key validation has already been performed in this session
+    private var hasSmsKeyBeenValidated = false
+
     init {
         checkForNewPhoneNumber()
     }
@@ -146,11 +149,19 @@ class DashboardViewModel @Inject constructor(
     }
 
     fun validateSmsKeyAndPerformActions() {
+        // Only validate once per session to avoid redundant network calls
+        if (hasSmsKeyBeenValidated) {
+            return
+        }
+
         // Check SMS key validity only when there is internet connection
         val isNetworkAvailable = networkStateManager.getInternetConnectivityStatus().value
         if (isNetworkAvailable != true) {
             return
         }
+
+        // Mark as validated to prevent future redundant calls
+        hasSmsKeyBeenValidated = true
 
         val smsKeyStatus = smsKeyManager.validateSmsKey()
         val userId = sharedPreferences.getInt(UserViewModel.USER_ID_KEY, -1)

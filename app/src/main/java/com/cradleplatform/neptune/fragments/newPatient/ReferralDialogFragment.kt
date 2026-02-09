@@ -43,7 +43,7 @@ import javax.inject.Inject
  */
 @AndroidEntryPoint
 @Suppress("LargeClass")
-class ReferralDialogFragment : DialogFragment() {
+class ReferralDialogFragment : DialogFragment(), BetterConnectivityDialogFragment.ConnectivityChoiceListener {
     private val viewModel: PatientReadingViewModel by activityViewModels()
 
     private var binding: ReferralDialogBinding? = null
@@ -82,7 +82,6 @@ class ReferralDialogFragment : DialogFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        retainInstance = true
 
         launchReason = arguments?.getSerializable(ARG_LAUNCH_REASON)
             as? ReadingActivity.LaunchReason ?: error("unreachable")
@@ -128,34 +127,12 @@ class ReferralDialogFragment : DialogFragment() {
             }
         }
 
-        fun sendViaSMS() {
-            if (referralDialogViewModel.isSelectedHealthFacilityValid() &&
-                referralDialogViewModel.isSending.value != true
-            ) {
-                // Retrieve and validate the locally stored smsKey - allow user to send SMS if the smsKey is valid
-                // TODO: Investigate and document why smsKeyManager is used here but not used
-                //  anywhere else where SMS functionality is enabled
-                val keyStatus: SmsKeyManager.KeyState = smsKeyManager.validateSmsKey()
-                if (keyStatus == SmsKeyManager.KeyState.NORMAL || keyStatus == SmsKeyManager.KeyState.WARN) {
-                    // SmsKey is normal or stale ==> Send SMS
-                    referralDialogViewModel.isSending.value = true
-                    lifecycleScope.launch { handleSmsReferralSend(view) }
-                } else {
-                    // SmsKey is invalid or expired ==> cannot send SMS
-                    // Display a TOAST message to inform the user about the invalid or expired SMS key
-                    val toastMessage = "Your SMS key has expired\n" +
-                        "Unable to send SMS. Ensure internet connectivity and refresh your SMS key in the settings."
-                    Toast.makeText(requireContext(), toastMessage, Toast.LENGTH_LONG).show()
-                }
-            }
-        }
-
         view.findViewById<Button>(R.id.send_sms_button).setOnClickListener {
             if (networkStateManager.getInternetConnectivityStatus().value == true) {
-                showBetterConnectivityDialog(sendWebButton) { continueWithSMS ->
-                    if (continueWithSMS) {
-                        sendViaSMS()
-                    }
+                // Show dialog asking if user wants to use data instead of SMS
+                if (childFragmentManager.findFragmentByTag(BetterConnectivityDialogFragment.TAG) == null) {
+                    BetterConnectivityDialogFragment.newInstance()
+                        .show(childFragmentManager, BetterConnectivityDialogFragment.TAG)
                 }
             } else {
                 sendViaSMS()
@@ -167,7 +144,37 @@ class ReferralDialogFragment : DialogFragment() {
         }
     }
 
+    // Implementation of ConnectivityChoiceListener interface
+    override fun onContinueWithSMS() {
+        sendViaSMS()
+    }
+
+    override fun onSendViaData() {
+        view?.findViewById<Button>(R.id.send_web_button)?.performClick()
+    }
+
+    private fun sendViaSMS() {
+        if (referralDialogViewModel.isSelectedHealthFacilityValid() &&
+            referralDialogViewModel.isSending.value != true
+        ) {
+            // Retrieve and validate the locally stored smsKey
+            val keyStatus: SmsKeyManager.KeyState = smsKeyManager.validateSmsKey()
+            if (keyStatus == SmsKeyManager.KeyState.NORMAL || keyStatus == SmsKeyManager.KeyState.WARN) {
+                // SmsKey is normal or stale ==> Send SMS
+                referralDialogViewModel.isSending.value = true
+                lifecycleScope.launch { handleSmsReferralSend(requireView()) }
+            } else {
+                // SmsKey is invalid or expired ==> cannot send SMS
+                val toastMessage = "Your SMS key has expired\n" +
+                    "Unable to send SMS. Ensure internet connectivity and refresh your SMS key in the settings."
+                Toast.makeText(requireContext(), toastMessage, Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
     private fun showBetterConnectivityDialog(sendWebButton: Button, onDialogClosed: (Boolean) -> Unit) {
+        // Deprecated: This method is no longer used. The BetterConnectivityDialogFragment is used instead.
+        // Keeping this for reference during transition period.
         val builder: AlertDialog.Builder = AlertDialog.Builder(context)
         builder
             .setMessage("It seems that your current internet connection is stronger than the SMS network.\n" + "\n" +
