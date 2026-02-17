@@ -13,6 +13,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.res.ResourcesCompat
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
@@ -33,6 +34,7 @@ import com.cradleplatform.neptune.utilities.validatePort
 import com.cradleplatform.neptune.activities.authentication.LoginActivity
 import com.cradleplatform.neptune.activities.authentication.PinPassActivity
 import com.cradleplatform.neptune.fragments.settings.LoggingOutDialogFragment
+import com.cradleplatform.neptune.viewmodel.SettingsViewModel
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -98,6 +100,8 @@ class SettingsActivity : AppCompatActivity() {
 @AndroidEntryPoint
 class SettingsFragment : PreferenceFragmentCompat() {
 
+    private val viewModel: SettingsViewModel by viewModels()
+
     @Inject
     lateinit var loginManager: LoginManager
 
@@ -116,8 +120,6 @@ class SettingsFragment : PreferenceFragmentCompat() {
     @Inject
     lateinit var restApi: RestApi
 
-    private var selectedPosition =
-        -1 // the index of the selected relay phone number in the list view
 
     override fun onResume() {
         super.onResume()
@@ -235,7 +237,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         listView.choiceMode = ListView.CHOICE_MODE_SINGLE
 
         listView.setOnItemClickListener { _, _, position, _ ->
-            selectedPosition = position
+            viewModel.saveSelectedPosition(position)
             adapter.notifyDataSetChanged()
         }
 
@@ -292,7 +294,6 @@ class SettingsFragment : PreferenceFragmentCompat() {
     /**
      * Creates an AlertDialog for selecting a relay phone number from the list.
      * @param listView The ListView containing the list of phone numbers.
-     * @param selectedPosition The initially selected position in the list.
      * @param phoneNumbers The list of relay phone numbers.
      * @return The AlertDialog instance.
      */
@@ -304,6 +305,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
             .setTitle(R.string.select_relay_phone_number_title).setView(listView)
             .setNegativeButton("Cancel") { dialog, _ -> dialog.dismiss() }
             .setPositiveButton("Submit") { dialog, _ ->
+                val selectedPosition = viewModel.getSelectedPosition()
                 if (selectedPosition != -1) {
                     val selectedPhoneNumber = phoneNumbers[selectedPosition]
                     sharedPreferences.edit().putString(RELAY_PHONE_NUMBER, selectedPhoneNumber)
