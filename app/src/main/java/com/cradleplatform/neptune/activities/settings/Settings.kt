@@ -329,7 +329,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
     /**
      * Displays an error toast with the given error message.
-     * @param message The error message to display in the toast.
+     * @param errorMessage The error message to display in the toast.
      */
     private fun showErrorToast(errorMessage: String) {
         showToast(errorMessage)
