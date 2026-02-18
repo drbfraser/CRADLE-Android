@@ -90,7 +90,8 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
         progressDialog.show()
 
         lifecycleScope.launch {
-            val result = patientManager.associatePatientWithUser(currPatient.id)
+            val patient = currPatient ?: return@launch
+            val result = patientManager.associatePatientWithUser(patient.id)
             if (result.failed) {
                 progressDialog.cancel()
                 Toast.makeText(
@@ -108,15 +109,17 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
      * adds patient info to local db and starts [PatientProfileActivity]
      */
     private suspend fun addThePatientInfoToLocalDb(progressDialog: ProgressDialog) {
+        val patient = currPatient ?: return
+
         patientManager.addPatientWithReadings(
-            currPatient,
+            patient,
             patientReadings,
             areReadingsFromServer = true
         )
 
         val intent =
             Intent(this@GlobalPatientProfileActivity, PatientProfileActivity::class.java)
-        intent.putExtra("patient", currPatient)
+        intent.putExtra("patient", patient)
         intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
         startActivity(intent)
         withContext(Dispatchers.Main) {
@@ -154,7 +157,7 @@ class GlobalPatientProfileActivity : PatientProfileActivity() {
             patientReadings = result.value.readings
             setupAddToMyPatientList()
             setupToolBar()
-            populatePatientInfo(currPatient)
+            currPatient?.let { populatePatientInfo(it) }
             setupReadingsRecyclerView()
             setupLineChart()
             progressDialog.cancel()

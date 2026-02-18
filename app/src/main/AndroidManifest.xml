@@ -59,7 +59,9 @@
             </intent-filter>
         </activity>
         <activity android:name=".activities.dashboard.DashBoardActivity" />
-        <activity android:name=".activities.patients.PatientProfileActivity" />
+        <activity
+            android:name=".activities.patients.PatientProfileActivity"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden" />
         <activity android:name=".activities.patients.PatientReferralActivity" />
         <activity android:name=".activities.patients.PatientUpdateDrugMedicalActivity" />
         <activity android:name=".activities.patients.EditPregnancyActivity" />
