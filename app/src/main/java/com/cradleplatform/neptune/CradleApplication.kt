@@ -28,6 +28,7 @@ import com.cradleplatform.neptune.activities.education.EducationActivity
 import com.cradleplatform.neptune.activities.education.PosterActivity
 import com.cradleplatform.neptune.activities.education.VideoActivity
 import com.cradleplatform.neptune.activities.newPatient.ReadingActivity
+import com.cradleplatform.neptune.activities.patients.PatientsActivity
 import com.cradleplatform.neptune.activities.settings.HealthFacilitiesActivity
 import com.cradleplatform.neptune.activities.settings.SettingsActivity
 import com.cradleplatform.neptune.activities.statistics.StatsActivity
@@ -113,7 +114,8 @@ class CradleApplication : Application(), Configuration.Provider {
             is PosterActivity,
             is SyncActivity,
             is SettingsActivity,
-            is HealthFacilitiesActivity -> true
+            is HealthFacilitiesActivity,
+            is PatientsActivity -> true
             // Add other activities that should support rotation here
             else -> false
         }

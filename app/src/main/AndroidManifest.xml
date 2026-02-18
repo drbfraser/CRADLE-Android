@@ -71,7 +71,7 @@
         <activity
             android:name=".activities.patients.PatientsActivity"
             android:label="@string/title_activity_patients"
-            android:screenOrientation="portrait"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
             android:theme="@style/AppTheme.NoActionBar"
             android:exported="false">
             <intent-filter>
