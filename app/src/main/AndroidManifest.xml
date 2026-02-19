@@ -38,7 +38,9 @@
         <activity
             android:name=".activities.patients.GlobalPatientSearchActivity"
             android:windowSoftInputMode="adjustNothing" />
-        <activity android:name=".activities.settings.HealthFacilitiesActivity" />
+        <activity
+            android:name=".activities.settings.HealthFacilitiesActivity"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden" />
         <activity android:name=".activities.education.PosterActivity" />
         <activity android:name=".activities.education.EducationActivity" />
         <activity android:name=".activities.statistics.StatsActivity"
@@ -57,7 +59,9 @@
             </intent-filter>
         </activity>
         <activity android:name=".activities.dashboard.DashBoardActivity" />
-        <activity android:name=".activities.patients.PatientProfileActivity" />
+        <activity
+            android:name=".activities.patients.PatientProfileActivity"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden" />
         <activity android:name=".activities.patients.PatientReferralActivity" />
         <activity android:name=".activities.patients.PatientUpdateDrugMedicalActivity" />
         <activity android:name=".activities.patients.EditPregnancyActivity" />
@@ -69,7 +73,7 @@
         <activity
             android:name=".activities.patients.PatientsActivity"
             android:label="@string/title_activity_patients"
-            android:screenOrientation="portrait"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
             android:theme="@style/AppTheme.NoActionBar"
             android:exported="false">
             <intent-filter>
@@ -86,7 +90,7 @@
         <activity
             android:name=".activities.settings.SettingsActivity"
             android:label="Settings"
-            android:screenOrientation="portrait" />
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden" />
         <activity
             android:name=".activities.forms.FormSelectionActivity"
             android:label="Form Selection"

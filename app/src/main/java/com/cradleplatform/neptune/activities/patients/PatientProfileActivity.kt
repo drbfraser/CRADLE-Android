@@ -16,6 +16,7 @@ import android.widget.RadioGroup
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import androidx.core.content.ContextCompat
@@ -44,6 +45,7 @@ import com.cradleplatform.neptune.activities.newPatient.ReadingActivity.Companio
 import com.cradleplatform.neptune.activities.newPatient.ReadingActivity.Companion.makeIntentForRecheck
 import com.cradleplatform.neptune.activities.forms.SavedFormsActivity
 import com.cradleplatform.neptune.adapters.patients.ReadingRecyclerViewAdapter
+import com.cradleplatform.neptune.viewmodel.patients.PatientProfileViewModel
 import com.cradleplatform.neptune.utilities.makeSuccessSnackbar
 import com.cradleplatform.neptune.utilities.makeWarningSnackbar
 import com.github.mikephil.charting.charts.LineChart
@@ -53,7 +55,6 @@ import com.github.mikephil.charting.data.LineDataSet
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import java.text.ParseException
 import javax.inject.Inject
 
@@ -69,6 +70,8 @@ import javax.inject.Inject
 @AndroidEntryPoint
 open class PatientProfileActivity : AppCompatActivity() {
 
+    private val viewModel: PatientProfileViewModel by viewModels()
+
     private lateinit var patientID: TextView
     private lateinit var patientName: TextView
     private lateinit var patientAge: TextView
@@ -82,8 +85,8 @@ open class PatientProfileActivity : AppCompatActivity() {
     private lateinit var btnPregnancy: Button
 
     lateinit var readingRecyclerview: RecyclerView
-    lateinit var currPatient: Patient
-    lateinit var patientReadings: List<Reading>
+    protected var currPatient: Patient? = null
+    protected var patientReadings: List<Reading> = emptyList()
     private var patientReferrals: List<Referral>? = null
     private var patientAssessments: List<Assessment>? = null
 
@@ -121,19 +124,56 @@ open class PatientProfileActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_patient_profile)
         initAllFields()
+        setupToolBar()
+        setupUpdateRecord()
+        setupViewModelObservers()
+
         if (!getLocalPatient()) {
             // Not a local patient, might be a child class so we let the child do the init stuff
             return
         }
-        setupReadingsRecyclerView()
-        setupCreatePatientReadingButton()
-        lifecycleScope.launch {
-            setupSeeSavedFormsButton()
-            setupSeeSubmittedFormsButton()
+
+        // Data will be loaded asynchronously and observers will handle UI updates
+    }
+
+    private fun setupViewModelObservers() {
+        viewModel.patient.observe(this) { patient ->
+            patient?.let {
+                currPatient = it
+                populatePatientInfo(it)
+                setupEditPatient(it)
+                setupBtnPregnancy(it)
+
+                // Setup form buttons when patient is loaded
+                lifecycleScope.launch {
+                    setupSeeSavedFormsButton()
+                    setupSeeSubmittedFormsButton()
+                }
+            }
         }
-        setupUpdateRecord()
-        setupLineChart()
-        setupToolBar()
+
+        viewModel.readings.observe(this) { readings ->
+            patientReadings = readings
+            setupReadingsRecyclerView()
+            setupLineChart()
+            setupCreatePatientReadingButton()
+        }
+
+        viewModel.referrals.observe(this) { referrals ->
+            patientReferrals = referrals
+            // Update RecyclerView when referrals change
+            if (patientReadings.isNotEmpty()) {
+                setupReadingsRecyclerView()
+            }
+        }
+
+        viewModel.assessments.observe(this) { assessments ->
+            patientAssessments = assessments
+            // Update RecyclerView when assessments change
+            if (patientReadings.isNotEmpty()) {
+                setupReadingsRecyclerView()
+            }
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -169,15 +209,10 @@ open class PatientProfileActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        if (!getLocalPatient()) {
-            // not a local patient, might be a child class
-            return
+        // Only refresh if we have a patient loaded
+        currPatient?.let {
+            viewModel.refreshPatientData()
         }
-        setupLineChart()
-        setupReadingsRecyclerView()
-        setupEditPatient(currPatient)
-        setupBtnPregnancy(currPatient)
-        setupCreatePatientReadingButton()
     }
 
     private fun changeAddReadingButtonColorIfNeeded(): Boolean {
@@ -217,19 +252,24 @@ open class PatientProfileActivity : AppCompatActivity() {
     }
 
     open fun getLocalPatient(): Boolean {
-        val tmpPatient = if (intent.hasExtra(EXTRA_PATIENT_ID)) {
-            // Assertion here should be safe due to hasExtra check
+        if (intent.hasExtra(EXTRA_PATIENT_ID)) {
+            // Load patient from database using ViewModel
             val patientId: String = intent.getStringExtra(EXTRA_PATIENT_ID)!!
-            runBlocking { patientManager.getPatientById(patientId) }
+            viewModel.loadPatient(patientId)
+            // Return true immediately, data will be loaded asynchronously
+            // and observers will update UI
+            return true
         } else {
-            intent.getSerializableExtra(EXTRA_PATIENT) as Patient?
+            // Patient passed directly as intent extra
+            val tmpPatient = intent.getSerializableExtra(EXTRA_PATIENT) as Patient?
+            if (tmpPatient != null) {
+                currPatient = tmpPatient
+                viewModel.setPatient(tmpPatient)
+                populatePatientInfo(tmpPatient)
+                return true
+            }
         }
-
-        if (tmpPatient != null) {
-            currPatient = tmpPatient
-            populatePatientInfo(currPatient)
-        }
-        return tmpPatient != null
+        return false
     }
 
     override fun onSupportNavigateUp(): Boolean {
@@ -413,15 +453,6 @@ open class PatientProfileActivity : AppCompatActivity() {
         }
     }
 
-    private fun getThisPatientsReadings(): List<Reading> {
-        // TODO: as per MOB-270, we should not have database retrieval operations within runBlocking.
-        //  (refer to issue #37)
-        val readings: List<Reading> =
-            runBlocking { readingManager.getReadingsByPatientId(currPatient.id) }
-        val comparator: Comparator<Reading> = Reading.DescendingDateComparator
-        return readings.sortedWith(comparator)
-    }
-
     private val newReferralLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == RESULT_OK) {
@@ -441,42 +472,34 @@ open class PatientProfileActivity : AppCompatActivity() {
         }
 
     private fun createNewReferral() {
-        val intent = PatientReferralActivity.makeIntentForPatient(
-            this@PatientProfileActivity,
-            currPatient
-        )
-        newReferralLauncher.launch(intent)
+        currPatient?.let { patient ->
+            val intent = PatientReferralActivity.makeIntentForPatient(
+                this@PatientProfileActivity,
+                patient
+            )
+            newReferralLauncher.launch(intent)
+        }
     }
 
     private fun createNewReading() {
-        val intent = makeIntentForNewReadingExistingPatient(
-            this@PatientProfileActivity,
-            currPatient.id
-        )
-        startActivityForResult(intent, READING_ACTIVITY_DONE)
+        currPatient?.let { patient ->
+            val intent = makeIntentForNewReadingExistingPatient(
+                this@PatientProfileActivity,
+                patient.id
+            )
+            startActivityForResult(intent, READING_ACTIVITY_DONE)
+        }
     }
 
     private fun createNewForm() {
-        val intent = FormSelectionActivity.makeIntentForPatientId(
-            this@PatientProfileActivity,
-            currPatient.id,
-            currPatient
-        )
-        startActivity(intent)
-    }
-
-    private fun getThisPatientsReferrals(): List<Referral>? {
-        val referrals: List<Referral>? =
-            runBlocking { referralManager.getReferralByPatientId(currPatient.id) }
-        val comparator: Comparator<Referral> = Referral.DescendingDateComparator
-        return referrals?.sortedWith(comparator)
-    }
-
-    private fun getThisPatientAssessments(): List<Assessment>? {
-        val assessments: List<Assessment>? =
-            runBlocking { assessmentManager.getAssessmentByPatientId(currPatient.id) }
-        val comparator: Comparator<Assessment> = Assessment.DescendingDateComparator
-        return assessments?.sortedWith(comparator)
+        currPatient?.let { patient ->
+            val intent = FormSelectionActivity.makeIntentForPatientId(
+                this@PatientProfileActivity,
+                patient.id,
+                patient
+            )
+            startActivity(intent)
+        }
     }
 
     private fun setupCreatePatientReadingButton() {
@@ -502,41 +525,47 @@ open class PatientProfileActivity : AppCompatActivity() {
     }
 
     private suspend fun setupSeeSavedFormsButton() {
-        val createFormButton = findViewById<Button>(R.id.seeSavedFormsButton)
-        val responsesForPatient = formResponseManager.searchForDraftFormsByPatientId(currPatient.id)
-        createFormButton.visibility =
-            if (!responsesForPatient.isNullOrEmpty()) View.VISIBLE else View.GONE
-        createFormButton.setOnClickListener {
-            val intent = SavedFormsActivity.makeIntent(
-                this@PatientProfileActivity,
-                currPatient.id,
-                currPatient,
-                true,
-            )
-            startActivity(intent)
+        currPatient?.let { patient ->
+            val createFormButton = findViewById<Button>(R.id.seeSavedFormsButton)
+            val responsesForPatient = formResponseManager.searchForDraftFormsByPatientId(patient.id)
+            createFormButton.visibility =
+                if (!responsesForPatient.isNullOrEmpty()) View.VISIBLE else View.GONE
+            createFormButton.setOnClickListener {
+                val intent = SavedFormsActivity.makeIntent(
+                    this@PatientProfileActivity,
+                    patient.id,
+                    patient,
+                    true,
+                )
+                startActivity(intent)
+            }
         }
     }
 
     private suspend fun setupSeeSubmittedFormsButton() {
-        val createFormButton = findViewById<Button>(R.id.seeSubmittedFormsButton)
-        val responsesForPatient =
-            formResponseManager.searchForSubmittedFormsByPatientId(currPatient.id)
-        createFormButton.visibility =
-            if (!responsesForPatient.isNullOrEmpty()) View.VISIBLE else View.GONE
-        createFormButton.setOnClickListener {
-            val intent = SavedFormsActivity.makeIntent(
-                this@PatientProfileActivity,
-                currPatient.id,
-                currPatient,
-                false,
-            )
-            startActivity(intent)
+        currPatient?.let { patient ->
+            val createFormButton = findViewById<Button>(R.id.seeSubmittedFormsButton)
+            val responsesForPatient =
+                formResponseManager.searchForSubmittedFormsByPatientId(patient.id)
+            createFormButton.visibility =
+                if (!responsesForPatient.isNullOrEmpty()) View.VISIBLE else View.GONE
+            createFormButton.setOnClickListener {
+                val intent = SavedFormsActivity.makeIntent(
+                    this@PatientProfileActivity,
+                    patient.id,
+                    patient,
+                    false,
+                )
+                startActivity(intent)
+            }
         }
     }
 
     private fun onUpdateButtonClicked(isDrugRecord: Boolean) {
-        val intent = PatientUpdateDrugMedicalActivity.makeIntent(this, isDrugRecord, currPatient)
-        startActivity(intent)
+        currPatient?.let { patient ->
+            val intent = PatientUpdateDrugMedicalActivity.makeIntent(this, isDrugRecord, patient)
+            startActivity(intent)
+        }
     }
 
     private fun setupUpdateRecord() {
@@ -549,9 +578,7 @@ open class PatientProfileActivity : AppCompatActivity() {
     }
 
     open fun setupReadingsRecyclerView() {
-        patientReadings = getThisPatientsReadings()
-        patientReferrals = getThisPatientsReferrals()
-        patientAssessments = getThisPatientAssessments()
+        // Data now comes from ViewModel observers
         val combinedList: MutableList<Any> = patientReadings.map { i -> i }.toMutableList()
         if (patientReferrals != null)
             combinedList.addAll(patientReferrals!!.map { i -> i })
@@ -585,7 +612,7 @@ open class PatientProfileActivity : AppCompatActivity() {
                 }
 
                 override fun onLongClick(readingId: String?): Boolean {
-                    runBlocking { askToDeleteReading(readingId) }
+                    lifecycleScope.launch { askToDeleteReading(readingId) }
                     return true
                 }
 
@@ -611,8 +638,10 @@ open class PatientProfileActivity : AppCompatActivity() {
             .setPositiveButton(
                 R.string.activity_patient_profile_delete_reading_dialog_delete_button
             ) { _, _ ->
-                runBlocking { readingManager.deleteReadingById(readingId!!) }
-                updateUi()
+                lifecycleScope.launch {
+                    readingManager.deleteReadingById(readingId!!)
+                    updateUi()
+                }
             }
             .setNegativeButton(android.R.string.cancel, null)
         dialog.show()
@@ -642,9 +671,8 @@ open class PatientProfileActivity : AppCompatActivity() {
     }
 
     private fun updateUi() {
-        // setupEmptyState()
-        setupReadingsRecyclerView()
-        setupLineChart()
+        // Refresh data from ViewModel which will trigger observers
+        viewModel.refreshPatientData()
     }
 
     @Deprecated("Deprecated in Java")

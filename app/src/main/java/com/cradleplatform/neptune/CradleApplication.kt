@@ -28,6 +28,10 @@ import com.cradleplatform.neptune.activities.education.EducationActivity
 import com.cradleplatform.neptune.activities.education.PosterActivity
 import com.cradleplatform.neptune.activities.education.VideoActivity
 import com.cradleplatform.neptune.activities.newPatient.ReadingActivity
+import com.cradleplatform.neptune.activities.patients.PatientProfileActivity
+import com.cradleplatform.neptune.activities.patients.PatientsActivity
+import com.cradleplatform.neptune.activities.settings.HealthFacilitiesActivity
+import com.cradleplatform.neptune.activities.settings.SettingsActivity
 import com.cradleplatform.neptune.activities.statistics.StatsActivity
 
 import com.jakewharton.threetenabp.AndroidThreeTen
@@ -109,9 +113,12 @@ class CradleApplication : Application(), Configuration.Provider {
             is EducationActivity,
             is VideoActivity,
             is PosterActivity,
-            is SyncActivity -> true
-            // Add other activities that should support rotation here, e.g.:
-            // is SettingsActivity -> true
+            is SyncActivity,
+            is SettingsActivity,
+            is HealthFacilitiesActivity,
+            is PatientsActivity,
+            is PatientProfileActivity -> true
+            // Add other activities that should support rotation here
             else -> false
         }
     }
