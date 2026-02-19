@@ -120,7 +120,6 @@ class SettingsFragment : PreferenceFragmentCompat() {
     @Inject
     lateinit var restApi: RestApi
 
-
     override fun onResume() {
         super.onResume()
 

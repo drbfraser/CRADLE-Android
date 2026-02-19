@@ -453,7 +453,6 @@ open class PatientProfileActivity : AppCompatActivity() {
         }
     }
 
-
     private val newReferralLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == RESULT_OK) {
@@ -502,7 +501,6 @@ open class PatientProfileActivity : AppCompatActivity() {
             startActivity(intent)
         }
     }
-
 
     private fun setupCreatePatientReadingButton() {
         // TODO: this function has unclear dependency on setupReadingsRecyclerView,

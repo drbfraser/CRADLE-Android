@@ -32,4 +32,3 @@ class SettingsViewModel @Inject constructor(
         savedStateHandle[KEY_SELECTED_POSITION] = position
     }
 }
-

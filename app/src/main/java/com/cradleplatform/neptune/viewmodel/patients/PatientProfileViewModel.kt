@@ -128,4 +128,3 @@ class PatientProfileViewModel @Inject constructor(
         }
     }
 }
-
