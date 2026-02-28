@@ -99,7 +99,9 @@
             android:name=".activities.forms.SavedFormsActivity"
             android:label="Saved Forms"
             android:screenOrientation="portrait" />
-        <activity android:name=".activities.authentication.PinPassActivity" />
+        <activity
+            android:name=".activities.authentication.PinPassActivity"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden" />
 
         <receiver android:name=".utilities.notification.NotificationPublisher"/>
         <provider
