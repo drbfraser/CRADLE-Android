@@ -7,12 +7,14 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.doAfterTextChanged
 import com.cradleplatform.neptune.CradleApplication
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.activities.dashboard.DashBoardActivity
+import com.cradleplatform.neptune.viewmodel.PinPassViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -30,6 +32,8 @@ class PinPassActivity : AppCompatActivity() {
     lateinit var pinCode: String
 
     private lateinit var defaultPinCode: String
+
+    private val viewModel: PinPassViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -67,13 +71,13 @@ class PinPassActivity : AppCompatActivity() {
             setUpButtons(isChangePinActive)
         }
     }
+
     private fun setUpButtons(isChangePinActive: Boolean) {
         val forgotButton = findViewById<Button>(R.id.pinPassForgotButton)
 
         if (isChangePinActive) {
             forgotButton.text = getString(R.string.cancel)
             forgotButton.setOnClickListener {
-                // Just go back instead of forcing navigation to DashBoardActivity
                 finish()
             }
         } else {
@@ -95,31 +99,37 @@ class PinPassActivity : AppCompatActivity() {
             }
         }
     }
+
     private fun setUpPIN(isChangePinActive: Boolean) {
         val headerLine = findViewById<TextView>(R.id.pinPassText)
         val passText = findViewById<EditText>(R.id.pinPassEdit)
         val incorrectText = findViewById<TextView>(R.id.pinPassIncorrectText)
 
         if (isChangePinActive) {
-            headerLine.text = getString(R.string.change_pin_act_first_enter)
-            var confirmPin = false
-            var tempPin = defaultPinCode
+            // Restore state from ViewModel (survives rotation)
+            headerLine.text = if (viewModel.headerText.isNotEmpty()) {
+                viewModel.headerText
+            } else {
+                getString(R.string.change_pin_act_first_enter).also {
+                    viewModel.headerText = it
+                }
+            }
+
             passText.doAfterTextChanged {
-                if (!confirmPin && passText.text.toString().length == 4) {
-                    tempPin = passText.text.toString()
-                    confirmPin = true
-                    headerLine.text = getString(R.string.change_pin_act_second_enter)
+                if (!viewModel.isConfirmingPin && passText.text.toString().length == 4) {
+                    viewModel.tempPin = passText.text.toString()
+                    viewModel.isConfirmingPin = true
+                    val confirmText = getString(R.string.change_pin_act_second_enter)
+                    viewModel.headerText = confirmText
+                    headerLine.text = confirmText
                     passText.setText("")
-                } else if (confirmPin && passText.text.toString().length == 4) {
-                    if (passText.text.toString() == tempPin) {
+                } else if (viewModel.isConfirmingPin && passText.text.toString().length == 4) {
+                    if (passText.text.toString() == viewModel.tempPin) {
                         with(sharedPreferences.edit()) {
-                            putString(pinCodePrefKey, tempPin)
+                            putString(pinCodePrefKey, viewModel.tempPin)
                             apply()
                         }
                         Toast.makeText(this, getString(R.string.change_pin_act_pin_saved), Toast.LENGTH_LONG).show()
-                        //  val intent = Intent(this@PinPassActivity, DashBoardActivity::class.java)
-                        //  startActivity(intent)
-                        // Finish activity after changing PIN
                         finish()
                     } else {
                         incorrectText.text = getString(R.string.change_pin_act_incorrect)
@@ -131,7 +141,6 @@ class PinPassActivity : AppCompatActivity() {
             passText.doAfterTextChanged {
                 if (passText.text.toString() == pinCode) {
                     app.pinPassActivityFinished()
-                    // Launch DashBoardActivity after successful PIN verification
                     val intent = Intent(this, DashBoardActivity::class.java)
                     startActivity(intent)
                     finish()
