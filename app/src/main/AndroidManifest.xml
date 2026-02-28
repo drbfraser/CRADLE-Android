@@ -26,7 +26,9 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true"> <!--    set this to true when testing the app on a local dev server-->
-        <activity android:name=".activities.patients.EditPatientInfoActivity"/>
+        <activity
+            android:name=".activities.patients.EditPatientInfoActivity"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden" />
         <activity
             android:name=".activities.forms.FormRenderingActivity"
             android:windowSoftInputMode="adjustPan"
