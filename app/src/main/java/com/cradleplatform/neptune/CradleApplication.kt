@@ -117,7 +117,8 @@ class CradleApplication : Application(), Configuration.Provider {
             is SettingsActivity,
             is HealthFacilitiesActivity,
             is PatientsActivity,
-            is PatientProfileActivity -> true
+            is PatientProfileActivity,
+            is PinPassActivity -> true
             // Add other activities that should support rotation here
             else -> false
         }
