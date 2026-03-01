@@ -67,6 +67,9 @@ class EditPregnancyViewModel @Inject constructor(
     val isNetworkAvailable: LiveData<Boolean> =
         networkStateManager.getInternetConnectivityStatus()
 
+    /** Prevents re-initializing from DB on rotation (ViewModel already holds the data). */
+    private var isInitialized = false
+
     private var isAddPregnancy = true
 
     val isInputEnabled = MediatorLiveData<Boolean>()
@@ -93,6 +96,8 @@ class EditPregnancyViewModel @Inject constructor(
     val endDateError: MutableLiveData<String> = MutableLiveData<String>()
 
     fun initialize(patientId: String, isPregnant: Boolean) {
+        if (isInitialized) return
+        isInitialized = true
         viewModelScope.launch(Dispatchers.Main) {
             allowEdit(false)
 
