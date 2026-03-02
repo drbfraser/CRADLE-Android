@@ -60,4 +60,3 @@ class PatientUpdateDrugMedicalViewModel @Inject constructor(
         return SaveResult.SavedOffline
     }
 }
-

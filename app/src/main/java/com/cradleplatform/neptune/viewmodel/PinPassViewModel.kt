@@ -41,4 +41,3 @@ class PinPassViewModel @Inject constructor(
         get() = savedStateHandle.get<String>(KEY_HEADER_TEXT) ?: ""
         set(value) { savedStateHandle[KEY_HEADER_TEXT] = value }
 }
-
