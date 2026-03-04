@@ -56,7 +56,12 @@ class EditPatientViewModel @Inject constructor(
     val isNetworkAvailable: LiveData<Boolean> =
         networkStateManager.getInternetConnectivityStatus()
 
+    /** Prevents re-initializing from DB on rotation (ViewModel already holds the data). */
+    private var isInitialized = false
+
     fun initialize(patientId: String) {
+        if (isInitialized) return
+        isInitialized = true
         viewModelScope.launch(Dispatchers.Main) {
             allowEdit(false)
 

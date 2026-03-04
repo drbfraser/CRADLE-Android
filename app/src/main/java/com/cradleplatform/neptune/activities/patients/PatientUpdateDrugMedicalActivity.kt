@@ -5,38 +5,32 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import android.widget.TextView
-import android.widget.Toast
+import android.widget.Toast import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
-import androidx.lifecycle.LiveData
+import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.lifecycleScope
 import com.cradleplatform.neptune.R
-import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.model.Patient
-import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
-import com.cradleplatform.neptune.utilities.UnixTimestamp
-import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager
 import com.cradleplatform.neptune.viewmodel.patients.EditPatientViewModel.SaveResult
+import com.cradleplatform.neptune.viewmodel.patients.PatientUpdateDrugMedicalViewModel
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class PatientUpdateDrugMedicalActivity : AppCompatActivity() {
-    @Inject
-    lateinit var patientManager: PatientManager
-    @Inject
-    lateinit var networkStateManager: NetworkStateManager
-    private lateinit var isNetworkAvailable: LiveData<Boolean>
+
+    private val viewModel: PatientUpdateDrugMedicalViewModel by viewModels()
 
     companion object {
         private const val EXTRA_PATIENT = "patient"
+        private const val EXTRA_IS_DRUG_RECORD = "isDrugRecord"
 
         fun makeIntent(context: Context, isDrugRecord: Boolean, currPatient: Patient): Intent {
             val intent = Intent(context, PatientUpdateDrugMedicalActivity::class.java)
-            intent.putExtra("isDrugRecord", isDrugRecord)
+            intent.putExtra(EXTRA_IS_DRUG_RECORD, isDrugRecord)
             intent.putExtra(EXTRA_PATIENT, currPatient)
             return intent
         }
@@ -46,8 +40,8 @@ class PatientUpdateDrugMedicalActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_patient_update_drug_medical)
 
-        val patient: Patient = intent.getSerializableExtra("patient") as Patient
-        val isDrugRecord = intent.getBooleanExtra("isDrugRecord", true)
+        val patient: Patient = intent.getSerializableExtra(EXTRA_PATIENT) as Patient
+        val isDrugRecord = intent.getBooleanExtra(EXTRA_IS_DRUG_RECORD, true)
 
         setupInternetConnectionCheck()
         setupPageHeader(patient, isDrugRecord)
@@ -57,21 +51,29 @@ class PatientUpdateDrugMedicalActivity : AppCompatActivity() {
 
     private fun setupInternetConnectionCheck() {
         val noInternetText = findViewById<TextView>(R.id.internetAvailabilityTextView)
-        isNetworkAvailable = networkStateManager.getInternetConnectivityStatus().apply {
-            observe(this@PatientUpdateDrugMedicalActivity) { netAvailable ->
-                netAvailable ?: return@observe
-                noInternetText.isVisible = !netAvailable
-            }
+        viewModel.isNetworkAvailable.observe(this) { netAvailable ->
+            netAvailable ?: return@observe
+            noInternetText.isVisible = !netAvailable
         }
     }
 
     private fun setupPageHeader(patient: Patient, isDrugRecord: Boolean) {
         val input = findViewById<TextInputEditText>(R.id.recordText)
-        if (isDrugRecord && patient.drugHistory.isNotEmpty()) {
+
+        // Restore text from ViewModel (survives rotation), otherwise populate from patient data
+        if (viewModel.recordText.isNotEmpty()) {
+            input.setText(viewModel.recordText)
+        } else if (isDrugRecord && patient.drugHistory.isNotEmpty()) {
             input.setText(patient.drugHistory)
         } else if (!isDrugRecord && patient.medicalHistory.isNotEmpty()) {
             input.setText(patient.medicalHistory)
         }
+
+        // Track edits in ViewModel so rotation preserves them
+        input.doAfterTextChanged {
+            viewModel.recordText = it?.toString() ?: ""
+        }
+
         findViewById<TextView>(R.id.patientName).text = patient.name
     }
 
@@ -88,7 +90,7 @@ class PatientUpdateDrugMedicalActivity : AppCompatActivity() {
                 else patient.medicalHistory = record
 
                 lifecycleScope.launch {
-                    when (saveAndUploadPatient(patient, isDrugRecord)) {
+                    when (viewModel.saveAndUploadPatient(patient, isDrugRecord)) {
                         is SaveResult.SavedAndUploaded -> {
                             Toast.makeText(
                                 it.context,
@@ -133,31 +135,6 @@ class PatientUpdateDrugMedicalActivity : AppCompatActivity() {
             if (isDrugRecord) R.string.patient_update_drug_history
             else R.string.patient_update_medical_history
         )
-    }
-
-    private suspend fun saveAndUploadPatient(patient: Patient, isDrugRecord: Boolean): SaveResult {
-        return if (isNetworkAvailable.value == true) {
-            when (patientManager.updatePatientMedicalRecord(patient, isDrugRecord)) {
-                is NetworkResult.Success -> {
-                    SaveResult.SavedAndUploaded
-                }
-                else -> {
-                    SaveResult.ServerReject
-                }
-            }
-        } else {
-            saveRecordOffline(patient, isDrugRecord)
-        }
-    }
-
-    private suspend fun saveRecordOffline(patient: Patient, isDrugRecord: Boolean): SaveResult {
-        if (isDrugRecord) {
-            patient.drugLastEdited = UnixTimestamp.now.toLong()
-        } else {
-            patient.medicalLastEdited = UnixTimestamp.now.toLong()
-        }
-        patientManager.add(patient)
-        return SaveResult.SavedOffline
     }
 
     override fun onSupportNavigateUp(): Boolean {
