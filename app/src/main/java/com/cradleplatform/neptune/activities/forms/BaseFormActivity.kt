@@ -14,10 +14,13 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 abstract class BaseFormActivity : AppCompatActivity() {
 
     /**
-     * A flag to track whether the form has unsaved changes.
-     * Subclasses should set this to true when any form data is modified.
+     * Checks whether the form has unsaved changes.
+     * Subclasses should override this method to provide custom logic,
+     * typically by querying the ViewModel state.
+     *
+     * Default implementation returns false (no unsaved changes).
      */
-    protected var hasUnsavedChanges = false
+    protected open fun hasUnsavedChanges(): Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,7 +58,7 @@ abstract class BaseFormActivity : AppCompatActivity() {
      * dialog. Otherwise, it finishes the activity.
      */
     private fun handleBackPress() {
-        if (hasUnsavedChanges) {
+        if (hasUnsavedChanges()) {
             showUnsavedChangesDialog()
         } else {
             finish()
