@@ -1,14 +1,17 @@
 package com.cradleplatform.neptune.viewmodel.forms
 
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asLiveData
 import androidx.lifecycle.map
 import androidx.lifecycle.viewModelScope
 import com.cradleplatform.neptune.manager.FormManager
 import com.cradleplatform.neptune.model.FormClassification
 import com.cradleplatform.neptune.model.FormTemplate
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -17,14 +20,18 @@ class FormSelectionViewModel @Inject constructor(
     private val formManager: FormManager
 ) : ViewModel() {
 
-    var formVersionLiveData: MutableLiveData<Array<String>> = MutableLiveData()
+    private val _formVersions = MutableStateFlow<Array<String>>(emptyArray())
+    val formVersions: StateFlow<Array<String>> = _formVersions.asStateFlow()
+
+    // Keep LiveData for DataBinding compatibility
+    var formVersionLiveData: LiveData<Array<String>> = formVersions.asLiveData()
 
     private val formClassList: LiveData<List<FormClassification>> =
         formManager.getLiveDataFormClassifications()
 
     val formTemplateListAsString: LiveData<Array<String>> by lazy {
-        formClassList.map { formClassificationList ->
-            formClassificationList.map { formClass ->
+        formClassList.map { formClassificationList: List<FormClassification> ->
+            formClassificationList.map { formClass: FormClassification ->
                 formClass.formClassName
             }.toTypedArray()
         }
@@ -78,7 +85,7 @@ class FormSelectionViewModel @Inject constructor(
     fun formTemplateChanged(formName: String) {
         viewModelScope.launch {
             val langVersions = getFormTemplateVersionsFromName(formName)
-            formVersionLiveData.postValue(langVersions.toTypedArray())
+            _formVersions.value = langVersions.toTypedArray()
         }
     }
 
