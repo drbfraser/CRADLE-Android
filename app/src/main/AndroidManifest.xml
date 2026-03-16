@@ -32,6 +32,7 @@
         <activity
             android:name=".activities.forms.FormRenderingActivity"
             android:windowSoftInputMode="adjustPan"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
             android:exported="false" />
         <activity
             android:name=".sync.views.SyncActivity"
@@ -100,11 +101,11 @@
         <activity
             android:name=".activities.forms.FormSelectionActivity"
             android:label="Form Selection"
-            android:screenOrientation="portrait" />
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden" />
         <activity
             android:name=".activities.forms.SavedFormsActivity"
             android:label="Saved Forms"
-            android:screenOrientation="portrait" />
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden" />
         <activity
             android:name=".activities.authentication.PinPassActivity"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden" />
