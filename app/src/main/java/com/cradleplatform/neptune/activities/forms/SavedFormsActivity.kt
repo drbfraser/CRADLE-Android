@@ -21,8 +21,6 @@ import com.cradleplatform.neptune.adapters.forms.SavedFormAdapter
 import com.cradleplatform.neptune.viewmodel.forms.SavedFormsViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import it.xabaras.android.recyclerview.swipedecorator.RecyclerViewSwipeDecorator
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 

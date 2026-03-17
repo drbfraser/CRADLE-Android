@@ -46,4 +46,3 @@ sealed class FormSideEffect {
     data object NavigateBack : FormSideEffect()
     data object FormSubmittedSuccessfully : FormSideEffect()
 }
-
