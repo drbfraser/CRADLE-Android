@@ -21,6 +21,10 @@ keystoreProperties.load(new FileInputStream(rootProject.file(filename)))
 
 android {
 
+    testOptions {
+        unitTests.returnDefaultValues = true
+    }
+
     signingConfigs {
         release {
             storeFile file(keystoreProperties['storeFile'])
