@@ -3,7 +3,6 @@ package com.cradleplatform.neptune.viewmodel
 import android.content.Context
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
-import com.cradleplatform.neptune.http_sms_service.sms.SMSSender
 import com.cradleplatform.neptune.manager.FormManager
 import com.cradleplatform.neptune.manager.FormResponseManager
 import com.cradleplatform.neptune.model.Answer
@@ -39,45 +38,45 @@ class FormRenderingViewModelTest {
         )
     }
 
+    private fun initForm(questions: List<Question>, language: String = "English") {
+        val context = Mockito.mock(Context::class.java)
+        Mockito.`when`(context.getString(R.string.form_uncategorized))
+            .thenReturn("Uncategorized")
+        Mockito.`when`(context.getString(R.string.form_generic_id))
+            .thenReturn("Generic id %d")
+        val formTemplate = FormTemplate(null, null, null, null, null, null, questions)
+        viewModel.initializeForm(formTemplate, null, "testPatient", language, null, false, context)
+    }
+
     @Test
     fun `fullQuestionsList size 2`() {
         val questions = listOf(question(false, id = "id1"), question(false))
-        val formTemplate = FormTemplate(null, null, null, null, null, null, questions)
-        viewModel.currentFormTemplate = formTemplate
+        initForm(questions)
 
         Assertions.assertEquals(viewModel.fullQuestionList().size, 2)
     }
 
     @Test
     fun `fullQuestionsList empty`() {
-        val formTemplate = FormTemplate(null, null, null, null, null, null, listOf())
-        viewModel.currentFormTemplate = formTemplate
+        initForm(listOf())
         assert(viewModel.fullQuestionList().isEmpty())
     }
 
     @Test
     fun `isRequiredFieldsFilled, no required fields`() {
-        // Arrange
         val context = Mockito.mock(Context::class.java)
 
         val questions = listOf(question(false, id = "id1"), question(false), question(false))
-        val formTemplate = FormTemplate(null, null, null, null, null, null, questions)
-        viewModel.currentFormTemplate = formTemplate
+        initForm(questions)
 
-        // Act
-        val (allFieldsFilledCorrectly, toastText) = viewModel.areAllFieldsFilledCorrectly(
-            "English",
-            context
-        )
+        val (allFieldsFilledCorrectly, toastText) = viewModel.areAllFieldsFilledCorrectly(context)
 
-        // Assert
         assert(allFieldsFilledCorrectly)
         Assertions.assertNull(toastText)
     }
 
     @Test
     fun `isAllFieldsFilledCorrectly, field exceeds line limit`() {
-        // Arrange
         val context = Mockito.mock(Context::class.java)
 
         val questions = listOf(
@@ -85,20 +84,14 @@ class FormRenderingViewModelTest {
             question(false),
             question(false)
         )
-        val formTemplate = FormTemplate(null, null, null, null, null, null, questions)
-        viewModel.currentFormTemplate = formTemplate
+        initForm(questions)
         viewModel.addAnswer(questions[0].id!!, Answer.createTextAnswer("\n \n \n"))
 
         Mockito.`when`(context.getString(R.string.form_generic_field_exceeds_line_limit))
             .thenReturn("Some fields exceed line limit")
 
-        // Act
-        val (allFieldsFilledCorrectly, toastText) = viewModel.areAllFieldsFilledCorrectly(
-            "English",
-            context
-        )
+        val (allFieldsFilledCorrectly, toastText) = viewModel.areAllFieldsFilledCorrectly(context)
 
-        // Assert
         assert(!allFieldsFilledCorrectly)
         Assertions.assertEquals("Some fields exceed line limit", toastText)
     }
@@ -106,13 +99,9 @@ class FormRenderingViewModelTest {
     @Test
     fun `populateEmptyIds, none empty`() {
         val questions = listOf(question(true, id = "id1"), question(true, id = "id2"))
-        val formTemplate = FormTemplate(null, null, null, null, null, null, questions)
-        viewModel.currentFormTemplate = formTemplate
+        initForm(questions)
 
-        val context = Mockito.mock(Context::class.java)
-        viewModel.populateEmptyIds(context)
-
-        viewModel.currentFormTemplate?.questions?.forEach {
+        viewModel.uiState.value.formTemplate?.questions?.forEach {
             assert(it.id?.isNotEmpty() == true)
         }
     }
@@ -120,15 +109,9 @@ class FormRenderingViewModelTest {
     @Test
     fun `populateEmptyIds, one id null`() {
         val questions = listOf(question(true, id = ""), question(true, id = "id2"))
-        val formTemplate = FormTemplate(null, null, null, null, null, null, questions)
-        viewModel.currentFormTemplate = formTemplate
+        initForm(questions)
 
-        val context = Mockito.mock(Context::class.java)
-        Mockito.`when`(context.getString(R.string.form_generic_id))
-            .thenReturn("Generic id %d")
-        viewModel.populateEmptyIds(context)
-
-        viewModel.currentFormTemplate?.questions?.forEach {
+        viewModel.uiState.value.formTemplate?.questions?.forEach {
             assert(it.id?.isNotEmpty() == true)
         }
     }

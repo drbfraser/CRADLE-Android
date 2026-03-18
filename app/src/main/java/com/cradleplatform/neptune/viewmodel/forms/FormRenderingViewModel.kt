@@ -2,14 +2,7 @@ package com.cradleplatform.neptune.viewmodel.forms
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.graphics.drawable.Drawable
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
-import android.widget.Toast
-import androidx.core.content.ContextCompat.getDrawable
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
@@ -21,13 +14,19 @@ import com.cradleplatform.neptune.manager.FormResponseManager
 import com.cradleplatform.neptune.model.Answer
 import com.cradleplatform.neptune.model.FormResponse
 import com.cradleplatform.neptune.model.FormTemplate
+import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.Question
 import com.cradleplatform.neptune.model.QuestionTypeEnum
 import com.cradleplatform.neptune.utilities.Protocol
 import com.cradleplatform.neptune.utilities.connectivity.api24.ConnectivityOptions
 import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager
-import com.cradleplatform.neptune.activities.forms.FormRenderingActivity
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 
 @HiltViewModel
@@ -38,12 +37,6 @@ class FormRenderingViewModel @Inject constructor(
     private val restApi: RestApi
 ) : ViewModel() {
 
-    //Raw form template
-    var currentFormTemplate: FormTemplate? = null
-    private val _currentCategory: MutableLiveData<Int> = MutableLiveData(1)
-    private val _currentAnswers: MutableLiveData<Map<String, Answer>?> =
-        MutableLiveData(mutableMapOf())
-
     @Inject
     lateinit var smsDataProcessor: SMSDataProcessor
 
@@ -52,43 +45,73 @@ class FormRenderingViewModel @Inject constructor(
 
     @Inject
     lateinit var sharedPreferences: SharedPreferences
-    var categoryList: List<Pair<String, List<Question>?>>? = null
 
-    fun currentCategory(): LiveData<Int> {
-        return _currentCategory
-    }
+    private val _uiState = MutableStateFlow(FormState())
+    val uiState: StateFlow<FormState> = _uiState.asStateFlow()
 
-    fun currentAnswers(): LiveData<Map<String, Answer>?> {
-        return _currentAnswers
+    private val _sideEffects = Channel<FormSideEffect>(Channel.BUFFERED)
+    val sideEffects = _sideEffects.receiveAsFlow()
+
+    fun initializeForm(
+        formTemplate: FormTemplate,
+        patient: Patient?,
+        patientId: String,
+        language: String,
+        formResponseId: Long?,
+        isFromSavedResponse: Boolean,
+        context: Context
+    ) {
+        _uiState.update { currentState ->
+            currentState.copy(
+                formTemplate = formTemplate,
+                patient = patient,
+                patientId = patientId,
+                language = language,
+                formResponseId = formResponseId,
+                isFromSavedResponse = isFromSavedResponse
+            )
+        }
+        populateEmptyIds(context)
+        setCategorizedQuestions(language, context)
     }
 
     fun changeCategory(currCategory: Int) {
-        _currentCategory.value = currCategory
+        _uiState.update { it.copy(currentCategory = currCategory) }
     }
 
-    fun populateEmptyIds(context: Context) {
-        currentFormTemplate?.questions?.forEachIndexed { index, Q ->
+    fun toggleBottomSheet() {
+        _uiState.update { it.copy(bottomSheetExpanded = !it.bottomSheetExpanded) }
+    }
+
+    fun hideBottomSheet() {
+        _uiState.update { it.copy(bottomSheetExpanded = false) }
+    }
+
+    private fun populateEmptyIds(context: Context) {
+        _uiState.value.formTemplate?.questions?.forEachIndexed { index, Q ->
             if (Q.id?.isEmpty() == true && Q.questionType != QuestionTypeEnum.CATEGORY) {
                 Q.id = String.format(context.getString(R.string.form_generic_id), index)
             }
         }
     }
 
-    fun setCategorizedQuestions(languageSelected: String, context: Context) {
-        Log.d("FormTemplateDebug", "Questions: ${currentFormTemplate?.questions}")
-        categoryList = getCategorizedQuestions(languageSelected, context)
+    private fun setCategorizedQuestions(languageSelected: String, context: Context) {
+        Log.d("FormTemplateDebug", "Questions: ${_uiState.value.formTemplate?.questions}")
+        val categories = getCategorizedQuestions(languageSelected, context)
+        _uiState.update { it.copy(categoryList = categories) }
     }
 
     private fun getCategorizedQuestions(
         languageSelected: String,
         context: Context
     ): List<Pair<String, List<Question>?>> {
-        if (currentFormTemplate?.questions.isNullOrEmpty()) {
+        val formTemplate = _uiState.value.formTemplate
+        if (formTemplate?.questions.isNullOrEmpty()) {
             return listOf()
         }
 
         val indicesOfCategory = mutableListOf<Int>()
-        currentFormTemplate?.questions?.forEachIndexed { index, question ->
+        formTemplate?.questions?.forEachIndexed { index, question ->
             if (question.questionType == QuestionTypeEnum.CATEGORY) {
                 indicesOfCategory.add(index)
             }
@@ -96,33 +119,33 @@ class FormRenderingViewModel @Inject constructor(
 
         var categoryName = context.getString(R.string.form_uncategorized)
         if (indicesOfCategory.isEmpty()) {
-            return listOf(Pair(categoryName, currentFormTemplate!!.questions))
+            return listOf(Pair(categoryName, formTemplate!!.questions))
         }
 
         val categoryList = mutableListOf<Pair<String, List<Question>?>>()
 
         if (indicesOfCategory[0] != 0) {
             // There is uncategorized questions at start
-            val sublist = currentFormTemplate!!.questions?.subList(0, indicesOfCategory[0])
+            val sublist = formTemplate!!.questions?.subList(0, indicesOfCategory[0])
             val uncategorizedPair = Pair(categoryName, sublist)
             categoryList.add(uncategorizedPair)
         }
         indicesOfCategory.forEachIndexed { i, categoryIndex ->
-            val langVersion = currentFormTemplate!!.questions!![categoryIndex].languageVersions
+            val langVersion = formTemplate!!.questions!![categoryIndex].languageVersions
             categoryName = langVersion?.find {
                 it.language == languageSelected
             }?.questionText ?: context.getString(R.string.not_available)
 
-            if (categoryIndex != currentFormTemplate!!.questions!!.size - 1) {
+            if (categoryIndex != formTemplate.questions!!.size - 1) {
                 //otherwise do not create a pair for this as category is last
                 val indexOfNextCategory = if (i == indicesOfCategory.size - 1) {
                     // it is last category therefore sublist to end
-                    currentFormTemplate!!.questions!!.size
+                    formTemplate.questions!!.size
                 } else {
                     indicesOfCategory[i + 1]
                 }
                 val sublist =
-                    currentFormTemplate!!.questions?.subList(categoryIndex + 1, indexOfNextCategory)
+                    formTemplate.questions?.subList(categoryIndex + 1, indexOfNextCategory)
                 val categoryPair = Pair(categoryName, sublist)
 
                 if (!sublist.isNullOrEmpty()) {
@@ -134,51 +157,57 @@ class FormRenderingViewModel @Inject constructor(
         return categoryList
     }
 
-    fun fullQuestionList(): MutableList<Question> {
-        val listOfQuestions: MutableList<Question> = mutableListOf()
-        currentFormTemplate?.questions?.forEach { Q ->
-            listOfQuestions.add(Q)
-        }
-        return listOfQuestions
+    fun fullQuestionList(): List<Question> {
+        return _uiState.value.formTemplate?.questions ?: emptyList()
     }
 
     fun getCurrentQuestionsList(): List<Question> {
-        if (currentCategory().value == null) {
-            return listOf()
-        }
-        return categoryList?.getOrNull(currentCategory().value!! - 1)?.second ?: listOf()
+        val currentCategory = _uiState.value.currentCategory
+        return _uiState.value.categoryList?.getOrNull(currentCategory - 1)?.second ?: listOf()
     }
 
     fun addAnswer(questionId: String, answer: Answer) {
-        currentAnswers[questionId] = answer
-        _currentAnswers.value = currentAnswers
+        _uiState.update { currentState ->
+            val updatedAnswers = currentState.currentAnswers.toMutableMap()
+            updatedAnswers[questionId] = answer
+            currentState.copy(
+                currentAnswers = updatedAnswers,
+                hasUnsavedChanges = true
+            )
+        }
     }
 
     fun deleteAnswer(questionId: String) {
-        currentAnswers.remove(questionId)
-        _currentAnswers.value = currentAnswers
+        _uiState.update { currentState ->
+            val updatedAnswers = currentState.currentAnswers.toMutableMap()
+            updatedAnswers.remove(questionId)
+            currentState.copy(
+                currentAnswers = updatedAnswers,
+                hasUnsavedChanges = true
+            )
+        }
     }
 
     fun getTextAnswer(questionId: String?): String? {
         if (questionId == null) return null
-        return currentAnswers[questionId]?.textAnswer
+        return _uiState.value.currentAnswers[questionId]?.textAnswer
     }
 
     fun getNumericAnswer(questionId: String?): Number? {
         if (questionId == null) return null
-        return currentAnswers[questionId]?.numericAnswer
+        return _uiState.value.currentAnswers[questionId]?.numericAnswer
     }
 
     fun getMCAnswer(questionId: String?): List<Int>? {
         if (questionId == null) return null
-        return currentAnswers[questionId]?.mcIdArrayAnswer
+        return _uiState.value.currentAnswers[questionId]?.mcIdArrayAnswer
     }
 
     fun clearAnswers() {
-        currentAnswers.clear()
+        _uiState.update { it.copy(currentAnswers = emptyMap(), hasUnsavedChanges = false) }
     }
 
-    fun getInternetTypeString(context: Context): String {
+    fun getInternetTypeString(): String {
         return when (networkStateManager.getConnectivity()) {
             ConnectivityOptions.WIFI -> "Wifi"
             ConnectivityOptions.CELLULAR_DATA -> "Cellular"
@@ -187,35 +216,31 @@ class FormRenderingViewModel @Inject constructor(
         }
     }
 
-    fun addBlankQuestions(formTemplate: FormTemplate) {
+    private fun addBlankQuestions(formTemplate: FormTemplate): Map<String, Answer> {
+        val answers = _uiState.value.currentAnswers.toMutableMap()
         for (i in 1 until formTemplate.questions!!.size) {
-            if (!currentAnswers.containsKey(formTemplate.questions[i].id.toString())) {
-                currentAnswers[formTemplate.questions[i].id.toString()] =
-                    Answer.createEmptyAnswer()
+            if (!answers.containsKey(formTemplate.questions[i].id.toString())) {
+                answers[formTemplate.questions[i].id.toString()] = Answer.createEmptyAnswer()
             }
         }
+        return answers
     }
 
-    suspend fun submitForm(
-        patientId: String,
-        selectedLanguage: String,
-        protocol: Protocol,
-        applicationContext: Context,
-        formResponseId: Long?
-    ): NetworkResult<Unit> {
-//        formResponseId?.let {
-//            viewModelScope.launch {
-//                removeFormResponseFromDatabaseById(it)
-//            }
-//        }
+    suspend fun submitForm(protocol: Protocol): NetworkResult<Unit> {
+        val currentState = _uiState.value
+        val formTemplate = currentState.formTemplate
+        val patientId = currentState.patientId
+        val selectedLanguage = currentState.language
 
-        return if (currentFormTemplate != null) {
-            addBlankQuestions(currentFormTemplate!!)
+        return if (formTemplate != null && patientId != null && selectedLanguage != null) {
+            _uiState.update { it.copy(isLoading = true) }
+
+            val answersWithBlanks = addBlankQuestions(formTemplate)
             val formResponse = FormResponse(
                 patientId = patientId,
-                formTemplate = currentFormTemplate!!,
+                formTemplate = formTemplate,
                 language = selectedLanguage,
-                answers = currentAnswers
+                answers = answersWithBlanks
             )
 
             val result = restApi.postFormResponse(formResponse, protocol)
@@ -223,40 +248,29 @@ class FormRenderingViewModel @Inject constructor(
             when (result) {
                 is NetworkResult.Success -> {
                     Log.d(TAG, "Form uploaded successfully.")
-                    Handler(Looper.getMainLooper()).post {
-                        Toast.makeText(
-                            applicationContext,
-                            "Form submitted successfully",
-                            Toast.LENGTH_LONG
-                        ).show()
-                    }
+                    _sideEffects.send(FormSideEffect.ShowToast("Form submitted successfully"))
+                    _sideEffects.send(FormSideEffect.FormSubmittedSuccessfully)
+                    _uiState.update { it.copy(hasUnsavedChanges = false, isLoading = false) }
                 }
 
                 is NetworkResult.Failure -> {
                     Log.d(TAG, "Form upload failed.")
-                    Handler(Looper.getMainLooper()).post {
-                        Toast.makeText(
-                            applicationContext,
-                            "Form submission failed",
-                            Toast.LENGTH_LONG
-                        ).show()
-                    }
+                    _sideEffects.send(FormSideEffect.ShowToast("Form submission failed"))
+                    _uiState.update { it.copy(isLoading = false) }
                 }
 
                 is NetworkResult.NetworkException -> {
                     Log.d(TAG, "Form upload failed.")
-                    Handler(Looper.getMainLooper()).post {
-                        Toast.makeText(
-                            applicationContext,
-                            "Form submission failed due to unexpected network exception",
-                            Toast.LENGTH_LONG
-                        ).show()
-                    }
+                    _sideEffects.send(
+                        FormSideEffect.ShowToast("Form submission failed due to unexpected network exception")
+                    )
+                    _uiState.update { it.copy(isLoading = false) }
                 }
             }
 
-            return result
+            result
         } else {
+            _uiState.update { it.copy(isLoading = false) }
             error("FormTemplate does not exist: Current displaying FormTemplate is null")
         }
     }
@@ -264,10 +278,10 @@ class FormRenderingViewModel @Inject constructor(
     /**
      * Returns true if conditions of all field inputs are validated successfully
      */
-    fun areAllFieldsFilledCorrectly(
-        languageSelected: String,
-        context: Context
-    ): Pair<Boolean, String?> {
+    fun areAllFieldsFilledCorrectly(context: Context): Pair<Boolean, String?> {
+        val languageSelected = _uiState.value.language ?: return Pair(false, "Language not selected")
+        val currentAnswers = _uiState.value.currentAnswers
+
         fullQuestionList().forEach {
             val answer = currentAnswers[it.id]
 
@@ -343,15 +357,20 @@ class FormRenderingViewModel @Inject constructor(
     }
 
     /**
-     * Returns pair that contains required fields text and required fields icon
+     * Returns validation status for required fields in a category
      */
-    fun getRequiredFieldsTextAndIcon(
-        questions: List<Question>?,
-        context: Context
-    ): Pair<String, Drawable?> {
+    data class FieldsStatus(
+        val text: String,
+        val isComplete: Boolean,
+        val hasErrors: Boolean
+    )
+
+    fun getRequiredFieldsStatus(questions: List<Question>?): FieldsStatus {
         var total = 0
         var totalAnswered = 0
         var hasErrors = false
+        val currentAnswers = _uiState.value.currentAnswers
+
         questions?.forEach {
             val currAnswer = currentAnswers[it.id]
             if (it.required == true) {
@@ -367,16 +386,15 @@ class FormRenderingViewModel @Inject constructor(
                 }
             }
         }
-        var drawable = getDrawable(context, R.drawable.ic_baseline_warning_24)
-        if (!hasErrors && totalAnswered == total) {
-            drawable = getDrawable(context, R.drawable.ic_baseline_check_circle_24)
-        }
-        return Pair("Required $totalAnswered/$total", drawable)
+        val isComplete = !hasErrors && totalAnswered == total
+        return FieldsStatus("Required $totalAnswered/$total", isComplete, hasErrors)
     }
 
     fun getOptionalFieldsText(questions: List<Question>?): String {
         var total = 0
         var totalAnswered = 0
+        val currentAnswers = _uiState.value.currentAnswers
+
         questions?.forEach {
             if (it.required != true) {
                 if (currentAnswers[it.id] != null) {
@@ -388,49 +406,43 @@ class FormRenderingViewModel @Inject constructor(
         return "Optional $totalAnswered/$total"
     }
 
-    fun isNextButtonVisible(context: Context): Drawable? {
-        if (currentCategory().value == categoryList?.size) {
-            return getDrawable(context, R.drawable.ic_arrow_forward_grey_24)
-        }
-        return getDrawable(context, R.drawable.ic_arrow_forward_black_24)
+    fun canGoToNextCategory(): Boolean {
+        return _uiState.value.currentCategory != _uiState.value.categoryList?.size
     }
 
-    fun isPrevButtonVisible(context: Context): Drawable? {
-        if (currentCategory().value == FormRenderingActivity.FIRST_CATEGORY_POSITION) {
-            return getDrawable(context, R.drawable.ic_arrow_prev_grey_24)
-        }
-        return getDrawable(context, R.drawable.ic_arrow_prev_black_24)
+    fun canGoToPrevCategory(): Boolean {
+        return _uiState.value.currentCategory != FIRST_CATEGORY_POSITION
     }
 
     fun goNextCategory() {
-        if (currentCategory().value != categoryList?.size) {
-            changeCategory(_currentCategory.value?.plus(1) ?: 1)
+        if (canGoToNextCategory()) {
+            changeCategory(_uiState.value.currentCategory + 1)
         }
     }
 
     fun goPrevCategory() {
-        if (currentCategory().value != 1) {
-            changeCategory(_currentCategory.value?.minus(1) ?: 1)
+        if (canGoToPrevCategory()) {
+            changeCategory(_uiState.value.currentCategory - 1)
         }
     }
 
     suspend fun removeFormResponseFromDatabaseById(formResponseId: Long) =
         formResponseManager.deleteFormResponseById(formResponseId)
 
-    suspend fun saveFormResponseToDatabase(
-        patientId: String,
-        selectedLanguage: String,
-        formResponseId: Long?,
-        saveDraft: Boolean
-    ) {
-        return if (currentFormTemplate != null) {
+    suspend fun saveFormResponseToDatabase(saveDraft: Boolean) {
+        val currentState = _uiState.value
+        val formTemplate = currentState.formTemplate
+        val patientId = currentState.patientId
+        val selectedLanguage = currentState.language
+        val formResponseId = currentState.formResponseId
+
+        return if (formTemplate != null && patientId != null && selectedLanguage != null) {
             // If the FormTemplate's formClassName field is empty, grab it using formClass Id
-            currentFormTemplate?.formClassName =
-                currentFormTemplate?.formClassName ?: currentFormTemplate?.formClassId?.let {
-                    formManager.searchForFormClassNameWithFormClassId(
-                        it
-                    )
+            formTemplate.formClassName =
+                formTemplate.formClassName ?: formTemplate.formClassId?.let {
+                    formManager.searchForFormClassNameWithFormClassId(it)
                 }
+
             val formResponse =
                 when (formResponseId != null && formResponseManager.searchForFormResponseById(
                     formResponseId
@@ -438,30 +450,31 @@ class FormRenderingViewModel @Inject constructor(
                     true -> FormResponse(
                         formResponseId = formResponseId,
                         patientId = patientId,
-                        formTemplate = currentFormTemplate!!,
+                        formTemplate = formTemplate,
                         language = selectedLanguage,
-                        answers = currentAnswers,
+                        answers = currentState.currentAnswers,
                         saveResponseToSendLater = saveDraft
                     )
 
                     false -> FormResponse(
                         patientId = patientId,
-                        formTemplate = currentFormTemplate!!,
+                        formTemplate = formTemplate,
                         language = selectedLanguage,
-                        answers = currentAnswers,
+                        answers = currentState.currentAnswers,
                         saveResponseToSendLater = saveDraft
                     )
                 }
             formResponseManager.updateOrInsertIfNotExistsFormResponse(formResponse)
+            _uiState.update { it.copy(hasUnsavedChanges = false) }
+            _sideEffects.send(FormSideEffect.ShowToast("Form saved successfully"))
         } else {
             error("FormTemplate does not exist: Current displaying FormTemplate is null")
         }
     }
 
-    private companion object {
+    companion object {
         private const val TAG = "FormRenderingViewModel"
-
-        private val currentAnswers = mutableMapOf<String, Answer>()
+        const val FIRST_CATEGORY_POSITION = 1
     }
 }
 

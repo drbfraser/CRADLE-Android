@@ -9,7 +9,9 @@ import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.cradleplatform.neptune.R
@@ -19,69 +21,47 @@ import com.cradleplatform.neptune.adapters.forms.SavedFormAdapter
 import com.cradleplatform.neptune.viewmodel.forms.SavedFormsViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import it.xabaras.android.recyclerview.swipedecorator.RecyclerViewSwipeDecorator
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+
 @AndroidEntryPoint
 class SavedFormsActivity : AppCompatActivity() {
 
     private val viewModel: SavedFormsViewModel by viewModels()
-    private var patient: Patient? = null
-    private var patientId: String? = null
-    private var savedAsDraft: Boolean? = null
-
     private var adapter: SavedFormAdapter? = null
-    private var formList: MutableList<FormResponse>? = null
-    private var formMap: MutableMap<Patient, MutableList<FormResponse>> = mutableMapOf()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_saved_forms)
 
-        patientId = intent.getStringExtra(EXTRA_PATIENT_ID)
-        savedAsDraft = intent.getBooleanExtra("Boolean value indicating whether the forms are saved", false)
+        val patientId = intent.getStringExtra(EXTRA_PATIENT_ID)
+        val savedAsDraft = intent.getBooleanExtra("Boolean value indicating whether the forms are saved", false)
 
-        setUpSavedFormsRecyclerView()
         setUpActionBar()
+        setUpSavedFormsRecyclerView()
+
+        // Load forms
+        viewModel.loadForms(patientId, savedAsDraft)
+
+        // Collect state
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.uiState.collectLatest { state ->
+                    updateUIFromState(state)
+                }
+            }
+        }
+    }
+
+    private fun updateUIFromState(state: com.cradleplatform.neptune.viewmodel.forms.SavedFormsState) {
+        val mutableFormMap = state.formMap.mapValues { it.value.toMutableList() }.toMutableMap()
+        adapter = SavedFormAdapter(mutableFormMap)
+        findViewById<RecyclerView>(R.id.recycler_view).adapter = adapter
     }
 
     private fun setUpSavedFormsRecyclerView() {
         val recyclerView: RecyclerView = findViewById(R.id.recycler_view)
-        lifecycleScope.launch {
-            viewModel.purgeOutdatedFormResponses()
 
-            // Find the list of saved forms for that patient, if any
-            if (savedAsDraft == true) {
-                if (patientId != "") {
-                    formList = viewModel.searchForDraftFormsByPatientId(patientId!!)
-                    patient = viewModel.getPatientByPatientId(patientId!!)
-                    patient?.let { formList?.let { it1 -> formMap.put(it, it1) } }
-                } else {
-                    formList = viewModel.searchForDraftForms()
-                    formList?.forEach { formResponse ->
-                        patient = viewModel.getPatientByPatientId(formResponse.patientId)
-                        if (formMap.containsKey(patient)) {
-                            val prevList: MutableList<FormResponse>? = formMap[patient]
-                            prevList?.add(formResponse)
-                            patient?.let {
-                                if (prevList != null) {
-                                    formMap[it] = prevList
-                                }
-                            }
-                        } else {
-                            patient?.let { formMap.put(it, mutableListOf(formResponse)) }
-                        }
-                    }
-                }
-            } else {
-                formList = viewModel.searchForSubmittedFormsByPatientId(patientId!!)
-                patient = viewModel.getPatientByPatientId(patientId!!)
-                patient?.let { formList?.let { it1 -> formMap.put(it, it1) } }
-            }
-
-            adapter = SavedFormAdapter(formMap)
-            recyclerView.adapter = adapter
-        }
         val itemTouchHelper =
             ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
                 override fun onMove(
@@ -94,7 +74,7 @@ class SavedFormsActivity : AppCompatActivity() {
 
                 override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                     val swipedPosition = viewHolder.absoluteAdapterPosition
-                    val swipedFormResponse = formList?.get(swipedPosition)
+                    val swipedFormResponse = getFormAtPosition(swipedPosition)
                     // Show confirmation dialog before deletion
                     showDeleteConfirmationDialog(swipedFormResponse, swipedPosition)
                 }
@@ -143,6 +123,20 @@ class SavedFormsActivity : AppCompatActivity() {
         itemTouchHelper.attachToRecyclerView(recyclerView)
     }
 
+    private fun getFormAtPosition(position: Int): FormResponse? {
+        val formMap = viewModel.uiState.value.formMap
+        var currentPosition = 0
+        formMap.forEach { (_, forms) ->
+            forms.forEach { form ->
+                if (currentPosition == position) {
+                    return form
+                }
+                currentPosition++
+            }
+        }
+        return null
+    }
+
     private fun showDeleteConfirmationDialog(swipedFormResponse: FormResponse?, swipedPosition: Int) {
         AlertDialog.Builder(this@SavedFormsActivity)
             .setTitle("Confirm Delete")
@@ -150,13 +144,13 @@ class SavedFormsActivity : AppCompatActivity() {
             .setPositiveButton("Delete") { _, _ ->
                 // Delete the item from the list and database
                 swipedFormResponse?.formResponseId?.let { formResponseId ->
-                    CoroutineScope(Dispatchers.IO).launch {
-                        this@SavedFormsActivity.viewModel.formResponseManager.deleteFormResponseById(formResponseId)
+                    lifecycleScope.launch {
+                        viewModel.deleteFormResponse(formResponseId)
+                        // Reload forms to update the UI
+                        val state = viewModel.uiState.value
+                        viewModel.loadForms(state.patientId, state.savedAsDraft)
                     }
                 }
-                //formList?.removeAt(swipedPosition)
-                adapter?.deleteItem(swipedPosition)
-                adapter?.notifyItemRemoved(swipedPosition)
                 Toast.makeText(this@SavedFormsActivity, "Form deleted", Toast.LENGTH_SHORT).show()
             }
             .setNegativeButton("Cancel") { dialog, _ ->

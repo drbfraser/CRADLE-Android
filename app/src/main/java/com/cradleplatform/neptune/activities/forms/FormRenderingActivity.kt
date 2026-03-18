@@ -17,8 +17,10 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.cradleplatform.neptune.R
@@ -33,22 +35,20 @@ import com.cradleplatform.neptune.adapters.forms.FormViewAdapter
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.http_sms_service.sms.ui.SmsTransmissionDialogFragment
 import com.cradleplatform.neptune.viewmodel.forms.FormRenderingViewModel
+import com.cradleplatform.neptune.viewmodel.forms.FormSideEffect
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.io.Serializable
 
 @Suppress("LargeClass")
 @AndroidEntryPoint
-class FormRenderingActivity : AppCompatActivity() {
+class FormRenderingActivity : BaseFormActivity() {
     private var layoutManager: RecyclerView.LayoutManager? = null
     private var adapter: RecyclerView.Adapter<FormViewAdapter.ViewHolder>? = null
-    private var patient: Patient? = null
-    private var patientId: String? = null
-    private var languageSelected: String? = null
     private var categoryViewList: MutableList<View> = mutableListOf()
-    private var formResponseId: Long? = null
     private lateinit var recyclerView: RecyclerView
     private lateinit var bottomSheetCurrentSection: TextView
     private lateinit var bottomSheetCategoryContainer: LinearLayout
@@ -57,85 +57,132 @@ class FormRenderingActivity : AppCompatActivity() {
     private lateinit var formStateBtn: ImageButton
     private lateinit var formNextBtn: ImageButton
     private lateinit var formPrevBtn: ImageButton
-    val viewModel: FormRenderingViewModel by viewModels()
+    private val viewModel: FormRenderingViewModel by viewModels()
 
-    override fun onSupportNavigateUp(): Boolean {
-
-        val builder = AlertDialog.Builder(this)
-        builder.setTitle(R.string.are_you_sure)
-        builder.setMessage(R.string.exit_form_dialog)
-
-        builder.setPositiveButton(R.string.yes) { _, _ ->
-            finish()
-        }
-
-        builder.setNegativeButton(R.string.no) { _, _ ->
-            //Do nothing...
-        }
-        builder.show()
-        return true
+    override fun hasUnsavedChanges(): Boolean {
+        return viewModel.uiState.value.hasUnsavedChanges
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_form_rendering)
 
-        //Getting the formTemplate from the intent
-        val formTemplateFromIntent =
-            intent.getSerializableExtra(EXTRA_FORM_TEMPLATE) as FormTemplate
-
-        viewModel.currentFormTemplate = formTemplateFromIntent
-        viewModel.populateEmptyIds(applicationContext)
-
-        //Clear previous answers in view-model
-        viewModel.clearAnswers()
-        viewModel.changeCategory(FIRST_CATEGORY_POSITION)
-
+        // Extract data from intent
+        val formTemplateFromIntent = intent.getSerializableExtra(EXTRA_FORM_TEMPLATE) as FormTemplate
+        val patient = intent.getSerializableExtra(EXTRA_PATIENT_OBJECT) as Patient
+        val patientId = intent.getStringExtra(EXTRA_PATIENT_ID)!!
+        val languageSelected = intent.getStringExtra(EXTRA_LANGUAGE_SELECTED)!!
+        val formResponseId = if (intent.getBooleanExtra(EXTRA_IS_FROM_SAVED_FORM_RESPONSE, false)) {
+            intent.getLongExtra(EXTRA_FORM_RESPONSE_ID, 0)
+        } else {
+            null
+        }
         val answers = intent.getSerializableExtra(EXTRA_ANSWERS) as Map<String, Answer>?
+
+        // Initialize ViewModel state
+        viewModel.initializeForm(
+            formTemplate = formTemplateFromIntent,
+            patient = patient,
+            patientId = patientId,
+            language = languageSelected,
+            formResponseId = formResponseId,
+            isFromSavedResponse = formResponseId != null,
+            context = applicationContext
+        )
+
+        // Add saved answers if any
         answers?.forEach { (s, answer) -> viewModel.addAnswer(s, answer) }
 
-        // If the form was rendered from a saved form response, grab the form response ID
-        if (intent.getBooleanExtra(EXTRA_IS_FROM_SAVED_FORM_RESPONSE, false)) {
-            formResponseId = intent.getLongExtra(EXTRA_FORM_RESPONSE_ID, 0)
-        }
-
-        setUpBottomSheet(intent.getStringExtra(EXTRA_LANGUAGE_SELECTED))
-
-        //observe changes to current category
-        viewModel.currentCategory().observe(this) {
-            categoryChanged(it)
-        }
-
-        //observe changes to current answers
-        viewModel.currentAnswers().observe(this) {
-            updateQuestionsTotalText()
-        }
-
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-
-        //Getting the patient from the intent (ID and Patient Object)
-        patientId = intent.getStringExtra(EXTRA_PATIENT_ID)!!
-        patient = intent.getSerializableExtra(EXTRA_PATIENT_OBJECT)!! as Patient
-
-        //Getting the language selected from the intent
-        languageSelected = intent.getStringExtra(EXTRA_LANGUAGE_SELECTED)
-
-        //Form a question list from Category to next category
-        //Pass the list to recyclerView
-
+        // Set up RecyclerView
         layoutManager = LinearLayoutManager(this)
-
         recyclerView = findViewById<RecyclerView>(R.id.form_recycler_view)
         recyclerView.layoutManager = layoutManager
-
         recyclerView.recycledViewPool.setMaxRecycledViews(0, 0)
 
-        //check if language selected exists in the form template
-        //The language's available are already shown in the dropdown
+        // Set up bottom sheet
+        setUpBottomSheet()
 
-        adapter = FormViewAdapter(viewModel, languageSelected!!, patient)
+        // Collect UI state
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                launch {
+                    viewModel.uiState.collectLatest { state ->
+                        updateUIFromState(state.currentCategory, state.bottomSheetExpanded,
+                            state.categoryList, state.patient, state.language)
+                        invalidateOptionsMenu()
+                    }
+                }
 
+                launch {
+                    viewModel.sideEffects.collectLatest { sideEffect ->
+                        handleSideEffect(sideEffect)
+                    }
+                }
+            }
+        }
+
+        adapter = FormViewAdapter(viewModel, languageSelected, patient)
         recyclerView.adapter = adapter
+    }
+
+    private fun updateUIFromState(
+        currentCategory: Int,
+        bottomSheetExpanded: Boolean,
+        categoryList: List<Pair<String, List<Question>?>>?,
+        patient: Patient?,
+        language: String?
+    ) {
+        // Update title
+        this.title = categoryList?.getOrNull(currentCategory - 1)?.first ?: "Cradle"
+
+        // Update bottom sheet section text
+        bottomSheetCurrentSection.text = String.format(
+            getString(R.string.form_current_section),
+            currentCategory, categoryList?.size ?: 1
+        )
+
+        // Update bottom sheet state
+        if (bottomSheetExpanded) {
+            recyclerView.alpha = 0.3F
+            bottomSheetBehaviour.state = BottomSheetBehavior.STATE_EXPANDED
+            formStateBtn.background = getDrawable(R.drawable.ic_baseline_arrow_down_24)
+        } else {
+            recyclerView.alpha = 1F
+            bottomSheetBehaviour.state = BottomSheetBehavior.STATE_COLLAPSED
+            formStateBtn.background = getDrawable(R.drawable.ic_baseline_arrow_up_24)
+        }
+
+        // Update navigation buttons
+        updateNavigationButtons()
+
+        // Update category buttons
+        updateCategoryButtons(currentCategory)
+
+        // Update questions total text
+        updateQuestionsTotalText()
+
+        // Update adapter if needed
+        if (language != null && patient != null) {
+            adapter = FormViewAdapter(viewModel, language, patient)
+            recyclerView.adapter = adapter
+        }
+    }
+
+    private fun handleSideEffect(sideEffect: FormSideEffect) {
+        when (sideEffect) {
+            is FormSideEffect.ShowToast -> {
+                Toast.makeText(this, sideEffect.message, Toast.LENGTH_LONG).show()
+            }
+            is FormSideEffect.ShowValidationError -> {
+                Toast.makeText(this, sideEffect.message, Toast.LENGTH_LONG).show()
+            }
+            is FormSideEffect.NavigateBack -> {
+                finish()
+            }
+            is FormSideEffect.FormSubmittedSuccessfully -> {
+                finish()
+            }
+        }
     }
 
     override fun onStop() {
@@ -145,8 +192,8 @@ class FormRenderingActivity : AppCompatActivity() {
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.menu_forms, menu)
 
-        // Retrieve the saved form status from your logic, e.g., checking if formResponseId is not null
-        val isFormSaved = formResponseId != null
+        // Retrieve the saved form status from ViewModel state
+        val isFormSaved = viewModel.uiState.value.formResponseId != null
 
         // Find the delete menu item and set its visibility based on the form saved status
         val deleteMenuItem = menu?.findItem(R.id.formDelete)
@@ -157,18 +204,18 @@ class FormRenderingActivity : AppCompatActivity() {
 
     fun onSubmitFormAction(menuItem: MenuItem) {
         //A toast is displayed to user if fields are not input correctly
-        val (allFieldsFilledCorrectly, toastText) = viewModel.areAllFieldsFilledCorrectly(
-            languageSelected!!,
-            applicationContext
-        )
-        if (allFieldsFilledCorrectly) {
-            showFormSubmissionModeDialog(languageSelected!!)
+        val (allFieldsFilledCorrectly, toastText) = viewModel.areAllFieldsFilledCorrectly(applicationContext)
+        val language = viewModel.uiState.value.language
+
+        if (allFieldsFilledCorrectly && language != null) {
+            showFormSubmissionModeDialog(language)
         } else {
             Toast.makeText(this, toastText, Toast.LENGTH_LONG).show()
         }
     }
 
     fun onDeleteFormAction(menuItem: MenuItem) {
+        val formResponseId = viewModel.uiState.value.formResponseId
         if (formResponseId != null) {
             val builder = AlertDialog.Builder(this)
             builder.setTitle("Delete Form")
@@ -176,7 +223,7 @@ class FormRenderingActivity : AppCompatActivity() {
 
             builder.setPositiveButton(R.string.yes) { _, _ ->
                 lifecycleScope.launch {
-                    deleteFormAndNavigateBack()
+                    deleteFormAndNavigateBack(formResponseId)
                 }
             }
             builder.setNegativeButton(R.string.no) { _, _ ->
@@ -186,17 +233,14 @@ class FormRenderingActivity : AppCompatActivity() {
         }
     }
 
-    private suspend fun deleteFormAndNavigateBack() {
-        if (formResponseId != null) {
+    private suspend fun deleteFormAndNavigateBack(formResponseId: Long) {
+        viewModel.removeFormResponseFromDatabaseById(formResponseId)
 
-            viewModel.removeFormResponseFromDatabaseById(formResponseId!!)
+        // Notify the adapter that the form has been deleted
+        adapter?.notifyDataSetChanged()
 
-            // Notify the adapter that the form has been deleted
-            adapter?.notifyDataSetChanged()
-
-            // Finish the current activity and go back to the previous one
-            finish()
-        }
+        // Finish the current activity and go back to the previous one
+        finish()
     }
 
     private fun showFormSubmissionModeDialog(languageSelected: String) {
@@ -204,7 +248,7 @@ class FormRenderingActivity : AppCompatActivity() {
         builder.setTitle(R.string.how_to_submit)
         builder.setMessage(R.string.choose_an_option)
         // The ViewModel returns "CELLULAR" or "WIFI" or ""
-        val internetString = viewModel.getInternetTypeString(applicationContext)
+        val internetString = viewModel.getInternetTypeString()
 
         if (internetString.isEmpty()) {
             builder.setPositiveButton(getString(R.string.form_dialog_not_connected_internet)) { _, _ ->
@@ -213,13 +257,13 @@ class FormRenderingActivity : AppCompatActivity() {
             }
         } else {
             builder.setPositiveButton(internetString) { _, _ ->
-                formSubmission(languageSelected, Protocol.HTTP)
+                formSubmission(Protocol.HTTP)
                 returnToPatientProfile()
             }
         }
 
         builder.setNeutralButton("SAVE AND SEND LATER") { _, _ ->
-            saveForm(languageSelected, true)
+            saveForm(true)
             Toast.makeText(
                 applicationContext,
                 R.string.saved_form_success_dialog,
@@ -229,55 +273,54 @@ class FormRenderingActivity : AppCompatActivity() {
         }
 
         builder.setNegativeButton(R.string.SMS) { _, _ ->
-            formSubmission(languageSelected, Protocol.SMS)
+            formSubmission(Protocol.SMS)
         }
         builder.show()
     }
 
     private fun returnToPatientProfile() {
-        intent = PatientProfileActivity.makeIntentForPatientId(applicationContext, patientId!!)
-        // Clear the stack above PatientProfileActivity
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-        startActivity(intent)
+        val patientId = viewModel.uiState.value.patientId
+        if (patientId != null) {
+            intent = PatientProfileActivity.makeIntentForPatientId(applicationContext, patientId)
+            // Clear the stack above PatientProfileActivity
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            startActivity(intent)
+        }
     }
 
-    private fun formSubmission(languageSelected: String, protocol: Protocol) {
+    private fun formSubmission(protocol: Protocol) {
         val smsTransmissionDialog = if (protocol == Protocol.SMS) openSmsTransmissionDialog() else null
         lifecycleScope.launch {
-            val result = viewModel.submitForm(
-                patientId!!,
-                languageSelected,
-                protocol,
-                applicationContext,
-                formResponseId
-            )
+            val result = viewModel.submitForm(protocol)
             if (result is NetworkResult.Success) finish()
             smsTransmissionDialog?.dismiss()
         }
     }
 
-    private fun saveForm(languageSelected: String, saveDraft: Boolean) {
+    private fun saveForm(saveDraft: Boolean) {
         lifecycleScope.launch(Dispatchers.IO) {
-            viewModel.saveFormResponseToDatabase(patientId!!, languageSelected, formResponseId, saveDraft)
+            viewModel.saveFormResponseToDatabase(saveDraft)
         }
     }
 
-    private fun categoryChanged(currCategory: Int) {
-        this.title = viewModel.categoryList?.getOrNull(currCategory - 1)?.first ?: "Cradle"
+    private fun updateNavigationButtons() {
+        val canGoNext = viewModel.canGoToNextCategory()
+        val canGoPrev = viewModel.canGoToPrevCategory()
 
-        bottomSheetCurrentSection.text = String.format(
-            getString(R.string.form_current_section),
-            currCategory, viewModel.categoryList?.size ?: 1
-        )
+        formNextBtn.background = if (canGoNext) {
+            getDrawable(R.drawable.ic_arrow_forward_black_24)
+        } else {
+            getDrawable(R.drawable.ic_arrow_forward_grey_24)
+        }
 
-        hideBottomSheet()
+        formPrevBtn.background = if (canGoPrev) {
+            getDrawable(R.drawable.ic_arrow_prev_black_24)
+        } else {
+            getDrawable(R.drawable.ic_arrow_prev_grey_24)
+        }
+    }
 
-        adapter = FormViewAdapter(viewModel, languageSelected!!, patient)
-        recyclerView.adapter = adapter
-
-        formNextBtn.background = viewModel.isNextButtonVisible(applicationContext)
-        formPrevBtn.background = viewModel.isPrevButtonVisible(applicationContext)
-
+    private fun updateCategoryButtons(currCategory: Int) {
         categoryViewList.forEach { categoryView ->
             categoryView.findViewById<Button>(R.id.category_row_btn)?.let { button ->
                 button.background = getDrawable(R.drawable.rounded_button_grey)
@@ -289,7 +332,7 @@ class FormRenderingActivity : AppCompatActivity() {
     }
 
     private fun updateQuestionsTotalText() {
-        viewModel.categoryList?.forEachIndexed { index, pair ->
+        viewModel.uiState.value.categoryList?.forEachIndexed { index, pair ->
             val categoryView = categoryViewList.getOrNull(index)
             if (categoryView != null) {
                 val requiredTextView: TextView =
@@ -298,20 +341,22 @@ class FormRenderingActivity : AppCompatActivity() {
                     categoryView.findViewById(R.id.category_row_indicator_icon)
                 val optionalTextView: TextView =
                     categoryView.findViewById(R.id.category_row_optional_tv)
-                val requiredTextIconPair =
-                    viewModel.getRequiredFieldsTextAndIcon(pair.second, applicationContext)
 
-                requiredTextView.text = requiredTextIconPair.first
+                val fieldsStatus = viewModel.getRequiredFieldsStatus(pair.second)
+                requiredTextView.text = fieldsStatus.text
                 optionalTextView.text = viewModel.getOptionalFieldsText(pair.second)
 
-                requiredTextIconPair.second?.let {
-                    requiredIcon.setImageDrawable(it)
+                val iconRes = if (fieldsStatus.isComplete) {
+                    R.drawable.ic_baseline_check_circle_24
+                } else {
+                    R.drawable.ic_baseline_warning_24
                 }
+                requiredIcon.setImageDrawable(ContextCompat.getDrawable(this, iconRes))
             }
         }
     }
 
-    private fun setUpBottomSheet(languageSelected: String?) {
+    private fun setUpBottomSheet() {
         bottomSheetCategoryContainer = findViewById(R.id.form_category_container)
         bottomSheetCurrentSection = findViewById(R.id.bottomSheetCurrentSection)
         bottomSheet = findViewById(R.id.form_bottom_sheet)
@@ -320,19 +365,10 @@ class FormRenderingActivity : AppCompatActivity() {
 
         bottomSheetBehaviour.isDraggable = false
         formStateBtn.setOnClickListener {
-            when (bottomSheetBehaviour.state) {
-                BottomSheetBehavior.STATE_EXPANDED -> {
-                    hideBottomSheet()
-                }
-
-                else -> {
-                    showBottomSheet()
-                }
-            }
+            viewModel.toggleBottomSheet()
         }
 
-        viewModel.setCategorizedQuestions(languageSelected ?: "English", applicationContext)
-        viewModel.categoryList?.forEachIndexed { index, pair ->
+        viewModel.uiState.value.categoryList?.forEachIndexed { index, pair ->
             val category = getCategoryRow(pair, index + 1)
             bottomSheetCategoryContainer.addView(category)
             categoryViewList.add(category)
@@ -341,8 +377,7 @@ class FormRenderingActivity : AppCompatActivity() {
         formNextBtn = findViewById(R.id.form_next_category_button)
         formPrevBtn = findViewById(R.id.form_prev_category_button)
 
-        formNextBtn.background = viewModel.isNextButtonVisible(applicationContext)
-        formPrevBtn.background = viewModel.isPrevButtonVisible(applicationContext)
+        updateNavigationButtons()
 
         formNextBtn.setOnClickListener {
             viewModel.goNextCategory()
@@ -362,8 +397,7 @@ class FormRenderingActivity : AppCompatActivity() {
         val button: Button = category.findViewById(R.id.category_row_btn)
         val requiredIcon: ImageView = category.findViewById(R.id.category_row_indicator_icon)
 
-        val requiredTextIconPair =
-            viewModel.getRequiredFieldsTextAndIcon(categoryPair.second, applicationContext)
+        val fieldsStatus = viewModel.getRequiredFieldsStatus(categoryPair.second)
 
         button.text = categoryPair.first
         if (categoryNumber == FIRST_CATEGORY_POSITION) {
@@ -373,26 +407,17 @@ class FormRenderingActivity : AppCompatActivity() {
         button.setOnClickListener {
             viewModel.changeCategory(categoryNumber)
         }
-        requiredTextView.text = requiredTextIconPair.first
+        requiredTextView.text = fieldsStatus.text
         optionalTextView.text = viewModel.getOptionalFieldsText(categoryPair.second)
 
-        requiredTextIconPair.second?.let {
-            requiredIcon.setImageDrawable(it)
+        val iconRes = if (fieldsStatus.isComplete) {
+            R.drawable.ic_baseline_check_circle_24
+        } else {
+            R.drawable.ic_baseline_warning_24
         }
+        requiredIcon.setImageDrawable(ContextCompat.getDrawable(this, iconRes))
 
         return category
-    }
-
-    private fun hideBottomSheet() {
-        recyclerView.alpha = 1F
-        bottomSheetBehaviour.state = BottomSheetBehavior.STATE_COLLAPSED
-        formStateBtn.background = getDrawable(R.drawable.ic_baseline_arrow_up_24)
-    }
-
-    private fun showBottomSheet() {
-        recyclerView.alpha = 0.3F
-        bottomSheetBehaviour.state = BottomSheetBehavior.STATE_EXPANDED
-        formStateBtn.background = getDrawable(R.drawable.ic_baseline_arrow_down_24)
     }
 
     /**
@@ -401,11 +426,11 @@ class FormRenderingActivity : AppCompatActivity() {
      */
     override fun dispatchTouchEvent(event: MotionEvent): Boolean {
         if (event.action == MotionEvent.ACTION_DOWN) {
-            if (bottomSheetBehaviour.state == BottomSheetBehavior.STATE_EXPANDED) {
+            if (viewModel.uiState.value.bottomSheetExpanded) {
                 val outRect = Rect()
                 bottomSheet.getGlobalVisibleRect(outRect)
                 if (!outRect.contains(event.rawX.toInt(), event.rawY.toInt())) {
-                    hideBottomSheet()
+                    viewModel.hideBottomSheet()
                 }
             }
         }
