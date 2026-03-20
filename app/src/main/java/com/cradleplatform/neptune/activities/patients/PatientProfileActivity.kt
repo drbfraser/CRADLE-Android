@@ -678,8 +678,5 @@ open class PatientProfileActivity : AppCompatActivity() {
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
         super.onBackPressed()
-
-        val intent = PatientsActivity.makeIntent(this@PatientProfileActivity)
-        startActivity(intent)
     }
 }
