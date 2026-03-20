@@ -34,10 +34,12 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="6dp"
             android:backgroundTint="@color/black"
+            android:gravity="start"
             android:imeOptions="actionSend"
             android:inputType="textMultiLine"
             android:paddingBottom="20dp"
             android:textColor="@color/black"
+            android:textDirection="ltr"
             android:visibility="gone"
             android:importantForAutofill="no" />
 
@@ -47,9 +49,11 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="6dp"
             android:backgroundTint="@color/black"
+            android:gravity="start"
             android:imeOptions="actionSend"
             android:inputType="number"
             android:textColor="@color/black"
+            android:textDirection="ltr"
             android:visibility="gone"
             android:importantForAutofill="no" />
 

@@ -47,7 +47,8 @@ import java.io.Serializable
 @AndroidEntryPoint
 class FormRenderingActivity : BaseFormActivity() {
     private var layoutManager: RecyclerView.LayoutManager? = null
-    private var adapter: RecyclerView.Adapter<FormViewAdapter.ViewHolder>? = null
+    private var adapter: FormViewAdapter? = null
+    private var lastRenderedCategory: Int = -1
     private var categoryViewList: MutableList<View> = mutableListOf()
     private lateinit var recyclerView: RecyclerView
     private lateinit var bottomSheetCurrentSection: TextView
@@ -161,10 +162,10 @@ class FormRenderingActivity : BaseFormActivity() {
         // Update questions total text
         updateQuestionsTotalText()
 
-        // Update adapter if needed
-        if (language != null && patient != null) {
-            adapter = FormViewAdapter(viewModel, language, patient)
-            recyclerView.adapter = adapter
+        // Update adapter data only when category changes
+        if (currentCategory != lastRenderedCategory) {
+            lastRenderedCategory = currentCategory
+            adapter?.updateData()
         }
     }
 
