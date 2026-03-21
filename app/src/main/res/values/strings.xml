@@ -737,6 +737,14 @@
     <string name="form_generic_id">Generic id %d</string>
     <string name="form_submission_failed">Form submission failed</string>
     <string name="form_submission_success">Form submitted successfully</string>
+    <string name="form_submission_error_title">Submission Failed</string>
+    <string name="form_submission_server_error_message">The server encountered an error and could not process your form. Please try again later or save as a draft.</string>
+    <string name="form_submission_network_error_message">Unable to reach the server. Please check your internet connection and try again, or save as a draft to submit later.</string>
+    <string name="form_submission_auth_error_message">Your session has expired. Please log in again to submit this form.</string>
+    <string name="form_submission_retry">Retry</string>
+    <string name="form_submission_save_draft">Save as Draft</string>
+    <string name="form_submission_saved_draft_success">Form saved as draft. You can submit it later.</string>
+    <string name="form_submitting">Submitting form\u2026</string>
     <string name="form_uncategorized">Uncategorized</string>
     <string name="form_current_section">Section %1$d/%2$d</string>
     <string name="form_maximum_lines_allowed">Maximum %1$s lines allowed</string>

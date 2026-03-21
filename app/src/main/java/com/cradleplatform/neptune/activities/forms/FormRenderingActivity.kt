@@ -36,7 +36,9 @@ import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.http_sms_service.sms.ui.SmsTransmissionDialogFragment
 import com.cradleplatform.neptune.viewmodel.forms.FormRenderingViewModel
 import com.cradleplatform.neptune.viewmodel.forms.FormSideEffect
+import com.cradleplatform.neptune.viewmodel.forms.SubmissionErrorType
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
@@ -58,6 +60,8 @@ class FormRenderingActivity : BaseFormActivity() {
     private lateinit var formStateBtn: ImageButton
     private lateinit var formNextBtn: ImageButton
     private lateinit var formPrevBtn: ImageButton
+    private var loadingOverlay: View? = null
+    private var lastSubmitProtocol: Protocol? = null
     private val viewModel: FormRenderingViewModel by viewModels()
 
     override fun hasUnsavedChanges(): Boolean {
@@ -181,9 +185,52 @@ class FormRenderingActivity : BaseFormActivity() {
                 finish()
             }
             is FormSideEffect.FormSubmittedSuccessfully -> {
+                hideLoadingOverlay()
                 finish()
             }
+            is FormSideEffect.ShowSubmissionError -> {
+                hideLoadingOverlay()
+                showSubmissionErrorDialog(sideEffect.errorType)
+            }
         }
+    }
+
+    private fun showSubmissionErrorDialog(errorType: SubmissionErrorType) {
+        val messageRes = when (errorType) {
+            SubmissionErrorType.SERVER_ERROR -> R.string.form_submission_server_error_message
+            SubmissionErrorType.NETWORK_ERROR -> R.string.form_submission_network_error_message
+            SubmissionErrorType.AUTH_ERROR -> R.string.form_submission_auth_error_message
+        }
+
+        val builder = MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.form_submission_error_title)
+            .setIcon(R.drawable.ic_baseline_warning_24)
+            .setMessage(messageRes)
+
+        if (errorType != SubmissionErrorType.AUTH_ERROR) {
+            builder.setPositiveButton(R.string.form_submission_retry) { _, _ ->
+                lastSubmitProtocol?.let { formSubmission(it) }
+            }
+            builder.setNeutralButton(R.string.form_submission_save_draft) { _, _ ->
+                saveForm(true)
+                Toast.makeText(this, R.string.form_submission_saved_draft_success, Toast.LENGTH_LONG).show()
+            }
+        }
+
+        builder.setNegativeButton(R.string.cancel, null)
+        builder.show()
+    }
+
+    private fun showLoadingOverlay() {
+        if (loadingOverlay == null) {
+            loadingOverlay = layoutInflater.inflate(R.layout.overlay_loading, findViewById(android.R.id.content), false)
+            (findViewById<View>(android.R.id.content) as android.view.ViewGroup).addView(loadingOverlay)
+        }
+        loadingOverlay?.visibility = View.VISIBLE
+    }
+
+    private fun hideLoadingOverlay() {
+        loadingOverlay?.visibility = View.GONE
     }
 
     override fun onStop() {
@@ -259,7 +306,6 @@ class FormRenderingActivity : BaseFormActivity() {
         } else {
             builder.setPositiveButton(internetString) { _, _ ->
                 formSubmission(Protocol.HTTP)
-                returnToPatientProfile()
             }
         }
 
@@ -290,10 +336,15 @@ class FormRenderingActivity : BaseFormActivity() {
     }
 
     private fun formSubmission(protocol: Protocol) {
+        lastSubmitProtocol = protocol
         val smsTransmissionDialog = if (protocol == Protocol.SMS) openSmsTransmissionDialog() else null
+        if (protocol == Protocol.HTTP) showLoadingOverlay()
         lifecycleScope.launch {
             val result = viewModel.submitForm(protocol)
-            if (result is NetworkResult.Success) finish()
+            if (result is NetworkResult.Success) {
+                hideLoadingOverlay()
+                finish()
+            }
             smsTransmissionDialog?.dismiss()
         }
     }
