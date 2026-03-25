@@ -45,4 +45,11 @@ sealed class FormSideEffect {
     data class ShowValidationError(val message: String) : FormSideEffect()
     data object NavigateBack : FormSideEffect()
     data object FormSubmittedSuccessfully : FormSideEffect()
+    data class ShowSubmissionError(val errorType: SubmissionErrorType) : FormSideEffect()
+}
+
+enum class SubmissionErrorType {
+    SERVER_ERROR,
+    NETWORK_ERROR,
+    AUTH_ERROR
 }

@@ -254,16 +254,19 @@ class FormRenderingViewModel @Inject constructor(
                 }
 
                 is NetworkResult.Failure -> {
-                    Log.d(TAG, "Form upload failed.")
-                    _sideEffects.send(FormSideEffect.ShowToast("Form submission failed"))
+                    Log.d(TAG, "Form upload failed with status ${result.statusCode}.")
+                    val errorType = if (result.statusCode == 401 || result.statusCode == 403) {
+                        SubmissionErrorType.AUTH_ERROR
+                    } else {
+                        SubmissionErrorType.SERVER_ERROR
+                    }
+                    _sideEffects.send(FormSideEffect.ShowSubmissionError(errorType))
                     _uiState.update { it.copy(isLoading = false) }
                 }
 
                 is NetworkResult.NetworkException -> {
-                    Log.d(TAG, "Form upload failed.")
-                    _sideEffects.send(
-                        FormSideEffect.ShowToast("Form submission failed due to unexpected network exception")
-                    )
+                    Log.d(TAG, "Form upload failed: ${result.cause.message}")
+                    _sideEffects.send(FormSideEffect.ShowSubmissionError(SubmissionErrorType.NETWORK_ERROR))
                     _uiState.update { it.copy(isLoading = false) }
                 }
             }

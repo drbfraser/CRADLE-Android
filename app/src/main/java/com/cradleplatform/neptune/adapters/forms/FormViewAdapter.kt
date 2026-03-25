@@ -49,6 +49,11 @@ class FormViewAdapter(
     //Getting the Question List
     private var mList = viewModel.getCurrentQuestionsList()
 
+    fun updateData() {
+        mList = viewModel.getCurrentQuestionsList()
+        notifyDataSetChanged()
+    }
+
     inner class ViewHolder(val binding: CardLayoutBinding) : RecyclerView.ViewHolder(binding.root)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -94,6 +99,21 @@ class FormViewAdapter(
         holder.binding.tvQuestion.textSize = 18f
 
         val questionID = mList[position].id!!
+
+        // Reset all input views to GONE before showing the correct one
+        holder.binding.etAnswer.visibility = View.GONE
+        holder.binding.etNumAnswer.visibility = View.GONE
+        holder.binding.btnDatePicker.visibility = View.GONE
+        holder.binding.btnDateTimePicker.visibility = View.GONE
+        holder.binding.rgMultipleChoice.visibility = View.GONE
+        holder.binding.rgMultipleChoice.removeAllViews()
+        holder.binding.checkboxContainer.visibility = View.GONE
+        holder.binding.checkboxContainer.removeAllViews()
+
+        // Reset card styling to default
+        holder.binding.tvQuestion.setTextColor(Color.parseColor("#000000"))
+        holder.binding.cardView.setCardBackgroundColor(Color.WHITE)
+        holder.binding.linearLayout.setBackgroundColor(Color.WHITE)
 
         //Using Enum caused problems
         when (mList[position].questionType.toString()) {

@@ -94,12 +94,8 @@ class PatientsActivity : AppCompatActivity() {
 
     override fun onRestart() {
         super.onRestart()
-        // restart the activity in case data is changed after syncing
-        finish()
-        // smooth the animation of activity recreation
-        overridePendingTransition(0, 0)
-        startActivity(intent)
-        overridePendingTransition(0, 0)
+        // Refresh the patient list in case data changed (e.g., after syncing)
+        localSearchPatientAdapter.refresh()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
