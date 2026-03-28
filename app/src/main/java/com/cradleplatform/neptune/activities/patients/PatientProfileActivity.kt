@@ -31,6 +31,7 @@ import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.manager.ReadingManager
 import com.cradleplatform.neptune.manager.ReferralManager
 import com.cradleplatform.neptune.model.Assessment
+import com.cradleplatform.neptune.model.FormResponse
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.Reading
 import com.cradleplatform.neptune.model.Referral
@@ -89,6 +90,7 @@ open class PatientProfileActivity : AppCompatActivity() {
     protected var patientReadings: List<Reading> = emptyList()
     private var patientReferrals: List<Referral>? = null
     private var patientAssessments: List<Assessment>? = null
+    private var patientSubmittedForms: List<FormResponse> = emptyList()
 
     // Data Model
     @Inject
@@ -173,6 +175,11 @@ open class PatientProfileActivity : AppCompatActivity() {
             if (patientReadings.isNotEmpty()) {
                 setupReadingsRecyclerView()
             }
+        }
+
+        viewModel.submittedForms.observe(this) { forms ->
+            patientSubmittedForms = forms
+            setupReadingsRecyclerView()
         }
     }
 
@@ -584,13 +591,15 @@ open class PatientProfileActivity : AppCompatActivity() {
             combinedList.addAll(patientReferrals!!.map { i -> i })
         if (patientAssessments != null)
             combinedList.addAll(patientAssessments!!.map { i -> i })
+        combinedList.addAll(patientSubmittedForms)
         combinedList.sortWith(
             compareByDescending {
                 when (it) {
                     is Reading -> it.dateTaken
                     is Referral -> it.dateReferred
                     is Assessment -> it.dateAssessed
-                    else -> Integer.MAX_VALUE
+                    is FormResponse -> it.dateEdited / 1000
+                    else -> Integer.MAX_VALUE.toLong()
                 }
             }
         )

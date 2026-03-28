@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.cradleplatform.neptune.R;
 import com.cradleplatform.neptune.model.Assessment;
+import com.cradleplatform.neptune.model.FormResponse;
 import com.cradleplatform.neptune.model.Reading;
 import com.cradleplatform.neptune.model.ReadingAnalysis;
 import com.cradleplatform.neptune.model.Referral;
@@ -33,6 +34,7 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
     private final static int REFERRAL_CANCELLED = 5;
     private final static int REFERRAL_ASSESSED = 6;
     private final static int ASSESSMENT_VIEW = 7;
+    private final static int FORM_VIEW = 8;
     private List<?> combinedList;
     private RecyclerView recyclerView;
     private OnClickElement onClickElementListener;
@@ -62,6 +64,10 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
                 v = LayoutInflater.from(viewGroup.getContext())
                         .inflate(R.layout.referral_assessed_card, viewGroup, false);
                 break;
+            case FORM_VIEW:
+                v = LayoutInflater.from(viewGroup.getContext())
+                        .inflate(R.layout.form_response_card, viewGroup, false);
+                break;
             default:
                 v = LayoutInflater.from(viewGroup.getContext())
                         .inflate(R.layout.reading_card, viewGroup, false);
@@ -84,6 +90,8 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
                     return REFERRAL_CANCELLED;
                 else
                     return REFERRAL_PENDING;
+            case "com.cradleplatform.neptune.model.FormResponse":
+                return FORM_VIEW;
             default:
                 return READING_VIEW;
         }
@@ -123,6 +131,11 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
                 myViewHolder.referralDate.setText(DateUtil.getConciseDateString(currReferral.getDateReferred(), false));
                 myViewHolder.referralLocation.setText(currReferral.getHealthFacilityName());
                 myViewHolder.referralComments.setText(currReferral.getComment());
+                break;
+            case FORM_VIEW:
+                FormResponse currFormResponse = (FormResponse) combinedList.get(i);
+                myViewHolder.formName.setText(currFormResponse.getFormClassificationName());
+                myViewHolder.formDate.setText(DateUtil.getConciseDateString(currFormResponse.getDateEdited() / 1000, false));
                 break;
             case READING_VIEW:
                 Reading currReading = (Reading) combinedList.get(i);
@@ -290,7 +303,7 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
                 referralLocation, referralComments, cancellationReason,
                 assessmentDate, assessedBy, investigateAndResults,
                 finalDiagnosis, treatmentOp, medication,
-                followUp;
+                followUp, formName, formDate;
         ImageView trafficLight, arrow;
         Button retakeVitalButton;
         View view;
@@ -320,6 +333,8 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
             treatmentOp = v.findViewById(R.id.treatmentOperationTxt);
             medication = v.findViewById(R.id.medicationPrescribedTxt);
             followUp = v.findViewById(R.id.assessmentFollowUpTxt);
+            formName = v.findViewById(R.id.formResponseNameTxt);
+            formDate = v.findViewById(R.id.formResponseDateTxt);
         }
     }
 }

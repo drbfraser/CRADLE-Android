@@ -235,19 +235,31 @@ class FormRenderingViewModel @Inject constructor(
         return if (formTemplate != null && patientId != null && selectedLanguage != null) {
             _uiState.update { it.copy(isLoading = true) }
 
+            // Resolve form class name before constructing FormResponse so formClassificationName is populated
+            formTemplate.formClassName = formTemplate.formClassName ?: formTemplate.formClassId?.let {
+                formManager.searchForFormClassNameWithFormClassId(it)
+            }
+
             val answersWithBlanks = addBlankQuestions(formTemplate)
             val formResponse = FormResponse(
                 patientId = patientId,
                 formTemplate = formTemplate,
                 language = selectedLanguage,
-                answers = answersWithBlanks
+                answers = answersWithBlanks,
+                saveResponseToSendLater = false
             )
+            // If submitting from a draft, reuse the draft's ID so it gets replaced
+            val existingId = currentState.formResponseId
+            if (existingId != null) {
+                formResponse.formResponseId = existingId
+            }
 
             val result = restApi.postFormResponse(formResponse, protocol)
 
             when (result) {
                 is NetworkResult.Success -> {
                     Log.d(TAG, "Form uploaded successfully.")
+                    formResponseManager.updateOrInsertIfNotExistsFormResponse(formResponse)
                     _sideEffects.send(FormSideEffect.ShowToast("Form submitted successfully"))
                     _sideEffects.send(FormSideEffect.FormSubmittedSuccessfully)
                     _uiState.update { it.copy(hasUnsavedChanges = false, isLoading = false) }
