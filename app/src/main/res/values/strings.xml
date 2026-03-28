@@ -679,6 +679,9 @@
     <string name="create_new_form">Create New Form</string>
     <string name="see_saved_forms">See Draft Forms</string>
     <string name="see_submitted_forms">See Submitted Forms</string>
+    <string name="form_submitted">Form Submitted</string>
+    <string name="form_name_label">Form:</string>
+    <string name="form_date_submitted_label">Date Submitted:</string>
     <string name="form_selection_hint">Form*</string>
     <string name="form_language_hint">Language*</string>
     <string name="fetch_form_button_text">Fetch Form</string>
