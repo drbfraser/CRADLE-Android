@@ -10,6 +10,7 @@ import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.manager.ReadingManager
 import com.cradleplatform.neptune.manager.ReferralManager
 import com.cradleplatform.neptune.model.Assessment
+import com.cradleplatform.neptune.model.FormResponse
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.Reading
 import com.cradleplatform.neptune.model.Referral
@@ -46,6 +47,9 @@ class PatientProfileViewModel @Inject constructor(
 
     private val _submittedFormCount = MutableLiveData<Int>()
     val submittedFormCount: LiveData<Int> = _submittedFormCount
+
+    private val _submittedForms = MutableLiveData<List<FormResponse>>()
+    val submittedForms: LiveData<List<FormResponse>> = _submittedForms
 
     /**
      * Load patient data by ID
@@ -91,6 +95,10 @@ class PatientProfileViewModel @Inject constructor(
         // Load assessments
         val assessments = assessmentManager.getAssessmentByPatientId(patientId)
         _assessments.postValue(assessments ?: emptyList())
+
+        // Load submitted forms
+        val submittedForms = formResponseManager.searchForSubmittedFormsByPatientId(patientId)
+        _submittedForms.postValue(submittedForms ?: emptyList())
     }
 
     /**
