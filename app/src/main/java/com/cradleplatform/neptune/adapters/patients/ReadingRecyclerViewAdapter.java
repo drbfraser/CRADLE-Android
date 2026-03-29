@@ -1,11 +1,13 @@
 package com.cradleplatform.neptune.adapters.patients;
 
 import android.content.Context;
+import android.graphics.Typeface;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -14,7 +16,11 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.cradleplatform.neptune.R;
 import com.cradleplatform.neptune.model.Assessment;
+import com.cradleplatform.neptune.model.Answer;
 import com.cradleplatform.neptune.model.FormResponse;
+import com.cradleplatform.neptune.model.McOption;
+import com.cradleplatform.neptune.model.QuestionResponse;
+import com.cradleplatform.neptune.model.QuestionTypeEnum;
 import com.cradleplatform.neptune.model.Reading;
 import com.cradleplatform.neptune.model.ReadingAnalysis;
 import com.cradleplatform.neptune.model.Referral;
@@ -136,6 +142,46 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
                 FormResponse currFormResponse = (FormResponse) combinedList.get(i);
                 myViewHolder.formName.setText(currFormResponse.getFormClassificationName());
                 myViewHolder.formDate.setText(DateUtil.getConciseDateString(currFormResponse.getDateEdited() / 1000, false));
+
+                LinearLayout container = myViewHolder.formResponseFieldsContainer;
+                container.removeAllViews();
+                Context ctx = myViewHolder.itemView.getContext();
+                int dp4 = Math.round(4 * ctx.getResources().getDisplayMetrics().density);
+
+                for (QuestionResponse qr : currFormResponse.getQuestionResponses()) {
+                    if (qr.getQuestionType() == QuestionTypeEnum.CATEGORY) continue;
+                    String answerText = getAnswerText(qr);
+                    if (answerText.isEmpty()) continue;
+
+                    LinearLayout row = new LinearLayout(ctx);
+                    row.setOrientation(LinearLayout.HORIZONTAL);
+                    LinearLayout.LayoutParams rowParams = new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT
+                    );
+                    rowParams.topMargin = dp4;
+                    row.setLayoutParams(rowParams);
+
+                    TextView label = new TextView(ctx);
+                    label.setText(qr.getLanguageSpecificText() + ": ");
+                    label.setTextColor(0xFF000000);
+                    label.setTypeface(null, Typeface.BOLD);
+                    label.setLayoutParams(new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT
+                    ));
+
+                    TextView value = new TextView(ctx);
+                    value.setText(answerText);
+                    value.setTextColor(0xFF000000);
+                    value.setLayoutParams(new LinearLayout.LayoutParams(
+                        0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f
+                    ));
+
+                    row.addView(label);
+                    row.addView(value);
+                    container.addView(row);
+                }
                 break;
             case READING_VIEW:
                 Reading currReading = (Reading) combinedList.get(i);
@@ -252,6 +298,31 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
 
     }
 
+    private String getAnswerText(QuestionResponse qr) {
+        Answer answer = qr.getAnswers();
+        if (answer == null) return "";
+        if (answer.getNumericAnswer() != null) {
+            return answer.getNumericAnswer().toString();
+        }
+        if (answer.getTextAnswer() != null && !answer.getTextAnswer().isEmpty()) {
+            return answer.getTextAnswer();
+        }
+        if (answer.getMcIdArrayAnswer() != null && !answer.getMcIdArrayAnswer().isEmpty()) {
+            List<McOption> options = qr.getMcOptions();
+            StringBuilder sb = new StringBuilder();
+            for (int mcId : answer.getMcIdArrayAnswer()) {
+                for (McOption opt : options) {
+                    if (opt.getMcId() != null && opt.getMcId() == mcId && opt.getOpt() != null) {
+                        if (sb.length() > 0) sb.append(", ");
+                        sb.append(opt.getOpt());
+                    }
+                }
+            }
+            return sb.toString();
+        }
+        return "";
+    }
+
     private void setVisibilityForImageAndText(View v, int imageViewId, int textViewId, boolean show) {
         ImageView iv = v.findViewById(imageViewId);
         iv.setVisibility(show ? View.VISIBLE : View.GONE);
@@ -304,6 +375,7 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
                 assessmentDate, assessedBy, investigateAndResults,
                 finalDiagnosis, treatmentOp, medication,
                 followUp, formName, formDate;
+        LinearLayout formResponseFieldsContainer;
         ImageView trafficLight, arrow;
         Button retakeVitalButton;
         View view;
@@ -335,6 +407,7 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
             followUp = v.findViewById(R.id.assessmentFollowUpTxt);
             formName = v.findViewById(R.id.formResponseNameTxt);
             formDate = v.findViewById(R.id.formResponseDateTxt);
+            formResponseFieldsContainer = v.findViewById(R.id.formResponseFieldsContainer);
         }
     }
 }

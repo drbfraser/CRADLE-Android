@@ -208,6 +208,9 @@ class SyncActivity : AppCompatActivity() {
                     SyncAllWorker.State.DOWNLOADING_FORM_TEMPLATES -> getString(
                         R.string.sync_activitiy_status_downloading_form_templates
                     )
+                    SyncAllWorker.State.DOWNLOADING_FORM_RESPONSES -> getString(
+                        R.string.sync_activitiy_status_downloading_form_responses
+                    )
                 }
                 if (syncStatusText.text != newStateString) {
                     syncStatusText.text = newStateString
