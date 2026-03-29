@@ -36,3 +36,8 @@ data class FormSyncResult(
     val networkResult: NetworkResult<Unit>,
     val totalFormClassDownloaded: Int
 )
+
+data class FormResponseSyncResult(
+    val networkResult: NetworkResult<Unit>,
+    val totalFormResponsesDownloaded: Int
+)
