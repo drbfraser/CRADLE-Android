@@ -2331,7 +2331,9 @@ class RestApi(
                 ).also {
                     if (it is NetworkResult.Success) {
                         if (failedParse) {
-                            formResponseChannel.close(SyncException("form responses sync response parsing had failure(s)"))
+                            formResponseChannel.close(
+                                SyncException("form responses sync response parsing had failure(s)")
+                            )
                         } else {
                             formResponseChannel.close()
                         }
@@ -2355,7 +2357,8 @@ class RestApi(
         @com.google.gson.annotations.SerializedName("lang") val language: String,
         @com.google.gson.annotations.SerializedName("last_edited") val lastEdited: Long,
         @com.google.gson.annotations.SerializedName("date_created") val dateCreated: Long,
-        @com.google.gson.annotations.SerializedName("classification") val classification: FormResponseSyncClassification?
+        @com.google.gson.annotations.SerializedName("classification")
+        val classification: FormResponseSyncClassification?
     ) {
         val classificationName: String? get() = classification?.name
     }
