@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Canvas
 import android.os.Bundle
+import android.view.View
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -56,7 +57,13 @@ class SavedFormsActivity : AppCompatActivity() {
     private fun updateUIFromState(state: com.cradleplatform.neptune.viewmodel.forms.SavedFormsState) {
         val mutableFormMap = state.formMap.mapValues { it.value.toMutableList() }.toMutableMap()
         adapter = SavedFormAdapter(mutableFormMap)
-        findViewById<RecyclerView>(R.id.recycler_view).adapter = adapter
+        val recyclerView = findViewById<RecyclerView>(R.id.recycler_view)
+        recyclerView.adapter = adapter
+
+        val totalForms = state.formMap.values.sumOf { it.size }
+        val isEmpty = !state.isLoading && totalForms == 0
+        recyclerView.visibility = if (isEmpty) View.GONE else View.VISIBLE
+        findViewById<View>(R.id.empty_state_view).visibility = if (isEmpty) View.VISIBLE else View.GONE
     }
 
     private fun setUpSavedFormsRecyclerView() {
