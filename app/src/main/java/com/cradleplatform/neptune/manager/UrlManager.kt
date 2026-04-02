@@ -174,6 +174,9 @@ class UrlManager @Inject constructor(val settings: Settings) {
     fun getAssessmentsSync(lastSyncTimestamp: BigInteger): String =
         "$base/sync/assessments?since=$lastSyncTimestamp"
 
+    fun getFormResponsesSync(lastSyncTimestamp: BigInteger): String =
+        "$base/sync/forms?since=$lastSyncTimestamp"
+
     fun getUpdatesNew(): String = "$base/sync/updates"
 
     /**

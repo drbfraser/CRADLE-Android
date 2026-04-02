@@ -2271,6 +2271,103 @@ class RestApi(
     }
 
     /**
+     * Downloads all submitted form responses for the user's patients since [lastSyncTimestamp].
+     * Parses each item into a [FormResponse] using a stub [FormTemplate] and sends it to
+     * [formResponseChannel]. Deletes all previously synced (submitted) form responses before
+     * inserting, so the local DB always reflects the server state.
+     */
+    suspend fun syncFormResponses(
+        lastSyncTimestamp: BigInteger,
+        formResponseChannel: SendChannel<FormResponse>,
+        protocol: Protocol,
+        reportProgressBlock: suspend (Int, Int) -> Unit
+    ): FormResponseSyncResult = withContext(IO) {
+        val url = urlManager.getFormResponsesSync(lastSyncTimestamp)
+        var totalDownloaded = 0
+
+        val result = when (protocol) {
+            Protocol.HTTP -> {
+                var failedParse = false
+                http.makeRequest(
+                    method = Http.Method.GET,
+                    url = url,
+                    headers = makeAuthorizationHeader(),
+                    inputStreamReader = { inputStream ->
+                        try {
+                            val gson = Gson()
+                            val reader = gson.newJsonReader(inputStream.bufferedReader())
+                            reader.beginArray()
+                            while (reader.hasNext()) {
+                                val item = gson.fromJson<FormResponseSyncItem>(reader, FormResponseSyncItem::class.java)
+                                val stubTemplate = FormTemplate(
+                                    id = item.formClassificationId,
+                                    version = "1",
+                                    archived = false,
+                                    dateCreated = item.dateCreated,
+                                    formClassId = item.formClassificationId,
+                                    formClassName = item.classificationName,
+                                    questions = emptyList()
+                                )
+                                val formResponse = FormResponse(
+                                    patientId = item.patientId,
+                                    formTemplate = stubTemplate,
+                                    language = item.language,
+                                    answers = emptyMap(),
+                                    saveResponseToSendLater = false
+                                )
+                                // Server timestamps are in seconds; dateEdited is stored in ms
+                                formResponse.dateEdited = item.lastEdited * 1000L
+                                formResponseChannel.send(formResponse)
+                                totalDownloaded++
+                                reportProgressBlock(totalDownloaded, totalDownloaded)
+                            }
+                            reader.endArray()
+                            reader.close()
+                        } catch (e: Exception) {
+                            Log.e(TAG, "syncFormResponses parse error: $e")
+                            failedParse = true
+                        }
+                    }
+                ).also {
+                    if (it is NetworkResult.Success) {
+                        if (failedParse) {
+                            formResponseChannel.close(
+                                SyncException("form responses sync response parsing had failure(s)")
+                            )
+                        } else {
+                            formResponseChannel.close()
+                        }
+                    } else {
+                        formResponseChannel.close(SyncException("form responses download wasn't successful"))
+                    }
+                }
+            }
+            Protocol.SMS -> {
+                formResponseChannel.close(SyncException("SMS protocol not supported for form responses sync"))
+                NetworkResult.NetworkException(SyncException("SMS protocol not supported for form responses sync"))
+            }
+        }
+
+        FormResponseSyncResult(result, totalDownloaded)
+    }
+
+    private data class FormResponseSyncItem(
+        @com.google.gson.annotations.SerializedName("patient_id") val patientId: String,
+        @com.google.gson.annotations.SerializedName("form_classification_id") val formClassificationId: String,
+        @com.google.gson.annotations.SerializedName("lang") val language: String,
+        @com.google.gson.annotations.SerializedName("last_edited") val lastEdited: Long,
+        @com.google.gson.annotations.SerializedName("date_created") val dateCreated: Long,
+        @com.google.gson.annotations.SerializedName("classification")
+        val classification: FormResponseSyncClassification?
+    ) {
+        val classificationName: String? get() = classification?.name
+    }
+
+    private data class FormResponseSyncClassification(
+        @com.google.gson.annotations.SerializedName("name") val name: String?
+    )
+
+    /**
      * Decodes the payload of the access token JWT and extracts the expiry claim (exp).
      */
     @OptIn(ExperimentalEncodingApi::class)

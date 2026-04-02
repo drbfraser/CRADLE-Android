@@ -121,4 +121,7 @@ interface FormResponseDao {
 
     @Query("SELECT * FROM FormResponse WHERE saveResponseToSendLater = true")
     suspend fun getAllDraftForms(): MutableList<FormResponse>
+
+    @Query("DELETE FROM FormResponse WHERE saveResponseToSendLater = false")
+    suspend fun deleteAllSubmittedForms()
 }

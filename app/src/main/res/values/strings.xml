@@ -679,6 +679,9 @@
     <string name="create_new_form">Create New Form</string>
     <string name="see_saved_forms">See Draft Forms</string>
     <string name="see_submitted_forms">See Submitted Forms</string>
+    <string name="form_submitted">Form Submitted</string>
+    <string name="form_name_label">Form:</string>
+    <string name="form_date_submitted_label">Date Submitted:</string>
     <string name="form_selection_hint">Form*</string>
     <string name="form_language_hint">Language*</string>
     <string name="fetch_form_button_text">Fetch Form</string>
@@ -687,6 +690,7 @@
     <string name="data_range">Input range:</string>
     <string name="sync_activity_status_downloading_health_facilities">Downloading Health Facilities</string>
     <string name="sync_activitiy_status_downloading_form_templates">Downloading Form Templates</string>
+    <string name="sync_activitiy_status_downloading_form_responses">Downloading Form Responses</string>
     <string name="pencil_icon_for_edit">Pencil icon for edit</string>
     <string name="pinpass_enter_pin">Enter PIN</string>
     <string name="pinpass_forgot_pin">Forgot PIN</string>

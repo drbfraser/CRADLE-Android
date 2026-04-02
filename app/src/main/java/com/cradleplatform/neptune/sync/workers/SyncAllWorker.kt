@@ -14,6 +14,7 @@ import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.database.CradleDatabase
 import com.cradleplatform.neptune.ext.Field
 import com.cradleplatform.neptune.http_sms_service.http.AssessmentSyncResult
+import com.cradleplatform.neptune.http_sms_service.http.FormResponseSyncResult
 import com.cradleplatform.neptune.http_sms_service.http.FormSyncResult
 import com.cradleplatform.neptune.http_sms_service.http.HealthFacilitySyncResult
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
@@ -24,12 +25,14 @@ import com.cradleplatform.neptune.http_sms_service.http.RestApi
 import com.cradleplatform.neptune.http_sms_service.http.SyncException
 import com.cradleplatform.neptune.manager.AssessmentManager
 import com.cradleplatform.neptune.manager.FormManager
+import com.cradleplatform.neptune.manager.FormResponseManager
 import com.cradleplatform.neptune.manager.HealthFacilityManager
 import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.manager.ReadingManager
 import com.cradleplatform.neptune.manager.ReferralManager
 import com.cradleplatform.neptune.model.Assessment
 import com.cradleplatform.neptune.model.FormClassification
+import com.cradleplatform.neptune.model.FormResponse
 import com.cradleplatform.neptune.model.HealthFacility
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.Reading
@@ -66,6 +69,7 @@ class SyncAllWorker @AssistedInject constructor(
     private val assessmentManager: AssessmentManager,
     private val healthFacilityManager: HealthFacilityManager,
     private val formManager: FormManager,
+    private val formResponseManager: FormResponseManager,
     private val sharedPreferences: SharedPreferences,
     private val database: CradleDatabase
 ) : CoroutineWorker(context, params) {
@@ -97,9 +101,14 @@ class SyncAllWorker @AssistedInject constructor(
         CHECKING_SERVER_ASSESSMENTS, UPLOADING_ASSESSMENTS, DOWNLOADING_ASSESSMENTS,
 
         /**
-         * Downloading Form Tempalates from server
+         * Downloading Form Templates from server
          */
         DOWNLOADING_FORM_TEMPLATES,
+
+        /**
+         * Downloading submitted Form Responses from server
+         */
+        DOWNLOADING_FORM_RESPONSES,
     }
 
     companion object {
@@ -119,6 +128,9 @@ class SyncAllWorker @AssistedInject constructor(
 
         /** SharedPreferences key for last time assessments were synced */
         const val LAST_HEALTH_FACILITIES_SYNC = "lastSyncTimeHealthFacilities"
+
+        /** SharedPreferences key for last time form responses were synced */
+        const val LAST_FORM_RESPONSE_SYNC = "lastSyncTimeFormResponses"
 
         /** Default last sync timestamp. Note that using 0 will result in server rejecting param */
         const val LAST_SYNC_DEFAULT = "1"
@@ -331,6 +343,17 @@ class SyncAllWorker @AssistedInject constructor(
                 workDataOf(RESULT_MESSAGE to getResultErrorMessage(formTemplateResult.networkResult))
             )
         }
+
+        val lastFormResponseSyncTime = BigInteger(
+            sharedPreferences.getString(LAST_FORM_RESPONSE_SYNC, LAST_SYNC_DEFAULT)!!
+        )
+        val formResponseResult = syncFormResponses(lastFormResponseSyncTime)
+        if (formResponseResult.networkResult is NetworkResult.Success) {
+            sharedPreferences.edit(commit = true) {
+                putString(LAST_FORM_RESPONSE_SYNC, syncTimestampToSave.toString())
+            }
+        }
+        // Non-fatal: if form response sync fails, continue and log but don't fail the whole sync
 
         val syncResult = workDataOf(
             RESULT_MESSAGE to getResultSuccessMessage(
@@ -578,6 +601,42 @@ class SyncAllWorker @AssistedInject constructor(
         restApi.getAllFormTemplates(channel, Protocol.HTTP) { current, total ->
             reportProgress(
                 state = State.DOWNLOADING_HEALTH_FACILITIES,
+                progress = current,
+                total = total,
+            )
+        }
+    }
+
+    private suspend fun syncFormResponses(
+        lastSyncTime: BigInteger
+    ): FormResponseSyncResult = withContext(Dispatchers.Default) {
+        setProgress(workDataOf(PROGRESS_CURRENT_STATE to State.DOWNLOADING_FORM_RESPONSES.name))
+
+        val channel = Channel<FormResponse>()
+        launch {
+            try {
+                database.withTransaction {
+                    // Replace all previously synced submitted forms with the fresh server data
+                    formResponseManager.deleteAllSubmittedForms()
+                    for (formResponse in channel) {
+                        formResponseManager.updateOrInsertIfNotExistsFormResponse(formResponse)
+                    }
+                }
+            } catch (e: SyncException) {
+                withContext(Dispatchers.Main) {
+                    Log.e(TAG, "form responses sync failed", e)
+                }
+            }
+            withContext(Dispatchers.Main) { Log.d(TAG, "form responses sync job done") }
+        }
+
+        restApi.syncFormResponses(
+            lastSyncTimestamp = lastSyncTime,
+            formResponseChannel = channel,
+            Protocol.HTTP
+        ) { current, total ->
+            reportProgress(
+                state = State.DOWNLOADING_FORM_RESPONSES,
                 progress = current,
                 total = total,
             )

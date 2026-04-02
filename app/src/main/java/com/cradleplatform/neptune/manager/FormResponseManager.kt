@@ -72,6 +72,9 @@ class FormResponseManager @Inject constructor(
     suspend fun deleteFormResponseById(formResponseId: Long) =
         formResponseDao.deleteById(formResponseId)
 
+    suspend fun deleteAllSubmittedForms() =
+        formResponseDao.deleteAllSubmittedForms()
+
     /**
      * Returns the number of form responses that are outdated, and removes them from the database.
      *
