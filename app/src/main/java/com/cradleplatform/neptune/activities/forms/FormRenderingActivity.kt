@@ -186,7 +186,7 @@ class FormRenderingActivity : BaseFormActivity() {
             }
             is FormSideEffect.FormSubmittedSuccessfully -> {
                 hideLoadingOverlay()
-                finish()
+                returnToPatientProfile()
             }
             is FormSideEffect.ShowSubmissionError -> {
                 hideLoadingOverlay()
@@ -214,6 +214,7 @@ class FormRenderingActivity : BaseFormActivity() {
             builder.setNeutralButton(R.string.form_submission_save_draft) { _, _ ->
                 saveForm(true)
                 Toast.makeText(this, R.string.form_submission_saved_draft_success, Toast.LENGTH_LONG).show()
+                returnToPatientProfile()
             }
         }
 
@@ -333,6 +334,7 @@ class FormRenderingActivity : BaseFormActivity() {
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
             startActivity(intent)
         }
+        finish()
     }
 
     private fun formSubmission(protocol: Protocol) {
@@ -343,7 +345,7 @@ class FormRenderingActivity : BaseFormActivity() {
             val result = viewModel.submitForm(protocol)
             if (result is NetworkResult.Success) {
                 hideLoadingOverlay()
-                finish()
+                returnToPatientProfile()
             }
             smsTransmissionDialog?.dismiss()
         }

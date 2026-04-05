@@ -254,7 +254,7 @@
     <string name="dashboard_sync">Sync</string>
     <string name="dashboard_education">Education</string>
     <string name="dashboard_statistics">Statistics</string>
-    <string name="dashboard_forms">Forms</string>
+    <string name="dashboard_forms">Draft Forms</string>
     <string name="unsaved_changes_dialog_title">Unsaved Changes</string>
     <string name="unsaved_changes_dialog_message">You have unsaved changes. Are you sure you want to leave?</string>
     <string name="action_leave">Leave</string>
