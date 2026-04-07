@@ -176,7 +176,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         val biometricManager = BiometricManager.from(requireContext())
         val canUseBiometrics = biometricManager.canAuthenticate(
             BiometricManager.Authenticators.BIOMETRIC_STRONG or
-            BiometricManager.Authenticators.BIOMETRIC_WEAK
+                BiometricManager.Authenticators.BIOMETRIC_WEAK
         ) == BiometricManager.BIOMETRIC_SUCCESS
         if (!canUseBiometrics) {
             biometricPref?.isVisible = false

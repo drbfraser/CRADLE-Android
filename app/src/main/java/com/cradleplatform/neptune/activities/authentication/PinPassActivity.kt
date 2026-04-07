@@ -86,7 +86,7 @@ class PinPassActivity : AppCompatActivity() {
         val biometricManager = BiometricManager.from(this)
         val canAuthenticate = biometricManager.canAuthenticate(
             BiometricManager.Authenticators.BIOMETRIC_STRONG or
-            BiometricManager.Authenticators.BIOMETRIC_WEAK
+                BiometricManager.Authenticators.BIOMETRIC_WEAK
         )
 
         if (canAuthenticate == BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED) {
