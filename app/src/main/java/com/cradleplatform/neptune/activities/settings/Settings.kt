@@ -12,11 +12,13 @@ import android.widget.ListView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.biometric.BiometricManager
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
+import androidx.preference.SwitchPreferenceCompat
 import com.cradleplatform.neptune.CradleApplication
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
@@ -169,6 +171,16 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 // requireActivity().finishAffinity()
                 true
             }
+
+        val biometricPref = findPreference<SwitchPreferenceCompat>(getString(R.string.key_biometric_enabled))
+        val biometricManager = BiometricManager.from(requireContext())
+        val canUseBiometrics = biometricManager.canAuthenticate(
+            BiometricManager.Authenticators.BIOMETRIC_STRONG or
+                BiometricManager.Authenticators.BIOMETRIC_WEAK
+        ) == BiometricManager.BIOMETRIC_SUCCESS
+        if (!canUseBiometrics) {
+            biometricPref?.isVisible = false
+        }
 
         findPreference(R.string.key_sign_out)?.withOnClickListener {
             lifecycleScope.launch(Dispatchers.IO) {

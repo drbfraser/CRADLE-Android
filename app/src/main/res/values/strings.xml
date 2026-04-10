@@ -722,6 +722,13 @@
     <string name="cancel">Cancel</string>
     <string name="pin_not_set">PIN not set, logging out</string>
     <string name="dash_pin_not_set">PIN not set please create one in the setting menu on the top right</string>
+    <string name="biometric_button_label">Use Biometrics</string>
+    <string name="biometric_prompt_title">Unlock Cradle</string>
+    <string name="biometric_prompt_subtitle">Use fingerprint or face to continue</string>
+    <string name="biometric_prompt_negative">Use PIN instead</string>
+    <string name="biometric_pref_title">Unlock with Biometrics</string>
+    <string name="biometric_pref_summary">Use fingerprint or face ID instead of PIN</string>
+    <string name="biometric_not_available">Biometrics not available on this device</string>
     <string name="ok">OK</string>
     <string name="warning">Warning</string>
 

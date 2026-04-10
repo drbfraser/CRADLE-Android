@@ -21,5 +21,6 @@
     <string name="key_connection_preference">settings_change_connection_method</string>
     <string name="key_change_pin">settings_change_pin</string>
     <string name="key_change_relay_phone_number">change_relay_phone_number</string>
+    <string name="key_biometric_enabled">settings_biometric_enabled</string>
 
 </resources>

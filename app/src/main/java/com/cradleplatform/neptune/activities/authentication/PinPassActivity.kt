@@ -3,6 +3,7 @@ package com.cradleplatform.neptune.activities.authentication
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
@@ -10,6 +11,9 @@ import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.biometric.BiometricManager
+import androidx.biometric.BiometricPrompt
+import androidx.core.content.ContextCompat
 import androidx.core.widget.doAfterTextChanged
 import com.cradleplatform.neptune.CradleApplication
 import com.cradleplatform.neptune.R
@@ -34,6 +38,8 @@ class PinPassActivity : AppCompatActivity() {
     private lateinit var defaultPinCode: String
 
     private val viewModel: PinPassViewModel by viewModels()
+
+    private val biometricEnabledKey get() = getString(R.string.key_biometric_enabled)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -66,10 +72,70 @@ class PinPassActivity : AppCompatActivity() {
             }
             setUpButtons(isChangePinActive)
             setUpPIN(isChangePinActive)
+            setUpBiometrics()
         } else {
             setUpPIN(isChangePinActive)
             setUpButtons(isChangePinActive)
         }
+    }
+
+    private fun setUpBiometrics() {
+        val biometricEnabled = sharedPreferences.getBoolean(biometricEnabledKey, false)
+        if (!biometricEnabled) return
+
+        val biometricManager = BiometricManager.from(this)
+        val canAuthenticate = biometricManager.canAuthenticate(
+            BiometricManager.Authenticators.BIOMETRIC_STRONG or
+                BiometricManager.Authenticators.BIOMETRIC_WEAK
+        )
+
+        if (canAuthenticate == BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED) {
+            // User removed their enrolled biometrics — disable the setting automatically
+            sharedPreferences.edit().putBoolean(biometricEnabledKey, false).apply()
+            return
+        }
+
+        if (canAuthenticate != BiometricManager.BIOMETRIC_SUCCESS) return
+
+        val biometricButton = findViewById<Button>(R.id.biometricButton)
+        biometricButton.visibility = View.VISIBLE
+        biometricButton.setOnClickListener { launchBiometricPrompt() }
+
+        // Auto-launch on first show (savedInstanceState == null prevents re-launch after rotation)
+        launchBiometricPrompt()
+    }
+
+    private fun launchBiometricPrompt() {
+        val executor = ContextCompat.getMainExecutor(this)
+        val biometricPrompt = BiometricPrompt(this, executor,
+            object : BiometricPrompt.AuthenticationCallback() {
+                override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                    app.pinPassActivityFinished()
+                    startActivity(Intent(this@PinPassActivity, DashBoardActivity::class.java))
+                    finish()
+                }
+
+                override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
+                    if (errorCode == BiometricPrompt.ERROR_NO_BIOMETRICS) {
+                        sharedPreferences.edit().putBoolean(biometricEnabledKey, false).apply()
+                        findViewById<Button>(R.id.biometricButton).visibility = View.GONE
+                    }
+                    // All other errors (user cancelled, lockout, etc.) fall through to PIN
+                }
+
+                override fun onAuthenticationFailed() {
+                    // Single failed attempt — OS handles retries automatically
+                }
+            }
+        )
+
+        val promptInfo = BiometricPrompt.PromptInfo.Builder()
+            .setTitle(getString(R.string.biometric_prompt_title))
+            .setSubtitle(getString(R.string.biometric_prompt_subtitle))
+            .setNegativeButtonText(getString(R.string.biometric_prompt_negative))
+            .build()
+
+        biometricPrompt.authenticate(promptInfo)
     }
 
     private fun setUpButtons(isChangePinActive: Boolean) {
