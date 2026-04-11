@@ -9,10 +9,6 @@ A health-tech platform that reduces preventable maternal deaths in remote Uganda
 
 1. [Project Overview](#1-project-overview)
 
-
-
-
-
 ---
 
 ## 1. Project Overview
@@ -42,3 +38,14 @@ The **Cradle-Mobile** Android app is the field companion to that device. Village
 | **VHT (Village Health Team)** | Field workers in remote villages; primary users of the app |
 | **Health Worker** | Clinic-based staff who review referrals and assessments |
 | **Admin** | System administrators with full access |
+
+### Quick Reference: Gradle Commands
+
+```bash
+./gradlew test                    # Run unit tests
+./gradlew detekt                  # Static code analysis (run twice)
+./gradlew connectedAndroidTest    # Run instrumented tests (needs device)
+./gradlew assembleDebug           # Build debug APK
+./gradlew assembleRelease         # Build release APK (requires signing config)
+./gradlew clean                   # Clean build directory
+```
