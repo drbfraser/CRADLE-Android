@@ -39,6 +39,36 @@ The **Cradle-Mobile** Android app is the field companion to that device. Village
 | **Health Worker** | Clinic-based staff who review referrals and assessments |
 | **Admin** | System administrators with full access |
 
+
+## 2. System Architecture
+
+```
+┌-----------------------------------------------------┐
+│                 Cradle-Mobile (Android)             │
+│                                                     │
+│  ┌------------┐    ┌--------------┐    ┌----------┐ │
+│  │ Activities │    │  ViewModels  │    │ Managers │ │
+│  │ Fragments  │<-->│  (LiveData)  │<-->│ (Logic)  │ │
+│  └------------┘    └--------------┘    └----------┘ │
+│                                            │        │
+│                         ┌------------------┤        │
+│                         ▼                  ▼        │
+│                    ┌---------┐       ┌----------┐   │
+│                    │  Room   │       │  RestApi │   │
+│                    │   DB    │       │  /OkHttp │   │
+│                    └---------┘       └----------┘   │
+└------------------------------┬----------------------┘
+                               │
+              ┌----------------┴-----------------┐
+              │ HTTP (internet)                  │ SMS (no internet)
+              ▼                                  ▼
+ ┌----------------------┐          ┌--------------------------┐
+ │   Cradle Platform    │          │     Cradle-SMSRelay      │
+ │  (Flask + MySQL)     │<---------│  receives encrypted SMS, │
+ │  :5000               │   HTTP   │  forwards to Platform    │
+ └----------------------┘          └--------------------------┘
+```
+
 ### Quick Reference: Gradle Commands
 
 ```bash
