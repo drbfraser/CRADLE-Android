@@ -9,6 +9,8 @@ A health-tech platform that reduces preventable maternal deaths in remote Uganda
 
 1. [Project Overview](#1-project-overview)
 2. [System Architecture](#2-system-architecture)
+3. [Technology Stack](#3-technology-stack)
+4. [Prerequites](#4-prerequisites)
 
 ---
 
@@ -30,7 +32,7 @@ The **Cradle-Mobile** Android app is the field companion to that device. Village
 - **Syncs all data to the Cradle Platform backend** via HTTP when internet is available, or falls back to **encrypted SMS** when it is not
 - Works fully **offline-first** i.e., health workers can keep taking readings even without connectivity
 
-# TODO: ADD MORE DETAIL AFTER CONSULTING Dr. Brian
+---------TODO: ADD MORE DETAIL AFTER CONSULTING Dr. Brian
 
 ### Who uses it?
 
@@ -78,6 +80,29 @@ The **Cradle-Mobile** Android app is the field companion to that device. Village
 - **Dual transport**: HTTP is the primary sync path; when there is no internet, the app falls back to **encrypted SMS** sent to the **Cradle-SMSRelay** server, which decrypts and forwards the data to Cradle Platform over HTTP
 
 ---
+## 3. Technology Stack
+
+---------- TODO: See the dependencies and stuff - will write it after completing my code and all so that I don't have to change it again and again
+
+# Getting The App Running
+
+## 4. Prerequisites
+
+Before doing anything else, make sure the following are installed on your machine:
+
+### For Backend (Cradle Platform)
+- **Docker Desktop** - must be running when you develop/test
+- **Python 3** + `pip` - for seeding scripts and virtual environment
+- **Node.js & npm** - for the React js web frontend ( not necessary for android app itself)
+
+### For Android Development
+- **Android Studio** (latest stable release)
+- **JDK: JetBrains Runtime version 17** ------------ TODO: Add some link or something here
+- **Android SDK** with API 24 through API 34 installed
+
+---
+
+
 ### Quick Reference: Gradle Commands
 
 ```bash
