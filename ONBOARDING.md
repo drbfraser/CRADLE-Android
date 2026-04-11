@@ -102,6 +102,42 @@ Before doing anything else, make sure the following are installed on your machin
 
 ---
 
+## 5. Backend Setup (Cradle Platform)
+
+The mobile app is **useless without the backend running**. It will not log in or sync data. You must set up Cradle Platform first.
+
+### Step 1: Clone the Backend
+
+```bash
+git clone https://github.sfu.ca/cradle-project/Cradle-Platform.git
+cd Cradle-Platform
+```
+
+### Step 2: Create `.env` File
+
+Create a `.env` file in the root of `Cradle-Platform/`:
+
+```env
+DB_USERNAME=cradle
+DB_PASSWORD=password
+LIMITER_DISABLED=True
+```
+
+### Step 3: Set Up AWS Cognito Credentials
+
+Create `.env.cognito_secrets` with the credentials provided by your team lead (originally from Dr. Brian Fraser):
+
+```bash
+cat > .env.cognito_secrets << EOF
+COGNITO_AWS_ACCESS_KEY_ID=<provided-key>
+COGNITO_AWS_SECRET_ACCESS_KEY=<provided-secret>
+EOF
+```
+
+
+
+---
+
 
 ### Quick Reference: Gradle Commands
 
