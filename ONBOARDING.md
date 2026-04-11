@@ -134,7 +134,100 @@ COGNITO_AWS_SECRET_ACCESS_KEY=<provided-secret>
 EOF
 ```
 
+### Step 4: Create Your Personal Cognito User Pool
 
+```bash
+# Create a Python virtual environment (required on macOS)
+python3 -m venv .venv
+source .venv/bin/activate   # Windows: .venv\Scripts\activate
+
+# Install script dependencies
+pip install -r scripts/requirements.txt
+
+# Create your own Cognito user pool (replace <your-name>)
+python scripts/create_user_pool.py <your-name>
+
+# Copy your pool credentials to the main secrets file
+cat .env.cognito_secrets.<your-name> > .env.cognito_secrets
+```
+
+> **Note:** Each developer gets their own Cognito user pool to avoid conflicts.
+
+### Step 5: Start Docker
+
+Make sure Docker Desktop is running, then:
+
+```bash
+docker compose up -d
+```
+
+This starts the **MySQL database** and **Flask backend** containers.
+
+### Step 6: Run Database Migrations
+
+```bash
+docker exec cradle_flask flask db upgrade
+```
+
+### Step 7: Seed the Database
+
+```bash
+# Minimal seed - good for day-to-day development
+docker exec cradle_flask python manage.py seed_minimal
+
+# Test data - required for running unit tests
+docker exec cradle_flask python manage.py seed_test_data
+
+# Large dataset - lots of random patients/readings
+docker exec cradle_flask python manage.py seed
+```
+
+### Step 8: (Optional) Start the Web Frontend
+
+```bash
+cd client
+npm install           # or: npm install --legacy-peer-deps  (if dependency errors appear)
+npm run start
+```
+
+### Verifying Backend is Running
+
+| Service | URL |
+|---------|-----|
+| Frontend | http://localhost:3000/ |
+| Backend API | http://localhost:5000/ |
+| API Docs (Swagger) | http://localhost:5000/apidocs |
+
+### Default Login Credentials
+
+```
+Email:    admin@email.com
+Password: cradle-admin
+Role:     Admin (full access)
+```
+
+### Shutting Down
+
+```bash
+# Stop frontend: Ctrl+C in the npm terminal
+
+# Stop Docker containers
+docker compose down
+
+# Deactivate Python virtual environment
+deactivate
+```
+
+### Quick Start (After Initial Setup)
+
+```bash
+cd Cradle-Platform
+docker compose up -d
+
+# In a second terminal:
+cd Cradle-Platform/client
+npm start
+```
 
 ---
 
