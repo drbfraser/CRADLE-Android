@@ -8,6 +8,7 @@ A health-tech platform that reduces preventable maternal deaths in remote Uganda
 ## Table of Contents
 
 1. [Project Overview](#1-project-overview)
+2. [System Architecture](#2-system-architecture)
 
 ---
 
@@ -68,7 +69,15 @@ The **Cradle-Mobile** Android app is the field companion to that device. Village
  │  :5000               │   HTTP   │  forwards to Platform    │
  └----------------------┘          └--------------------------┘
 ```
+**Key design choices:**
+- **MVVM** (Model-View-ViewModel) architectural pattern throughout
+- **Offline-first**: Room (SQLite) is the single source of truth; sync happens in the background
+- **Manager layer** sits between ViewModels and data sources (DB + Network)
+- **Dagger Hilt** for dependency injection across the entire app
+- **WorkManager** schedules background sync jobs that survive process death
+- **Dual transport**: HTTP is the primary sync path; when there is no internet, the app falls back to **encrypted SMS** sent to the **Cradle-SMSRelay** server, which decrypts and forwards the data to Cradle Platform over HTTP
 
+---
 ### Quick Reference: Gradle Commands
 
 ```bash
