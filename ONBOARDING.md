@@ -231,6 +231,41 @@ npm start
 
 ---
 
+## 6. Android Development Setup
+
+### Step 1: Clone the Mobile Repo
+
+```bash
+git clone https://github.sfu.ca/cradle-project/Cradle-Mobile.git
+```
+
+### Step 2: Open in Android Studio
+
+Open the cloned folder in Android Studio. Let Gradle sync on first open.
+
+### Step 3: Configure Gradle Versions
+
+Go to **File → Project Structure → Project**:
+
+| Setting | Value |
+|---------|-------|
+| Android Gradle Plugin Version | `8.2.1` |
+| Gradle Version | `8.2` |
+
+### Step 4: Configure JDK (Critical!)
+
+Go to **File → Settings → Build, Execution, Deployment → Build Tools → Gradle**:
+
+| Setting | Value |
+|---------|-------|
+| Gradle JDK | `JetBrains Runtime version 17` |
+
+If it's not listed, click **"Download JDK"** and select JetBrains Runtime 17.
+
+> **Why this matters:** An external JDK (e.g., Oracle JDK) installed on your system can conflict with the build. This is the most common setup failure. 
+
+
+
 
 ### Quick Reference: Gradle Commands
 
