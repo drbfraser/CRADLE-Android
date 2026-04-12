@@ -265,6 +265,26 @@ If it's not listed, click **"Download JDK"** and select JetBrains Runtime 17.
 > **Why this matters:** An external JDK (e.g., Oracle JDK) installed on your system can conflict with the build. This is the most common setup failure. 
 
 
+### Step 5: Set Up Git Pre-Push Hooks
+
+These hooks run static analysis and unit tests automatically before every push.
+
+**macOS/Linux:**
+```bash
+hooks/setup-hooks.sh
+```
+
+**Windows (Admin Command Prompt):**
+```cmd
+mklink .git\hooks\pre-push ..\..\hooks\pre-push.sh
+```
+
+**Windows (PowerShell as Admin):**
+```powershell
+New-Item -ItemType SymbolicLink -Path .\.git\hooks -Name pre-push -Value .\hooks\pre-push.sh
+```
+
+**Verify:** Run `git push` in a terminal. You should see Detekt and unit tests run before the push completes.
 
 
 ### Quick Reference: Gradle Commands
