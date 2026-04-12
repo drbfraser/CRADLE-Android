@@ -245,7 +245,7 @@ Open the cloned folder in Android Studio. Let Gradle sync on first open.
 
 ### Step 3: Configure Gradle Versions
 
-Go to **File → Project Structure → Project**:
+Go to **File -> Project Structure -> Project**:
 
 | Setting | Value |
 |---------|-------|
@@ -254,7 +254,7 @@ Go to **File → Project Structure → Project**:
 
 ### Step 4: Configure JDK (Critical!)
 
-Go to **File → Settings → Build, Execution, Deployment → Build Tools → Gradle**:
+Go to **File -> Settings -> Build, Execution, Deployment -> Build Tools -> Gradle**:
 
 | Setting | Value |
 |---------|-------|
@@ -286,6 +286,49 @@ New-Item -ItemType SymbolicLink -Path .\.git\hooks -Name pre-push -Value .\hooks
 
 **Verify:** Run `git push` in a terminal. You should see Detekt and unit tests run before the push completes.
 
+---
+
+## 7. Running the App
+
+### On an Emulator
+
+1. In Android Studio, create or select a virtual device (choose one **with Play Store** for best compatibility)
+2. Start the emulator and click the green **Run** button
+3. After the app launches, tap the **gear icon** (top right of login screen)
+4. Enter connection settings:
+
+| Setting | Value |
+|---------|-------|
+| Hostname | `10.0.2.2` |
+| Port | `5000` |
+| Use HTTPS | OFF |
+
+> `10.0.2.2` is Android Studio's special loopback address that forwards to your computer's localhost inside the emulator.
+
+5. Log in with `admin@email.com` / `cradle-admin`
+
+### On a Physical Android Device
+
+1. Enable **Developer Settings** on the phone (tap Build Number 7 times in About Phone)
+2. Enable **USB Debugging** in Developer Settings
+3. Connect phone via USB - it should appear in Android Studio's device list
+4. Find your computer's LAN IP address:
+   - **macOS/Linux:** `ifconfig | grep "inet "` 
+   - **Windows:** `ipconfig` (look for IPv4 Address, e.g., `192.168.x.x`)
+5. Run the app (green arrow)
+6. Configure connection settings (gear icon):
+
+| Setting | Value |
+|---------|-------|
+| Hostname | Your computer's IP (e.g., `192.168.1.42`) |
+| Port | `5000` |
+| Use HTTPS | OFF |
+
+7. Log in with `admin@email.com` / `cradle-admin`
+
+> **Note:** Both your computer and phone must be on the same Wi-Fi network.
+
+---
 
 ### Quick Reference: Gradle Commands
 
