@@ -330,6 +330,139 @@ New-Item -ItemType SymbolicLink -Path .\.git\hooks -Name pre-push -Value .\hooks
 
 ---
 
+## 8. Codebase Structure
+
+All app source code lives under:
+```
+app/src/main/java/com/cradleplatform/neptune/
+```
+
+Here is a breakdown of every major package:
+
+```
+neptune/
+├── CradleApplication.kt          # App entry point; sets up Hilt, session timeout tracking
+│
+├── activities/                   # Android Activities (one screen = one Activity)
+│   ├── authentication/           # LoginActivity, PinPassActivity
+│   ├── dashboard/                # DashBoardActivity (main menu after login)
+│   ├── patients/                 # PatientListActivity, PatientProfileActivity, EditPatientInfoActivity
+│   ├── newPatient/               # ReadingActivity (orchestrates multi-step reading flow)
+│   ├── forms/                    # FormSelectionActivity, FormRenderingActivity, SavedFormsActivity
+│   ├── settings/                 # SettingsActivity, HealthFacilitiesActivity
+│   ├── education/                # EducationActivity, VideoActivity, PosterActivity
+│   ├── statistics/               # StatsActivity
+│   └── introduction/             # SplashActivity, IntroActivity (first-time onboarding)
+│
+├── fragments/                    # Reusable UI fragments (hosted inside Activities)
+│   ├── newPatient/               # Multi-step reading flow:
+│   │   ├── PatientInfoFragment   #   Step 1: Select/create patient
+│   │   ├── SymptomsFragment      #   Step 2: Choose symptoms
+│   │   ├── VitalSignsFragment    #   Step 3: Enter BP, HR, urine test
+│   │   ├── OcrFragment           #   Step 3b: Camera + OCR auto-fill
+│   │   └── AdviceFragment        #   Step 4: Clinical advice based on reading
+│   ├── patients/                 # Patient list, search, profile sub-fragments
+│   ├── settings/                 # Settings sub-fragments
+│   ├── statistics/               # Charts and analytics fragments
+│   └── shared/                   # Reusable dialogs, loading indicators
+│
+├── viewmodel/                    # ViewModels - hold UI state, survive rotation
+│   ├── LoginViewModel.kt
+│   ├── DashboardViewModel.kt
+│   ├── patients/
+│   ├── forms/
+│   ├── newPatient/
+│   ├── settings/
+│   └── statistics/
+│
+├── model/                        # Pure data classes & Room entities
+│   ├── Patient.kt                # Patient demographics + custom Jackson serializer
+│   ├── Reading.kt                # BP/HR reading with symptoms list
+│   ├── Referral.kt               # Referral to a health facility
+│   ├── Assessment.kt             # Doctor's follow-up assessment
+│   ├── FormTemplate.kt           # Dynamic form schema from server
+│   ├── FormResponse.kt           # User's answers to a form
+│   ├── HealthFacility.kt         # Facility reference data
+│   ├── UserRole.kt               # Enum: VHT, HEALTH_WORKER, ADMIN, etc.
+│   └── Statistics.kt             # Analytics data model
+│
+├── database/                     # Room database layer
+│   ├── CradleDatabase.kt         # @Database class, version 2
+│   ├── Migrations.kt             # v1 -> v2 migration SQL
+│   ├── daos/                     # Data Access Objects (one per entity)
+│   │   ├── PatientDao
+│   │   ├── ReadingDao
+│   │   ├── ReferralDao
+│   │   ├── AssessmentDao
+│   │   ├── FormClassificationDao
+│   │   ├── FormResponseDao
+│   │   └── HealthFacilityDao
+│   └── views/
+│       └── LocalSearchPatient.kt # DB view for efficient patient search
+│
+├── http_sms_service/             # All external communication
+│   ├── http/
+│   │   ├── RestApi.kt            # Type-safe API method definitions
+│   │   ├── Http.kt               # OkHttp client wrapper
+│   │   ├── NetworkResult.kt      # Sealed class: Success / Failure / NetworkException
+│   │   ├── OkHttpUtils.kt        # TLS certificate pinning setup
+│   │   └── Json.kt               # JSON serialization helpers
+│   └── sms/
+│       ├── SMSSender.kt          # Sends SMS to relay number
+│       ├── SMSReceiver.kt        # BroadcastReceiver for incoming SMS replies
+│       ├── SMSFormatter.kt       # Formats patient data into SMS-safe chunks
+│       ├── SmsStateReporter.kt   # Tracks and broadcasts SMS state
+│       └── SmsErrorHandler.kt   # Handles transmission failures
+│
+├── sync/                         # Background data synchronization
+│   ├── PeriodicSyncer.kt         # Schedules WorkManager periodic jobs
+│   ├── workers/
+│   │   └── SyncAllWorker.kt      # The actual WorkManager worker
+│   └── views/
+│       └── SyncActivity.kt       # Manual sync UI with progress display
+│
+├── manager/                      # Business logic layer (between ViewModels and data)
+│   ├── LoginManager.kt           # Login/logout, token storage, session state
+│   ├── PatientManager.kt         # Patient CRUD: DB + API
+│   ├── ReadingManager.kt         # Reading CRUD: DB + API
+│   ├── ReferralManager.kt        # Referral CRUD: DB + API
+│   ├── AssessmentManager.kt      # Assessment CRUD: DB + API
+│   ├── FormManager.kt            # Form template fetching and caching
+│   ├── FormResponseManager.kt    # Form answer storage and upload
+│   ├── HealthFacilityManager.kt  # Facility data management
+│   ├── UrlManager.kt             # Builds API URLs from stored settings
+│   ├── SmsKeyManager.kt          # Manages SMS encryption key lifecycle
+│   └── UpdateManager.kt         # Checks for and prompts in-app updates
+│
+├── ocr/                          # Optical Character Recognition
+│   ├── CradleScreenOcrDetector.kt  # Main OCR orchestrator
+│   ├── OcrAnalyzer.kt              # CameraX ImageAnalysis use case
+│   └── tflite/
+│       ├── TFLiteObjectDetectionHelper.kt  # TFLite model runner
+│       └── Classifier.kt                   # Result parsing
+│
+├── di/                           # Dagger Hilt modules
+│   ├── DataModule.kt             # Provides DB, DAOs, managers
+│   ├── NetworkStateManagerModule.kt
+│   ├── SharedPreferencesModule.kt
+│   ├── WorkManagerModule.kt
+│   └── SmsModules.kt
+│
+├── adapters/                     # RecyclerView adapters for lists
+│   ├── forms/
+│   ├── patients/
+│   ├── settings/
+│   └── introduction/
+│
+└── utilities/                    # Pure utility classes
+    ├── connectivity/             # NetworkStateManager - monitors WiFi/mobile data
+    ├── AESEncryptor.kt           # Symmetric encryption for SMS payloads
+    ├── GzipCompressor.kt         # Compress data before SMS transmission
+    ├── DateUtil.java             # Legacy date formatting
+    ├── jackson/                  # Custom Jackson serializer extensions
+    └── functional/               # Functional programming helpers
+```
+
 ### Quick Reference: Gradle Commands
 
 ```bash
