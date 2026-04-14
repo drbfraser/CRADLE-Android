@@ -463,6 +463,24 @@ neptune/
     └── functional/               # Functional programming helpers
 ```
 
+## 9. Key Architecture Patterns
+
+### MVVM (Model-View-ViewModel)
+
+Every screen follows MVVM:
+
+```
+Activity/Fragment  -- observes -->  ViewModel (LiveData)  --calls-->  Manager --calls-->  DAO / RestApi
+      |                                    |
+   (UI only)                      (business logic,
+                                   survives rotation)
+```
+
+- **Activities/Fragments**: Only handle UI events and observe `LiveData`. No business logic here.
+- **ViewModels**: Own `LiveData` state. Call managers. Survive configuration changes (screen rotation).
+- **Managers**: Coordinate between Room database and the REST API. Handle sync logic.
+- **DAOs**: Typed database queries via Room annotations.
+
 ### Quick Reference: Gradle Commands
 
 ```bash
