@@ -490,6 +490,49 @@ readingManager.uploadReading(reading)            // posts to REST API
 
 Managers are injected via Hilt wherever needed - ViewModels, Workers, etc.
 
+### NetworkResult Sealed Class
+
+All API calls return a `NetworkResult<T>`:
+
+```kotlin
+sealed class NetworkResult<T> {
+    data class Success<T>(val value: T) : NetworkResult<T>()
+    data class Failure<T>(val statusCode: Int, val body: T?) : NetworkResult<T>()
+    data class NetworkException<T>(val cause: IOException) : NetworkResult<T>()
+}
+
+// Usage pattern in ViewModel:
+when (val result = patientManager.uploadPatient(patient)) {
+    is NetworkResult.Success -> { /* update UI */ }
+    is NetworkResult.Failure -> { /* show error */ }
+    is NetworkResult.NetworkException -> { /* show offline message */ }
+}
+```
+
+### LiveData & State Enums
+
+ViewModels expose state via typed enums and LiveData:
+
+```kotlin
+// LoginViewModel example
+val loginState: LiveData<LoginState>
+
+enum class LoginState {
+    IDLE, LOADING, SUCCESS, INVALID_CREDENTIALS, NETWORK_ERROR
+}
+```
+
+Fragments observe these and update the UI reactively - no direct ViewModel-to-Fragment callbacks.
+
+### Dependency Injection with Hilt
+
+Hilt modules are in the `di/` package. Every injectable class is annotated with `@Inject constructor(...)`. To add a new dependency:
+
+1. Declare it in a `@Module` class in `di/`
+2. Use `@Inject` in your class constructor
+3. Hilt wires it up automatically
+
+---
 
 ### Quick Reference: Gradle Commands
 
