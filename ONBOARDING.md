@@ -470,16 +470,26 @@ neptune/
 Every screen follows MVVM:
 
 ```
-Activity/Fragment  -- observes -->  ViewModel (LiveData)  --calls-->  Manager --calls-->  DAO / RestApi
-      |                                    |
-   (UI only)                      (business logic,
-                                   survives rotation)
+Activity/Fragment (UI only)  -- observes -->  ViewModel (LiveData) (business logic, survives rotation)  --calls-->  Manager --calls-->  DAO / RestApi                                 
 ```
 
 - **Activities/Fragments**: Only handle UI events and observe `LiveData`. No business logic here.
 - **ViewModels**: Own `LiveData` state. Call managers. Survive configuration changes (screen rotation).
 - **Managers**: Coordinate between Room database and the REST API. Handle sync logic.
 - **DAOs**: Typed database queries via Room annotations.
+
+### Manager Pattern
+
+Every major entity has a dedicated manager:
+
+```kotlin
+// Example: Creating a new reading
+readingManager.saveReadingLocally(reading)       // saves to Room DB
+readingManager.uploadReading(reading)            // posts to REST API
+```
+
+Managers are injected via Hilt wherever needed - ViewModels, Workers, etc.
+
 
 ### Quick Reference: Gradle Commands
 
