@@ -622,15 +622,15 @@ All server communication goes through `RestApi.kt` (in `http_sms_service/http/`)
 ```kotlin
 // Key endpoints:
 suspend fun authenticate(email: String, password: String): NetworkResult<LoginResponse>
-suspend fun getPatients(lastSyncTime: Long): NetworkResult<List<Patient>>
-suspend fun postPatient(patient: Patient): NetworkResult<Patient>
-suspend fun getReadings(lastSyncTime: Long): NetworkResult<List<Reading>>
-suspend fun postReading(reading: Reading): NetworkResult<Reading>
-suspend fun postReferral(referral: Referral): NetworkResult<Referral>
-suspend fun getHealthFacilities(): NetworkResult<List<HealthFacility>>
-suspend fun getFormTemplates(): NetworkResult<List<FormTemplate>>
-suspend fun postFormResponse(response: FormResponse): NetworkResult<FormResponse>
-suspend fun getStatistics(): NetworkResult<Statistics>
+suspend fun syncPatients(patientsToUpload: List<Patient>, lastSyncTimestamp: BigInteger = BigInteger.valueOf(1L), patientChannel: SendChannel<Patient>, protocol: Protocol, reportProgressBlock: suspend (Int, Int) -> Unit): PatientSyncResult
+suspend fun postPatient(patient: PatientAndReadings, protocol: Protocol): NetworkResult<PatientAndReadings>
+suspend fun syncReadings(readingsToUpload: List<Reading>, lastSyncTimestamp: BigInteger = BigInteger.valueOf(1L), readingChannel: SendChannel<Reading>, protocol: Protocol, reportProgressBlock: suspend (Int, Int) -> Unit): ReadingSyncResult
+suspend fun postReading(reading: Reading, protocol: Protocol): NetworkResult<Reading>
+suspend fun postReferral(referral: Referral, protocol: Protocol): NetworkResult<Referral>
+suspend fun getAllHealthFacilities(healthFacilityChannel: SendChannel<HealthFacility>): NetworkResult<Unit>
+suspend fun getAllFormTemplates(formChannel: SendChannel<FormClassification>, protocol: Protocol, reportProgressBlock: suspend (Int, Int) -> Unit): FormSyncResult
+suspend fun postFormResponse(mFormResponse: FormResponse, protocol: Protocol): NetworkResult<Unit>
+suspend fun getAllStatisticsBetween(date1: BigInteger, date2: BigInteger, protocol: Protocol): NetworkResult<Statistics>
 ```
 
 ### Security: TLS Certificate Pinning
