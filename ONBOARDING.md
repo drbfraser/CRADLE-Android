@@ -105,14 +105,14 @@ The **Cradle-Mobile** Android app is the field companion to that device. Village
 Before doing anything else, make sure the following are installed on your machine:
 
 ### For Backend (Cradle Platform)
-- **Docker Desktop** - must be running when you develop/test
+- **Docker Desktop** - must be running when you develop/test. Links: [Download](https://www.docker.com/products/docker-desktop/) -> [Docker in 100 seconds (video)](https://www.youtube.com/watch?v=Gjnup-PuquQ)
 - **Python 3** + `pip` - for seeding scripts and virtual environment
 - **Node.js & npm** - for the React js web frontend ( not necessary for android app itself)
 
 ### For Android Development
-- **Android Studio** (latest stable release)
-- **JDK: JetBrains Runtime version 17** ------------ TODO: Add some link or something here
-- **Android SDK** with API 24 through API 34 installed
+- **Android Studio** [latest stable release Download](https://developer.android.com/studio)
+- **JDK: JetBrains Runtime version 17** - this is critical. See [Troubleshooting](#18-troubleshooting) for why external JDKs fail. Extra Link: [JetBrains Runtime releases](https://github.com/JetBrains/JetBrainsRuntime/releases)
+- **Android SDK** with API 24 through API 34 installed. Helpful Link: [Manage SDK packages](https://developer.android.com/studio/intro/update#sdk-manager)
 
 ---
 
@@ -643,7 +643,7 @@ To get new certificate pins:
 scripts/x509-subject-pubkey-hash.sh <hostname>
 
 # Or follow OkHttp's guide
-# https://square.github.io/okhttp/4.x/okhttp/okhttp3/-certificate-pinner/#setting-up-certificate-pinning
+# https://square.github.io/okhttp/3.x/okhttp/okhttp3/CertificatePinner.html
 ```
 
 ### Authentication
