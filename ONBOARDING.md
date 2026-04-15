@@ -918,6 +918,16 @@ GitHub CI runs the same checks (Detekt + unit tests) on every pull request and e
 
 **Fix:** Uninstall any externally-installed JDK (Oracle, OpenJDK from external source). Delete the repo, re-clone, and use only the JetBrains Runtime 17 bundled with Android Studio.
 
+### App Won't Connect to Backend
+
+**Checklist:**
+1. Is Docker running? (`docker ps` should show `cradle_flask` and the MySQL container)
+2. Did you run database migrations? (`docker exec cradle_flask flask db upgrade`)
+3. Are you using the correct hostname?
+   - Emulator: `10.0.2.2`
+   - Physical device: Your computer's LAN IP (`192.168.x.x`)
+4. Is HTTPS turned **OFF** in the app login settings?
+5. Are both your computer and phone on the same Wi-Fi? (for physical device)
 
 ### Quick Reference: Gradle Commands
 
