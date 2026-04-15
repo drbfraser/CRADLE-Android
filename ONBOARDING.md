@@ -874,6 +874,38 @@ These test database migrations and UI flows end-to-end. **Not run by CI**, but s
 
 ---
 
+## 17. Code Quality & Git Workflow
+
+### Pre-Push Hook (Mandatory)
+
+The hook at `hooks/pre-push.sh` runs automatically on every `git push`:
+1. Detekt static analysis
+2. All unit tests
+
+**Do not skip this** (`--no-verify` is not recommended). Fix failures before pushing.
+
+### CI Pipeline
+
+GitHub CI runs the same checks (Detekt + unit tests) on every pull request and every commit to `master`. A PR cannot be merged until CI passes.
+
+### Branching Convention
+
+- `main` - stable, always deployable
+- Feature branches - `feature/<description>` or `fix/<description>`
+- Open a pull request into `main` for every change; get at least one review before merging
+
+### Coding Conventions
+
+- **Kotlin** for all new code - no new Java files
+- Follow Android Kotlin style guide
+- Use `suspend fun` for all database and network operations (coroutines, not callbacks)
+- Use `LiveData` for UI-observable state in ViewModels
+- Inject dependencies via Hilt - do not create instances manually in Activities/Fragments
+- Use `EncryptedSharedPreferences` for all sensitive data storage
+- Handle all three `NetworkResult` cases (Success, Failure, NetworkException) - never ignore Failure/Exception
+
+---
+
 ### Quick Reference: Gradle Commands
 
 ```bash
