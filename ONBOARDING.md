@@ -935,6 +935,15 @@ GitHub CI runs the same checks (Detekt + unit tests) on every pull request and e
 
 **Fix:** Choose an emulator that **includes Play Store** (Google Play System). Create a new AVD in Android Studio's Device Manager if needed.
 
+### Espresso Tests Are Flaky
+
+**Fix:** Disable all three animation settings in the device's Developer Options (Window, Transition, Animator). Also make sure the app is freshly installed and logged out.
+
+### Detekt Fails on First Run
+
+This is expected. Run `./gradlew detekt` a second time - it auto-corrects many issues. If failures persist after two runs, review the reported issues in the output and fix manually.
+
+
 ### Quick Reference: Gradle Commands
 
 ```bash
