@@ -842,6 +842,38 @@ Located in `app/src/test/`. Run without a device.
 
 **Mocking stack:** `Mockk` is preferred (idiomatic Kotlin); legacy tests may use `Mockito`.
 
+### Static Code Analysis (Detekt)
+
+```bash
+./gradlew detekt
+```
+
+Detekt enforces code style and catches common Kotlin pitfalls. It is likely to fail on first run - a second run with auto-corrections usually resolves it. If issues remain after the second run, manual fixes are needed.
+
+Configuration: `detekt.gradle` in the root.
+
+### Instrumented Tests (On-Device)
+
+Located in `app/src/androidTest/`. Require a connected device or running emulator.
+
+```bash
+./gradlew connectedAndroidTest
+```
+
+These test database migrations and UI flows end-to-end. **Not run by CI**, but should be run before every release.
+
+### UI Tests (Espresso)
+
+**Required setup before running Espresso tests:**
+
+1. On the test device, go to **Settings -> Developer Options** and disable all three:
+   - Window animation scale
+   - Transition animation scale
+   - Animator duration scale
+2. Uninstall or log out of the app (login tests fail if already logged in)
+
+---
+
 ### Quick Reference: Gradle Commands
 
 ```bash
