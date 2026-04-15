@@ -957,6 +957,32 @@ If you see a Room migration exception, the local database schema doesn't match w
 | Mobile Testing with Local Cradle Platform | https://docs.google.com/document/d/1ohbJqzYMEzDeSj_EVndMZvnp9ShB1A1q682QIcr-hNE/edit |
 | Technical Wiki | https://github.sfu.ca/cradle-project/Cradle-Mobile/wiki |
 
+### Repositories
+
+| Repo | Purpose |
+|------|---------|
+| **Cradle-Mobile** | This repo - Android app |
+| **Cradle-Platform** | Backend: Flask API + MySQL + React frontend |
+| **Cradle-SMSRelay** | The SMS relay server component |
+
+### Android Development References
+
+| Resource | URL |
+|----------|-----|
+| Android Jetpack Overview | https://developer.android.com/jetpack |
+| Room Persistence Library | https://developer.android.com/topic/libraries/architecture/room |
+| ViewModels | https://developer.android.com/topic/libraries/architecture/viewmodel |
+| WorkManager | https://developer.android.com/topic/libraries/architecture/workmanager |
+| Navigation Component | https://developer.android.com/guide/navigation |
+| Paging 3 | https://developer.android.com/topic/libraries/architecture/paging/v3-overview |
+| Dagger Hilt | https://dagger.dev/hilt/ |
+| Data Binding Library | https://developer.android.com/topic/libraries/data-binding |
+| OkHttp Certificate Pinning | https://square.github.io/okhttp/5.x/okhttp/okhttp3/-certificate-pinner/index.html|
+| Detekt (static analysis) | https://detekt.dev |
+| Mockk (Kotlin mocking) | https://mockk.io/ |
+| Espresso (UI testing) | https://developer.android.com/training/testing/espresso/ |
+| TensorFlow Lite | https://www.tensorflow.org/lite/android |
+
 ### Quick Reference: Gradle Commands
 
 ```bash
