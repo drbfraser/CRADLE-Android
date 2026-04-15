@@ -770,6 +770,50 @@ The TFLite model file (`.tflite`) lives in `res/raw/` and is loaded at runtime. 
 - `ocr/tflite/TFLiteObjectDetectionHelper.kt` - model runner
 - `fragments/newPatient/OcrFragment` - the UI screen
 
+---
+
+## 15. SMS Relay System
+
+When there is **no internet**, the app can send patient data via **encrypted SMS** to a relay phone number, which then forwards it to the server.
+
+### How It Works
+
+```
+Patient data to upload
+        │
+        ▼
+SMSFormatter: serialize + compress (Gzip) + encrypt (AES)
+        |
+        ▼
+SMSSender: split into SMS-sized chunks, send to relay number
+        |
+        ▼
+[SMS Relay Server receives and forwards to Cradle Platform]
+        |
+        ▼
+SMSReceiver (BroadcastReceiver): receives confirmation SMS reply
+        |
+        ▼
+SmsStateReporter: updates UI with success/failure state
+```
+
+### Key Files
+
+| File | Role |
+|------|------|
+| `SMSSender.kt` | Sends SMS chunks via Android's `SmsManager` |
+| `SMSReceiver.kt` | `BroadcastReceiver` for incoming relay replies |
+| `SMSFormatter.kt` | Serializes + chunks data into 160-char SMS segments |
+| `SmsKeyManager.kt` | Manages the AES encryption key (obtained at login, periodically refreshed) |
+| `AESEncryptor.kt` | AES symmetric encryption implementation |
+| `GzipCompressor.kt` | Compresses payloads before encryption |
+| `RelayRequestCounter` | Rate-limits to prevent flooding the relay number |
+
+### Configuration
+
+The relay phone number is configured in **Settings -> SMS Relay Number**. The encryption key is provided by the server at login and stored in `EncryptedSharedPreferences`.
+
+---
 
 ### Quick Reference: Gradle Commands
 
