@@ -943,6 +943,9 @@ GitHub CI runs the same checks (Detekt + unit tests) on every pull request and e
 
 This is expected. Run `./gradlew detekt` a second time - it auto-corrects many issues. If failures persist after two runs, review the reported issues in the output and fix manually.
 
+### Database Migration Error
+
+If you see a Room migration exception, the local database schema doesn't match what the code expects. This usually means a migration script is missing. Check `database/Migrations.kt` and verify the migration from the current version is implemented. Never delete the local database in production - always write non-destructive migrations.
 
 ### Quick Reference: Gradle Commands
 
