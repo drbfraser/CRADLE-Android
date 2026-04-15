@@ -259,6 +259,8 @@ git clone https://github.sfu.ca/cradle-project/Cradle-Mobile.git
 
 Open the cloned folder in Android Studio. Let Gradle sync on first open.
 
+> Helpful Link: [Android Studio Documentation](https://developer.android.com/studio/intro)
+
 ### Step 3: Configure Gradle Versions
 
 Go to **File -> Project Structure -> Project**:
@@ -278,7 +280,7 @@ Go to **File -> Settings -> Build, Execution, Deployment -> Build Tools -> Gradl
 
 If it's not listed, click **"Download JDK"** and select JetBrains Runtime 17.
 
-> **Why this matters:** An external JDK (e.g., Oracle JDK) installed on your system can conflict with the build. This is the most common setup failure. 
+> **Why this matters:** An external JDK (e.g., Oracle JDK) installed on your system can conflict with the build. This is the most common setup failure. See [Troubleshooting](#18-troubleshooting) for more.
 
 
 ### Step 5: Set Up Git Pre-Push Hooks
@@ -308,7 +310,7 @@ New-Item -ItemType SymbolicLink -Path .\.git\hooks -Name pre-push -Value .\hooks
 
 ### On an Emulator
 
-1. In Android Studio, create or select a virtual device (choose one **with Play Store** for best compatibility)
+1. In Android Studio, create or select a virtual device (choose one **with Play Store** for best compatibility). Helpful Link: [Create and manage virtual devices](https://developer.android.com/studio/run/managing-avds)
 2. Start the emulator and click the green **Run** button
 3. After the app launches, tap the **gear icon** (top right of login screen)
 4. Enter connection settings:
@@ -326,7 +328,7 @@ New-Item -ItemType SymbolicLink -Path .\.git\hooks -Name pre-push -Value .\hooks
 ### On a Physical Android Device
 
 1. Enable **Developer Settings** on the phone (tap Build Number 7 times in About Phone)
-2. Enable **USB Debugging** in Developer Settings
+2. Enable **USB Debugging** in Developer Settings. Helpful Link: [Configure on-device developer options](https://developer.android.com/studio/debug/dev-options)
 3. Connect phone via USB - it should appear in Android Studio's device list
 4. Find your computer's LAN IP address:
    - **macOS/Linux:** `ifconfig | grep "inet "` 
