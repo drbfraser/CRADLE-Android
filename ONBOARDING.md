@@ -947,6 +947,16 @@ This is expected. Run `./gradlew detekt` a second time - it auto-corrects many i
 
 If you see a Room migration exception, the local database schema doesn't match what the code expects. This usually means a migration script is missing. Check `database/Migrations.kt` and verify the migration from the current version is implemented. Never delete the local database in production - always write non-destructive migrations.
 
+## 19. Resources & Links
+
+### Internal Documentation (Legacy)
+
+| Resource | Link |
+|----------|------|
+| Cradle Mobile Onboarding Doc (Google Docs) | https://docs.google.com/document/d/1okJHo1OMfRZbkep-37rOIpApkXmZgxp1Uwmf_Evaguo/edit |
+| Mobile Testing with Local Cradle Platform | https://docs.google.com/document/d/1ohbJqzYMEzDeSj_EVndMZvnp9ShB1A1q682QIcr-hNE/edit |
+| Technical Wiki | https://github.sfu.ca/cradle-project/Cradle-Mobile/wiki |
+
 ### Quick Reference: Gradle Commands
 
 ```bash
