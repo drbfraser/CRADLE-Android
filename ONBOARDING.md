@@ -165,7 +165,7 @@ python scripts/create_user_pool.py <your-name>
 cat .env.cognito_secrets.<your-name> > .env.cognito_secrets
 ```
 
-> **Note:** Each developer gets their own Cognito user pool to avoid conflicts.
+> **Note:** Each developer gets their own Cognito user pool to avoid conflicts. New to Cognito? -> [AWS Cognito overview](https://docs.aws.amazon.com/cognito/latest/developerguide/what-is-amazon-cognito.html)
 
 ### Step 5: Start Docker
 
@@ -175,13 +175,15 @@ Make sure Docker Desktop is running, then:
 docker compose up -d
 ```
 
-This starts the **MySQL database** and **Flask backend** containers.
+This starts the **MySQL database** and **Flask backend** containers. [Learn More](https://docs.docker.com/compose/)
 
 ### Step 6: Run Database Migrations
 
 ```bash
 docker exec cradle_flask flask db upgrade
 ```
+
+> Helpful Links: [Flask-Migrate docs](https://flask-migrate.readthedocs.io/en/latest/)
 
 ### Step 7: Seed the Database
 
