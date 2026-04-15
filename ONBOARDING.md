@@ -737,6 +737,40 @@ Logout does the following in order:
 
 ---
 
+## 14. OCR Feature
+
+One of the most unique features: the app can **photograph the CRADLE VSA device screen** and automatically extract the blood pressure and heart rate values.
+
+### How It Works
+
+```
+Camera Preview (CameraX)
+        |
+        ▼
+OcrAnalyzer (ImageAnalysis use case)
+        |
+        ▼
+TFLiteObjectDetectionHelper
+  (runs the TFLite model on each frame)
+        |
+        ▼
+CradleScreenOcrDetector
+  (post-processes detections: filters, validates, parses numbers)
+        |
+        ▼
+Auto-fills BP and HR fields in VitalSignsFragment
+```
+
+The TFLite model file (`.tflite`) lives in `res/raw/` and is loaded at runtime. The model was trained to detect the specific digit regions on the CRADLE VSA screen.
+
+### Where to Find It
+
+- `ocr/CradleScreenOcrDetector.kt` - main logic
+- `ocr/OcrAnalyzer.kt` - CameraX integration
+- `ocr/tflite/TFLiteObjectDetectionHelper.kt` - model runner
+- `fragments/newPatient/OcrFragment` - the UI screen
+
+
 ### Quick Reference: Gradle Commands
 
 ```bash
