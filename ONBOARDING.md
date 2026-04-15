@@ -533,6 +533,71 @@ Hilt modules are in the `di/` package. Every injectable class is annotated with 
 3. Hilt wires it up automatically
 
 ---
+## 10. Core Data Models
+
+### Patient
+
+```kotlin
+// model/Patient.kt
+@Entity(tableName = "Patient")
+data class Patient(
+    @PrimaryKey val id: String,         // UUID
+    val name: String,
+    val dob: String?,                   // ISO 8601 date
+    val isExactDob: Boolean,
+    val sex: Sex,                       // Enum: MALE, FEMALE
+    val villageNumber: String?,
+    val zone: String?,
+    val householdNumber: String?,
+    val phoneNumber: String?,
+    val isPregnant: Boolean,
+    val gestationalAge: GestationalAge?,
+    // ... upload tracking fields
+)
+```
+
+### Reading
+
+```kotlin
+// model/Reading.kt
+@Entity(tableName = "Reading", foreignKeys = [/* Patient FK */])
+data class Reading(
+    @PrimaryKey val id: String,
+    val patientId: String,
+    val dateTimeTaken: Long,            // Unix timestamp
+    val bpSystolic: Int?,              // Systolic blood pressure
+    val bpDiastolic: Int?,             // Diastolic blood pressure
+    val heartRateBPM: Int?,            // Heart rate
+    val symptoms: List<String>,        // e.g. ["HEADACHE", "BLURRED_VISION"]
+    val trafficLightStatus: TrafficLight,  // GREEN / YELLOW_UP / RED_DOWN / etc.
+    val urineTest: UrineTest?,
+    val isFlaggedForFollowup: Boolean,
+    // ... referral/upload tracking fields
+)
+```
+
+### Referral
+
+```kotlin
+// model/Referral.kt
+@Entity(tableName = "Referral")
+data class Referral(
+    @PrimaryKey val id: String,
+    val patientId: String,
+    val readingId: String,
+    val referralHealthFacilityName: String,
+    val dateReferred: Long,
+    val comment: String?,
+    val isAssessed: Boolean,
+    // ... upload tracking
+)
+```
+
+### FormTemplate + FormResponse
+
+Dynamic forms are driven by `FormTemplate` objects downloaded from the server. Each template contains a JSON schema describing question types, validation rules, and ordering. A `FormResponse` stores the user's answers, keyed to the template.
+
+---
 
 ### Quick Reference: Gradle Commands
 
