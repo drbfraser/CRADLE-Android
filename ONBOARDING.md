@@ -24,6 +24,8 @@ A health-tech platform that reduces preventable maternal deaths in remote Uganda
 15. [SMS Relay System](#15-sms-relay-system)
 16. [Testing](#16-testing)
 17. [Code Quality & Git Workflow](#17-code-quality--git-workflow)
+18. [Troubleshooting](#18-troubleshooting)
+19. [Resources & Links](#19-resources--links)
 
 ---
 
@@ -45,7 +47,6 @@ The **Cradle-Mobile** Android app is the field companion to that device. Village
 - **Syncs all data to the Cradle Platform backend** via HTTP when internet is available, or falls back to **encrypted SMS** when it is not
 - Works fully **offline-first** i.e., health workers can keep taking readings even without connectivity
 
----------TODO: ADD MORE DETAIL AFTER CONSULTING Dr. Brian
 
 ### Who uses it?
 
