@@ -599,6 +599,49 @@ Dynamic forms are driven by `FormTemplate` objects downloaded from the server. E
 
 ---
 
+## 11. Network Communication
+
+### HTTP via RestApi
+
+All server communication goes through `RestApi.kt` (in `http_sms_service/http/`). Every method is type-safe and returns `NetworkResult<T>`:
+
+```kotlin
+// Key endpoints:
+suspend fun authenticate(email: String, password: String): NetworkResult<LoginResponse>
+suspend fun getPatients(lastSyncTime: Long): NetworkResult<List<Patient>>
+suspend fun postPatient(patient: Patient): NetworkResult<Patient>
+suspend fun getReadings(lastSyncTime: Long): NetworkResult<List<Reading>>
+suspend fun postReading(reading: Reading): NetworkResult<Reading>
+suspend fun postReferral(referral: Referral): NetworkResult<Referral>
+suspend fun getHealthFacilities(): NetworkResult<List<HealthFacility>>
+suspend fun getFormTemplates(): NetworkResult<List<FormTemplate>>
+suspend fun postFormResponse(response: FormResponse): NetworkResult<FormResponse>
+suspend fun getStatistics(): NetworkResult<Statistics>
+```
+
+### Security: TLS Certificate Pinning
+
+`OkHttpUtils.kt` configures `CertificatePinner` on the OkHttp client. This means the app will **only trust the specific server certificate(s)** it was built with. If the server rotates its TLS certificate, the pins in `OkHttpUtils.kt` must be updated.
+
+To get new certificate pins:
+```bash
+# Using the provided script
+scripts/x509-subject-pubkey-hash.sh <hostname>
+
+# Or follow OkHttp's guide
+# https://square.github.io/okhttp/4.x/okhttp/okhttp3/-certificate-pinner/#setting-up-certificate-pinning
+```
+
+### Authentication
+
+The app uses **Bearer token authentication**:
+1. `POST /user/authenticate` with email + password -> returns `LoginResponse` containing an access token
+2. The token is stored in `EncryptedSharedPreferences`
+3. All subsequent requests include `Authorization: Bearer <token>` header
+4. `LoginManager` is the single place that reads/writes the token
+
+---
+
 ### Quick Reference: Gradle Commands
 
 ```bash
