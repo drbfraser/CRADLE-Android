@@ -910,6 +910,13 @@ GitHub CI runs the same checks (Detekt + unit tests) on every pull request and e
 
 ---
 
+## 18. Troubleshooting
+
+### Build Fails with JDK Error
+
+**Symptom:** Build fails with class file version or JDK-related errors.
+
+**Fix:** Uninstall any externally-installed JDK (Oracle, OpenJDK from external source). Delete the repo, re-clone, and use only the JetBrains Runtime 17 bundled with Android Studio.
 
 
 ### Quick Reference: Gradle Commands
