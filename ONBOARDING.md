@@ -815,6 +815,33 @@ The relay phone number is configured in **Settings -> SMS Relay Number**. The en
 
 ---
 
+## 16. Testing
+
+### Unit Tests
+
+Located in `app/src/test/`. Run without a device.
+
+```bash
+# Run all unit tests
+./gradlew test
+
+# Run with detailed output
+./gradlew test --info
+```
+
+**Key test files:**
+
+| File | What It Tests |
+|------|--------------|
+| `RestApiTest.kt` | HTTP API methods using `MockWebServer` |
+| `SMSFormatterTest.kt` | SMS data serialization and chunking |
+| `SmsSenderTests.kt` | SMS sending logic |
+| `DatabaseTypeConvertersTests.kt` | Room type converters for custom types |
+| `PatientReadingViewModelTests.kt` | ViewModel business logic |
+| `MigrationTest.kt` | Room database schema migration (v1 -> v2) |
+
+**Mocking stack:** `Mockk` is preferred (idiomatic Kotlin); legacy tests may use `Mockito`.
+
 ### Quick Reference: Gradle Commands
 
 ```bash
