@@ -642,6 +642,49 @@ The app uses **Bearer token authentication**:
 
 ---
 
+
+## 12. Data Synchronization
+
+### How Sync Works
+
+Data flows in two directions:
+
+**Download (Server -> App):** New/updated patients, readings, form templates, health facilities, and assessments are fetched and stored locally in Room.
+
+**Upload (App -> Server):** Locally created patients, readings, referrals, assessments, and form responses that haven't been uploaded yet are sent to the server.
+
+### Sync Trigger Points
+
+| Trigger | When |
+|---------|------|
+| **Periodic** | WorkManager job runs every few hours (configurable) |
+| **On Login** | Sync immediately after successful login |
+| **Network Restored** | `NetworkStateManager` detects connectivity -> triggers sync |
+| **Manual** | User taps "Sync" on the dashboard |
+
+### SyncAllWorker (the core)
+
+`sync/workers/SyncAllWorker.kt` runs as a `CoroutineWorker`. Its sequence:
+
+1. Download patients from server (since last sync timestamp)
+2. Upload locally-created patients
+3. Download form templates
+4. Upload unsent form responses
+5. Upload unsent readings
+6. Upload unsent referrals
+7. Upload unsent assessments
+8. Download server-side assessments
+
+Each step is independent - a failure in step 3 doesn't abort steps 4+. The last sync timestamp is stored in `SharedPreferences` and updated only on complete success.
+
+### Upload Tracking
+
+Entities have an `isUploadedToServer: Boolean` flag (and similar fields). The sync worker queries `WHERE isUploadedToServer = 0` to find items needing upload.
+
+---
+
+
+
 ### Quick Reference: Gradle Commands
 
 ```bash
