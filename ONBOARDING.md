@@ -929,6 +929,12 @@ GitHub CI runs the same checks (Detekt + unit tests) on every pull request and e
 4. Is HTTPS turned **OFF** in the app login settings?
 5. Are both your computer and phone on the same Wi-Fi? (for physical device)
 
+### Emulator Won't Install App
+
+**Symptom:** Install fails or app crashes immediately on emulator.
+
+**Fix:** Choose an emulator that **includes Play Store** (Google Play System). Create a new AVD in Android Studio's Device Manager if needed.
+
 ### Quick Reference: Gradle Commands
 
 ```bash
