@@ -20,6 +20,10 @@ A health-tech platform that reduces preventable maternal deaths in remote Uganda
 11. [Network Communication](#11-network-communication)
 12. [Data Synchronization](#12-data-synchronization)
 13. [Authentication & Session Management](#13-authentication--session-management)
+14. [OCR Feature](#14-ocr-feature)
+15. [SMS Relay System](#15-sms-relay-system)
+16. [Testing](#16-testing)
+17. [Code Quality & Git Workflow](#17-code-quality--git-workflow)
 
 ---
 
@@ -905,6 +909,8 @@ GitHub CI runs the same checks (Detekt + unit tests) on every pull request and e
 - Handle all three `NetworkResult` cases (Success, Failure, NetworkException) - never ignore Failure/Exception
 
 ---
+
+
 
 ### Quick Reference: Gradle Commands
 
