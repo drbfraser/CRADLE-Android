@@ -10,7 +10,16 @@ A health-tech platform that reduces preventable maternal deaths in remote Uganda
 1. [Project Overview](#1-project-overview)
 2. [System Architecture](#2-system-architecture)
 3. [Technology Stack](#3-technology-stack)
-4. [Prerequites](#4-prerequisites)
+4. [Prerequisites](#4-prerequisites)
+5. [Backend Setup (Cradle Platform)](#5-backend-setup-cradle-platform)
+6. [Android Development Setup](#6-android-development-setup)
+7. [Running the App](#7-running-the-app)
+8. [Codebase Structure](#8-codebase-structure)
+9. [Key Architecture Patterns](#9-key-architecture-patterns)
+10. [Core Data Models](#10-core-data-models)
+11. [Network Communication](#11-network-communication)
+12. [Data Synchronization](#12-data-synchronization)
+13. [Authentication & Session Management](#13-authentication--session-management)
 
 ---
 
@@ -683,7 +692,50 @@ Entities have an `isUploadedToServer: Boolean` flag (and similar fields). The sy
 
 ---
 
+## 13. Authentication & Session Management
 
+### Login Flow
+
+```
+User enters email + password
+        |
+        ▼
+LoginManager.login()
+        |
+        ▼
+RestApi.authenticate() -> POST /user/authenticate
+        |
+        ▼
+LoginResponse received:
+  - access token
+  - user info (id, email, role, phone numbers)
+  - SMS encryption key
+        |
+        ▼
+Store token in EncryptedSharedPreferences
+Start PeriodicSyncer
+Navigate to DashBoard
+```
+
+### PIN-Based Session Lock
+
+After **30 minutes of inactivity**, the app requires the user's PIN:
+
+1. `CradleApplication` registers an `ActivityLifecycleCallbacks` to track the last-active timestamp
+2. On each Activity `onStart`, the timestamp is checked
+3. If elapsed time > 30 minutes, `PinPassActivity` is started (it cannot be bypassed via back button)
+4. The user must enter their PIN to resume
+5. PIN is set during first login and stored in `EncryptedSharedPreferences`
+
+### Logout
+
+Logout does the following in order:
+1. Cancels all pending WorkManager sync jobs
+2. Clears the Room database (all local patient data)
+3. Removes the auth token and user info from `SharedPreferences`
+4. Navigates to `LoginActivity`
+
+---
 
 ### Quick Reference: Gradle Commands
 
