@@ -830,6 +830,8 @@ SmsStateReporter: updates UI with success/failure state
 
 The relay phone number is configured in **Settings -> SMS Relay Number**. The encryption key is provided by the server at login and stored in `EncryptedSharedPreferences`.
 
+> **Relevant docs:** [Android SmsManager](https://developer.android.com/reference/android/telephony/SmsManager) · [BroadcastReceiver](https://developer.android.com/guide/components/broadcasts) · [AES encryption in Android](https://developer.android.com/privacy-and-security/cryptography) · [GZip compression in Kotlin/Java](https://www.baeldung.com/java-compress-and-uncompress)
+
 ---
 
 ## 16. Testing
@@ -857,7 +859,10 @@ Located in `app/src/test/`. Run without a device.
 | `PatientReadingViewModelTests.kt` | ViewModel business logic |
 | `MigrationTest.kt` | Room database schema migration (v1 -> v2) |
 
-**Mocking stack:** `Mockk` is preferred (idiomatic Kotlin); legacy tests may use `Mockito`.
+**Mocking stack:** `Mockk` is preferred (idiomatic Kotlin) Useful links: [Mockk docs](https://mockk.io/) · [Mockk crash course (video)](https://www.youtube.com/watch?v=4prbIk2TuX4); legacy tests may use `Mockito`.
+
+> **MockWebServer** (used in `RestApiTest.kt`) . For further knowledge : [MockWebServer on GitHub](https://github.com/square/okhttp/tree/master/mockwebserver)
+
 
 ### Static Code Analysis (Detekt)
 
@@ -865,7 +870,9 @@ Located in `app/src/test/`. Run without a device.
 ./gradlew detekt
 ```
 
-Detekt enforces code style and catches common Kotlin pitfalls. It is likely to fail on first run - a second run with auto-corrections usually resolves it. If issues remain after the second run, manual fixes are needed.
+> Detekt enforces code style and catches common Kotlin pitfalls. Useful resource: [Detekt Gradle setup guide](https://detekt.dev/docs/gettingstarted/gradle)
+
+It is likely to fail on first run - a second run with auto-corrections usually resolves it. If issues remain after the second run, manual fixes are needed.
 
 Configuration: `detekt.gradle` in the root.
 
@@ -877,7 +884,7 @@ Located in `app/src/androidTest/`. Require a connected device or running emulato
 ./gradlew connectedAndroidTest
 ```
 
-These test database migrations and UI flows end-to-end. **Not run by CI**, but should be run before every release.
+> These test database migrations and UI flows end-to-end. **Not run by CI**, but should be run before every release. Resource: [Room migration testing docs](https://developer.android.com/training/data-storage/room/migrating-db-versions#test-migrations)
 
 ### UI Tests (Espresso)
 
