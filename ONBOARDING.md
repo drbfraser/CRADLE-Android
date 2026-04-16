@@ -485,6 +485,8 @@ neptune/
 
 ### MVVM (Model-View-ViewModel)
 
+> **New to MVVM on Android?** Helpful Links: [Official architecture guide](https://developer.android.com/topic/architecture) · [Video walkthrough](https://www.youtube.com/watch?v=ijXjCtCXcN4)
+
 Every screen follows MVVM:
 
 ```
@@ -529,6 +531,8 @@ when (val result = patientManager.uploadPatient(patient)) {
 
 ### LiveData & State Enums
 
+> Seeing this for the first time? Here are some helpful links to get familiar [Official reference](https://developer.android.com/topic/libraries/architecture/livedata) · [LiveData vs StateFlow explainer](https://medium.com/androiddevelopers/migrating-from-livedata-to-kotlins-flow-379292f419fb)
+
 ViewModels expose state via typed enums and LiveData:
 
 ```kotlin
@@ -543,6 +547,8 @@ enum class LoginState {
 Fragments observe these and update the UI reactively - no direct ViewModel-to-Fragment callbacks.
 
 ### Dependency Injection with Hilt
+
+> **New to Hilt?** Here's some links to get started: [Official docs](https://developer.android.com/training/dependency-injection/hilt-android) · [Full tutorial by Philipp Lackner](https://www.youtube.com/watch?v=bbMsuI2p1DQ)
 
 Hilt modules are in the `di/` package. Every injectable class is annotated with `@Inject constructor(...)`. To add a new dependency:
 
@@ -654,8 +660,8 @@ scripts/x509-subject-pubkey-hash.sh <hostname>
 
 The app uses **Bearer token authentication**:
 1. `POST /user/authenticate` with email + password -> returns `LoginResponse` containing an access token
-2. The token is stored in `EncryptedSharedPreferences`
-3. All subsequent requests include `Authorization: Bearer <token>` header
+2. The token is stored in `EncryptedSharedPreferences`. Useful source:  [ More about EncryptedSharedPreferences](https://developer.android.com/reference/androidx/security/crypto/EncryptedSharedPreferences)
+3. All subsequent requests include `Authorization: Bearer <token>` header. Useful Source: [Bearer token auth explained](https://swagger.io/docs/specification/authentication/bearer-authentication/)
 4. `LoginManager` is the single place that reads/writes the token
 
 ---
@@ -694,6 +700,8 @@ Data flows in two directions:
 8. Download server-side assessments
 
 Each step is independent - a failure in step 3 doesn't abort steps 4+. The last sync timestamp is stored in `SharedPreferences` and updated only on complete success.
+
+> Heard about these things for the first time  ? Don't worry here are some links to get started  [CoroutineWorker docs](https://developer.android.com/topic/libraries/architecture/workmanager/advanced/coroutineworker) · [WorkManager tutorial](https://www.youtube.com/watch?v=A2JetouoNSc)
 
 ### Upload Tracking
 
