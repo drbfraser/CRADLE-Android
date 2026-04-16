@@ -96,7 +96,10 @@ The **Cradle-Mobile** Android app is the field companion to that device. Village
 ---
 ## 3. Technology Stack
 
+> Note: Resources related to the stack can be found in [Resources & Links](#19-resources--links)
+
 ### Core Platform
+
 | Component | Version |
 |-----------|---------|
 | Language | **Kotlin** (primary), some legacy Java |
@@ -104,6 +107,20 @@ The **Cradle-Mobile** Android app is the field companion to that device. Village
 | Target SDK | API 34 (Android 14) |
 | Gradle | 8.2 |
 | Android Gradle Plugin | 8.2.1 |
+
+### Architecture & UI
+| Library | Purpose |
+|---------|---------|
+| **Dagger Hilt 2.48.1** | Dependency injection throughout the app |
+| **Room 2.6.0** | SQLite database ORM with migrations |
+| **Android ViewModels** | UI state management with lifecycle awareness |
+| **Data Binding Library** | Reduces boilerplate in XML layouts |
+| **Navigation Component** | Fragment navigation (used in reading flow) |
+| **WorkManager** | Background sync tasks (survives process death) |
+| **Paging 3** | Paginated RecyclerViews (patient list, etc.) |
+| **Material Design 1.3.0** | UI components and theming |
+| **MPAndroidChart 3.1.0** | Charts and statistics visualizations |
+| **CameraX 1.1.0-alpha04** | Camera integration for OCR |
 
 # Getting The App Running
 
