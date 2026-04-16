@@ -122,6 +122,13 @@ The **Cradle-Mobile** Android app is the field companion to that device. Village
 | **MPAndroidChart 3.1.0** | Charts and statistics visualizations |
 | **CameraX 1.1.0-alpha04** | Camera integration for OCR |
 
+### Networking
+| Library | Purpose |
+|---------|---------|
+| **OkHttp3 4.12.0** | HTTP client with certificate pinning |
+| **Jackson 2.12.3** | JSON serialization/deserialization |
+| **Gson 2.8.2** | Secondary JSON utility |
+
 # Getting The App Running
 
 ## 4. Prerequisites
