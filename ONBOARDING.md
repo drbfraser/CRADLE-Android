@@ -1060,3 +1060,6 @@ If you see a Room migration exception, the local database schema doesn't match w
 | Password | `cradle-admin` |
 | Role | Admin (full access) |
 
+---
+
+*This document was written to help the next development team get productive as quickly as possible. If you find anything out of date or missing, please update this file as part of your onboarding PR.*
