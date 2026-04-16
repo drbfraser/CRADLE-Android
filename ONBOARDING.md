@@ -129,6 +129,19 @@ The **Cradle-Mobile** Android app is the field companion to that device. Village
 | **Jackson 2.12.3** | JSON serialization/deserialization |
 | **Gson 2.8.2** | Secondary JSON utility |
 
+### ML / OCR
+| Library | Purpose |
+|---------|---------|
+| **TensorFlow Lite 2.4.0** | On-device OCR model for CRADLE VSA screen |
+| **TF Lite Support 0.2.0** | Helper utilities for TFLite integration |
+
+### Utilities
+| Library | Purpose |
+|---------|---------|
+| **ThreeTenABP 1.3.1** | Java 8 date/time API backport (Android < 8) |
+| **Security Crypto 1.1.0-alpha02** | `EncryptedSharedPreferences` (AES256) |
+| **Detekt** | Static code analysis and style enforcement |
+
 # Getting The App Running
 
 ## 4. Prerequisites
