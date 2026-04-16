@@ -129,6 +129,14 @@ The **Cradle-Mobile** Android app is the field companion to that device. Village
 | **Jackson 2.12.3** | JSON serialization/deserialization |
 | **Gson 2.8.2** | Secondary JSON utility |
 
+### Firebase
+| Service | Purpose |
+|---------|---------|
+| **Firebase Analytics** | Usage analytics |
+| **Firebase Crashlytics** | Crash reporting |
+| **Firebase Performance** | Performance monitoring |
+| **Firebase Storage** | Remote file storage |
+
 ### ML / OCR
 | Library | Purpose |
 |---------|---------|
