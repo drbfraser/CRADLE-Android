@@ -1019,6 +1019,20 @@ If you see a Room migration exception, the local database schema doesn't match w
 | Bearer Token Auth | https://swagger.io/docs/specification/authentication/bearer-authentication/ |
 | GZip in Java/Kotlin | https://www.baeldung.com/java-compress-and-uncompress |
 
+### Video References 
+
+> Philipp Lackner's channel is the best single resource for this stack. Bookmarking it is worth it: https://www.youtube.com/@PhilippLackner
+
+| Topic | Video |
+|-------|-------|
+| MVVM Architecture | https://www.youtube.com/watch?v=ijXjCtCXcN4 |
+| Dagger Hilt (full tutorial) | https://www.youtube.com/watch?v=bbMsuI2p1DQ |
+| Kotlin Coroutines crash course | https://www.youtube.com/watch?v=ShNhJ3wMpvQ |
+| WorkManager tutorial | https://www.youtube.com/watch?v=A2JetouoNSc |
+| Mockk crash course | https://www.youtube.com/watch?v=bFqqRkuTFmk |
+| CameraX + ML walkthrough | https://www.youtube.com/watch?v=IrwhjDtpIU0 |
+
+
 ### Quick Reference: Gradle Commands
 
 ```bash
