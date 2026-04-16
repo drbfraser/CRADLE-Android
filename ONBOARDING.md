@@ -1051,3 +1051,12 @@ If you see a Room migration exception, the local database schema doesn't match w
 ./gradlew assembleRelease         # Build release APK (requires signing config)
 ./gradlew clean                   # Clean build directory
 ```
+
+### Default Login Credentials (Development Only)
+
+| Credential | Value |
+|------------|-------|
+| Email | `admin@email.com` |
+| Password | `cradle-admin` |
+| Role | Admin (full access) |
+
