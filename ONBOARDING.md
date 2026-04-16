@@ -977,14 +977,6 @@ If you see a Room migration exception, the local database schema doesn't match w
 | Mobile Testing with Local Cradle Platform | https://docs.google.com/document/d/1ohbJqzYMEzDeSj_EVndMZvnp9ShB1A1q682QIcr-hNE/edit |
 | Technical Wiki | https://github.sfu.ca/cradle-project/Cradle-Mobile/wiki |
 
-### Repositories
-
-| Repo | Purpose |
-|------|---------|
-| **Cradle-Mobile** | This repo - Android app |
-| **Cradle-Platform** | Backend: Flask API + MySQL + React frontend |
-| **Cradle-SMSRelay** | The SMS relay server component |
-
 ### Android Development References
 
 | Resource | URL |
@@ -1040,6 +1032,14 @@ If you see a Room migration exception, the local database schema doesn't match w
 | Docker Compose | https://docs.docker.com/compose/ |
 | Flask-Migrate | https://flask-migrate.readthedocs.io/en/latest/ |
 | AWS Cognito | https://docs.aws.amazon.com/cognito/latest/developerguide/what-is-amazon-cognito.html |
+
+### Repositories
+
+| Repo | Purpose |
+|------|---------|
+| **Cradle-Mobile** | This repo - Android app |
+| **Cradle-Platform** | Backend: Flask API + MySQL + React frontend |
+| **Cradle-SMSRelay** | The SMS relay server component |
 
 ### Quick Reference: Gradle Commands
 
