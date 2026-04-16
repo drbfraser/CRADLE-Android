@@ -910,7 +910,7 @@ The hook at `hooks/pre-push.sh` runs automatically on every `git push`:
 
 ### CI Pipeline
 
-GitHub CI runs the same checks (Detekt + unit tests) on every pull request and every commit to `master`. A PR cannot be merged until CI passes.
+GitHub CI runs the same checks (Detekt + unit tests) on every pull request and every commit to `main`. A PR cannot be merged until CI passes.
 
 ### Branching Convention
 
@@ -922,7 +922,7 @@ GitHub CI runs the same checks (Detekt + unit tests) on every pull request and e
 
 - **Kotlin** for all new code - no new Java files
 - Follow Android Kotlin style guide
-- Use `suspend fun` for all database and network operations (coroutines, not callbacks)
+- Use `suspend fun` for all database and network operations (coroutines, not callbacks). Resources: [Kotlin coroutines guide](https://kotlinlang.org/docs/coroutines-overview.html) · [Crash course video](https://www.youtube.com/watch?v=ShNhJ3wMpvQ)
 - Use `LiveData` for UI-observable state in ViewModels
 - Inject dependencies via Hilt - do not create instances manually in Activities/Fragments
 - Use `EncryptedSharedPreferences` for all sensitive data storage
@@ -990,18 +990,34 @@ If you see a Room migration exception, the local database schema doesn't match w
 | Resource | URL |
 |----------|-----|
 | Android Jetpack Overview | https://developer.android.com/jetpack |
+| Android App Architecture Guide | https://developer.android.com/topic/architecture |
 | Room Persistence Library | https://developer.android.com/topic/libraries/architecture/room |
+| Room Migration Testing | https://developer.android.com/training/data-storage/room/migrating-db-versions#test-migrations |
 | ViewModels | https://developer.android.com/topic/libraries/architecture/viewmodel |
+| LiveData | https://developer.android.com/topic/libraries/architecture/livedata |
 | WorkManager | https://developer.android.com/topic/libraries/architecture/workmanager |
+| CoroutineWorker | https://developer.android.com/topic/libraries/architecture/workmanager/advanced/coroutineworker |
 | Navigation Component | https://developer.android.com/guide/navigation |
 | Paging 3 | https://developer.android.com/topic/libraries/architecture/paging/v3-overview |
-| Dagger Hilt | https://dagger.dev/hilt/ |
+| Dagger Hilt | https://developer.android.com/training/dependency-injection/hilt-android |
 | Data Binding Library | https://developer.android.com/topic/libraries/data-binding |
-| OkHttp Certificate Pinning | https://square.github.io/okhttp/5.x/okhttp/okhttp3/-certificate-pinner/index.html|
+| CameraX Overview | https://developer.android.com/training/camerax |
+| CameraX ImageAnalysis | https://developer.android.com/training/camerax/analyze |
+| EncryptedSharedPreferences | https://developer.android.com/reference/androidx/security/crypto/EncryptedSharedPreferences |
+| Android Cryptography Guide | https://developer.android.com/privacy-and-security/cryptography |
+| Android SmsManager | https://developer.android.com/reference/android/telephony/SmsManager |
+| BroadcastReceiver | https://developer.android.com/guide/components/broadcasts |
+| OkHttp Overview | https://square.github.io/okhttp/ |
+| OkHttp Certificate Pinning | https://square.github.io/okhttp/3.x/okhttp/okhttp3/CertificatePinner.html |
+| MockWebServer | https://github.com/square/okhttp/tree/master/mockwebserver |
 | Detekt (static analysis) | https://detekt.dev |
+| Detekt Gradle Setup | https://detekt.dev/docs/gettingstarted/gradle |
 | Mockk (Kotlin mocking) | https://mockk.io/ |
 | Espresso (UI testing) | https://developer.android.com/training/testing/espresso/ |
 | TensorFlow Lite | https://www.tensorflow.org/lite/android |
+| Kotlin Coroutines | https://kotlinlang.org/docs/coroutines-overview.html |
+| Bearer Token Auth | https://swagger.io/docs/specification/authentication/bearer-authentication/ |
+| GZip in Java/Kotlin | https://www.baeldung.com/java-compress-and-uncompress |
 
 ### Quick Reference: Gradle Commands
 
