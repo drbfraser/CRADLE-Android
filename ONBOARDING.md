@@ -96,7 +96,14 @@ The **Cradle-Mobile** Android app is the field companion to that device. Village
 ---
 ## 3. Technology Stack
 
----------- TODO: See the dependencies and stuff - will write it after completing my code and all so that I don't have to change it again and again
+### Core Platform
+| Component | Version |
+|-----------|---------|
+| Language | **Kotlin** (primary), some legacy Java |
+| Min SDK | API 24 (Android 7.0 Nougat) |
+| Target SDK | API 34 (Android 14) |
+| Gradle | 8.2 |
+| Android Gradle Plugin | 8.2.1 |
 
 # Getting The App Running
 
