@@ -138,6 +138,42 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 }
             }
         }
+
+        // Re-evaluate biometric toggle state in case user just set up their PIN
+        updateBiometricPrefState()
+    }
+
+    private fun updateBiometricPrefState() {
+        val biometricPref = findPreference<SwitchPreferenceCompat>(getString(R.string.key_biometric_enabled))
+            ?: return
+
+        val biometricManager = BiometricManager.from(requireContext())
+        val canUseBiometrics = biometricManager.canAuthenticate(
+            BiometricManager.Authenticators.BIOMETRIC_STRONG or
+            BiometricManager.Authenticators.BIOMETRIC_WEAK
+        ) == BiometricManager.BIOMETRIC_SUCCESS
+
+        if (!canUseBiometrics) {
+            biometricPref.isVisible = false
+            return
+        }
+
+        val pinCode = sharedPreferences.getString(
+            getString(R.string.key_pin_shared_key),
+            getString(R.string.key_pin_default_pin)
+        )
+        val pinIsSet = pinCode != getString(R.string.key_pin_default_pin)
+
+        biometricPref.isVisible = true
+        biometricPref.isEnabled = pinIsSet
+        biometricPref.summary = if (pinIsSet) {
+            getString(R.string.biometric_pref_summary)
+        } else {
+            // Ensure the toggle is off if PIN is removed
+            sharedPreferences.edit().putBoolean(getString(R.string.key_biometric_enabled), false).apply()
+            biometricPref.isChecked = false
+            getString(R.string.biometric_pref_summary_pin_not_set)
+        }
     }
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
@@ -172,15 +208,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 true
             }
 
-        val biometricPref = findPreference<SwitchPreferenceCompat>(getString(R.string.key_biometric_enabled))
-        val biometricManager = BiometricManager.from(requireContext())
-        val canUseBiometrics = biometricManager.canAuthenticate(
-            BiometricManager.Authenticators.BIOMETRIC_STRONG or
-                BiometricManager.Authenticators.BIOMETRIC_WEAK
-        ) == BiometricManager.BIOMETRIC_SUCCESS
-        if (!canUseBiometrics) {
-            biometricPref?.isVisible = false
-        }
+        updateBiometricPrefState()
 
         findPreference(R.string.key_sign_out)?.withOnClickListener {
             lifecycleScope.launch(Dispatchers.IO) {

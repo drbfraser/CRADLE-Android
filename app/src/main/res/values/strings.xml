@@ -728,6 +728,7 @@
     <string name="biometric_prompt_negative">Use PIN instead</string>
     <string name="biometric_pref_title">Unlock with Biometrics</string>
     <string name="biometric_pref_summary">Use fingerprint or face ID instead of PIN</string>
+    <string name="biometric_pref_summary_pin_not_set">Set up a PIN first using \'Set or Change PIN\' above</string>
     <string name="biometric_not_available">Biometrics not available on this device</string>
     <string name="ok">OK</string>
     <string name="warning">Warning</string>
