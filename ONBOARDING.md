@@ -884,6 +884,29 @@ The relay phone number is configured in **Settings -> SMS Relay Number**. The en
 
 > **Relevant docs:** [Android SmsManager](https://developer.android.com/reference/android/telephony/SmsManager) · [BroadcastReceiver](https://developer.android.com/guide/components/broadcasts) · [AES encryption in Android](https://developer.android.com/privacy-and-security/cryptography) · [GZip compression in Kotlin/Java](https://www.baeldung.com/java-compress-and-uncompress)
 
+### Testing SMS Relay with Two Emulators
+
+To test the full SMS fallback path locally you need two emulated phones — one running Cradle SMS Relay and one running Cradle Mobile.
+
+#### First-time Setup
+
+1. Create and start two AVDs using **API 30** (see note below)
+2. Check LogCat on each emulator to identify which has a phone number ending in **5554** and which ends in **5556**
+3. On the **5554** emulator:
+   - Install and run **Cradle SMS Relay**
+   - Connect it to Cradle Platform: Hostname `10.0.2.2`, Port `5000`, HTTPS OFF
+4. On the **5556** emulator:
+   - Install and run **Cradle Mobile**
+5. Rename each AVD to reflect which app it runs (e.g., `SMS-Relay-5554`, `Mobile-5556`)
+
+> **Note — Why API 30?** SMS Relay requires each emulated phone to have a unique phone number. API 34 does not generate unique phone numbers per emulator, so SMS Relay fails. Use API 30 for SMS testing. Phone numbers are currently hard-coded; making them dynamic is a known future improvement.
+
+#### Setting the Emulator Phone Number (Possible Steps)
+
+Each emulator's phone number corresponds to its **port number**, which is shown in the emulator window title bar (e.g., `Android Emulator - Pixel_3a:5554` → phone number `5554`). The relay number configured in Cradle Mobile's SMS settings should match the port of the emulator running SMS Relay.
+
+> **Incomplete:** No official documentation has been found to confirm this behaviour. The steps above reflect the best available knowledge — if you discover a more reliable approach, please update this section.
+
 ---
 
 ## 16. Testing
