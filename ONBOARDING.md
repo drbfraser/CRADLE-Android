@@ -886,7 +886,7 @@ The relay phone number is configured in **Settings -> SMS Relay Number**. The en
 
 ### Testing SMS Relay with Two Emulators
 
-To test the full SMS fallback path locally you need two emulated phones — one running Cradle SMS Relay and one running Cradle Mobile.
+To test the full SMS fallback path locally you need two emulated phones - one running Cradle SMS Relay and one running Cradle Mobile.
 
 #### First-time Setup
 
@@ -903,9 +903,24 @@ To test the full SMS fallback path locally you need two emulated phones — one 
 
 #### Setting the Emulator Phone Number (Possible Steps)
 
-Each emulator's phone number corresponds to its **port number**, which is shown in the emulator window title bar (e.g., `Android Emulator - Pixel_3a:5554` → phone number `5554`). The relay number configured in Cradle Mobile's SMS settings should match the port of the emulator running SMS Relay.
+Each emulator's phone number corresponds to its **port number**, which is shown in the emulator window title bar (e.g., `Android Emulator - Pixel_3a:5554` -> phone number `5554`). The relay number configured in Cradle Mobile's SMS settings should match the port of the emulator running SMS Relay.
 
-> **Incomplete:** No official documentation has been found to confirm this behaviour. The steps above reflect the best available knowledge — if you discover a more reliable approach, please update this section.
+> **Incomplete:** No official documentation has been found to confirm this behaviour. The steps above reflect the best available knowledge - if you discover a more reliable approach, please update this section.
+
+#### Every-time Running Checklist
+
+1. Start the SMS Relay emulator - confirm phone number ends in **5554** via LogCat
+2. Start the Mobile emulator - confirm phone number ends in **5556** via LogCat
+3. Launch SMS Relay on the 5554 emulator
+4. Launch Cradle Mobile on the 5556 emulator
+5. If connectivity issues appear, re-check the hostname/port settings above
+
+#### Verifying SMS Relay Works
+
+1. In Cradle Mobile, log in and navigate to **Patients**
+2. Select a patient -> three-dot menu (top right) -> **Create Referral**
+3. Fill out the form and select **Send via SMS**
+4. In SMS Relay, confirm receipt of the text messages and a new message summary showing **all 4 green checkmarks**
 
 ---
 
