@@ -148,13 +148,25 @@ class SettingsFragment : PreferenceFragmentCompat() {
             ?: return
 
         val biometricManager = BiometricManager.from(requireContext())
-        val canUseBiometrics = biometricManager.canAuthenticate(
-            BiometricManager.Authenticators.BIOMETRIC_STRONG or
+        val authenticators = BiometricManager.Authenticators.BIOMETRIC_STRONG or
             BiometricManager.Authenticators.BIOMETRIC_WEAK
-        ) == BiometricManager.BIOMETRIC_SUCCESS
+        val authResult = biometricManager.canAuthenticate(authenticators)
 
-        if (!canUseBiometrics) {
+        // No hardware at all — hide the toggle entirely
+        if (authResult == BiometricManager.BIOMETRIC_ERROR_NO_HARDWARE ||
+            authResult == BiometricManager.BIOMETRIC_ERROR_HW_UNAVAILABLE) {
             biometricPref.isVisible = false
+            return
+        }
+
+        biometricPref.isVisible = true
+
+        // Hardware present but no biometrics enrolled in device Settings
+        if (authResult == BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED) {
+            sharedPreferences.edit().putBoolean(getString(R.string.key_biometric_enabled), false).apply()
+            biometricPref.isChecked = false
+            biometricPref.isEnabled = false
+            biometricPref.summary = getString(R.string.biometric_pref_summary_not_enrolled)
             return
         }
 
@@ -164,12 +176,10 @@ class SettingsFragment : PreferenceFragmentCompat() {
         )
         val pinIsSet = pinCode != getString(R.string.key_pin_default_pin)
 
-        biometricPref.isVisible = true
         biometricPref.isEnabled = pinIsSet
         biometricPref.summary = if (pinIsSet) {
             getString(R.string.biometric_pref_summary)
         } else {
-            // Ensure the toggle is off if PIN is removed
             sharedPreferences.edit().putBoolean(getString(R.string.key_biometric_enabled), false).apply()
             biometricPref.isChecked = false
             getString(R.string.biometric_pref_summary_pin_not_set)
