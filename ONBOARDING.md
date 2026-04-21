@@ -1,7 +1,7 @@
 # Cradle-Mobile: New Team Onboarding Guide
 
 **CRADLE VSA System - Android Application**  
-A health-tech platform that reduces preventable maternal deaths in remote Ugandan villages by capturing vital signs and syncing patient data to a central backend even without internet connectivity.
+A health-tech platform designed to operate in low and middle income countries with limited internet connectivity, reducing preventable maternal deaths by capturing vital signs and syncing patient data to a central backend even without internet connectivity.
 
 ---
 
