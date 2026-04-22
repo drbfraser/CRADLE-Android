@@ -138,6 +138,52 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 }
             }
         }
+
+        // Re-evaluate biometric toggle state in case user just set up their PIN
+        updateBiometricPrefState()
+    }
+
+    private fun updateBiometricPrefState() {
+        val biometricPref = findPreference<SwitchPreferenceCompat>(getString(R.string.key_biometric_enabled))
+            ?: return
+
+        val biometricManager = BiometricManager.from(requireContext())
+        val authenticators = BiometricManager.Authenticators.BIOMETRIC_STRONG or
+            BiometricManager.Authenticators.BIOMETRIC_WEAK
+        val authResult = biometricManager.canAuthenticate(authenticators)
+
+        // No hardware at all — hide the toggle entirely
+        if (authResult == BiometricManager.BIOMETRIC_ERROR_NO_HARDWARE ||
+            authResult == BiometricManager.BIOMETRIC_ERROR_HW_UNAVAILABLE) {
+            biometricPref.isVisible = false
+            return
+        }
+
+        biometricPref.isVisible = true
+
+        // Hardware present but no biometrics enrolled in device Settings
+        if (authResult == BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED) {
+            sharedPreferences.edit().putBoolean(getString(R.string.key_biometric_enabled), false).apply()
+            biometricPref.isChecked = false
+            biometricPref.isEnabled = false
+            biometricPref.summary = getString(R.string.biometric_pref_summary_not_enrolled)
+            return
+        }
+
+        val pinCode = sharedPreferences.getString(
+            getString(R.string.key_pin_shared_key),
+            getString(R.string.key_pin_default_pin)
+        )
+        val pinIsSet = pinCode != getString(R.string.key_pin_default_pin)
+
+        biometricPref.isEnabled = pinIsSet
+        biometricPref.summary = if (pinIsSet) {
+            getString(R.string.biometric_pref_summary)
+        } else {
+            sharedPreferences.edit().putBoolean(getString(R.string.key_biometric_enabled), false).apply()
+            biometricPref.isChecked = false
+            getString(R.string.biometric_pref_summary_pin_not_set)
+        }
     }
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
@@ -172,15 +218,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 true
             }
 
-        val biometricPref = findPreference<SwitchPreferenceCompat>(getString(R.string.key_biometric_enabled))
-        val biometricManager = BiometricManager.from(requireContext())
-        val canUseBiometrics = biometricManager.canAuthenticate(
-            BiometricManager.Authenticators.BIOMETRIC_STRONG or
-                BiometricManager.Authenticators.BIOMETRIC_WEAK
-        ) == BiometricManager.BIOMETRIC_SUCCESS
-        if (!canUseBiometrics) {
-            biometricPref?.isVisible = false
-        }
+        updateBiometricPrefState()
 
         findPreference(R.string.key_sign_out)?.withOnClickListener {
             lifecycleScope.launch(Dispatchers.IO) {
