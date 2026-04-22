@@ -1,7 +1,7 @@
 # Cradle-Mobile: New Team Onboarding Guide
 
 **CRADLE VSA System - Android Application**  
-A health-tech platform that reduces preventable maternal deaths in remote Ugandan villages by capturing vital signs and syncing patient data to a central backend even without internet connectivity.
+A health-tech platform designed to operate in low and middle income countries with limited internet connectivity, reducing preventable maternal deaths by capturing vital signs and syncing patient data to a central backend even without internet connectivity.
 
 ---
 
@@ -883,6 +883,44 @@ SmsStateReporter: updates UI with success/failure state
 The relay phone number is configured in **Settings -> SMS Relay Number**. The encryption key is provided by the server at login and stored in `EncryptedSharedPreferences`.
 
 > **Relevant docs:** [Android SmsManager](https://developer.android.com/reference/android/telephony/SmsManager) · [BroadcastReceiver](https://developer.android.com/guide/components/broadcasts) · [AES encryption in Android](https://developer.android.com/privacy-and-security/cryptography) · [GZip compression in Kotlin/Java](https://www.baeldung.com/java-compress-and-uncompress)
+
+### Testing SMS Relay with Two Emulators
+
+To test the full SMS fallback path locally you need two emulated phones - one running Cradle SMS Relay and one running Cradle Mobile.
+
+#### First-time Setup
+
+1. Create and start two AVDs using **API 30** (see note below)
+2. Check LogCat on each emulator to identify which has a phone number ending in **5554** and which ends in **5556**
+3. On the **5554** emulator:
+   - Install and run **Cradle SMS Relay**
+   - Connect it to Cradle Platform: Hostname `10.0.2.2`, Port `5000`, HTTPS OFF
+4. On the **5556** emulator:
+   - Install and run **Cradle Mobile**
+5. Rename each AVD to reflect which app it runs (e.g., `SMS-Relay-5554`, `Mobile-5556`)
+
+> **Note — Why API 30?** SMS Relay requires each emulated phone to have a unique phone number. API 34 does not generate unique phone numbers per emulator, so SMS Relay fails. Use API 30 for SMS testing. Phone numbers are currently hard-coded; making them dynamic is a known future improvement.
+
+#### Setting the Emulator Phone Number (Possible Steps)
+
+Each emulator's phone number corresponds to its **port number**, which is shown in the emulator window title bar (e.g., `Android Emulator - Pixel_3a:5554` -> phone number `5554`). The relay number configured in Cradle Mobile's SMS settings should match the port of the emulator running SMS Relay.
+
+> **Incomplete:** No official documentation has been found to confirm this behaviour. The steps above reflect the best available knowledge - if you discover a more reliable approach, please update this section.
+
+#### Every-time Running Checklist
+
+1. Start the SMS Relay emulator - confirm phone number ends in **5554** via LogCat
+2. Start the Mobile emulator - confirm phone number ends in **5556** via LogCat
+3. Launch SMS Relay on the 5554 emulator
+4. Launch Cradle Mobile on the 5556 emulator
+5. If connectivity issues appear, re-check the hostname/port settings above
+
+#### Verifying SMS Relay Works
+
+1. In Cradle Mobile, log in and navigate to **Patients**
+2. Select a patient -> three-dot menu (top right) -> **Create Referral**
+3. Fill out the form and select **Send via SMS**
+4. In SMS Relay, confirm receipt of the text messages and a new message summary showing **all 4 green checkmarks**
 
 ---
 
