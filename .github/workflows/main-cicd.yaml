@@ -5,7 +5,7 @@ name: Cradle-Mobile CI/CD Pipeline
 
 on:
   push:
-    branches: [main]
+    branches: [main, fix-instrumentation-tests]
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -128,7 +128,7 @@ jobs:
       name: Firebase Test Lab
 
       # new update : firebase test lab will now run on every push to main
-      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      if: github.event_name == 'push' && github.ref == 'refs/heads/fix-instrumentation-tests'
       runs-on: [self-hosted, docker]
       container:
         image: sahilmodak/cradle-mobile
