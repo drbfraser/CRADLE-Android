@@ -129,7 +129,9 @@ jobs:
 
       # This job is not running because it hasn't been set up properly.
       # It should be run regularly.
-      if: false
+
+      # new update : firebase test lab will now run on every push to main
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       runs-on: [self-hosted, docker]
       container:
         image: sahilmodak/cradle-mobile
@@ -157,6 +159,10 @@ jobs:
       # and 10 test runs with virtual devices. See https://firebase.google.com/docs/test-lab/usage-quotas-pricing
       # The quotas reset at midnight PST.
       # Also, this is a space-separated list!
+
+      # the minimum supported android version is 24. hence devices need to have a higher version than that.
+
+      # the device flag needs to be used while running the actual test.
       strategy: 
         matrix:
           device: 
@@ -164,8 +170,6 @@ jobs:
               version: "26"
             - model: "Pixel2"
               version: "28"
-            - model: "hwALE-H"
-              version: "21"
       env:
         GCLOUD_SERVICE_ACCOUNT_KEY: ${{ secrets.GCLOUD_SERVICE_ACCOUNT_KEY }}
         GCLOUD_SDK_VERSION: 336.0.0
@@ -197,7 +201,7 @@ jobs:
           working-directory: ${{ env.CUSTOM_WORKSPACE }}
         - name: Run Firebase Test Lab
           run: |
-            device_option="${{ matrix.device.model }}=${{ matrix.device.version }}"
+            device_option="model=${{ matrix.device.model }}, version=${{ matrix.device.version }}"
             ./google-cloud-sdk/bin/gcloud firebase test android run \
               --type instrumentation \
               --app app/build/outputs/apk/debug/app-debug.apk \
