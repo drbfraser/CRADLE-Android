@@ -180,7 +180,7 @@ jobs:
             path: ${{ env.CUSTOM_WORKSPACE }}
         - name: Install Google Cloud SDK
           run: |
-            apt-get install -y tar
+            yum install -y tar jq
             if [ ! -f "google-cloud-sdk-${GCLOUD_SDK_VERSION}-linux-x86_64.tar.gz" ]; then
               curl -O "https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${GCLOUD_SDK_VERSION}-linux-x86_64.tar.gz"
             fi
