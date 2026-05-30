@@ -163,6 +163,9 @@ jobs:
       # the minimum supported android version is 24. hence devices need to have a higher version than that.
 
       # the device flag needs to be used while running the actual test.
+
+      # target_devices was set as an env but it was never actually used since the tests constructs its
+      # own device_option varible.
       strategy: 
         matrix:
           device: 
@@ -173,7 +176,6 @@ jobs:
       env:
         GCLOUD_SERVICE_ACCOUNT_KEY: ${{ secrets.GCLOUD_SERVICE_ACCOUNT_KEY }}
         GCLOUD_SDK_VERSION: 336.0.0
-        TARGET_DEVICES: ${{ matrix.device.model }}=Pixel2,${{ matrix.device.version }}
       steps: 
         - name: Checkout repository into Container
           uses: bfraser/cicd/actions/checkout@v1
@@ -194,7 +196,7 @@ jobs:
             ./google-cloud-sdk/bin/gcloud auth activate-service-account "$account" --key-file=cradle-vsa-gitlab.json --project="$project_id"
           working-directory: ${{ env.CUSTOM_WORKSPACE }}
         - name: Show Available Test Models
-          run: /google-cloud-sdk/bin/gcloud firebase test android models list
+          run: ./google-cloud-sdk/bin/gcloud firebase test android models list
           working-directory: ${{ env.CUSTOM_WORKSPACE }}
         - name: Assemble Debug APK
           run: ./gradlew :app:assembleDebug :app:assembleDebugAndroidTest
@@ -221,6 +223,6 @@ jobs:
             device_result_dir="${{ matrix.device.model }}-${{ matrix.device.version }}"
             mkdir -p "gcstestresults/${device_result_dir}"
             fullpath="${gcs_bucket_path}/${device_result_dir}/**/test*.xml"
-            ./google-cloud-sdk/bin/gsutil cp "$fullpath" "
+            ./google-cloud-sdk/bin/gsutil cp "$fullpath" "gcstestresults/${device_result_dir}/""
           working-directory: ${{ env.CUSTOM_WORKSPACE }}
           
