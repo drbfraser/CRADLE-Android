@@ -127,9 +127,6 @@ jobs:
   firebase_test_lab:
       name: Firebase Test Lab
 
-      # This job is not running because it hasn't been set up properly.
-      # It should be run regularly.
-
       # new update : firebase test lab will now run on every push to main
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       runs-on: [self-hosted, docker]
@@ -203,7 +200,7 @@ jobs:
           working-directory: ${{ env.CUSTOM_WORKSPACE }}
         - name: Run Firebase Test Lab
           run: |
-            device_option="model=${{ matrix.device.model }}, version=${{ matrix.device.version }}"
+            device_option="model=${{ matrix.device.model }},version=${{ matrix.device.version }}"
             ./google-cloud-sdk/bin/gcloud firebase test android run \
               --type instrumentation \
               --app app/build/outputs/apk/debug/app-debug.apk \
@@ -223,6 +220,6 @@ jobs:
             device_result_dir="${{ matrix.device.model }}-${{ matrix.device.version }}"
             mkdir -p "gcstestresults/${device_result_dir}"
             fullpath="${gcs_bucket_path}/${device_result_dir}/**/test*.xml"
-            ./google-cloud-sdk/bin/gsutil cp "$fullpath" "gcstestresults/${device_result_dir}/""
+            ./google-cloud-sdk/bin/gsutil cp "$fullpath" "gcstestresults/${device_result_dir}/"
           working-directory: ${{ env.CUSTOM_WORKSPACE }}
           
