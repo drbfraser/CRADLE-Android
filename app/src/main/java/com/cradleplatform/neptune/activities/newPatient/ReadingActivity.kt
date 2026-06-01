@@ -6,6 +6,8 @@ import android.content.SharedPreferences
 import android.content.res.Resources
 import android.os.Bundle
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.widget.Button
 import android.widget.Toast
@@ -51,6 +53,7 @@ class ReadingActivity : AppCompatActivity(), ReferralDialogFragment.OnReadingSen
     private var nextButtonJob: Job? = null
 
     private var binding: ActivityReadingBinding? = null
+    private var networkStatusItem: MenuItem? = null
 
     // ViewModel shared by all Fragments.
     private val viewModel: PatientReadingViewModel by viewModels()
@@ -76,6 +79,18 @@ class ReadingActivity : AppCompatActivity(), ReferralDialogFragment.OnReadingSen
             }
     }
 
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.menu_reading, menu)
+        networkStatusItem = menu.findItem(R.id.action_network_status)
+        viewModel.isNetworkAvailable.value?.let { updateNetworkStatusIcon(it) }
+        return true
+    }
+
+    private fun updateNetworkStatusIcon(isConnected: Boolean) {
+        networkStatusItem?.setIcon(if (isConnected) R.drawable.ic_wifi_on else R.drawable.ic_wifi_off)
+        networkStatusItem?.title = getString(if (isConnected) R.string.status_online else R.string.status_offline)
+    }
+
     override fun onResume() {
         Log.d(TAG, "$TAG::onResume()")
         super.onResume()
@@ -97,6 +112,8 @@ class ReadingActivity : AppCompatActivity(), ReferralDialogFragment.OnReadingSen
 
         val toolbar = findViewById<Toolbar>(R.id.toolbar3)
         setSupportActionBar(toolbar)
+
+        viewModel.isNetworkAvailable.observe(this) { updateNetworkStatusIcon(it) }
 
         setUpNavController()
     }

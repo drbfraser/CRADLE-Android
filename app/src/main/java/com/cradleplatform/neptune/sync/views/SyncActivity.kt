@@ -2,6 +2,8 @@ package com.cradleplatform.neptune.sync.views
 
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.widget.Button
 import android.widget.ProgressBar
@@ -26,6 +28,7 @@ class SyncActivity : AppCompatActivity() {
     private val viewModel: SyncViewModel by viewModels()
 
     private var binding: ActivitySyncBinding? = null
+    private var networkStatusItem: MenuItem? = null
 
     // Track if this is the initial network observation to avoid showing toast on rotation
     private var isInitialNetworkObservation = true
@@ -75,9 +78,22 @@ class SyncActivity : AppCompatActivity() {
         }
     }
 
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.menu_sync, menu)
+        networkStatusItem = menu.findItem(R.id.action_network_status)
+        viewModel.isConnectedToInternet.value?.let { updateNetworkStatusIcon(it) }
+        return true
+    }
+
+    private fun updateNetworkStatusIcon(isConnected: Boolean) {
+        networkStatusItem?.setIcon(if (isConnected) R.drawable.ic_wifi_on else R.drawable.ic_wifi_off)
+        networkStatusItem?.title = getString(if (isConnected) R.string.status_online else R.string.status_offline)
+    }
+
     private fun setupNetworkObserver() {
         // Only show toast when network state actually changes, not on initial observation or rotation
         viewModel.isConnectedToInternet.observe(this) { isConnected ->
+            updateNetworkStatusIcon(isConnected)
             if (isInitialNetworkObservation) {
                 // Skip the first observation (on activity creation/rotation)
                 isInitialNetworkObservation = false

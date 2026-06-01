@@ -3,6 +3,12 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.cradleplatform.neptune.activities.newPatient.ReadingActivity">
     <item
+        android:id="@+id/action_network_status"
+        android:icon="@drawable/ic_wifi_on"
+        android:orderInCategory="90"
+        android:title="@string/status_online"
+        app:showAsAction="always" />
+    <item
         android:id="@+id/action_save"
         android:orderInCategory="100"
         android:title="@string/save"
