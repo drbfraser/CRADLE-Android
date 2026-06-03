@@ -223,6 +223,7 @@ jobs:
           working-directory: ${{ env.CUSTOM_WORKSPACE }}
         - name: Download Test Results
           run: |
+            mkdir -p /tmp/gcloud-config
             gcs_bucket=$(sed -ne "s/^Raw results will be stored in your GCS bucket at \[https:\/\/console\.developers\.google\.com\/storage\/browser\/\(.*\)\]$/\1/p" output.log)
             gcs_bucket_path="gs://$gcs_bucket"
             device_result_dir="${{ matrix.device.model }}-${{ matrix.device.version }}"
