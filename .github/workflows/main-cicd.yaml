@@ -178,6 +178,7 @@ jobs:
         GCLOUD_SERVICE_ACCOUNT_KEY: ${{ secrets.GCLOUD_SERVICE_ACCOUNT_KEY }}
         GCLOUD_SDK_VERSION: 336.0.0
         CLOUDSDK_CONFIG: /tmp/gcloud-config
+        HOME: /tmp
       steps: 
         - name: Checkout repository into Container
           uses: bfraser/cicd/actions/checkout@v1
