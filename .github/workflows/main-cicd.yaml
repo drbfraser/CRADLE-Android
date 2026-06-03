@@ -224,12 +224,15 @@ jobs:
           working-directory: ${{ env.CUSTOM_WORKSPACE }}
         - name: Download Test Results
           run: |
-            mkdir -p /tmp/gcloud-config
             gcs_bucket=$(sed -ne "s/^Raw results will be stored in your GCS bucket at \[https:\/\/console\.developers\.google\.com\/storage\/browser\/\(.*\)\]$/\1/p" output.log)
-            gcs_bucket_path="gs://$gcs_bucket"
+            gcs_bucket_path="gs://${gcs_bucket%/}"
             device_result_dir="${{ matrix.device.model }}-${{ matrix.device.version }}"
             mkdir -p "gcstestresults/${device_result_dir}"
-            fullpath="${gcs_bucket_path}/${device_result_dir}/**/test*.xml"
-            ./google-cloud-sdk/bin/gsutil cp "$fullpath" "gcstestresults/${device_result_dir}/"
+            ./google-cloud-sdk/bin/gsutil -m cp -r "${gcs_bucket_path}" "gcstestresults/${device_result_dir}/"
           working-directory: ${{ env.CUSTOM_WORKSPACE }}
+        - name: Upload Test Results
+          uses: actions/upload-artifact@v2
+          with:
+            name: instrumentation-test-results-${{ matrix.device.model }}-${{ matrix.device.version }}
+            path: ${{ env.CUSTOM_WORKSPACE }}/gcstestresults/
           
