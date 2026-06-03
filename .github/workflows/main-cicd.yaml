@@ -123,7 +123,6 @@ jobs:
 # https://console.cloud.google.com/iam-admin/serviceaccounts?project=cradle-vsa&supportedpurview=project.
 #
 # More references: https://firebase.google.com/docs/test-lab/android/continuous
-# commit just to check if tests are working
 
   firebase_test_lab:
       name: Firebase Test Lab
@@ -164,6 +163,10 @@ jobs:
 
       # target_devices was set as an env but it was never actually used since the tests constructs its
       # own device_option varible.
+
+      # because of no permission to write, cloudsdk_config needs to be set to dir with write permissions.
+      # link provided of the official documentation
+      # https://cloud.google.com/sdk/docs/properties#setting_properties_via_environment_variables
       strategy: 
         matrix:
           device: 
@@ -174,6 +177,7 @@ jobs:
       env:
         GCLOUD_SERVICE_ACCOUNT_KEY: ${{ secrets.GCLOUD_SERVICE_ACCOUNT_KEY }}
         GCLOUD_SDK_VERSION: 336.0.0
+        CLOUDSDK_CONFIG: /tmp/gcloud-config
       steps: 
         - name: Checkout repository into Container
           uses: bfraser/cicd/actions/checkout@v1
