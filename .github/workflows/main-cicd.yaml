@@ -170,9 +170,9 @@ jobs:
       strategy: 
         matrix:
           device: 
-            - model: "Pixel2"
+            - model: "Pixel2.arm"
               version: "26"
-            - model: "Pixel2"
+            - model: "Pixel2.arm"
               version: "28"
       env:
         GCLOUD_SERVICE_ACCOUNT_KEY: ${{ secrets.GCLOUD_SERVICE_ACCOUNT_KEY }}
