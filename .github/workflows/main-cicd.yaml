@@ -123,6 +123,7 @@ jobs:
 # https://console.cloud.google.com/iam-admin/serviceaccounts?project=cradle-vsa&supportedpurview=project.
 #
 # More references: https://firebase.google.com/docs/test-lab/android/continuous
+# commit just to check if tests are working
 
   firebase_test_lab:
       name: Firebase Test Lab
