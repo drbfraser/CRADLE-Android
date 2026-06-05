@@ -5,6 +5,8 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.Button
 import android.widget.Toast
 import androidx.activity.viewModels
@@ -50,6 +52,8 @@ open class PatientReferralActivity : AppCompatActivity() {
 
     private var binding: ActivityReferralBinding? = null
 
+    private var networkStatusItem: MenuItem? = null
+
     private val dataBindingComponent: DataBindingComponent = FragmentDataBindingComponent()
 
     private var triedSendingViaSms = false
@@ -85,6 +89,20 @@ open class PatientReferralActivity : AppCompatActivity() {
 
         setupToolBar()
         setupSendButtons()
+
+        viewModel.isNetworkAvailable.observe(this) { updateNetworkStatusIcon(it) }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.menu_referral, menu)
+        networkStatusItem = menu.findItem(R.id.action_network_status)
+        viewModel.isNetworkAvailable.value?.let { updateNetworkStatusIcon(it) }
+        return true
+    }
+
+    private fun updateNetworkStatusIcon(isConnected: Boolean) {
+        networkStatusItem?.setIcon(if (isConnected) R.drawable.ic_wifi_on else R.drawable.ic_wifi_off)
+        networkStatusItem?.title = getString(if (isConnected) R.string.status_online else R.string.status_offline)
     }
 
     override fun onSupportNavigateUp(): Boolean {

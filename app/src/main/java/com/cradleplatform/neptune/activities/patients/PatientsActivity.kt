@@ -31,7 +31,6 @@ import com.cradleplatform.neptune.viewmodel.patients.PatientListViewModel
 import com.cradleplatform.neptune.sync.SyncReminderHelper
 import com.cradleplatform.neptune.sync.views.SyncActivity
 import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager
-import com.cradleplatform.neptune.utilities.connectivity.api24.displayConnectivityToast
 import com.google.android.material.badge.BadgeDrawable
 import com.google.android.material.badge.BadgeUtils
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
@@ -62,6 +61,7 @@ class PatientsActivity : AppCompatActivity() {
 
     private var menu: Menu? = null
     private var toolbar: Toolbar? = null
+    private var networkStatusItem: MenuItem? = null
 
     @Inject
     lateinit var sharedPreferences: SharedPreferences
@@ -86,6 +86,7 @@ class PatientsActivity : AppCompatActivity() {
         padRecyclerView()
         setUpSearchPatientAdapter()
         setUpSupportActionBar()
+        setupNetworkObserver()
 
         onBackPressedDispatcher.addCallback(this, closeSearchViewCallback)
 
@@ -115,7 +116,23 @@ class PatientsActivity : AppCompatActivity() {
         setUpSearchBar()
         checkLastSyncTimeAndUpdateSyncIcon()
 
+        networkStatusItem = menu.findItem(R.id.action_network_status)
+        networkStateManager.getInternetConnectivityStatus().value?.let {
+            updateNetworkStatusIcon(it)
+        }
+
         return true
+    }
+
+    private fun updateNetworkStatusIcon(isConnected: Boolean) {
+        networkStatusItem?.setIcon(if (isConnected) R.drawable.ic_wifi_on else R.drawable.ic_wifi_off)
+        networkStatusItem?.title = getString(if (isConnected) R.string.status_online else R.string.status_offline)
+    }
+
+    private fun setupNetworkObserver() {
+        networkStateManager.getInternetConnectivityStatus().observe(this) { isConnected ->
+            updateNetworkStatusIcon(isConnected)
+        }
     }
 
     override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
@@ -123,10 +140,8 @@ class PatientsActivity : AppCompatActivity() {
             true
         }
 
-        R.id.syncPatients -> {
-            displayConnectivityToast(this, networkStateManager) {
-                startActivity(Intent(this, SyncActivity::class.java))
-            }
+        R.id.action_network_status -> {
+            startActivity(Intent(this, SyncActivity::class.java))
             true
         }
         else -> {
@@ -343,7 +358,7 @@ class PatientsActivity : AppCompatActivity() {
             )!!
         )
 
-        val menuItem: MenuItem = menu!!.findItem(R.id.syncPatients)
+        val menuItem: MenuItem = menu!!.findItem(R.id.action_network_status)
         val badge = BadgeDrawable.create(this)
 
         val test = resources.getInteger(R.integer.settings_default_sync_period_hours)
