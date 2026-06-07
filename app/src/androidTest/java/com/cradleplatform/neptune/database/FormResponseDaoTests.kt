@@ -147,7 +147,7 @@ class FormResponseDaoTests {
         )
     }
 
-        private fun createFormResponse(saveAsDraft: Boolean = false): FormResponse {
+    private fun createFormResponse(saveAsDraft: Boolean = false): FormResponse {
         val template = createTestFormTemplate()
         val answers = mapOf(
             "q1" to Answer.createTextAnswer("firstName lastName"),
@@ -218,6 +218,48 @@ class FormResponseDaoTests {
             db.formResponseDao().deleteById(id)
 
             assertNull(db.formResponseDao().getFormResponseById(id))
+        }
+    }
+
+    /**
+     * test that inserts multiple form responses into the db and then deletes all
+     * and uses the get all method to make sure that they are all deleted 
+     */
+
+    @Test
+    fun formResponseDaoDeleteAllSubmittedForms() {
+        runBlocking {
+            val db = getDatabase()
+            db.patientDao().insert(createTestPatient())
+            db.formResponseDao().insert(createFormResponse(saveAsDraft = true))
+            db.formResponseDao().insert(createFormResponse(saveAsDraft = false))
+
+            assertEquals(2, db.formResponseDao().getAllFormResponses().size)
+
+            db.formResponseDao().deleteAllSubmittedForms()
+
+            val remaining = db.formResponseDao().getAllFormResponses()
+            assertEquals(1, remaining.size)
+            assertTrue(remaining.first().saveResponseToSendLater)
+        }
+    }
+
+    /**
+     * test that inserts a form response into the db and then deletes the patient that it is associated with
+     * then tests that the form response can no longer be retrieved since it should have been deleted
+     */
+    @Test
+    fun formResponseDaoDeleteWithPatient() {
+        runBlocking {
+            val db = getDatabase()
+            db.patientDao().insert(createTestPatient())
+            db.formResponseDao().insert(createFormResponse())
+
+            assertEquals(1, db.formResponseDao().getAllFormResponses().size)
+
+            db.patientDao().deleteById(PATIENT_ID)
+
+            assertEquals(0, db.formResponseDao().getAllFormResponses().size)
         }
     }
 }
