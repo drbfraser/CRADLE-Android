@@ -146,4 +146,78 @@ class FormResponseDaoTests {
             questions = listOf(textQuestion, mcQuestion)
         )
     }
+
+        private fun createFormResponse(saveAsDraft: Boolean = false): FormResponse {
+        val template = createTestFormTemplate()
+        val answers = mapOf(
+            "q1" to Answer.createTextAnswer("firstName lastName"),
+            "q2" to Answer.createMcAnswer(listOf(0, 2))
+        )
+        return FormResponse(
+            patientId = PATIENT_ID,
+            formTemplate = template,
+            language = "english",
+            answers = answers,
+            saveResponseToSendLater = saveAsDraft
+        )
+    }
+    /**
+     * test that intersts a form reponse into the db and then tests 
+     * if it can be retrieved by its id and makes sure it is accurate
+     * also tests by getting all the form responses and making sure the inserted one is there
+     */
+    @Test
+    fun formResponseDaoInsertAndRetrieveById() {
+        runBlocking {
+            val db = getDatabase()
+            db.patientDao().insert(createTestPatient())
+            db.formResponseDao().insert(createFormResponse())
+
+            val all = db.formResponseDao().getAllFormResponses()
+            assertEquals(1, all.size)
+
+            val retrieved = db.formResponseDao().getFormResponseById(all[0].formResponseId)
+            assertNotNull(retrieved)
+            assertEquals(PATIENT_ID, retrieved?.patientId)
+        }
+    }
+
+    /**
+     * test that inserts a form reponse into the db and then tests it it can be
+     * retrieved by using the patien id and makes sure that it is accurate 
+     * also tests by getting all the form responses for that patient and making sure the inserted one is there
+     */
+    @Test
+    fun formResponseDaoRetrieveByPatientId() {
+        runBlocking {
+            val db = getDatabase()
+            db.patientDao().insert(createTestPatient())
+            db.formResponseDao().insert(createFormResponse())
+
+            val responses = db.formResponseDao().getAllFormResponseByPatientId(PATIENT_ID)
+            assertEquals(1, responses?.size)
+            assertEquals(PATIENT_ID, responses?.first()?.patientId)
+        }
+    }
+
+    /**
+     * test that inserts a form reponse into the db and then deletes it by its id
+     * then tests that it can no longer be retrieved
+     */
+    @Test
+    fun formResponseDaoDeleteById() {
+        runBlocking {
+            val db = getDatabase()
+            db.patientDao().insert(createTestPatient())
+            db.formResponseDao().insert(createFormResponse())
+
+            val all = db.formResponseDao().getAllFormResponses()
+            assertEquals(1, all.size)
+
+            val id = all.first().formResponseId
+            db.formResponseDao().deleteById(id)
+
+            assertNull(db.formResponseDao().getFormResponseById(id))
+        }
+    }
 }
