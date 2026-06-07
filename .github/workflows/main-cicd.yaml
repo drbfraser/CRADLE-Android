@@ -234,5 +234,7 @@ jobs:
           uses: actions/upload-artifact@v2
           with:
             name: instrumentation-test-results-${{ matrix.device.model }}-${{ matrix.device.version }}
-            path: ${{ env.CUSTOM_WORKSPACE }}/gcstestresults/
+            path: |
+              ${{ env.CUSTOM_WORKSPACE }}/gcstestresults/**/*.xml
+            if-no-files-found: warn
           
