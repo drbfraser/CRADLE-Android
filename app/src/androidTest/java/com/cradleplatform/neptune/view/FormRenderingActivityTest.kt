@@ -27,6 +27,7 @@ import com.cradleplatform.neptune.model.VisibleCondition
 import com.cradleplatform.neptune.activities.dashboard.DashBoardActivity
 import com.cradleplatform.neptune.activities.forms.FormRenderingActivity
 import com.cradleplatform.neptune.testutils.rules.GrantRuntimePermissionsRule
+import com.cradleplatform.neptune.testutils.rules.WorkManagerRule
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import org.hamcrest.Matchers.equalToIgnoringCase
@@ -42,9 +43,12 @@ class FormRenderingActivityTest{
     var hiltRule = HiltAndroidRule(this)
 
     @get:Rule(order = 1)
-    var activityScenarioRule = activityScenarioRule<DashBoardActivity>()
+    var workManagerRule = WorkManagerRule()
 
     @get:Rule(order = 2)
+    var activityScenarioRule = activityScenarioRule<DashBoardActivity>()
+
+    @get:Rule(order = 3)
     var grantPermissionRule = GrantRuntimePermissionsRule()
 
     // Takes a list of questions and starts the forms activity with those questions.

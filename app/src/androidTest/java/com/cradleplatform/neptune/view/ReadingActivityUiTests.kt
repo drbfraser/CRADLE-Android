@@ -34,6 +34,7 @@ import com.cradleplatform.neptune.utilities.UnixTimestamp
 import com.cradleplatform.neptune.activities.newPatient.ReadingActivity
 import com.cradleplatform.neptune.activities.patients.PatientsActivity
 import com.cradleplatform.neptune.testutils.rules.GrantRuntimePermissionsRule
+import com.cradleplatform.neptune.testutils.rules.WorkManagerRule
 import com.jakewharton.threetenabp.AndroidThreeTen
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -65,9 +66,12 @@ class ReadingActivityUiTests {
 
     // https://developer.android.com/guide/components/activities/testing
     @get:Rule(order = 1)
-    var activityScenarioRule = activityScenarioRule<ReadingActivity>(intent)
+    var workManagerRule = WorkManagerRule()
 
     @get:Rule(order = 2)
+    var activityScenarioRule = activityScenarioRule<ReadingActivity>(intent)
+
+    @get:Rule(order = 3)
     var grantPermissionRule = GrantRuntimePermissionsRule()
 
     private lateinit var idlingResource: IdlingResource
