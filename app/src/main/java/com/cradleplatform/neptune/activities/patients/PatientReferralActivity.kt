@@ -6,7 +6,6 @@ import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
-import android.view.MenuItem
 import android.widget.Button
 import android.widget.Toast
 import androidx.activity.viewModels
@@ -22,6 +21,8 @@ import com.cradleplatform.neptune.http_sms_service.sms.ui.SmsTransmissionDialogF
 import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.manager.ReferralUploadManager
 import com.cradleplatform.neptune.model.Patient
+import com.cradleplatform.neptune.sync.SyncStatusManager
+import com.cradleplatform.neptune.sync.bindSyncStatusIndicator
 import com.cradleplatform.neptune.utilities.CustomToast
 import com.cradleplatform.neptune.utilities.Protocol
 import com.cradleplatform.neptune.utilities.makeErrorSnackbar
@@ -46,13 +47,14 @@ open class PatientReferralActivity : AppCompatActivity() {
     @Inject
     lateinit var smsStateReporter: SmsStateReporter
 
+    @Inject
+    lateinit var syncStatusManager: SyncStatusManager
+
     private lateinit var currPatient: Patient
 
     private val viewModel: PatientReferralViewModel by viewModels()
 
     private var binding: ActivityReferralBinding? = null
-
-    private var networkStatusItem: MenuItem? = null
 
     private val dataBindingComponent: DataBindingComponent = FragmentDataBindingComponent()
 
@@ -89,20 +91,12 @@ open class PatientReferralActivity : AppCompatActivity() {
 
         setupToolBar()
         setupSendButtons()
-
-        viewModel.isNetworkAvailable.observe(this) { updateNetworkStatusIcon(it) }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_referral, menu)
-        networkStatusItem = menu.findItem(R.id.action_network_status)
-        viewModel.isNetworkAvailable.value?.let { updateNetworkStatusIcon(it) }
+        bindSyncStatusIndicator(syncStatusManager, menu.findItem(R.id.action_network_status))
         return true
-    }
-
-    private fun updateNetworkStatusIcon(isConnected: Boolean) {
-        networkStatusItem?.setIcon(if (isConnected) R.drawable.ic_wifi_on else R.drawable.ic_wifi_off)
-        networkStatusItem?.title = getString(if (isConnected) R.string.status_online else R.string.status_offline)
     }
 
     override fun onSupportNavigateUp(): Boolean {

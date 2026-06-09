@@ -13,6 +13,8 @@ import androidx.appcompat.app.AppCompatActivity
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.databinding.ActivityDashBoardBinding
 import com.cradleplatform.neptune.sync.SyncReminderHelper
+import com.cradleplatform.neptune.sync.SyncStatusManager
+import com.cradleplatform.neptune.sync.bindSyncStatusIndicator
 import com.cradleplatform.neptune.sync.views.SyncActivity
 import com.cradleplatform.neptune.utilities.CustomToast
 import com.cradleplatform.neptune.utilities.Util
@@ -32,10 +34,12 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
 
     private lateinit var binding: ActivityDashBoardBinding
     private val viewModel: DashboardViewModel by viewModels()
-    private var networkStatusItem: MenuItem? = null
 
     @Inject
     lateinit var sharedPreferences: SharedPreferences
+
+    @Inject
+    lateinit var syncStatusManager: SyncStatusManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -63,7 +67,6 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
         // Observe network state for enabling/disabling statistics
         viewModel.isNetworkAvailable.observe(this) { isAvailable ->
             updateStatisticsCardState(isAvailable)
-            updateNetworkStatusIcon(isAvailable)
         }
 
         // Observe SMS key update results
@@ -75,11 +78,6 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
         viewModel.newPhoneNumber.observe(this) { newNumber ->
             newNumber?.let { showPhoneChangedDialog(it) }
         }
-    }
-
-    private fun updateNetworkStatusIcon(isConnected: Boolean) {
-        networkStatusItem?.setIcon(if (isConnected) R.drawable.ic_wifi_on else R.drawable.ic_wifi_off)
-        networkStatusItem?.title = getString(if (isConnected) R.string.status_online else R.string.status_offline)
     }
 
     private fun updateStatisticsCardState(isNetworkAvailable: Boolean) {
@@ -216,8 +214,7 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.menu_main, menu)
-        networkStatusItem = menu.findItem(R.id.action_network_status)
-        viewModel.isNetworkAvailable.value?.let { updateNetworkStatusIcon(it) }
+        bindSyncStatusIndicator(syncStatusManager, menu.findItem(R.id.action_network_status))
         return true
     }
 

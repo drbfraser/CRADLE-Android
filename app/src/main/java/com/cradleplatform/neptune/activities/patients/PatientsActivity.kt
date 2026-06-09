@@ -29,8 +29,9 @@ import com.cradleplatform.neptune.sync.workers.SyncAllWorker
 import com.cradleplatform.neptune.adapters.patients.LocalSearchPatientAdapter
 import com.cradleplatform.neptune.viewmodel.patients.PatientListViewModel
 import com.cradleplatform.neptune.sync.SyncReminderHelper
+import com.cradleplatform.neptune.sync.SyncStatusManager
+import com.cradleplatform.neptune.sync.bindSyncStatusIndicator
 import com.cradleplatform.neptune.sync.views.SyncActivity
-import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager
 import com.google.android.material.badge.BadgeDrawable
 import com.google.android.material.badge.BadgeUtils
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
@@ -61,7 +62,6 @@ class PatientsActivity : AppCompatActivity() {
 
     private var menu: Menu? = null
     private var toolbar: Toolbar? = null
-    private var networkStatusItem: MenuItem? = null
 
     @Inject
     lateinit var sharedPreferences: SharedPreferences
@@ -71,8 +71,9 @@ class PatientsActivity : AppCompatActivity() {
 
     @Inject
     lateinit var patientManager: PatientManager
+
     @Inject
-    lateinit var networkStateManager: NetworkStateManager
+    lateinit var syncStatusManager: SyncStatusManager
 
     private lateinit var patientRecyclerview: RecyclerView
     private val localSearchPatientAdapter = LocalSearchPatientAdapter()
@@ -86,7 +87,6 @@ class PatientsActivity : AppCompatActivity() {
         padRecyclerView()
         setUpSearchPatientAdapter()
         setUpSupportActionBar()
-        setupNetworkObserver()
 
         onBackPressedDispatcher.addCallback(this, closeSearchViewCallback)
 
@@ -116,23 +116,9 @@ class PatientsActivity : AppCompatActivity() {
         setUpSearchBar()
         checkLastSyncTimeAndUpdateSyncIcon()
 
-        networkStatusItem = menu.findItem(R.id.action_network_status)
-        networkStateManager.getInternetConnectivityStatus().value?.let {
-            updateNetworkStatusIcon(it)
-        }
+        bindSyncStatusIndicator(syncStatusManager, menu.findItem(R.id.action_network_status))
 
         return true
-    }
-
-    private fun updateNetworkStatusIcon(isConnected: Boolean) {
-        networkStatusItem?.setIcon(if (isConnected) R.drawable.ic_wifi_on else R.drawable.ic_wifi_off)
-        networkStatusItem?.title = getString(if (isConnected) R.string.status_online else R.string.status_offline)
-    }
-
-    private fun setupNetworkObserver() {
-        networkStateManager.getInternetConnectivityStatus().observe(this) { isConnected ->
-            updateNetworkStatusIcon(isConnected)
-        }
     }
 
     override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {

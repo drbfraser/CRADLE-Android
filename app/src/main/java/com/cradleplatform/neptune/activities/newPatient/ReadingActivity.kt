@@ -7,7 +7,6 @@ import android.content.res.Resources
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
-import android.view.MenuItem
 import android.view.View
 import android.widget.Button
 import android.widget.Toast
@@ -33,6 +32,8 @@ import com.cradleplatform.neptune.ext.hideKeyboard
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.http_sms_service.sms.SmsStateReporter
 import com.cradleplatform.neptune.manager.SmsKeyManager
+import com.cradleplatform.neptune.sync.SyncStatusManager
+import com.cradleplatform.neptune.sync.bindSyncStatusIndicator
 import com.cradleplatform.neptune.fragments.patients.PatientIdConflictDialogFragment
 import com.cradleplatform.neptune.fragments.newPatient.ReferralDialogFragment
 import com.cradleplatform.neptune.viewmodel.patients.PatientReadingViewModel
@@ -53,13 +54,15 @@ class ReadingActivity : AppCompatActivity(), ReferralDialogFragment.OnReadingSen
     private var nextButtonJob: Job? = null
 
     private var binding: ActivityReadingBinding? = null
-    private var networkStatusItem: MenuItem? = null
 
     // ViewModel shared by all Fragments.
     private val viewModel: PatientReadingViewModel by viewModels()
 
     @Inject
     lateinit var sharedPreferences: SharedPreferences
+
+    @Inject
+    lateinit var syncStatusManager: SyncStatusManager
 
     @Inject
     lateinit var smsKeyManager: SmsKeyManager
@@ -81,14 +84,8 @@ class ReadingActivity : AppCompatActivity(), ReferralDialogFragment.OnReadingSen
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_reading, menu)
-        networkStatusItem = menu.findItem(R.id.action_network_status)
-        viewModel.isNetworkAvailable.value?.let { updateNetworkStatusIcon(it) }
+        bindSyncStatusIndicator(syncStatusManager, menu.findItem(R.id.action_network_status))
         return true
-    }
-
-    private fun updateNetworkStatusIcon(isConnected: Boolean) {
-        networkStatusItem?.setIcon(if (isConnected) R.drawable.ic_wifi_on else R.drawable.ic_wifi_off)
-        networkStatusItem?.title = getString(if (isConnected) R.string.status_online else R.string.status_offline)
     }
 
     override fun onResume() {
@@ -112,8 +109,6 @@ class ReadingActivity : AppCompatActivity(), ReferralDialogFragment.OnReadingSen
 
         val toolbar = findViewById<Toolbar>(R.id.toolbar3)
         setSupportActionBar(toolbar)
-
-        viewModel.isNetworkAvailable.observe(this) { updateNetworkStatusIcon(it) }
 
         setUpNavController()
     }
