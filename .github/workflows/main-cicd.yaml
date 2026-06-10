@@ -229,12 +229,13 @@ jobs:
             device_result_dir="${{ matrix.device.model }}-${{ matrix.device.version }}"
             mkdir -p "gcstestresults/${device_result_dir}"
             ./google-cloud-sdk/bin/gsutil -m cp -r "${gcs_bucket_path}" "gcstestresults/${device_result_dir}/"
+            mkdir -p "/tmp/test-results/${device_result_dir}"
+            find "gcstestresults/${device_result_dir}" -name "*.xml" -exec cp {} "/tmp/test-results/${device_result_dir}/" \;
           working-directory: ${{ env.CUSTOM_WORKSPACE }}
         - name: Upload Test Results
           uses: actions/upload-artifact@v2
           with:
             name: instrumentation-test-results-${{ matrix.device.model }}-${{ matrix.device.version }}
-            path: |
-              ${{ env.CUSTOM_WORKSPACE }}/gcstestresults/**/*.xml
+            path: /tmp/test-results/
             if-no-files-found: warn
           
