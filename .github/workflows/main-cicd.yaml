@@ -5,7 +5,7 @@ name: Cradle-Mobile CI/CD Pipeline
 
 on:
   push:
-    branches: [main, fix-instrumentation-tests]
+    branches: [main]
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -128,7 +128,7 @@ jobs:
       name: Firebase Test Lab
 
       # new update : firebase test lab will now run on every push to main
-      if: github.event_name == 'push' && github.ref == 'refs/heads/fix-instrumentation-tests'
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       runs-on: [self-hosted, docker]
       container:
         image: sahilmodak/cradle-mobile
@@ -213,8 +213,7 @@ jobs:
               --app app/build/outputs/apk/debug/app-debug.apk \
               --test app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk \
               --device="${device_option}" \
-              --test-targets "class com.cradleplatform.neptune.database.DaoTests" \
-              --verbosity=debug \
+              --test-targets "class com.cradleplatform.neptune.database.DaoTests,class com.cradleplatform.neptune.database.FormResponseDaoTests" \
               2>&1 | tee output.log
             result=${PIPESTATUS[0]}
             if [ $result -ne 0 ]; then
