@@ -105,7 +105,7 @@ jobs:
         run: ./gradlew test
         working-directory: ${{ env.CUSTOM_WORKSPACE }}
       - name: Persist Test Results
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with: 
           name: test_results
           path: ${{ env.CUSTOM_WORKSPACE }}/app/build/test-results/
@@ -127,8 +127,8 @@ jobs:
   firebase_test_lab:
       name: Firebase Test Lab
 
-      # new update : firebase test lab will now run on every push to main
-      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      # Firebase Test Lab runs on every push to main and on pull requests targeting main
+      if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'pull_request'
       runs-on: [self-hosted, docker]
       container:
         image: sahilmodak/cradle-mobile
@@ -162,7 +162,7 @@ jobs:
       # the device flag needs to be used while running the actual test.
 
       # target_devices was set as an env but it was never actually used since the tests constructs its
-      # own device_option varible.
+      # own device_option variable.
 
       # because of no permission to write, cloudsdk_config needs to be set to dir with write permissions.
       # link provided of the official documentation
@@ -232,7 +232,7 @@ jobs:
             find "gcstestresults/${device_result_dir}" -name "*.xml" -exec cp {} "/tmp/test-results/${device_result_dir}/" \;
           working-directory: ${{ env.CUSTOM_WORKSPACE }}
         - name: Upload Test Results
-          uses: actions/upload-artifact@v2
+          uses: actions/upload-artifact@v4
           with:
             name: instrumentation-test-results-${{ matrix.device.model }}-${{ matrix.device.version }}
             path: /tmp/test-results/
