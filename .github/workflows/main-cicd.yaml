@@ -105,7 +105,7 @@ jobs:
         run: ./gradlew test
         working-directory: ${{ env.CUSTOM_WORKSPACE }}
       - name: Persist Test Results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v2
         with: 
           name: test_results
           path: ${{ env.CUSTOM_WORKSPACE }}/app/build/test-results/
@@ -232,7 +232,7 @@ jobs:
             find "gcstestresults/${device_result_dir}" -name "*.xml" -exec cp {} "/tmp/test-results/${device_result_dir}/" \;
           working-directory: ${{ env.CUSTOM_WORKSPACE }}
         - name: Upload Test Results
-          uses: actions/upload-artifact@v4
+          uses: actions/upload-artifact@v2
           with:
             name: instrumentation-test-results-${{ matrix.device.model }}-${{ matrix.device.version }}
             path: /tmp/test-results/
