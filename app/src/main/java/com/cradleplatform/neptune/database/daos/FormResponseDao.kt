@@ -113,15 +113,15 @@ interface FormResponseDao {
     @Query("SELECT * FROM FormResponse")
     fun getAllFormResponses(): List<FormResponse>
 
-    @Query("SELECT * FROM FormResponse WHERE patientId = :patientId AND saveResponseToSendLater = false")
+    @Query("SELECT * FROM FormResponse WHERE patientId = :patientId AND saveResponseToSendLater = 0")
     suspend fun getSubmittedForms(patientId: String): MutableList<FormResponse>
 
-    @Query("SELECT * FROM FormResponse WHERE patientId = :patientId AND saveResponseToSendLater = true")
+    @Query("SELECT * FROM FormResponse WHERE patientId = :patientId AND saveResponseToSendLater = 1")
     suspend fun getDraftForms(patientId: String): MutableList<FormResponse>
 
-    @Query("SELECT * FROM FormResponse WHERE saveResponseToSendLater = true")
+    @Query("SELECT * FROM FormResponse WHERE saveResponseToSendLater = 1")
     suspend fun getAllDraftForms(): MutableList<FormResponse>
 
-    @Query("DELETE FROM FormResponse WHERE saveResponseToSendLater = false")
+    @Query("DELETE FROM FormResponse WHERE saveResponseToSendLater = 0")
     suspend fun deleteAllSubmittedForms()
 }
