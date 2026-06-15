@@ -83,20 +83,20 @@ class PatientDaoTests {
         runBlocking {
             val db = getDatabase()
             val patient = createTestPatient()
-            db.patientDao().insertPatient(patient)
+            db.patientDao().insert(patient)
             val retrievedPatient = db.patientDao().getPatientById(PATIENT_ID)
             assertNotNull(retrievedPatient)
-            assertEquals(patient.id, retrievedPatient.id)
-            assertEquals(patient.name, retrievedPatient.name)
-            assertEquals(patient.dateOfBirth, retrievedPatient.dateOfBirth)
-            assertEquals(patient.isExactDateOfBirth, retrievedPatient.isExactDateOfBirth)
-            assertEquals(patient.gestationalAge, retrievedPatient.gestationalAge)
-            assertEquals(patient.sex, retrievedPatient.sex)
-            assertEquals(patient.isPregnant, retrievedPatient.isPregnant)
-            assertEquals(patient.zone, retrievedPatient.zone)
-            assertEquals(patient.villageNumber, retrievedPatient.villageNumber)
-            assertEquals(patient.drugHistory, retrievedPatient.drugHistory)
-            assertEquals(patient.medicalHistory, retrievedPatient.medicalHistory)
+            assertEquals(patient.id, retrievedPatient!!.id)
+            assertEquals(patient.name, retrievedPatient!!.name)
+            assertEquals(patient.dateOfBirth, retrievedPatient!!.dateOfBirth)
+            assertEquals(patient.isExactDateOfBirth, retrievedPatient!!.isExactDateOfBirth)
+            assertEquals(patient.gestationalAge, retrievedPatient!!.gestationalAge)
+            assertEquals(patient.sex, retrievedPatient!!.sex)
+            assertEquals(patient.isPregnant, retrievedPatient!!.isPregnant)
+            assertEquals(patient.zone, retrievedPatient!!.zone)
+            assertEquals(patient.villageNumber, retrievedPatient!!.villageNumber)
+            assertEquals(patient.drugHistory, retrievedPatient!!.drugHistory)
+            assertEquals(patient.medicalHistory, retrievedPatient!!.medicalHistory)
         }
     }
 
@@ -129,5 +129,74 @@ class PatientDaoTests {
             val rowIds = db.patientDao().insertAll(patients)
             assertEquals(3, rowIds.size)
             assertEquals(3, db.patientDao().getPatientIdsList().size)
-        }        
+        }       
     }
+
+    /**
+     * test to verify if we are correctly able to update a patient in the db and then fetch that patient to verify db
+     * updates are working as expected. also verifies that the updated patient has the new values and not the old values.
+     */
+    @Test
+    fun patientDaoUpdatePatient(){
+        runBlocking {
+            val db = getDatabase()
+            val patient = createTestPatient()
+            db.patientDao().insert(patient)
+            val updatedPatient = patient.copy().apply { name = "updated name for test"; dateOfBirth = "1999-05-05" }
+            db.patientDao().update(updatedPatient)
+
+            val retrievedPatient = db.patientDao().getPatientById(PATIENT_ID)
+            assertNotNull(retrievedPatient)
+            assertEquals("updated name for test", retrievedPatient!!.name)
+            assertEquals("1999-05-05", retrievedPatient.dateOfBirth)
+            assertNotEquals(patient.name, retrievedPatient.name)
+            assertNotEquals(patient.dateOfBirth, retrievedPatient.dateOfBirth)
+        }
+    }
+
+    /**
+     * test that deletes the patient by id and then tests that it can no longer be retrieved by its id 
+     */
+    @Test
+    fun patientDaoDeletePatientByID(){
+        runBlocking {
+            val db = getDatabase()
+            val patient = createTestPatient()
+            db.patientDao().insert(patient)
+            db.patientDao().deleteById(PATIENT_ID)
+            assertNull(db.patientDao().getPatientById(PATIENT_ID))
+        }
+    }
+
+    /**
+     * test that deletes all the patients in the db and then tests if the list of patient ids is empty after the delete operation
+     * also tests that after inserting multiple patients and then deleting all patients, the list of patient ids is empty
+     */
+    @Test
+    fun patientDaoDeleteAllPatientsInDb(){
+        runBlocking {
+            val db = getDatabase()
+            val patients = listOf(createTestPatient("t1", "Test Patient 1"), createTestPatient("t2", "Test Patient 2"), createTestPatient("t3", "Test Patient 3"))
+            db.patientDao().insertAll(patients)
+            db.patientDao().deleteAllPatients()
+            assertTrue(db.patientDao().getPatientIdsList().isEmpty())
+        }
+    }
+
+    /**
+     * test that inserts a patient, then tests that it can be retrieved by its id and makes sure it is accurate
+     */
+    @Test
+    fun patientDaoUpdateOrInsertIfNotExists(){
+        runBlocking {
+            val db = getDatabase()
+            val patient = createTestPatient()
+            db.patientDao().updateOrInsertIfNotExists(patient)
+            val retrievedPatient = db.patientDao().getPatientById(PATIENT_ID)
+            assertNotNull(retrievedPatient)
+            assertEquals(patient.id, retrievedPatient!!.id)
+            assertEquals(patient.name, retrievedPatient!!.name)
+        }
+    }
+
+}
