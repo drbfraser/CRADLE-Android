@@ -1003,7 +1003,19 @@ class RestApi(
      */
     suspend fun putPatient(patient: Patient, protocol: Protocol): NetworkResult<Unit> =
         withContext(IO) {
-            val body = JacksonMapper.writerForPatient.writeValueAsBytes(patient)
+            val jsonObject = JSONObject()
+            jsonObject.put("id", patient.id)
+            jsonObject.put("name", patient.name)
+            jsonObject.put("sex", patient.sex.name)
+            jsonObject.put("date_of_birth", patient.dateOfBirth)
+            jsonObject.put("is_exact_date_of_birth", patient.isExactDateOfBirth)
+            jsonObject.put("is_pregnant", patient.isPregnant)
+            jsonObject.put("household_number", patient.householdNumber)
+            jsonObject.put("zone", patient.zone)
+            jsonObject.put("village_number", patient.villageNumber)
+            jsonObject.put("is_archived", patient.isArchived)
+            jsonObject.put("allergy", patient.allergy)
+            val body = jsonObject.toString().toByteArray()
             val method = Http.Method.PUT
             val url = urlManager.getPatientInfoOnly(patient.id)
 
