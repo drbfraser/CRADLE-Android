@@ -1043,11 +1043,12 @@ class RestApi(
     ): NetworkResult<Unit> = withContext(IO) {
         val jsonObject = JSONObject()
 
-        if (isDrugRecord) {
-            jsonObject.put("drugHistory", patient.drugHistory)
-        } else {
-            jsonObject.put("medicalHistory", patient.medicalHistory)
-        }
+        jsonObject.put("patient_id", patient.id)
+        jsonObject.put("is_drug_record", isDrugRecord)
+        jsonObject.put(
+            "information",
+            if (isDrugRecord) patient.drugHistory else patient.medicalHistory
+        )
 
         val mediaType = "application/json; charset=utf-8".toMediaType()
         val requestBody = jsonObject.toString().toRequestBody(mediaType)
