@@ -2,6 +2,7 @@ package com.cradleplatform.neptune.sync.views
 
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.view.Menu
 import android.view.View
 import android.widget.Button
 import android.widget.ProgressBar
@@ -13,6 +14,8 @@ import androidx.databinding.DataBindingUtil
 import androidx.work.WorkInfo
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.databinding.ActivitySyncBinding
+import com.cradleplatform.neptune.sync.SyncStatusManager
+import com.cradleplatform.neptune.sync.bindSyncStatusIndicator
 import com.cradleplatform.neptune.sync.views.viewmodels.SyncViewModel
 import com.cradleplatform.neptune.sync.workers.SyncAllWorker
 import com.cradleplatform.neptune.utilities.DateUtil
@@ -33,6 +36,10 @@ class SyncActivity : AppCompatActivity() {
 
     @Inject
     lateinit var sharedPreferences: SharedPreferences
+
+    @Inject
+    lateinit var syncStatusManager: SyncStatusManager
+
     lateinit var notificationManager: NotificationManagerCustom
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -73,6 +80,12 @@ class SyncActivity : AppCompatActivity() {
             syncButton.isEnabled = false
             viewModel.startSyncing()
         }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.menu_sync, menu)
+        bindSyncStatusIndicator(syncStatusManager, menu.findItem(R.id.action_network_status))
+        return true
     }
 
     private fun setupNetworkObserver() {

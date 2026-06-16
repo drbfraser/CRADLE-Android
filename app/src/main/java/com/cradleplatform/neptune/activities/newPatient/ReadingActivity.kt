@@ -6,6 +6,7 @@ import android.content.SharedPreferences
 import android.content.res.Resources
 import android.os.Bundle
 import android.util.Log
+import android.view.Menu
 import android.view.View
 import android.widget.Button
 import android.widget.Toast
@@ -31,6 +32,8 @@ import com.cradleplatform.neptune.ext.hideKeyboard
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.http_sms_service.sms.SmsStateReporter
 import com.cradleplatform.neptune.manager.SmsKeyManager
+import com.cradleplatform.neptune.sync.SyncStatusManager
+import com.cradleplatform.neptune.sync.bindSyncStatusIndicator
 import com.cradleplatform.neptune.fragments.patients.PatientIdConflictDialogFragment
 import com.cradleplatform.neptune.fragments.newPatient.ReferralDialogFragment
 import com.cradleplatform.neptune.viewmodel.patients.PatientReadingViewModel
@@ -59,6 +62,9 @@ class ReadingActivity : AppCompatActivity(), ReferralDialogFragment.OnReadingSen
     lateinit var sharedPreferences: SharedPreferences
 
     @Inject
+    lateinit var syncStatusManager: SyncStatusManager
+
+    @Inject
     lateinit var smsKeyManager: SmsKeyManager
 
     @Inject
@@ -74,6 +80,12 @@ class ReadingActivity : AppCompatActivity(), ReferralDialogFragment.OnReadingSen
             ?: CountingIdlingResource("ReadingActivity").also {
                 viewModel.idlingResource = it
             }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.menu_reading, menu)
+        bindSyncStatusIndicator(syncStatusManager, menu.findItem(R.id.action_network_status))
+        return true
     }
 
     override fun onResume() {

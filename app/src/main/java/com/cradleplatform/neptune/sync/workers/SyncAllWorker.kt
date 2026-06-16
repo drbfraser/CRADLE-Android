@@ -138,6 +138,12 @@ class SyncAllWorker @AssistedInject constructor(
         /** Last sync result */
         const val LAST_SYNC_RESULT_MESSAGE = "lastSyncResultMessage"
 
+        /** Whether the most recent sync finished successfully */
+        const val LAST_SYNC_SUCCEEDED = "lastSyncSucceeded"
+
+        /** SharedPreferences key for the timestamp of the most recent failed sync */
+        const val LAST_FAILED_SYNC_TIME = "lastFailedSyncTime"
+
         /** The key for current syncing state in the [WorkInfo] progress */
         private const val PROGRESS_CURRENT_STATE = "currentState"
 
@@ -198,7 +204,20 @@ class SyncAllWorker @AssistedInject constructor(
      */
     private val rateLimitRunner = RateLimitRunner(seconds = 0.075)
 
+    private var syncSucceeded = false
+
     override suspend fun doWork(): Result {
+        val result = runSync()
+        sharedPreferences.edit(commit = true) {
+            putBoolean(LAST_SYNC_SUCCEEDED, syncSucceeded)
+            if (!syncSucceeded) {
+                putString(LAST_FAILED_SYNC_TIME, UnixTimestamp.now.toString())
+            }
+        }
+        return result
+    }
+
+    private suspend fun runSync(): Result {
         Log.d(TAG, "doWork()")
         setProgress(workDataOf(PROGRESS_CURRENT_STATE to State.STARTING.name))
 
@@ -370,6 +389,7 @@ class SyncAllWorker @AssistedInject constructor(
             putString(LAST_SYNC_RESULT_MESSAGE, syncResult.getString(RESULT_MESSAGE))
         }
 
+        syncSucceeded = true
         return Result.success(
             syncResult
         )

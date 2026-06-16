@@ -13,6 +13,8 @@ import androidx.appcompat.app.AppCompatActivity
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.databinding.ActivityDashBoardBinding
 import com.cradleplatform.neptune.sync.SyncReminderHelper
+import com.cradleplatform.neptune.sync.SyncStatusManager
+import com.cradleplatform.neptune.sync.bindSyncStatusIndicator
 import com.cradleplatform.neptune.sync.views.SyncActivity
 import com.cradleplatform.neptune.utilities.CustomToast
 import com.cradleplatform.neptune.utilities.Util
@@ -35,6 +37,9 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
 
     @Inject
     lateinit var sharedPreferences: SharedPreferences
+
+    @Inject
+    lateinit var syncStatusManager: SyncStatusManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -209,6 +214,7 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.menu_main, menu)
+        bindSyncStatusIndicator(syncStatusManager, menu.findItem(R.id.action_network_status))
         return true
     }
 
@@ -217,6 +223,10 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         val id = item.itemId
+        if (id == R.id.action_network_status) {
+            startActivity(Intent(this, SyncActivity::class.java))
+            return true
+        }
         if (id == R.id.action_settings) {
             val intent = makeSettingsActivityLaunchIntent(this)
             @Suppress("DEPRECATION")

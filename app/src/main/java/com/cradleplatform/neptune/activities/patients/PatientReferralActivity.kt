@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
+import android.view.Menu
 import android.widget.Button
 import android.widget.Toast
 import androidx.activity.viewModels
@@ -20,6 +21,8 @@ import com.cradleplatform.neptune.http_sms_service.sms.ui.SmsTransmissionDialogF
 import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.manager.ReferralUploadManager
 import com.cradleplatform.neptune.model.Patient
+import com.cradleplatform.neptune.sync.SyncStatusManager
+import com.cradleplatform.neptune.sync.bindSyncStatusIndicator
 import com.cradleplatform.neptune.utilities.CustomToast
 import com.cradleplatform.neptune.utilities.Protocol
 import com.cradleplatform.neptune.utilities.makeErrorSnackbar
@@ -43,6 +46,9 @@ open class PatientReferralActivity : AppCompatActivity() {
 
     @Inject
     lateinit var smsStateReporter: SmsStateReporter
+
+    @Inject
+    lateinit var syncStatusManager: SyncStatusManager
 
     private lateinit var currPatient: Patient
 
@@ -85,6 +91,12 @@ open class PatientReferralActivity : AppCompatActivity() {
 
         setupToolBar()
         setupSendButtons()
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.menu_referral, menu)
+        bindSyncStatusIndicator(syncStatusManager, menu.findItem(R.id.action_network_status))
+        return true
     }
 
     override fun onSupportNavigateUp(): Boolean {

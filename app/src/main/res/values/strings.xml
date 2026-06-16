@@ -586,6 +586,11 @@
     <string name="sync_activity_sync_status_header">Sync Status</string>
     <string name="sync_activity_last_sync_result_header">Last Sync Result</string>
     <string name="sync_activity_press_the_sync_button_to_sync_patients_and_readings_with_the_server">Press the sync button to sync patients and readings with the server.</string>
+    <string name="status_online">Online</string>
+    <string name="status_offline">Offline — local data only</string>
+    <string name="sync_status_syncing">Syncing…</string>
+    <string name="sync_status_unsynced">Changes need syncing</string>
+    <string name="sync_status_failed">Last sync failed (%1$s) — changes still need syncing</string>
     <string name="sync_activity_sync_failed">Sync failed!</string>
     <string name="sync_worker_failure_server_sent_error_code_d__s">Last sync failed: Server sent error code %1$d. %2$s</string>
     <string name="sync_worker_failure_exception_during_sync_s__s">Last sync failed: Exception during sync (%1$s): %2$s</string>

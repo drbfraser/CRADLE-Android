@@ -29,9 +29,9 @@ import com.cradleplatform.neptune.sync.workers.SyncAllWorker
 import com.cradleplatform.neptune.adapters.patients.LocalSearchPatientAdapter
 import com.cradleplatform.neptune.viewmodel.patients.PatientListViewModel
 import com.cradleplatform.neptune.sync.SyncReminderHelper
+import com.cradleplatform.neptune.sync.SyncStatusManager
+import com.cradleplatform.neptune.sync.bindSyncStatusIndicator
 import com.cradleplatform.neptune.sync.views.SyncActivity
-import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager
-import com.cradleplatform.neptune.utilities.connectivity.api24.displayConnectivityToast
 import com.google.android.material.badge.BadgeDrawable
 import com.google.android.material.badge.BadgeUtils
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
@@ -71,8 +71,9 @@ class PatientsActivity : AppCompatActivity() {
 
     @Inject
     lateinit var patientManager: PatientManager
+
     @Inject
-    lateinit var networkStateManager: NetworkStateManager
+    lateinit var syncStatusManager: SyncStatusManager
 
     private lateinit var patientRecyclerview: RecyclerView
     private val localSearchPatientAdapter = LocalSearchPatientAdapter()
@@ -115,6 +116,8 @@ class PatientsActivity : AppCompatActivity() {
         setUpSearchBar()
         checkLastSyncTimeAndUpdateSyncIcon()
 
+        bindSyncStatusIndicator(syncStatusManager, menu.findItem(R.id.action_network_status))
+
         return true
     }
 
@@ -123,10 +126,8 @@ class PatientsActivity : AppCompatActivity() {
             true
         }
 
-        R.id.syncPatients -> {
-            displayConnectivityToast(this, networkStateManager) {
-                startActivity(Intent(this, SyncActivity::class.java))
-            }
+        R.id.action_network_status -> {
+            startActivity(Intent(this, SyncActivity::class.java))
             true
         }
         else -> {
@@ -343,7 +344,7 @@ class PatientsActivity : AppCompatActivity() {
             )!!
         )
 
-        val menuItem: MenuItem = menu!!.findItem(R.id.syncPatients)
+        val menuItem: MenuItem = menu!!.findItem(R.id.action_network_status)
         val badge = BadgeDrawable.create(this)
 
         val test = resources.getInteger(R.integer.settings_default_sync_period_hours)
