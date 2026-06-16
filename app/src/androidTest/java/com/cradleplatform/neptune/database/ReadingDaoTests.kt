@@ -127,4 +127,101 @@ class ReadingDaoTests {
         isUploadedToServer = uploaded,
         userId = 1
     )
+
+    /**
+     * test to verify that we can insert a reading and also retreive that reading by its id
+     * and then also verifies that the retrieved reading matches the inserted reading.
+     */
+    @Test
+    fun readingDaoInsertAndRetrieveById() {
+        runBlocking {
+            val db = getDatabase()
+            db.patientDao().insert(createPatient())
+            val reading = createReading()
+            db.readingDao().insert(reading)
+            val retrieved = db.readingDao().getReadingById(reading.id)
+            assertNotNull(retrieved)
+            assertEquals(reading.id, retrieved.id)
+            assertEquals(PATIENT_ID, retrieved.patientId)
+        }
+    }
+
+    /**
+     * test to insert patients and then verify that the number of readings are equal as well
+     */
+    @Test
+    fun readingDaoGetAllReadingsByPatientId() {
+        runBlocking {
+            val db = getDatabase()
+            db.patientDao().insert(createPatient())
+            db.readingDao().insert(createReading())
+            db.readingDao().insert(createReading())
+            assertEquals(2, db.readingDao().getAllReadingByPatientId(PATIENT_ID).size)
+        }
+    }
+
+    /**
+     * test to make sure whether the isUploaded bool correctly works and makes sure the false ones
+     * are not inserted
+     */
+    @Test
+    fun readingDaoGetAllUnUploadedReadings() {
+        runBlocking {
+            val db = getDatabase()
+            db.patientDao().insert(createPatient())
+            db.readingDao().insert(createReading(uploaded = false))
+            db.readingDao().insert(createReading(uploaded = true))
+            assertEquals(1, db.readingDao().getAllUnUploadedReadings().size)
+        }
+    }
+
+    /**
+     * test to make sure if we are correctly able to mark all the readings as uploaded
+     * using assert equals to test if it is enforced
+     */
+    @Test
+    fun readingDaoMarkAllAsUploadedToServer() {
+        runBlocking {
+            val db = getDatabase()
+            db.patientDao().insert(createPatient())
+            db.readingDao().insert(createReading(uploaded = false))
+            db.readingDao().insert(createReading(uploaded = false))
+            assertEquals(2, db.readingDao().getAllUnUploadedReadings().size)
+            db.readingDao().markAllAsUploadedToServer()
+            assertEquals(0, db.readingDao().getAllUnUploadedReadings().size)
+        }
+    }
+
+    /**
+     * test to make sure that we are able to delete all the readings from the db correctly
+     */
+    @Test
+    fun readingDaoDeleteAllReadings() {
+        runBlocking {
+            val db = getDatabase()
+            db.patientDao().insert(createPatient())
+            db.readingDao().insert(createReading())
+            db.readingDao().insert(createReading())
+            assertEquals(2, db.readingDao().getAllReadingEntities().size)
+            db.readingDao().deleteAllReading()
+            assertEquals(0, db.readingDao().getAllReadingEntities().size)
+        }
+    }
+
+    /**
+     * test to make sure we are able to update any existing reading.
+     * using assert true to make sure this is being enforced.
+     */
+    @Test
+    fun readingDaoUpdateReading() {
+        runBlocking {
+            val db = getDatabase()
+            db.patientDao().insert(createPatient())
+            val reading = createReading()
+            db.readingDao().insert(reading)
+            val updated = reading.copy(isFlaggedForFollowUp = true)
+            db.readingDao().update(updated)
+            assertTrue(db.readingDao().getReadingById(reading.id).isFlaggedForFollowUp)
+        }
+    }
 }
