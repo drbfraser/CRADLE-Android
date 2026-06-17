@@ -40,6 +40,7 @@ import com.cradleplatform.neptune.utilities.Protocol
 import com.cradleplatform.neptune.utilities.jackson.JacksonMapper
 import com.cradleplatform.neptune.utilities.jackson.JacksonMapper.createWriter
 import com.cradleplatform.neptune.viewmodel.UserViewModel
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.readValue
@@ -1206,6 +1207,7 @@ class RestApi(
             }
         }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     object PregnancyResponse {
         var id: Int? = null
         var lastEdited: Int? = null
@@ -1230,9 +1232,8 @@ class RestApi(
     ): NetworkResult<PregnancyResponse> = withContext(IO) {
         val jsonObject = JSONObject()
 
-        val startDate = patient.gestationalAge?.timestamp.toString()
-
-        jsonObject.put("pregnancyStartDate", startDate)
+        jsonObject.put("patient_id", patient.id)
+        jsonObject.put("start_date", patient.gestationalAge?.timestamp)
 
         val mediaType = "application/json; charset=utf-8".toMediaType()
         val requestBody = jsonObject.toString().toRequestBody(mediaType)
@@ -1264,12 +1265,16 @@ class RestApi(
 
     suspend fun putPregnancy(
         patient: Patient,
+        startDate: BigInteger?,
         protocol: Protocol
     ): NetworkResult<PregnancyResponse> = withContext(IO) {
         val jsonObject = JSONObject()
 
-        jsonObject.put("pregnancyEndDate", patient.prevPregnancyEndDate.toString())
-        jsonObject.put("pregnancyOutcome", patient.prevPregnancyOutcome ?: "")
+        jsonObject.put("id", patient.pregnancyId)
+        jsonObject.put("patient_id", patient.id)
+        jsonObject.put("start_date", startDate)
+        jsonObject.put("end_date", patient.prevPregnancyEndDate)
+        jsonObject.put("outcome", patient.prevPregnancyOutcome ?: "")
 
         val mediaType = "application/json; charset=utf-8".toMediaType()
         val requestBody = jsonObject.toString().toRequestBody(mediaType)

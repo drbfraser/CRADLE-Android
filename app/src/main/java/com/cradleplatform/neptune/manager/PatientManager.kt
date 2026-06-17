@@ -12,6 +12,7 @@ import com.cradleplatform.neptune.model.PatientAndReadings
 import com.cradleplatform.neptune.model.Reading
 import com.cradleplatform.neptune.utilities.Protocol
 import kotlinx.coroutines.yield
+import java.math.BigInteger
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -132,8 +133,11 @@ class PatientManager @Inject constructor(
         return result.map { }
     }
 
-    suspend fun pushAndSaveEndPregnancy(patient: Patient): NetworkResult<Unit> {
-        val result = restApi.putPregnancy(patient, Protocol.HTTP)
+    suspend fun pushAndSaveEndPregnancy(
+        patient: Patient,
+        startDate: BigInteger?
+    ): NetworkResult<Unit> {
+        val result = restApi.putPregnancy(patient, startDate, Protocol.HTTP)
 
         if (result is NetworkResult.Success) {
             // Ensure all info is cleared and clear end dates
