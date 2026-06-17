@@ -67,4 +67,44 @@ class DatabaseIntegrityTests {
     fun finish() {
         getDatabase().apply { clearAllTables(); close() }
     }
+
+    private fun createPatient(id: String): Patient = Patient(
+        id = id, name = "Patient $id", 
+        dateOfBirth = "1990-01-01", 
+        isExactDateOfBirth = true,
+        gestationalAge = GestationalAgeWeeks(Weeks(20L)), 
+        sex = Sex.FEMALE,
+        isPregnant = false, 
+        zone = null, 
+        villageNumber = null, 
+        drugHistory = "", 
+        medicalHistory = ""
+    )
+
+    private fun createReading(patientId: String): Reading = Reading(
+        id = UUID.randomUUID().toString(), 
+        patientId = patientId,
+        dateTaken = 1595645893L, 
+        lastEdited = 1595645893L,
+        bloodPressure = BloodPressure(110, 70, 65),
+        urineTest = UrineTest("+", "++", "NAD", "NAD", "NAD"),
+        symptoms = listOf("headache"),
+        referral = Referral(
+            comment = "comment", healthFacilityName = "H0000", dateReferred = 1595645675L,
+            patientId = patientId, id = UUID.randomUUID().toString(), userId = 1,
+            isAssessed = false, actionTaken = null, cancelReason = null, isCancelled = false,
+            lastEdited = 0L, notAttendReason = null, notAttended = false
+        ),
+        followUp = Assessment(
+            id = UUID.randomUUID().toString(), dateAssessed = 1595745946L,
+            healthcareWorkerId = 1, diagnosis = "diagnosis", treatment = "treatment",
+            medicationPrescribed = "medication", specialInvestigations = "investigation",
+            followUpNeeded = false, followUpInstructions = null, patientId = patientId
+        ),
+        dateRetestNeeded = 1595645893L, 
+        isFlaggedForFollowUp = false,
+        previousReadingIds = emptyList(), 
+        isUploadedToServer = false, userId = 1
+    )
+
 }
