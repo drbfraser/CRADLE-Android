@@ -107,4 +107,102 @@ class DatabaseIntegrityTests {
         isUploadedToServer = false, userId = 1
     )
 
+    private fun createFormResponse(patientId: String): FormResponse = FormResponse(
+        patientId = patientId,
+        formTemplate = FormTemplate(
+            version = "1.0", 
+            archived = false, 
+            dateCreated = 1000000L,
+            id = FORM_TEMPLATE_ID, 
+            formClassId = FORM_CLASS_ID, 
+            formClassName = "Test Form",
+            questions = listOf(
+                Question(
+                    id = "q1", 
+                    allowPastDates = null, 
+                    allowFutureDates = null,
+                    visibleCondition = emptyList(), 
+                    isBlank = true, 
+                    formTemplateId = FORM_TEMPLATE_ID,
+                    questionIndex = 0, 
+                    numMin = null, 
+                    numMax = null, stringMaxLength = null,
+                    stringMaxLines = null, 
+                    questionType = QuestionTypeEnum.STRING,
+                    hasCommentAttached = false, 
+                    required = false,
+                    languageVersions = listOf(
+                        QuestionLangVersion("english", "q1", "Test question", 1, emptyList())
+                    )
+                )
+            )
+        ),
+        language = "english",
+        answers = mapOf("q1" to Answer.createTextAnswer("test answer")),
+        saveResponseToSendLater = false
+    )
+
+    @Test
+    fun integrityReadingRequiresExistingPatient() {
+        val db = getDatabase()
+        val exception = assertThrows<SQLiteConstraintException> {
+            runBlocking { 
+                db.readingDao().insert(createReading("nonexistent-patient")) 
+            }
+        }
+        assertForeignKeyConstraintException(exception)
+    }
+
+    @Test
+    fun integrityFormResponseRequiresExistingPatient() {
+        val db = getDatabase()
+        val exception = assertThrows<SQLiteConstraintException> {
+            runBlocking { 
+                db.formResponseDao().insert(createFormResponse("nonexistent-patient")) 
+            }
+        }
+        assertForeignKeyConstraintException(exception)
+    }
+
+    @Test
+    fun integrityDeletePatientCascadesToReadings() {
+        runBlocking {
+            val db = getDatabase()
+            db.patientDao().insert(createPatient("p1"))
+            db.readingDao().insert(createReading("p1"))
+            assertEquals(1, db.readingDao().getAllReadingEntities().size)
+            db.patientDao().deleteById("p1")
+            assertEquals(0, db.readingDao().getAllReadingEntities().size)
+        }
+    }
+
+    @Test
+    fun integrityDeletePatientCascadesToFormResponses() {
+        runBlocking {
+            val db = getDatabase()
+            db.patientDao().insert(createPatient("p1"))
+            db.formResponseDao().insert(createFormResponse("p1"))
+            assertEquals(1, db.formResponseDao().getAllFormResponses().size)
+            db.patientDao().deleteById("p1")
+            assertEquals(0, db.formResponseDao().getAllFormResponses().size)
+        }
+    }
+
+    @Test
+    fun integrityMultiplePatientsDontShareData() {
+        runBlocking {
+            val db = getDatabase()
+            db.patientDao().insert(createPatient("p1"))
+            db.patientDao().insert(createPatient("p2"))
+            db.readingDao().insert(createReading("p1"))
+            db.readingDao().insert(createReading("p2"))
+            db.formResponseDao().insert(createFormResponse("p1"))
+
+            assertEquals(1, db.readingDao().getAllReadingByPatientId("p1").size)
+            assertEquals(1, db.readingDao().getAllReadingByPatientId("p2").size)
+            assertEquals(1, db.formResponseDao().getAllFormResponseByPatientId("p1")?.size)
+            assertEquals(0, db.formResponseDao().getAllFormResponseByPatientId("p2")?.size ?: 0)
+        }
+    }
+
 }
