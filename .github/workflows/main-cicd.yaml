@@ -5,7 +5,7 @@ name: Cradle-Mobile CI/CD Pipeline
 
 on:
   push:
-        branches: [main, add-comprehensive-dao-tests]
+        branches: [main]
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -128,7 +128,7 @@ jobs:
       name: Firebase Test Lab
 
       # Firebase Test Lab runs on every push to main and on pull requests targeting main
-      if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'push' && github.ref == 'refs/heads/add-comprehensive-dao-tests') || github.event_name == 'pull_request'
+      if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'pull_request'
       runs-on: [self-hosted, docker]
       container:
         image: sahilmodak/cradle-mobile
