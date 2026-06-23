@@ -73,6 +73,7 @@ android {
     buildTypes {
         debug {
             versionNameSuffix ".debug"
+            testCoverageEnabled true
         }
         release {
             signingConfig signingConfigs.release

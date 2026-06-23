@@ -5,6 +5,7 @@ import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.IdlingRegistry
 import androidx.test.espresso.IdlingResource
 import androidx.test.espresso.action.ViewActions.click
+import androidx.test.espresso.Espresso.closeSoftKeyboard
 import androidx.test.espresso.action.ViewActions.pressImeActionButton
 import androidx.test.espresso.action.ViewActions.typeText
 import androidx.test.espresso.action.ViewActions.typeTextIntoFocusedView
@@ -82,6 +83,8 @@ class LoginActivityUiTests {
             .perform(typeTextIntoFocusedView("cradle-admin"))
             .perform(pressImeActionButton())
 
+            closeSoftKeyboard()
+
         onView(withId(R.id.loginButton))
             .perform(click())
 
@@ -99,6 +102,8 @@ class LoginActivityUiTests {
             .perform(click())
             .perform(typeTextIntoFocusedView("this password has to be long enough"))
             .perform(pressImeActionButton())
+
+        closeSoftKeyboard()
 
         onView(withId(R.id.loginButton))
             .perform(click())
