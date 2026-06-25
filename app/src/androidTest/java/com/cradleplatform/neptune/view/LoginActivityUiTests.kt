@@ -27,6 +27,7 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltAndroidRule
 import org.junit.After
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -71,6 +72,7 @@ class LoginActivityUiTests {
         Intents.release()
     }
 
+    @Ignore("Requires backend running locally. Skipped for now")
     @Test
     fun loginActivity_successfulLogin() {
         onView(withId(R.id.emailEditText))
@@ -91,6 +93,7 @@ class LoginActivityUiTests {
         intended(hasComponent(DashBoardActivity::class.java.name))
     }
 
+    @Ignore("Requires backend running locally. Skipped for now")
     @Test
     fun loginActivity_invalidUsernamePassword() {
         onView(withId(R.id.emailEditText))
