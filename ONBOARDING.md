@@ -1167,9 +1167,11 @@ If you see a Room migration exception, the local database schema doesn't match w
 ./gradlew test                    # Run unit tests
 ./gradlew detekt                  # Static code analysis (run twice)
 ./gradlew connectedAndroidTest    # Run instrumented tests (needs device)
-./gradlew assembleDebug           # Build debug APK
-./gradlew assembleRelease         # Build release APK (requires signing config)
-./gradlew clean                   # Clean build directory
+./gradlew testDebugUnitTest           # Run unit tests
+./gradlew assembleRelease             # Build release APK (requires signing config)
+./gradlew clean                       # Clean build directory
+./gradlew createDebugCoverageReport   # Run instrumented tests + generate coverage data
+./generate-coverage.sh                # Copy test reports into test-coverage
 ```
 
 ### Default Login Credentials (Development Only)
