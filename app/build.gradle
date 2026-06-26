@@ -257,7 +257,7 @@ kotlin {
     jvmToolchain(17)
 }
 
-task jacocoCombinedReport(type: JacocoReport) {
+task jacocoCombinedReport(type: JacocoReport, dependsOn: ['compileDebugKotlin', 'compileDebugJavaWithJavac']) {
     group = "Reporting"
     description = "Generates a combined coverage report from unit and instrumented tests using JaCoCo"
 
