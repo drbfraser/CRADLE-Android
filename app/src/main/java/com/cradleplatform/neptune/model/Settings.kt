@@ -81,6 +81,20 @@ open class Settings constructor(
             null
         )
 
+    /* Forms */
+
+    /**
+     * Whether to use the V2 Forms API instead of V1.
+     * Temporary migration toggle
+     * Defaults to false (V1) so existing behavior is unaffected until explicitly enabled.
+     */
+    open var useFormsV2: Boolean
+        get() = sharedPreferences.getBoolean("setting_use_forms_v2", false)
+        set(value) = sharedPreferences
+            .edit()
+            .putBoolean("setting_use_forms_v2", value)
+            .apply()
+
     /* OCR */
 
     /**
