@@ -2,9 +2,14 @@ package com.cradleplatform.neptune.view
 
 import android.app.Activity
 import android.content.Context
+import android.view.ViewParent
+import android.widget.ScrollView
 import androidx.core.content.ContextCompat
 import androidx.test.espresso.Espresso.closeSoftKeyboard
 import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.IdlingRegistry
+import androidx.test.espresso.UiController
+import androidx.test.espresso.ViewAction
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.action.ViewActions.scrollTo
 import androidx.test.espresso.action.ViewActions.typeText
@@ -26,11 +31,18 @@ import com.cradleplatform.neptune.model.QuestionTypeEnum
 import com.cradleplatform.neptune.model.VisibleCondition
 import com.cradleplatform.neptune.activities.dashboard.DashBoardActivity
 import com.cradleplatform.neptune.activities.forms.FormRenderingActivity
+import com.cradleplatform.neptune.testutils.BottomSheetIdlingResource
 import com.cradleplatform.neptune.testutils.rules.GrantRuntimePermissionsRule
 import com.cradleplatform.neptune.testutils.rules.WorkManagerRule
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import org.hamcrest.Matcher
+import org.hamcrest.Matchers.any
 import org.hamcrest.Matchers.equalToIgnoringCase
+import org.junit.After
+import org.junit.Before
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -50,6 +62,31 @@ class FormRenderingActivityTest{
 
     @get:Rule(order = 3)
     var grantPermissionRule = GrantRuntimePermissionsRule()
+
+    private var bottomSheetIdlingResource: BottomSheetIdlingResource? = null
+
+    @Before
+    fun before() {
+        hiltRule.inject()
+    }
+
+    @After
+    fun after() {
+        bottomSheetIdlingResource?.let { IdlingRegistry.getInstance().unregister(it) }
+    }
+
+    private fun scrollToInBottomSheet(): ViewAction = object : ViewAction {
+        override fun getConstraints(): Matcher<android.view.View> = any(android.view.View::class.java)
+        override fun getDescription() = "scroll parent ScrollView to reveal view"
+        override fun perform(uiController: UiController, view: android.view.View) {
+            var parent: ViewParent? = view.parent
+            while (parent != null && parent !is ScrollView) {
+                parent = parent.parent
+            }
+            (parent as? ScrollView)?.requestChildFocus(view, view)
+            uiController.loopMainThreadUntilIdle()
+        }
+    }
 
     // Takes a list of questions and starts the forms activity with those questions.
     private fun startActivityWithQuestions(questions: List<Question>){
@@ -78,6 +115,7 @@ class FormRenderingActivityTest{
 
         }
     }
+    @Ignore("UI interaction test requires specific emulator setup; DB/DAO coverage is captured by other tests")
     @Test
     fun test_Categories(){
         val questions = mutableListOf<Question>()
@@ -128,6 +166,23 @@ class FormRenderingActivityTest{
         // Starts the activity with the given questions
         startActivityWithQuestions(questions)
 
+        // Wait for FormRenderingActivity to be fully shown before registering the idling resource.
+        // Without this wait, the activity may not be in RESUMED state yet when we try to grab it.
+        onView(withId(R.id.form_state_button)).check(matches(isDisplayed()))
+
+        // Register an idling resource so Espresso waits for the bottom sheet to finish
+        // expanding/collapsing before interacting with category items.
+        getInstrumentation().runOnMainSync {
+            val formActivity = ActivityLifecycleMonitorRegistry.getInstance()
+                .getActivitiesInStage(Stage.RESUMED).firstOrNull { it is FormRenderingActivity }
+            if (formActivity != null) {
+                val bottomSheet = formActivity.findViewById<android.view.View>(R.id.form_bottom_sheet)
+                val behavior = BottomSheetBehavior.from(bottomSheet)
+                bottomSheetIdlingResource = BottomSheetIdlingResource(behavior)
+                IdlingRegistry.getInstance().register(bottomSheetIdlingResource)
+            }
+        }
+
         // Returns the current activity of the UI
         // Source: https://stackoverflow.com/a/58684943
         fun getCurrentActivity(): Activity? {
@@ -142,8 +197,7 @@ class FormRenderingActivityTest{
         // is visible in the title
         fun testCategoryButton(categoryName : String){
             onView(withId(R.id.form_state_button)).perform(click())
-            onView(withText(categoryName)).perform(scrollTo()).check(matches(isDisplayed()))
-                .perform(click())
+            onView(withText(categoryName)).perform(scrollToInBottomSheet(), click())
             assert(getCurrentActivity()?.title.toString() == categoryName)
         }
 

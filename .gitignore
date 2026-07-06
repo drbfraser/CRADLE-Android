@@ -103,3 +103,6 @@ client_secrets.json
 # macOS
 .DS_Store
 *.DS_Store
+
+# Generated JaCoCo coverage report
+test-coverage/

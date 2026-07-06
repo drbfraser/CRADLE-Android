@@ -976,6 +976,36 @@ Located in `app/src/androidTest/`. Require a connected device or running emulato
 
 > These test database migrations and UI flows end-to-end. **Not run by CI**, but should be run before every release. Resource: [Room migration testing docs](https://developer.android.com/training/data-storage/room/migrating-db-versions#test-migrations)
 
+### Test Coverage Reports
+
+Coverage reports show which lines of code are exercised by the tests. There are two separate reports:
+
+| Report | What it covers | Output |
+|--------|---------------|--------|
+| **Unit** | All tests in `app/src/test/` | `test-coverage/unit/index.html` |
+| **Instrumented** | All tests in `app/src/androidTest/` | `test-coverage/instrumented/index.html` |
+
+**Step 1 — Run unit tests** (no device needed):
+```bash
+./gradlew testDebugUnitTest
+```
+
+**Step 2 — Run instrumented tests** (emulator must be running):
+```bash
+./gradlew createDebugCoverageReport
+```
+
+**Step 3 — Generate the HTML reports:**
+```bash
+./generate-coverage.sh
+```
+
+Then open either file in your browser:
+```bash
+open test-coverage/unit/index.html
+open test-coverage/instrumented/index.html
+```
+
 ### UI Tests (Espresso)
 
 **Required setup before running Espresso tests:**
@@ -1137,9 +1167,11 @@ If you see a Room migration exception, the local database schema doesn't match w
 ./gradlew test                    # Run unit tests
 ./gradlew detekt                  # Static code analysis (run twice)
 ./gradlew connectedAndroidTest    # Run instrumented tests (needs device)
-./gradlew assembleDebug           # Build debug APK
-./gradlew assembleRelease         # Build release APK (requires signing config)
-./gradlew clean                   # Clean build directory
+./gradlew testDebugUnitTest           # Run unit tests
+./gradlew assembleRelease             # Build release APK (requires signing config)
+./gradlew clean                       # Clean build directory
+./gradlew createDebugCoverageReport   # Run instrumented tests + generate coverage data
+./generate-coverage.sh                # Copy test reports into test-coverage
 ```
 
 ### Default Login Credentials (Development Only)
