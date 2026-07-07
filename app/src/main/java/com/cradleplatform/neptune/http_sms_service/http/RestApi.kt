@@ -19,9 +19,16 @@ import com.cradleplatform.neptune.manager.RefreshTokenResponse
 import com.cradleplatform.neptune.manager.SmsKey
 import com.cradleplatform.neptune.manager.UrlManager
 import com.cradleplatform.neptune.model.Assessment
+import com.cradleplatform.neptune.model.CreateFormSubmissionRequestV2
+import com.cradleplatform.neptune.model.FormAnswerV2
 import com.cradleplatform.neptune.model.FormClassification
 import com.cradleplatform.neptune.model.FormResponse
+import com.cradleplatform.neptune.model.FormSubmissionV2
+import com.cradleplatform.neptune.model.FormSubmissionWithAnswersV2
 import com.cradleplatform.neptune.model.FormTemplate
+import com.cradleplatform.neptune.model.FormTemplateListV2Response
+import com.cradleplatform.neptune.model.FormTemplateV2
+import com.cradleplatform.neptune.model.UpdateFormRequestBodyV2
 import com.cradleplatform.neptune.model.GlobalPatient
 import com.cradleplatform.neptune.model.HealthFacility
 import com.cradleplatform.neptune.model.Patient
@@ -45,6 +52,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.channels.Channel
@@ -991,6 +999,46 @@ class RestApi(
             }
         }
     }
+
+    /**
+     * V2: Creates a form submission. HTTP-only for now (basic connectivity validation
+     * pass); 
+     * todo: sms support can be added the same way as postFormResponse once V2 is
+     * further along.
+     */
+    suspend fun postFormSubmissionV2(
+        request: CreateFormSubmissionRequestV2
+    ): NetworkResult<FormSubmissionV2> = withContext(IO) {
+        val gson = GsonBuilder().excludeFieldsWithoutExposeAnnotation().create()
+        val body = gson.toJson(request).toByteArray()
+
+        http.makeRequest(
+            method = Http.Method.POST,
+            url = urlManager.formsV2Submissions,
+            headers = makeAuthorizationHeader(),
+            requestBody = buildJsonRequestBody(body),
+            inputStreamReader = { input ->
+                Gson().fromJson(input.bufferedReader(), FormSubmissionV2::class.java)
+            },
+        )
+    }
+
+    /**
+     * V2: Retrieves a form submission with all answers and full question context.
+     */
+    suspend fun getFormSubmissionV2(
+        formSubmissionId: String
+    ): NetworkResult<FormSubmissionWithAnswersV2> = withContext(IO) {
+        http.makeRequest(
+            method = Http.Method.GET,
+            url = urlManager.formsV2Submission(formSubmissionId),
+            headers = makeAuthorizationHeader(),
+            inputStreamReader = { input ->
+                Gson().fromJson(input.bufferedReader(), FormSubmissionWithAnswersV2::class.java)
+            },
+        )
+    }
+
 
     /**
      * Uploads a patient's demographic information with the intent of modifying
