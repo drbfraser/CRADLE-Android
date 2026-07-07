@@ -34,7 +34,7 @@ class Http(
     /**
      * Enumeration of common HTTP method request types.
      */
-    enum class Method { GET, POST, PUT, DELETE }
+    enum class Method { GET, POST, PUT, PATCH, DELETE }
 
     @Suppress("MagicNumber")
     val client: OkHttpClient = OkHttpClient.Builder()
