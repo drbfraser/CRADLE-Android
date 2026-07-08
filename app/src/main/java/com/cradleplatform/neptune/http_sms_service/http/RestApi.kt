@@ -1088,6 +1088,23 @@ class RestApi(
         )
     }
 
+    /**
+     * V2: gets the most recent non-archived template per classification same as v1 getAllFormTemplates
+     * Response is a jsomn array of full FormTemplateV2 objects with questions.
+     */
+    suspend fun getAllClassificationsSummaryV2(): NetworkResult<List<FormTemplateV2>> = withContext(IO) {
+        http.makeRequest(
+            method = Http.Method.GET,
+            url = urlManager.formsV2ClassificationsSummary,
+            headers = makeAuthorizationHeader(),
+            inputStreamReader = { input ->
+                val type = object : TypeToken<List<FormTemplateV2>>() {}.type
+                Gson().fromJson<List<FormTemplateV2>>(input.bufferedReader(), type)
+            },
+        )
+    }
+
+
 
     /**
      * Uploads a patient's demographic information with the intent of modifying
