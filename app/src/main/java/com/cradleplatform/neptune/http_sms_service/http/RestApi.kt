@@ -1039,6 +1039,55 @@ class RestApi(
         )
     }
 
+    /**
+     * V2: Partially updates a form submission's answers .
+     */
+    suspend fun patchFormSubmissionV2(
+        formSubmissionId: String,
+        answers: List<FormAnswerV2>
+    ): NetworkResult<FormSubmissionV2> = withContext(IO) {
+        val gson = GsonBuilder().excludeFieldsWithoutExposeAnnotation().create()
+        val body = gson.toJson(UpdateFormRequestBodyV2(answers)).toByteArray()
+
+        http.makeRequest(
+            method = Http.Method.PATCH,
+            url = urlManager.formsV2Submission(formSubmissionId),
+            headers = makeAuthorizationHeader(),
+            requestBody = buildJsonRequestBody(body),
+            inputStreamReader = { input ->
+                Gson().fromJson(input.bufferedReader(), FormSubmissionV2::class.java)
+            },
+        )
+    }
+
+    /**
+     * v2: lists all form templates 
+     */
+    suspend fun getAllFormTemplatesV2(): NetworkResult<FormTemplateListV2Response> = withContext(IO) {
+        http.makeRequest(
+            method = Http.Method.GET,
+            url = urlManager.formsV2Templates,
+            headers = makeAuthorizationHeader(),
+            inputStreamReader = { input ->
+                Gson().fromJson(input.bufferedReader(), FormTemplateListV2Response::class.java)
+            },
+        )
+    }
+
+    /**
+     * v2: retrieves a single form template with questions.
+     */
+    suspend fun getFormTemplateV2(formTemplateId: String): NetworkResult<FormTemplateV2> = withContext(IO) {
+        http.makeRequest(
+            method = Http.Method.GET,
+            url = urlManager.formsV2Template(formTemplateId),
+            headers = makeAuthorizationHeader(),
+            inputStreamReader = { input ->
+                Gson().fromJson(input.bufferedReader(), FormTemplateV2::class.java)
+            },
+        )
+    }
+
 
     /**
      * Uploads a patient's demographic information with the intent of modifying
