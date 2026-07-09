@@ -99,6 +99,8 @@ class PatientProfileViewModel @Inject constructor(
         // Load submitted forms
         val submittedForms = formResponseManager.searchForSubmittedFormsByPatientId(patientId)
         _submittedForms.postValue(submittedForms ?: emptyList())
+
+        patientManager.downloadWorkflowInstances(patientId)
     }
 
     /**

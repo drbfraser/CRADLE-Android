@@ -2284,6 +2284,23 @@ class RestApi(
         }
     }
 
+    suspend fun getWorkflowInstancesByPatient(patientId: String): NetworkResult<String> =
+        withContext(IO) {
+            http.makeRequest(
+                method = Http.Method.GET,
+                url = urlManager.getWorkflowInstancesByPatient(patientId),
+                headers = makeAuthorizationHeader(),
+                inputStreamReader = { it.bufferedReader().readText() }
+            ).also {
+                when (it) {
+                    is NetworkResult.Success ->
+                        Log.d(TAG, "Workflow instances for patient $patientId: ${it.value}")
+                    else ->
+                        Log.e(TAG, "Failed to download workflow instances for patient $patientId")
+                }
+            }
+        }
+
     /**
      * Downloads all submitted form responses for the user's patients since [lastSyncTimestamp].
      * Parses each item into a [FormResponse] using a stub [FormTemplate] and sends it to

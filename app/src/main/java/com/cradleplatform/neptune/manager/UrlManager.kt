@@ -62,6 +62,9 @@ class UrlManager @Inject constructor(val settings: Settings) {
     val getAllWorkflowTemplates: String
         get() = "$base/workflow/templates"
 
+    fun getWorkflowInstancesByPatient(patientId: String) =
+        "$base/workflow/instances?patient_id=$patientId"
+
     /**
      * Endpoint for posting a new patient.
      */

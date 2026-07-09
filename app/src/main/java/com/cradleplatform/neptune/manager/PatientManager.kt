@@ -212,6 +212,9 @@ class PatientManager @Inject constructor(
     suspend fun downloadPatientAndReading(id: String): NetworkResult<PatientAndReadings> =
         restApi.getPatient(id, Protocol.HTTP)
 
+    suspend fun downloadWorkflowInstances(patientId: String): NetworkResult<String> =
+        restApi.getWorkflowInstancesByPatient(patientId)
+
     /**
      * Associates a given patient to the active user.
      *
