@@ -1,7 +1,9 @@
 package com.cradleplatform.neptune.model
 
+import android.os.Parcelable
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
+import kotlinx.parcelize.Parcelize
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class WorkflowInstance(
@@ -49,10 +51,12 @@ data class WorkflowClassification(
     val name: String
 )
 
+@Parcelize
 data class WorkflowRow(
     val templateName: String,
     val status: String,
     val lastEdited: String,
     val stepCount: Int,
-    val currentStep: String
-)
+    val currentStep: String,
+    val completedSteps: Int
+) : Parcelable

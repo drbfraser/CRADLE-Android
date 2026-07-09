@@ -109,9 +109,11 @@ class PatientProfileViewModel @Inject constructor(
         val workflowsResult = patientManager.downloadWorkflowInstances(patientId)
         if (workflowsResult is NetworkResult.Success) {
             val rows = workflowsResult.value.map { instance ->
-                val currentStep = instance.currentStepId
-                    ?.let { stepId -> instance.steps.find { it.id == stepId }?.name }
-                    ?: "N/A"
+                val currentIndex = instance.currentStepId
+                    ?.let { stepId -> instance.steps.indexOfFirst { it.id == stepId } }
+                    ?.takeIf { it >= 0 }
+                    ?: 0
+                val currentStep = instance.steps.getOrNull(currentIndex)?.name ?: "N/A"
                 val lastEdited = instance.lastEdited
                     ?.let { DateUtil.getDateStringFromTimestamp(it) }
                     ?: "N/A"
@@ -120,7 +122,8 @@ class PatientProfileViewModel @Inject constructor(
                     status = instance.status,
                     lastEdited = lastEdited,
                     stepCount = instance.steps.size,
-                    currentStep = currentStep
+                    currentStep = currentStep,
+                    completedSteps = currentIndex
                 )
             }
             _workflows.postValue(rows)

@@ -217,6 +217,12 @@ open class PatientProfileActivity : AppCompatActivity() {
             row.addView(makeWorkflowCell(workflow.lastEdited, false))
             row.addView(makeWorkflowCell(workflow.stepCount.toString(), false))
             row.addView(makeWorkflowCell(workflow.currentStep, false))
+            row.isClickable = true
+            row.setOnClickListener {
+                startActivity(
+                    WorkflowInstanceDetailsActivity.makeIntent(this, workflow)
+                )
+            }
             table.addView(row)
         }
     }

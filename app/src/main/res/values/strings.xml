@@ -694,6 +694,20 @@
     <string name="workflows_column_last_edited">Last Edited</string>
     <string name="workflows_column_steps">Steps</string>
     <string name="workflows_column_current_step">Current Step</string>
+    <string name="workflow_details_na">N/A</string>
+    <string name="workflow_details_by_na">by N/A</string>
+    <string name="workflow_details_title">Workflow: %1$s</string>
+    <string name="workflow_details_description_label">Description</string>
+    <string name="workflow_details_started_label">Started</string>
+    <string name="workflow_details_progress_label">Progress</string>
+    <string name="workflow_details_last_edited_label">Last Edited</string>
+    <string name="workflow_details_working_on_label">Currently Working On:</string>
+    <string name="workflow_details_progress_value">%1$d / %2$d+</string>
+    <string name="workflow_details_step_status">Status: In Progress, Started on: %1$s</string>
+    <plurals name="workflow_details_remaining">
+        <item quantity="one">At least %1$d more step remaining</item>
+        <item quantity="other">At least %1$d more steps remaining</item>
+    </plurals>
     <string name="form_submitted">Form Submitted</string>
     <string name="form_name_label">Form:</string>
     <string name="form_date_submitted_label">Date Submitted:</string>
