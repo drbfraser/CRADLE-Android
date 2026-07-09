@@ -80,4 +80,71 @@ internal class RestApiFormsV2Test {
         mockServer = server
     }
 
+    @BeforeEach
+    fun setUp() {
+        mockkStatic(Log::class)
+        every { Log.d(any(), any()) } returns 0
+        every { Log.i(any(), any()) } returns 0
+        every { Log.e(any(), any()) } returns 0
+        every { Log.e(any(), any(), any()) } returns 0
+    }
+
+    @AfterEach
+    fun tearDown() {
+        mockServer.shutdown()
+    }
+
+     @Test
+    fun postFormSubmissionV2() {
+        val request = CreateFormSubmissionRequestV2(
+            formTemplateId = "template-1",
+            patientId = "patient-1",
+            userId = 3,
+            answers = listOf(
+                FormAnswerV2(questionId = "q1", answer = AnswerV2.createTextAnswer("Normal")),
+                FormAnswerV2(questionId = "q2", answer = AnswerV2.createMcAnswer(listOf(0, 2))),
+            ),
+        )
+
+        val result = runBlocking { restApi.postFormSubmissionV2(request) }
+
+        check(result is NetworkResult.Success) { "got $result" }
+        assertEquals(201, result.statusCode)
+        assertEquals("sub-1", result.value.id)
+        assertEquals("template-1", result.value.formTemplateId)
+        assertEquals(3, result.value.userId)
+
+        // Verify the request body was serialized in the shape the backend expects.
+        val sentBody = JSONObject(lastRequest!!.body.readString(Charsets.UTF_8))
+        assertEquals("template-1", sentBody.getString("formTemplateId"))
+        assertEquals("patient-1", sentBody.getString("patientId"))
+        val sentAnswers = sentBody.getJSONArray("answers")
+        assertEquals(2, sentAnswers.length())
+        assertEquals("q1", sentAnswers.getJSONObject(0).getString("questionId"))
+        assertEquals("Normal", sentAnswers.getJSONObject(0).getJSONObject("answer").getString("text"))
+        val mcAnswer = sentAnswers.getJSONObject(1).getJSONObject("answer").getJSONArray("mcIdArray")
+        assertEquals(0, mcAnswer.getInt(0))
+        assertEquals(2, mcAnswer.getInt(1))
+    }
+
+
+    @Test
+    fun getFormSubmissionV2() {
+        val result = runBlocking { restApi.getFormSubmissionV2("sub-1") }
+
+        check(result is NetworkResult.Success){ 
+            "got $result" 
+        }
+        assertEquals(200, result.statusCode)
+        assertEquals("sub-1", result.value.id)
+        assertEquals(2, result.value.answers?.size)
+
+        val mcAnswer = result.value.answers?.get(1)
+        assertEquals("q2", mcAnswer?.questionId)
+        assertEquals(listOf("Headache", "Fever", "Nausea"), mcAnswer?.mcOptions)
+        assertEquals(listOf(0, 2), mcAnswer?.answer?.mcIdArrayAnswer)
+    }
+
+
+
 }
