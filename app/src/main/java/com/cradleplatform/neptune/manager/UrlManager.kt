@@ -59,6 +59,9 @@ class UrlManager @Inject constructor(val settings: Settings) {
     val getAllFormsAsSummary: String
         get() = "$base/forms/classifications/summary"
 
+    val getAllWorkflowTemplates: String
+        get() = "$base/workflow/templates"
+
     /**
      * Endpoint for posting a new patient.
      */

@@ -2270,6 +2270,20 @@ class RestApi(
         FormSyncResult(result, totalClassifications)
     }
 
+    suspend fun getAllWorkflowTemplates(): NetworkResult<String> = withContext(IO) {
+        http.makeRequest(
+            method = Http.Method.GET,
+            url = urlManager.getAllWorkflowTemplates,
+            headers = makeAuthorizationHeader(),
+            inputStreamReader = { it.bufferedReader().readText() }
+        ).also {
+            when (it) {
+                is NetworkResult.Success -> Log.d(TAG, "Workflow templates: ${it.value}")
+                else -> Log.e(TAG, "Failed to download workflow templates")
+            }
+        }
+    }
+
     /**
      * Downloads all submitted form responses for the user's patients since [lastSyncTimestamp].
      * Parses each item into a [FormResponse] using a stub [FormTemplate] and sends it to
