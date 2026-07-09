@@ -14,6 +14,9 @@ import com.cradleplatform.neptune.model.FormResponse
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.Reading
 import com.cradleplatform.neptune.model.Referral
+import com.cradleplatform.neptune.model.WorkflowRow
+import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
+import com.cradleplatform.neptune.utilities.DateUtil
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -50,6 +53,9 @@ class PatientProfileViewModel @Inject constructor(
 
     private val _submittedForms = MutableLiveData<List<FormResponse>>()
     val submittedForms: LiveData<List<FormResponse>> = _submittedForms
+
+    private val _workflows = MutableLiveData<List<WorkflowRow>>()
+    val workflows: LiveData<List<WorkflowRow>> = _workflows
 
     /**
      * Load patient data by ID
@@ -100,7 +106,37 @@ class PatientProfileViewModel @Inject constructor(
         val submittedForms = formResponseManager.searchForSubmittedFormsByPatientId(patientId)
         _submittedForms.postValue(submittedForms ?: emptyList())
 
-        patientManager.downloadWorkflowInstances(patientId)
+        val workflowsResult = patientManager.downloadWorkflowInstances(patientId)
+        if (workflowsResult is NetworkResult.Success) {
+            val rows = workflowsResult.value.map { instance ->
+                val currentStep = instance.currentStepId
+                    ?.let { stepId -> instance.steps.find { it.id == stepId }?.name }
+                    ?: "N/A"
+                val lastEdited = instance.lastEdited
+                    ?.let { DateUtil.getDateStringFromTimestamp(it) }
+                    ?: "N/A"
+                WorkflowRow(
+                    templateName = resolveTemplateName(instance.workflowTemplateId),
+                    status = instance.status,
+                    lastEdited = lastEdited,
+                    stepCount = instance.steps.size,
+                    currentStep = currentStep
+                )
+            }
+            _workflows.postValue(rows)
+        } else {
+            _workflows.postValue(emptyList())
+        }
+    }
+
+    private suspend fun resolveTemplateName(templateId: String?): String {
+        if (templateId == null) return "N/A"
+        val result = patientManager.downloadWorkflowTemplate(templateId)
+        return if (result is NetworkResult.Success) {
+            result.value.classification?.name ?: result.value.name ?: "N/A"
+        } else {
+            "N/A"
+        }
     }
 
     /**

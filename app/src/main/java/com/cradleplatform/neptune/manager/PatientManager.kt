@@ -10,6 +10,8 @@ import com.cradleplatform.neptune.http_sms_service.http.map
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.PatientAndReadings
 import com.cradleplatform.neptune.model.Reading
+import com.cradleplatform.neptune.model.WorkflowInstance
+import com.cradleplatform.neptune.model.WorkflowTemplate
 import com.cradleplatform.neptune.utilities.Protocol
 import kotlinx.coroutines.yield
 import javax.inject.Inject
@@ -212,8 +214,15 @@ class PatientManager @Inject constructor(
     suspend fun downloadPatientAndReading(id: String): NetworkResult<PatientAndReadings> =
         restApi.getPatient(id, Protocol.HTTP)
 
-    suspend fun downloadWorkflowInstances(patientId: String): NetworkResult<String> =
+    suspend fun downloadWorkflowInstances(
+        patientId: String
+    ): NetworkResult<List<WorkflowInstance>> =
         restApi.getWorkflowInstancesByPatient(patientId)
+
+    suspend fun downloadWorkflowTemplate(
+        templateId: String
+    ): NetworkResult<WorkflowTemplate> =
+        restApi.getWorkflowTemplate(templateId)
 
     /**
      * Associates a given patient to the active user.

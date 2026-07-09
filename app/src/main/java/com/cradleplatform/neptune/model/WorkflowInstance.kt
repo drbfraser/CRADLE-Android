@@ -1,0 +1,58 @@
+package com.cradleplatform.neptune.model
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.annotation.JsonProperty
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class WorkflowInstance(
+    @JsonProperty("id")
+    val id: String,
+    @JsonProperty("status")
+    val status: String,
+    @JsonProperty("workflowTemplateId")
+    val workflowTemplateId: String? = null,
+    @JsonProperty("currentStepId")
+    val currentStepId: String? = null,
+    @JsonProperty("lastEdited")
+    val lastEdited: Long? = null,
+    @JsonProperty("steps")
+    val steps: List<WorkflowInstanceStep> = emptyList()
+)
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class WorkflowInstanceStep(
+    @JsonProperty("id")
+    val id: String,
+    @JsonProperty("name")
+    val name: String
+)
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class WorkflowInstanceList(
+    @JsonProperty("items")
+    val items: List<WorkflowInstance> = emptyList()
+)
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class WorkflowTemplate(
+    @JsonProperty("id")
+    val id: String,
+    @JsonProperty("name")
+    val name: String? = null,
+    @JsonProperty("classification")
+    val classification: WorkflowClassification? = null
+)
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class WorkflowClassification(
+    @JsonProperty("name")
+    val name: String
+)
+
+data class WorkflowRow(
+    val templateName: String,
+    val status: String,
+    val lastEdited: String,
+    val stepCount: Int,
+    val currentStep: String
+)

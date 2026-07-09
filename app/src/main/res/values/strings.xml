@@ -686,6 +686,14 @@
     <string name="saved_forms_empty_title">No Draft Forms Saved</string>
     <string name="saved_forms_empty_message">Forms you save as drafts will appear here.\nYou can save a form as a draft while filling it out.</string>
     <string name="see_submitted_forms">See Submitted Forms</string>
+    <string name="workflows_title">Workflows</string>
+    <string name="workflows_empty">No workflows</string>
+    <string name="workflows_column_name">Name</string>
+    <string name="workflows_column_template">Workflow Template</string>
+    <string name="workflows_column_status">Status</string>
+    <string name="workflows_column_last_edited">Last Edited</string>
+    <string name="workflows_column_steps">Steps</string>
+    <string name="workflows_column_current_step">Current Step</string>
     <string name="form_submitted">Form Submitted</string>
     <string name="form_name_label">Form:</string>
     <string name="form_date_submitted_label">Date Submitted:</string>

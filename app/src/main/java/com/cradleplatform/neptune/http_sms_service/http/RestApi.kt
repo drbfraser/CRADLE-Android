@@ -31,6 +31,9 @@ import com.cradleplatform.neptune.model.Reading
 import com.cradleplatform.neptune.model.Referral
 import com.cradleplatform.neptune.model.RelayPhoneNumberResponse
 import com.cradleplatform.neptune.model.Statistics
+import com.cradleplatform.neptune.model.WorkflowInstance
+import com.cradleplatform.neptune.model.WorkflowInstanceList
+import com.cradleplatform.neptune.model.WorkflowTemplate
 import com.cradleplatform.neptune.sync.workers.AssessmentSyncField
 import com.cradleplatform.neptune.sync.workers.PatientSyncField
 import com.cradleplatform.neptune.sync.workers.ReadingSyncField
@@ -2284,13 +2287,17 @@ class RestApi(
         }
     }
 
-    suspend fun getWorkflowInstancesByPatient(patientId: String): NetworkResult<String> =
+    suspend fun getWorkflowInstancesByPatient(
+        patientId: String
+    ): NetworkResult<List<WorkflowInstance>> =
         withContext(IO) {
             http.makeRequest(
                 method = Http.Method.GET,
                 url = urlManager.getWorkflowInstancesByPatient(patientId),
                 headers = makeAuthorizationHeader(),
-                inputStreamReader = { it.bufferedReader().readText() }
+                inputStreamReader = { inputStream ->
+                    JacksonMapper.mapper.readValue<WorkflowInstanceList>(inputStream).items
+                }
             ).also {
                 when (it) {
                     is NetworkResult.Success ->
@@ -2299,6 +2306,16 @@ class RestApi(
                         Log.e(TAG, "Failed to download workflow instances for patient $patientId")
                 }
             }
+        }
+
+    suspend fun getWorkflowTemplate(templateId: String): NetworkResult<WorkflowTemplate> =
+        withContext(IO) {
+            http.makeRequest(
+                method = Http.Method.GET,
+                url = urlManager.getWorkflowTemplate(templateId),
+                headers = makeAuthorizationHeader(),
+                inputStreamReader = { JacksonMapper.mapper.readValue<WorkflowTemplate>(it) }
+            )
         }
 
     /**

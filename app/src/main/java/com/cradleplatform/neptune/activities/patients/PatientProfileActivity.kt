@@ -4,6 +4,7 @@ import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.graphics.Typeface
 import android.os.Build
 import android.os.Bundle
 import android.view.Menu
@@ -13,6 +14,8 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.RadioGroup
+import android.widget.TableLayout
+import android.widget.TableRow
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -36,6 +39,7 @@ import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.Reading
 import com.cradleplatform.neptune.model.Referral
 import com.cradleplatform.neptune.model.Sex
+import com.cradleplatform.neptune.model.WorkflowRow
 import com.cradleplatform.neptune.utilities.SnackbarHelper
 import com.cradleplatform.neptune.utilities.Util
 import com.cradleplatform.neptune.activities.forms.FormSelectionActivity
@@ -181,6 +185,50 @@ open class PatientProfileActivity : AppCompatActivity() {
             patientSubmittedForms = forms
             setupReadingsRecyclerView()
         }
+
+        viewModel.workflows.observe(this) { workflows ->
+            populateWorkflowTable(workflows)
+        }
+    }
+
+    private fun populateWorkflowTable(workflows: List<WorkflowRow>) {
+        val table = findViewById<TableLayout>(R.id.workflowTable)
+        table.removeAllViews()
+
+        val headerRow = TableRow(this)
+        headerRow.addView(makeWorkflowCell(getString(R.string.workflows_column_template), true))
+        headerRow.addView(makeWorkflowCell(getString(R.string.workflows_column_status), true))
+        headerRow.addView(makeWorkflowCell(getString(R.string.workflows_column_last_edited), true))
+        headerRow.addView(makeWorkflowCell(getString(R.string.workflows_column_steps), true))
+        headerRow.addView(makeWorkflowCell(getString(R.string.workflows_column_current_step), true))
+        table.addView(headerRow)
+
+        if (workflows.isEmpty()) {
+            val emptyRow = TableRow(this)
+            emptyRow.addView(makeWorkflowCell(getString(R.string.workflows_empty), false))
+            table.addView(emptyRow)
+            return
+        }
+
+        for (workflow in workflows) {
+            val row = TableRow(this)
+            row.addView(makeWorkflowCell(workflow.templateName, false))
+            row.addView(makeWorkflowCell(workflow.status, false))
+            row.addView(makeWorkflowCell(workflow.lastEdited, false))
+            row.addView(makeWorkflowCell(workflow.stepCount.toString(), false))
+            row.addView(makeWorkflowCell(workflow.currentStep, false))
+            table.addView(row)
+        }
+    }
+
+    private fun makeWorkflowCell(text: String, isHeader: Boolean): TextView {
+        val cell = TextView(this)
+        cell.text = text
+        cell.setPadding(8, 8, 8, 8)
+        if (isHeader) {
+            cell.setTypeface(cell.typeface, Typeface.BOLD)
+        }
+        return cell
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
