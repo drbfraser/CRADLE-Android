@@ -363,6 +363,8 @@ class SyncAllWorker @AssistedInject constructor(
             )
         }
 
+        restApi.getAllWorkflowTemplates()
+
         val lastFormResponseSyncTime = BigInteger(
             sharedPreferences.getString(LAST_FORM_RESPONSE_SYNC, LAST_SYNC_DEFAULT)!!
         )
