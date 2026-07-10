@@ -145,6 +145,77 @@ internal class RestApiFormsV2Test {
         assertEquals(listOf(0, 2), mcAnswer?.answer?.mcIdArrayAnswer)
     }
 
+    @Test
+    fun getFormSubmissionNotFound(){
+        val result = runBlocking{ restApi.getFormsubmissionV2("form-does-not-exist-1234")}
+
+        check(result is NetworkResult.Failure){"got $result"}
+
+        assertEquals(404, result.statusCode)
+    }
+
+
+    @Test
+    fun patchFormSubmissionV2(){
+        val answers = listOf(
+            FormAnswerV2(id = "ans-1", questionId = "q1", answer = AnswerV2.createTextAnswer("updated")),
+        )
+
+        val result = runBlocking { restApi.patchFormSubmissionV2("sub-1", answers) }
+
+        check(result is NetworkResult.Success) { "got $result" }
+        assertEquals(200, result.statusCode)
+        assertEquals("PATCH", lastRequest!!.method)
+
+        val sentBody = JSONObject(lastRequest!!.body.readString(Charsets.UTF_8))
+        val sentAnswers = sentBody.getJSONArray("answers")
+        assertEquals("ans-1", sentAnswers.getJSONObject(0).getString("id"))
+        assertEquals("Updated", sentAnswers.getJSONObject(0).getJSONObject("answer").getString("text"))
+    }
+
+
+    @Test
+    fun getAllFormTemplatesV2() {
+        val result = runBlocking { restApi.getAllFormTemplatesV2() }
+
+        check(result is NetworkResult.Success) { "got $result" }
+        assertEquals(1, result.value.templates.size)
+        val template = result.value.templates.first()
+        assertEquals("template-1", template.id)
+        assertEquals("Antenatal", template.name)
+        assertEquals(false, template.archived)
+    }
+
+
+    @Test
+    fun getFormTemplateV2() {
+        val result = runBlocking { restApi.getFormTemplateV2("template-1") }
+
+        check(result is NetworkResult.Success) { "got $result" }
+        assertEquals("template-1", result.value.id)
+        assertEquals("Antenatal", result.value.classification.name["english"])
+        assertEquals(1, result.value.questions?.size)
+
+        val question = result.value.questions?.first()
+        assertEquals(2, question?.mcOptions?.size)
+        assertEquals("opt-1", question?.mcOptions?.get(0)?.stringId)
+        assertEquals("Headache", question?.mcOptions?.get(0)?.translations?.get("english"))
+        assertNull(question?.categoryIndex)
+    }
+
+
+    @Test
+    fun getAllClassificationsSummaryV2() {
+        val result = runBlocking { restApi.getAllClassificationsSummaryV2() }
+
+        check(result is NetworkResult.Success) { "got $result" }
+        assertEquals(1, result.value.size)
+        assertEquals("template-1", result.value.first().id)
+        assertEquals("Antenatal", result.value.first().classification.name["english"])
+    }
+
+
+
 
 
 }
