@@ -170,7 +170,7 @@ internal class RestApiFormsV2Test {
         val sentBody = JSONObject(lastRequest!!.body.readString(Charsets.UTF_8))
         val sentAnswers = sentBody.getJSONArray("answers")
         assertEquals("ans-1", sentAnswers.getJSONObject(0).getString("id"))
-        assertEquals("Updated", sentAnswers.getJSONObject(0).getJSONObject("answer").getString("text"))
+        assertEquals("updated", sentAnswers.getJSONObject(0).getJSONObject("answer").getString("text"))
     }
 
 
