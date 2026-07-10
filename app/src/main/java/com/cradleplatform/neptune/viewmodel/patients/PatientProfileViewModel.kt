@@ -15,6 +15,7 @@ import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.Reading
 import com.cradleplatform.neptune.model.Referral
 import com.cradleplatform.neptune.model.WorkflowRow
+import com.cradleplatform.neptune.model.WorkflowStepRow
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.utilities.DateUtil
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -117,13 +118,25 @@ class PatientProfileViewModel @Inject constructor(
                 val lastEdited = instance.lastEdited
                     ?.let { DateUtil.getDateStringFromTimestamp(it) }
                     ?: "N/A"
+                val stepRows = instance.steps.map { step ->
+                    WorkflowStepRow(
+                        name = step.name,
+                        status = step.status.orEmpty(),
+                        startedDate = step.startDate
+                            ?.let { DateUtil.getDateStringFromTimestamp(it) }
+                            ?: "N/A",
+                        completedDate = step.completionDate
+                            ?.let { DateUtil.getDateStringFromTimestamp(it) }
+                    )
+                }
                 WorkflowRow(
                     templateName = resolveTemplateName(instance.workflowTemplateId),
                     status = instance.status,
                     lastEdited = lastEdited,
                     stepCount = instance.steps.size,
                     currentStep = currentStep,
-                    completedSteps = currentIndex
+                    completedSteps = currentIndex,
+                    steps = stepRows
                 )
             }
             _workflows.postValue(rows)

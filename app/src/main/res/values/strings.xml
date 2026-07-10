@@ -708,6 +708,15 @@
         <item quantity="one">At least %1$d more step remaining</item>
         <item quantity="other">At least %1$d more steps remaining</item>
     </plurals>
+    <string name="workflow_details_step_history_label">Step history</string>
+    <string name="workflow_details_no_steps">No steps recorded yet.</string>
+    <string name="workflow_step_status_label">Status: %1$s</string>
+    <string name="workflow_step_status_completed">Completed</string>
+    <string name="workflow_step_status_active">In Progress</string>
+    <string name="workflow_step_status_pending">Pending</string>
+    <string name="workflow_step_status_cancelled">Cancelled</string>
+    <string name="workflow_step_started">Started: %1$s</string>
+    <string name="workflow_step_completed">Completed: %1$s</string>
     <string name="form_submitted">Form Submitted</string>
     <string name="form_name_label">Form:</string>
     <string name="form_date_submitted_label">Date Submitted:</string>
