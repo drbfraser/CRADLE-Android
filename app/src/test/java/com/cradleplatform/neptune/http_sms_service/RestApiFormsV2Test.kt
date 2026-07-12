@@ -214,6 +214,111 @@ internal class RestApiFormsV2Test {
         assertEquals("Antenatal", result.value.first().classification.name["english"])
     }
 
+     companion object {
+        private const val SUBMISSION_JSON = """
+            {
+                "id": "sub-1",
+                "formTemplateId": "template-1",
+                "patientId": "patient-1",
+                "userId": 3,
+                "dateSubmitted": 1700000000,
+                "lastEdited": 1700000000,
+                "lang": "English",
+                "archived": false
+            }
+        """
+
+        private const val SUBMISSION_WITH_ANSWERS_JSON = """
+            {
+                "id": "sub-1",
+                "formTemplateId": "template-1",
+                "patientId": "patient-1",
+                "userId": 3,
+                "dateSubmitted": 1700000000,
+                "lastEdited": 1700000000,
+                "lang": "English",
+                "archived": false,
+                "answers": [
+                    {
+                        "id": "ans-1",
+                        "questionId": "q1",
+                        "formSubmissionId": "sub-1",
+                        "answer": {"text": "Normal"},
+                        "questionType": "STRING",
+                        "questionText": "How are you feeling?",
+                        "mcOptions": [],
+                        "order": 0
+                    },
+                    {
+                        "id": "ans-2",
+                        "questionId": "q2",
+                        "formSubmissionId": "sub-1",
+                        "answer": {"mcIdArray": [0, 2]},
+                        "questionType": "MULTIPLE_CHOICE",
+                        "questionText": "Select symptoms",
+                        "mcOptions": ["Headache", "Fever", "Nausea"],
+                        "order": 1
+                    }
+                ]
+            }
+        """
+
+        private const val TEMPLATE_LIST_JSON = """
+            {
+                "templates": [
+                    {
+                        "id": "template-1",
+                        "formClassificationId": "class-1",
+                        "version": 1,
+                        "archived": false,
+                        "name": "Antenatal",
+                        "dateCreated": 1700000000
+                    }
+                ]
+            }
+        """
+
+        private const val TEMPLATE_JSON = """
+            {
+                "id": "template-1",
+                "version": 1,
+                "archived": false,
+                "classification": {
+                    "id": "class-1",
+                    "name": {"english": "Antenatal"},
+                    "nameStringId": "str-1"
+                },
+                "dateCreated": 1700000000,
+                "questions": [
+                    {
+                        "id": "q1",
+                        "formTemplateId": "template-1",
+                        "questionType": "MULTIPLE_CHOICE",
+                        "order": 0,
+                        "questionText": {"english": "Select symptoms"},
+                        "questionStringId": "qstr-1",
+                        "categoryIndex": null,
+                        "required": true,
+                        "hasCommentAttached": false,
+                        "allowFutureDates": null,
+                        "allowPastDates": null,
+                        "visibleCondition": [],
+                        "stringMaxLength": null,
+                        "stringMaxLines": null,
+                        "numMin": null,
+                        "numMax": null,
+                        "units": null,
+                        "userQuestionId": null,
+                        "mcOptions": [
+                            {"stringId": "opt-1", "translations": {"english": "Headache"}},
+                            {"stringId": "opt-2", "translations": {"english": "Fever"}}
+                        ]
+                    }
+                ]
+            }
+        """
+
+
 
 
 
