@@ -147,7 +147,7 @@ internal class RestApiFormsV2Test {
 
     @Test
     fun getFormSubmissionNotFound(){
-        val result = runBlocking{ restApi.getFormsubmissionV2("form-does-not-exist-1234")}
+        val result = runBlocking{ restApi.getFormSubmissionV2("form-does-not-exist-1234")}
 
         check(result is NetworkResult.Failure){"got $result"}
 
