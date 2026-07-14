@@ -317,10 +317,7 @@ internal class RestApiFormsV2Test {
                 ]
             }
         """
-
-
-
-
+    }
 
 
 }
