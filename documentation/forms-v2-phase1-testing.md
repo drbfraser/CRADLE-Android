@@ -277,3 +277,18 @@ Authorization: Bearer <accessToken>
 **Response** — `200 OK` (array of full templates, one per classification)
 
 ---
+## Bugs Found
+
+### Bug #1: Creating a template crashes if a question has no `mcOptions`
+
+If you try to create a template where a question is not a multiple-choice/multiple-select
+question i.e it has no `mcOptions` field at all, e.g. a plain text question, the request fails
+with a `500 Internal Server Error` instead of creating the template.
+
+This is because the backend expects a list and when we try to iterate over it without actually having the list, we get an error
+
+### Bug #2: `userId` is actually required, even though code says it is not
+
+The code suggests that `userId` on a new submission is optional and should default to
+whoever is logged in (from the auth token). In practice, leaving it out gives a
+`422 Unprocessable Entity` error saying the field is required. Hence the code will need to be changed to accomodate this.
