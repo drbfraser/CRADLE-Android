@@ -1002,7 +1002,7 @@ class RestApi(
 
     /**
      * V2: Creates a form submission. HTTP-only for now (basic connectivity validation
-     * pass); 
+     * pass);
      * todo: sms support can be added the same way as postFormResponse once V2 is
      * further along.
      */
@@ -1061,7 +1061,7 @@ class RestApi(
     }
 
     /**
-     * v2: lists all form templates 
+     * v2: lists all form templates
      */
     suspend fun getAllFormTemplatesV2(): NetworkResult<FormTemplateListV2Response> = withContext(IO) {
         http.makeRequest(
@@ -1103,8 +1103,6 @@ class RestApi(
             },
         )
     }
-
-
 
     /**
      * Uploads a patient's demographic information with the intent of modifying

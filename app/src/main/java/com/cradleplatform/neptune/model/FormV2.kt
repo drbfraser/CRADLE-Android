@@ -5,11 +5,9 @@ import com.google.gson.annotations.SerializedName
 import java.io.Serializable
 
 /**
- * represensts the V2 form model, which is a new version of the form model that is used for the new form submission flow.
- * This model is used for the new form submission flow
- * mimics the v1 form model but adds some changes to it as well
- * mimics the server side model
- * the class names come from the backend to make migration easier
+ * Represents the V2 form model, used for the new form submission flow.
+ * Mimics the v1 form model but adds some changes to it as well, and mimics the server side model.
+ * The class names come from the backend to make migration easier.
  */
 
 typealias MultiLangText = Map<String, String>
@@ -34,16 +32,28 @@ data class AnswerV2 private constructor(
 
     companion object {
         fun createNumericAnswer(number: Number, comment: String? = null): AnswerV2 =
-            AnswerV2(numericAnswer = number, textAnswer = null, mcIdArrayAnswer = null, dateAnswer = null, comment = comment)
+            AnswerV2(
+                numericAnswer = number, textAnswer = null, mcIdArrayAnswer = null,
+                dateAnswer = null, comment = comment
+            )
 
         fun createTextAnswer(text: String, comment: String? = null): AnswerV2 =
-            AnswerV2(numericAnswer = null, textAnswer = text, mcIdArrayAnswer = null, dateAnswer = null, comment = comment)
+            AnswerV2(
+                numericAnswer = null, textAnswer = text, mcIdArrayAnswer = null,
+                dateAnswer = null, comment = comment
+            )
 
         fun createMcAnswer(mcIdArray: List<Int>, comment: String? = null): AnswerV2 =
-            AnswerV2(numericAnswer = null, textAnswer = null, mcIdArrayAnswer = mcIdArray, dateAnswer = null, comment = comment)
+            AnswerV2(
+                numericAnswer = null, textAnswer = null, mcIdArrayAnswer = mcIdArray,
+                dateAnswer = null, comment = comment
+            )
 
         fun createDateAnswer(date: String, comment: String? = null): AnswerV2 =
-            AnswerV2(numericAnswer = null, textAnswer = null, mcIdArrayAnswer = null, dateAnswer = date, comment = comment)
+            AnswerV2(
+                numericAnswer = null, textAnswer = null, mcIdArrayAnswer = null,
+                dateAnswer = date, comment = comment
+            )
     }
 }
 
@@ -119,7 +129,6 @@ data class FormClassificationListV2(
     @SerializedName("classifications") val classifications: List<FormClassificationV2>
 ) : Serializable
 
-
 data class FormAnswerV2(
     @Expose @SerializedName("id") val id: String? = null,
     @Expose @SerializedName("questionId") val questionId: String,
@@ -161,8 +170,6 @@ data class AnswerWithQuestionV2(
     @SerializedName("mcOptions") val mcOptions: List<String>,
     @SerializedName("order") val order: Int,
 ) : Serializable
-
-
 
 data class FormSubmissionWithAnswersV2(
     @SerializedName("id") val id: String?,
