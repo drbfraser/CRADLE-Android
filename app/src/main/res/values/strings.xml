@@ -717,6 +717,9 @@
     <string name="workflow_step_status_cancelled">Cancelled</string>
     <string name="workflow_step_started">Started: %1$s</string>
     <string name="workflow_step_completed">Completed: %1$s</string>
+    <string name="workflow_details_next_step_button">Go to Next Step</string>
+    <string name="workflow_details_next_step_success">Moved to next step</string>
+    <string name="workflow_details_next_step_error">Unable to move to next step</string>
     <string name="form_submitted">Form Submitted</string>
     <string name="form_name_label">Form:</string>
     <string name="form_date_submitted_label">Date Submitted:</string>

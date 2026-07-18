@@ -10,6 +10,7 @@ import com.cradleplatform.neptune.http_sms_service.http.map
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.PatientAndReadings
 import com.cradleplatform.neptune.model.Reading
+import com.cradleplatform.neptune.model.WorkflowAction
 import com.cradleplatform.neptune.model.WorkflowInstance
 import com.cradleplatform.neptune.model.WorkflowTemplate
 import com.cradleplatform.neptune.utilities.Protocol
@@ -223,6 +224,43 @@ class PatientManager @Inject constructor(
         templateId: String
     ): NetworkResult<WorkflowTemplate> =
         restApi.getWorkflowTemplate(templateId)
+
+    /**
+     * Completes the current active step of a workflow instance and advances the
+     * instance to the next step (starting it), or completes the workflow if the
+     * current step is the final one.
+     */
+    suspend fun goToNextWorkflowStep(
+        instanceId: String,
+        currentStepId: String
+    ): NetworkResult<Unit> {
+        val completeResult = restApi.applyWorkflowInstanceAction(
+            instanceId,
+            WorkflowAction(type = "complete_step", stepId = currentStepId)
+        )
+        if (completeResult !is NetworkResult.Success) return completeResult
+
+        val advanceResult = restApi.advanceWorkflowInstance(instanceId)
+        if (advanceResult !is NetworkResult.Success) return advanceResult
+
+        val actionsResult = restApi.getWorkflowInstanceActions(instanceId)
+        if (actionsResult !is NetworkResult.Success) return actionsResult.cast()
+
+        val nextAction = actionsResult.value.firstOrNull()
+            ?: return NetworkResult.Success(Unit, actionsResult.statusCode)
+
+        return when (nextAction.type) {
+            "start_step" -> restApi.applyWorkflowInstanceAction(
+                instanceId,
+                WorkflowAction(type = "start_step", stepId = nextAction.stepId)
+            )
+            "complete_workflow" -> restApi.applyWorkflowInstanceAction(
+                instanceId,
+                WorkflowAction(type = "complete_workflow")
+            )
+            else -> NetworkResult.Success(Unit, actionsResult.statusCode)
+        }
+    }
 
     /**
      * Associates a given patient to the active user.

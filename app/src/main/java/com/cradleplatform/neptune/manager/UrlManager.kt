@@ -65,6 +65,12 @@ class UrlManager @Inject constructor(val settings: Settings) {
     fun getWorkflowInstancesByPatient(patientId: String) =
         "$base/workflow/instances?patient_id=$patientId&with_steps=true"
 
+    fun workflowInstanceActions(instanceId: String) =
+        "$base/workflow/instances/$instanceId/actions"
+
+    fun advanceWorkflowInstance(instanceId: String) =
+        "$base/workflow/instances/$instanceId/advance"
+
     fun getWorkflowTemplate(templateId: String) =
         "$base/workflow/templates/$templateId?with_classification=true"
 

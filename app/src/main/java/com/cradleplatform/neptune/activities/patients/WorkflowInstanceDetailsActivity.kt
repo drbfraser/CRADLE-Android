@@ -7,15 +7,27 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
+import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import com.cradleplatform.neptune.R
+import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
+import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.model.WorkflowRow
 import com.cradleplatform.neptune.model.WorkflowStepRow
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class WorkflowInstanceDetailsActivity : AppCompatActivity() {
+
+    @Inject
+    lateinit var patientManager: PatientManager
 
     companion object {
         private const val EXTRA_WORKFLOW = "workflow_row"
@@ -72,7 +84,43 @@ class WorkflowInstanceDetailsActivity : AppCompatActivity() {
                 getString(R.string.workflow_details_step_status, workflow.lastEdited)
         }
 
+        setupNextStepButton(workflow)
+
         populateStepHistory(workflow.steps)
+    }
+
+    private fun setupNextStepButton(workflow: WorkflowRow) {
+        val nextStepButton = findViewById<Button>(R.id.workflowNextStepButton)
+        val currentStepId = workflow.currentStepId
+
+        if (!workflow.currentStepActive || currentStepId.isNullOrBlank()) {
+            nextStepButton.visibility = View.GONE
+            return
+        }
+
+        nextStepButton.visibility = View.VISIBLE
+        nextStepButton.setOnClickListener {
+            nextStepButton.isEnabled = false
+            lifecycleScope.launch {
+                val result =
+                    patientManager.goToNextWorkflowStep(workflow.instanceId, currentStepId)
+                if (result is NetworkResult.Success) {
+                    Toast.makeText(
+                        this@WorkflowInstanceDetailsActivity,
+                        R.string.workflow_details_next_step_success,
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    finish()
+                } else {
+                    nextStepButton.isEnabled = true
+                    Toast.makeText(
+                        this@WorkflowInstanceDetailsActivity,
+                        R.string.workflow_details_next_step_error,
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+        }
     }
 
     private fun populateStepHistory(steps: List<WorkflowStepRow>) {

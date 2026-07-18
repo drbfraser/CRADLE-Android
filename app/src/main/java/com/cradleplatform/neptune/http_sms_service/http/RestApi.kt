@@ -31,6 +31,9 @@ import com.cradleplatform.neptune.model.Reading
 import com.cradleplatform.neptune.model.Referral
 import com.cradleplatform.neptune.model.RelayPhoneNumberResponse
 import com.cradleplatform.neptune.model.Statistics
+import com.cradleplatform.neptune.model.ApplyActionRequest
+import com.cradleplatform.neptune.model.WorkflowAction
+import com.cradleplatform.neptune.model.WorkflowAvailableActions
 import com.cradleplatform.neptune.model.WorkflowInstance
 import com.cradleplatform.neptune.model.WorkflowInstanceList
 import com.cradleplatform.neptune.model.WorkflowTemplate
@@ -2307,6 +2310,66 @@ class RestApi(
                 }
             }
         }
+
+    suspend fun applyWorkflowInstanceAction(
+        instanceId: String,
+        action: WorkflowAction
+    ): NetworkResult<Unit> = withContext(IO) {
+        val body = createWriter<ApplyActionRequest>()
+            .writeValueAsBytes(ApplyActionRequest(action))
+        http.makeRequest(
+            method = Http.Method.POST,
+            url = urlManager.workflowInstanceActions(instanceId),
+            headers = makeAuthorizationHeader(),
+            requestBody = buildJsonRequestBody(body),
+            inputStreamReader = {}
+        ).also {
+            when (it) {
+                is NetworkResult.Success ->
+                    Log.d(TAG, "Applied workflow action ${action.type} on $instanceId")
+                else ->
+                    Log.e(TAG, "Failed to apply workflow action ${action.type} on $instanceId")
+            }
+        }
+    }
+
+    suspend fun advanceWorkflowInstance(instanceId: String): NetworkResult<Unit> =
+        withContext(IO) {
+            http.makeRequest(
+                method = Http.Method.POST,
+                url = urlManager.advanceWorkflowInstance(instanceId),
+                headers = makeAuthorizationHeader(),
+                requestBody = buildJsonRequestBody("{}".toByteArray()),
+                inputStreamReader = {}
+            ).also {
+                when (it) {
+                    is NetworkResult.Success ->
+                        Log.d(TAG, "Advanced workflow instance $instanceId")
+                    else ->
+                        Log.e(TAG, "Failed to advance workflow instance $instanceId")
+                }
+            }
+        }
+
+    suspend fun getWorkflowInstanceActions(
+        instanceId: String
+    ): NetworkResult<List<WorkflowAction>> = withContext(IO) {
+        http.makeRequest(
+            method = Http.Method.GET,
+            url = urlManager.workflowInstanceActions(instanceId),
+            headers = makeAuthorizationHeader(),
+            inputStreamReader = { inputStream ->
+                JacksonMapper.mapper.readValue<WorkflowAvailableActions>(inputStream).actions
+            }
+        ).also {
+            when (it) {
+                is NetworkResult.Success ->
+                    Log.d(TAG, "Available actions for $instanceId: ${it.value}")
+                else ->
+                    Log.e(TAG, "Failed to get actions for workflow instance $instanceId")
+            }
+        }
+    }
 
     suspend fun getWorkflowTemplate(templateId: String): NetworkResult<WorkflowTemplate> =
         withContext(IO) {

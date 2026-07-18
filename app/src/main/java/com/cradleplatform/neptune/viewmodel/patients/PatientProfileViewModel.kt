@@ -114,7 +114,8 @@ class PatientProfileViewModel @Inject constructor(
                     ?.let { stepId -> instance.steps.indexOfFirst { it.id == stepId } }
                     ?.takeIf { it >= 0 }
                     ?: 0
-                val currentStep = instance.steps.getOrNull(currentIndex)?.name ?: "N/A"
+                val currentInstanceStep = instance.steps.getOrNull(currentIndex)
+                val currentStep = currentInstanceStep?.name ?: "N/A"
                 val lastEdited = instance.lastEdited
                     ?.let { DateUtil.getDateStringFromTimestamp(it) }
                     ?: "N/A"
@@ -136,6 +137,10 @@ class PatientProfileViewModel @Inject constructor(
                     stepCount = instance.steps.size,
                     currentStep = currentStep,
                     completedSteps = currentIndex,
+                    instanceId = instance.id,
+                    currentStepId = currentInstanceStep?.id,
+                    currentStepActive =
+                        currentInstanceStep?.status?.equals("Active", ignoreCase = true) == true,
                     steps = stepRows
                 )
             }
