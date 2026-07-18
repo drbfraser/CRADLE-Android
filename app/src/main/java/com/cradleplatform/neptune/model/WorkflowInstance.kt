@@ -1,24 +1,38 @@
 package com.cradleplatform.neptune.model
 
 import android.os.Parcelable
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.Index
+import androidx.room.PrimaryKey
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
 import kotlinx.parcelize.Parcelize
 
+@Entity(
+    indices = [
+        Index(value = ["id"], unique = true),
+        Index(value = ["patientId"])
+    ]
+)
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class WorkflowInstance(
-    @JsonProperty("id")
+    @PrimaryKey @ColumnInfo @JsonProperty("id")
     val id: String,
-    @JsonProperty("status")
+    @ColumnInfo @JsonProperty("name")
+    val name: String? = null,
+    @ColumnInfo @JsonProperty("status")
     val status: String,
-    @JsonProperty("workflowTemplateId")
+    @ColumnInfo @JsonProperty("patientId")
+    val patientId: String? = null,
+    @ColumnInfo @JsonProperty("workflowTemplateId")
     val workflowTemplateId: String? = null,
-    @JsonProperty("currentStepId")
+    @ColumnInfo @JsonProperty("currentStepId")
     val currentStepId: String? = null,
-    @JsonProperty("lastEdited")
+    @ColumnInfo @JsonProperty("lastEdited")
     val lastEdited: Long? = null,
-    @JsonProperty("steps")
+    @ColumnInfo @JsonProperty("steps")
     val steps: List<WorkflowInstanceStep> = emptyList()
 )
 

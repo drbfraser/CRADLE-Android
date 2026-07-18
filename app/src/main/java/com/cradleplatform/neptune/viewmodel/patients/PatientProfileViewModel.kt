@@ -16,7 +16,6 @@ import com.cradleplatform.neptune.model.Reading
 import com.cradleplatform.neptune.model.Referral
 import com.cradleplatform.neptune.model.WorkflowRow
 import com.cradleplatform.neptune.model.WorkflowStepRow
-import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.utilities.DateUtil
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -107,57 +106,43 @@ class PatientProfileViewModel @Inject constructor(
         val submittedForms = formResponseManager.searchForSubmittedFormsByPatientId(patientId)
         _submittedForms.postValue(submittedForms ?: emptyList())
 
-        val workflowsResult = patientManager.downloadWorkflowInstances(patientId)
-        if (workflowsResult is NetworkResult.Success) {
-            val rows = workflowsResult.value.map { instance ->
-                val currentIndex = instance.currentStepId
-                    ?.let { stepId -> instance.steps.indexOfFirst { it.id == stepId } }
-                    ?.takeIf { it >= 0 }
-                    ?: 0
-                val currentInstanceStep = instance.steps.getOrNull(currentIndex)
-                val currentStep = currentInstanceStep?.name ?: "N/A"
-                val lastEdited = instance.lastEdited
-                    ?.let { DateUtil.getDateStringFromTimestamp(it) }
-                    ?: "N/A"
-                val stepRows = instance.steps.map { step ->
-                    WorkflowStepRow(
-                        name = step.name,
-                        status = step.status.orEmpty(),
-                        startedDate = step.startDate
-                            ?.let { DateUtil.getDateStringFromTimestamp(it) }
-                            ?: "N/A",
-                        completedDate = step.completionDate
-                            ?.let { DateUtil.getDateStringFromTimestamp(it) }
-                    )
-                }
-                WorkflowRow(
-                    templateName = resolveTemplateName(instance.workflowTemplateId),
-                    status = instance.status,
-                    lastEdited = lastEdited,
-                    stepCount = instance.steps.size,
-                    currentStep = currentStep,
-                    completedSteps = currentIndex,
-                    instanceId = instance.id,
-                    currentStepId = currentInstanceStep?.id,
-                    currentStepActive =
-                        currentInstanceStep?.status?.equals("Active", ignoreCase = true) == true,
-                    steps = stepRows
+        val instances = patientManager.getWorkflowInstancesForPatient(patientId)
+        val rows = instances.map { instance ->
+            val currentIndex = instance.currentStepId
+                ?.let { stepId -> instance.steps.indexOfFirst { it.id == stepId } }
+                ?.takeIf { it >= 0 }
+                ?: 0
+            val currentInstanceStep = instance.steps.getOrNull(currentIndex)
+            val currentStep = currentInstanceStep?.name ?: "N/A"
+            val lastEdited = instance.lastEdited
+                ?.let { DateUtil.getDateStringFromTimestamp(it) }
+                ?: "N/A"
+            val stepRows = instance.steps.map { step ->
+                WorkflowStepRow(
+                    name = step.name,
+                    status = step.status.orEmpty(),
+                    startedDate = step.startDate
+                        ?.let { DateUtil.getDateStringFromTimestamp(it) }
+                        ?: "N/A",
+                    completedDate = step.completionDate
+                        ?.let { DateUtil.getDateStringFromTimestamp(it) }
                 )
             }
-            _workflows.postValue(rows)
-        } else {
-            _workflows.postValue(emptyList())
+            WorkflowRow(
+                templateName = instance.name ?: "N/A",
+                status = instance.status,
+                lastEdited = lastEdited,
+                stepCount = instance.steps.size,
+                currentStep = currentStep,
+                completedSteps = currentIndex,
+                instanceId = instance.id,
+                currentStepId = currentInstanceStep?.id,
+                currentStepActive =
+                    currentInstanceStep?.status?.equals("Active", ignoreCase = true) == true,
+                steps = stepRows
+            )
         }
-    }
-
-    private suspend fun resolveTemplateName(templateId: String?): String {
-        if (templateId == null) return "N/A"
-        val result = patientManager.downloadWorkflowTemplate(templateId)
-        return if (result is NetworkResult.Success) {
-            result.value.classification?.name ?: result.value.name ?: "N/A"
-        } else {
-            "N/A"
-        }
+        _workflows.postValue(rows)
     }
 
     /**

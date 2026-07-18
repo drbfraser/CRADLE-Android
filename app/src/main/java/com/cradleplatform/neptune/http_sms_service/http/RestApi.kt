@@ -2311,6 +2311,25 @@ class RestApi(
             }
         }
 
+    suspend fun getAllWorkflowInstances(): NetworkResult<List<WorkflowInstance>> =
+        withContext(IO) {
+            http.makeRequest(
+                method = Http.Method.GET,
+                url = urlManager.getAllWorkflowInstances,
+                headers = makeAuthorizationHeader(),
+                inputStreamReader = { inputStream ->
+                    JacksonMapper.mapper.readValue<WorkflowInstanceList>(inputStream).items
+                }
+            ).also {
+                when (it) {
+                    is NetworkResult.Success ->
+                        Log.d(TAG, "Workflow instances downloaded: ${it.value.size}")
+                    else ->
+                        Log.e(TAG, "Failed to download workflow instances")
+                }
+            }
+        }
+
     suspend fun applyWorkflowInstanceAction(
         instanceId: String,
         action: WorkflowAction

@@ -4,6 +4,7 @@ import androidx.room.withTransaction
 import com.cradleplatform.neptune.database.CradleDatabase
 import com.cradleplatform.neptune.database.daos.PatientDao
 import com.cradleplatform.neptune.database.daos.ReadingDao
+import com.cradleplatform.neptune.database.daos.WorkflowInstanceDao
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
 import com.cradleplatform.neptune.http_sms_service.http.map
@@ -12,7 +13,6 @@ import com.cradleplatform.neptune.model.PatientAndReadings
 import com.cradleplatform.neptune.model.Reading
 import com.cradleplatform.neptune.model.WorkflowAction
 import com.cradleplatform.neptune.model.WorkflowInstance
-import com.cradleplatform.neptune.model.WorkflowTemplate
 import com.cradleplatform.neptune.utilities.Protocol
 import kotlinx.coroutines.yield
 import javax.inject.Inject
@@ -26,6 +26,7 @@ class PatientManager @Inject constructor(
     private val database: CradleDatabase,
     private val patientDao: PatientDao,
     private val readingDao: ReadingDao,
+    private val workflowInstanceDao: WorkflowInstanceDao,
     private val restApi: RestApi,
 ) {
     /**
@@ -215,15 +216,19 @@ class PatientManager @Inject constructor(
     suspend fun downloadPatientAndReading(id: String): NetworkResult<PatientAndReadings> =
         restApi.getPatient(id, Protocol.HTTP)
 
-    suspend fun downloadWorkflowInstances(
-        patientId: String
-    ): NetworkResult<List<WorkflowInstance>> =
-        restApi.getWorkflowInstancesByPatient(patientId)
+    suspend fun syncWorkflowInstances(): NetworkResult<Unit> {
+        val result = restApi.getAllWorkflowInstances()
+        if (result is NetworkResult.Success) {
+            database.withTransaction {
+                workflowInstanceDao.deleteAll()
+                workflowInstanceDao.insertAll(result.value)
+            }
+        }
+        return result.map { }
+    }
 
-    suspend fun downloadWorkflowTemplate(
-        templateId: String
-    ): NetworkResult<WorkflowTemplate> =
-        restApi.getWorkflowTemplate(templateId)
+    suspend fun getWorkflowInstancesForPatient(patientId: String): List<WorkflowInstance> =
+        workflowInstanceDao.getByPatientId(patientId)
 
     /**
      * Completes the current active step of a workflow instance and advances the

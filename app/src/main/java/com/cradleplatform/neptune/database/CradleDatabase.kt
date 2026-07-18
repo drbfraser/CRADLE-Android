@@ -14,6 +14,7 @@ import com.cradleplatform.neptune.database.daos.HealthFacilityDao
 import com.cradleplatform.neptune.database.daos.PatientDao
 import com.cradleplatform.neptune.database.daos.ReadingDao
 import com.cradleplatform.neptune.database.daos.ReferralDao
+import com.cradleplatform.neptune.database.daos.WorkflowInstanceDao
 import com.cradleplatform.neptune.database.views.LocalSearchPatient
 import com.cradleplatform.neptune.model.Assessment
 import com.cradleplatform.neptune.model.FormClassification
@@ -22,8 +23,9 @@ import com.cradleplatform.neptune.model.HealthFacility
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.Reading
 import com.cradleplatform.neptune.model.Referral
+import com.cradleplatform.neptune.model.WorkflowInstance
 
-const val CURRENT_DATABASE_VERSION = 2
+const val CURRENT_DATABASE_VERSION = 3
 
 /**
  * An interface for the local CRADLE database.
@@ -41,7 +43,8 @@ const val CURRENT_DATABASE_VERSION = 2
         Referral::class,
         Assessment::class,
         FormClassification::class,
-        FormResponse::class
+        FormResponse::class,
+        WorkflowInstance::class
     ],
     views = [LocalSearchPatient::class],
     version = CURRENT_DATABASE_VERSION,
@@ -56,6 +59,7 @@ abstract class CradleDatabase : RoomDatabase() {
     abstract fun assessmentDao(): AssessmentDao
     abstract fun formClassificationDao(): FormClassificationDao
     abstract fun formResponseDao(): FormResponseDao
+    abstract fun workflowInstanceDao(): WorkflowInstanceDao
 
     companion object {
         private const val DATABASE_NAME = "room-readingDB"
@@ -93,7 +97,7 @@ abstract class CradleDatabase : RoomDatabase() {
 @Suppress("MagicNumber", "NestedBlockDepth", "ObjectPropertyNaming")
 internal object Migrations {
     val ALL_MIGRATIONS: Array<Migration> by lazy {
-        arrayOf(MIGRATION_1_2)
+        arrayOf(MIGRATION_1_2, MIGRATION_2_3)
     }
 
     /**
@@ -163,6 +167,41 @@ internal object Migrations {
                 )
                 execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_Assessment_id` ON `Assessment` (`id`)")
                 execSQL("CREATE INDEX IF NOT EXISTS `index_Assessment_patientId` ON `Assessment` (`patientId`)")
+            }
+        }
+    }
+
+    /**
+     * Version 3:
+     * Create WorkflowInstance table
+     */
+    private val MIGRATION_2_3 = object : Migration(2, 3) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            database.apply {
+                execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS WorkflowInstance (
+                        `id` TEXT NOT NULL,
+                        `name` TEXT,
+                        `status` TEXT NOT NULL,
+                        `patientId` TEXT,
+                        `workflowTemplateId` TEXT,
+                        `currentStepId` TEXT,
+                        `lastEdited` INTEGER,
+                        `steps` TEXT NOT NULL,
+                        PRIMARY KEY(`id`)
+                    )
+                    """.trimIndent()
+                )
+
+                execSQL(
+                    "CREATE UNIQUE INDEX IF NOT EXISTS " +
+                        "`index_WorkflowInstance_id` ON `WorkflowInstance` (`id`)"
+                )
+                execSQL(
+                    "CREATE INDEX IF NOT EXISTS " +
+                        "`index_WorkflowInstance_patientId` ON `WorkflowInstance` (`patientId`)"
+                )
             }
         }
     }
