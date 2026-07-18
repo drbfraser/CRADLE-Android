@@ -68,6 +68,9 @@ class UrlManager @Inject constructor(val settings: Settings) {
     val getAllWorkflowInstances: String
         get() = "$base/workflow/instances?with_steps=true"
 
+    val workflowInstances: String
+        get() = "$base/workflow/instances"
+
     fun workflowInstanceActions(instanceId: String) =
         "$base/workflow/instances/$instanceId/actions"
 

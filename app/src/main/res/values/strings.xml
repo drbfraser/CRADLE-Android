@@ -688,6 +688,10 @@
     <string name="see_submitted_forms">See Submitted Forms</string>
     <string name="workflows_title">Workflows</string>
     <string name="workflows_empty">No workflows</string>
+    <string name="workflows_start_new">Start New Workflow</string>
+    <string name="workflows_start_dialog_title">Select a workflow</string>
+    <string name="workflows_start_no_templates">No workflows available</string>
+    <string name="workflows_start_success">Workflow started</string>
     <string name="workflows_column_name">Name</string>
     <string name="workflows_column_template">Workflow Template</string>
     <string name="workflows_column_status">Status</string>

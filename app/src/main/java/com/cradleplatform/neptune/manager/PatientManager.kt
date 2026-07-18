@@ -5,16 +5,20 @@ import com.cradleplatform.neptune.database.CradleDatabase
 import com.cradleplatform.neptune.database.daos.PatientDao
 import com.cradleplatform.neptune.database.daos.ReadingDao
 import com.cradleplatform.neptune.database.daos.WorkflowInstanceDao
+import com.cradleplatform.neptune.database.daos.WorkflowTemplateDao
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
 import com.cradleplatform.neptune.http_sms_service.http.map
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.PatientAndReadings
 import com.cradleplatform.neptune.model.Reading
+import com.cradleplatform.neptune.model.CreateWorkflowInstanceRequest
 import com.cradleplatform.neptune.model.WorkflowAction
 import com.cradleplatform.neptune.model.WorkflowInstance
+import com.cradleplatform.neptune.model.WorkflowTemplate
 import com.cradleplatform.neptune.utilities.Protocol
 import kotlinx.coroutines.yield
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -27,6 +31,7 @@ class PatientManager @Inject constructor(
     private val patientDao: PatientDao,
     private val readingDao: ReadingDao,
     private val workflowInstanceDao: WorkflowInstanceDao,
+    private val workflowTemplateDao: WorkflowTemplateDao,
     private val restApi: RestApi,
 ) {
     /**
@@ -216,19 +221,65 @@ class PatientManager @Inject constructor(
     suspend fun downloadPatientAndReading(id: String): NetworkResult<PatientAndReadings> =
         restApi.getPatient(id, Protocol.HTTP)
 
+    suspend fun syncWorkflowTemplates(): NetworkResult<Unit> {
+        val result = restApi.getAllWorkflowTemplates()
+        if (result is NetworkResult.Success) {
+            database.withTransaction {
+                workflowTemplateDao.deleteAll()
+                workflowTemplateDao.insertAll(result.value)
+            }
+        }
+        return result.map { }
+    }
+
     suspend fun syncWorkflowInstances(): NetworkResult<Unit> {
+        workflowInstanceDao.getUnuploaded().forEach { instance ->
+            val templateId = instance.workflowTemplateId
+            val patientId = instance.patientId
+            if (templateId != null && patientId != null) {
+                val uploadResult = restApi.createWorkflowInstance(
+                    CreateWorkflowInstanceRequest(
+                        workflowTemplateId = templateId,
+                        patientId = patientId,
+                        name = instance.name.orEmpty(),
+                        description = ""
+                    )
+                )
+                if (uploadResult is NetworkResult.Success) {
+                    workflowInstanceDao.deleteById(instance.id)
+                }
+            }
+        }
+
         val result = restApi.getAllWorkflowInstances()
         if (result is NetworkResult.Success) {
             database.withTransaction {
-                workflowInstanceDao.deleteAll()
+                workflowInstanceDao.deleteAllUploaded()
                 workflowInstanceDao.insertAll(result.value)
             }
         }
         return result.map { }
     }
 
+    suspend fun getWorkflowTemplates(): List<WorkflowTemplate> = workflowTemplateDao.getAll()
+
     suspend fun getWorkflowInstancesForPatient(patientId: String): List<WorkflowInstance> =
         workflowInstanceDao.getByPatientId(patientId)
+
+    suspend fun startWorkflowInstance(patientId: String, template: WorkflowTemplate) {
+        val instance = WorkflowInstance(
+            id = UUID.randomUUID().toString(),
+            name = template.name,
+            status = "Pending",
+            patientId = patientId,
+            workflowTemplateId = template.id,
+            currentStepId = null,
+            lastEdited = null,
+            steps = emptyList(),
+            isUploadedToServer = false
+        )
+        workflowInstanceDao.insertAll(listOf(instance))
+    }
 
     /**
      * Completes the current active step of a workflow instance and advances the

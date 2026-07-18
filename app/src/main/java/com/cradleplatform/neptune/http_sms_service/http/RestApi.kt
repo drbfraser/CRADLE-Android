@@ -32,11 +32,13 @@ import com.cradleplatform.neptune.model.Referral
 import com.cradleplatform.neptune.model.RelayPhoneNumberResponse
 import com.cradleplatform.neptune.model.Statistics
 import com.cradleplatform.neptune.model.ApplyActionRequest
+import com.cradleplatform.neptune.model.CreateWorkflowInstanceRequest
 import com.cradleplatform.neptune.model.WorkflowAction
 import com.cradleplatform.neptune.model.WorkflowAvailableActions
 import com.cradleplatform.neptune.model.WorkflowInstance
 import com.cradleplatform.neptune.model.WorkflowInstanceList
 import com.cradleplatform.neptune.model.WorkflowTemplate
+import com.cradleplatform.neptune.model.WorkflowTemplateList
 import com.cradleplatform.neptune.sync.workers.AssessmentSyncField
 import com.cradleplatform.neptune.sync.workers.PatientSyncField
 import com.cradleplatform.neptune.sync.workers.ReadingSyncField
@@ -2276,16 +2278,38 @@ class RestApi(
         FormSyncResult(result, totalClassifications)
     }
 
-    suspend fun getAllWorkflowTemplates(): NetworkResult<String> = withContext(IO) {
+    suspend fun getAllWorkflowTemplates(): NetworkResult<List<WorkflowTemplate>> = withContext(IO) {
         http.makeRequest(
             method = Http.Method.GET,
             url = urlManager.getAllWorkflowTemplates,
             headers = makeAuthorizationHeader(),
-            inputStreamReader = { it.bufferedReader().readText() }
+            inputStreamReader = { inputStream ->
+                JacksonMapper.mapper.readValue<WorkflowTemplateList>(inputStream).items
+            }
         ).also {
             when (it) {
-                is NetworkResult.Success -> Log.d(TAG, "Workflow templates: ${it.value}")
+                is NetworkResult.Success -> Log.d(TAG, "Workflow templates downloaded: ${it.value.size}")
                 else -> Log.e(TAG, "Failed to download workflow templates")
+            }
+        }
+    }
+
+    suspend fun createWorkflowInstance(
+        request: CreateWorkflowInstanceRequest
+    ): NetworkResult<WorkflowInstance> = withContext(IO) {
+        val body = createWriter<CreateWorkflowInstanceRequest>().writeValueAsBytes(request)
+        http.makeRequest(
+            method = Http.Method.POST,
+            url = urlManager.workflowInstances,
+            headers = makeAuthorizationHeader(),
+            requestBody = buildJsonRequestBody(body),
+            inputStreamReader = { JacksonMapper.mapper.readValue<WorkflowInstance>(it) }
+        ).also {
+            when (it) {
+                is NetworkResult.Success ->
+                    Log.d(TAG, "Created workflow instance ${it.value.id}")
+                else ->
+                    Log.e(TAG, "Failed to create workflow instance")
             }
         }
     }

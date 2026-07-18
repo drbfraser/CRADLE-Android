@@ -40,6 +40,7 @@ import com.cradleplatform.neptune.model.Reading
 import com.cradleplatform.neptune.model.Referral
 import com.cradleplatform.neptune.model.Sex
 import com.cradleplatform.neptune.model.WorkflowRow
+import com.cradleplatform.neptune.model.WorkflowTemplate
 import com.cradleplatform.neptune.utilities.SnackbarHelper
 import com.cradleplatform.neptune.utilities.Util
 import com.cradleplatform.neptune.activities.forms.FormSelectionActivity
@@ -126,6 +127,8 @@ open class PatientProfileActivity : AppCompatActivity() {
         }
     }
 
+    private var availableWorkflowTemplates: List<WorkflowTemplate> = emptyList()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_patient_profile)
@@ -133,6 +136,7 @@ open class PatientProfileActivity : AppCompatActivity() {
         setupToolBar()
         setupUpdateRecord()
         setupViewModelObservers()
+        setupStartWorkflowButton()
 
         if (!getLocalPatient()) {
             // Not a local patient, might be a child class so we let the child do the init stuff
@@ -188,6 +192,40 @@ open class PatientProfileActivity : AppCompatActivity() {
 
         viewModel.workflows.observe(this) { workflows ->
             populateWorkflowTable(workflows)
+        }
+
+        viewModel.workflowTemplates.observe(this) { templates ->
+            availableWorkflowTemplates = templates ?: emptyList()
+        }
+    }
+
+    private fun setupStartWorkflowButton() {
+        val button = findViewById<Button>(R.id.startWorkflowButton)
+        button.setOnClickListener {
+            val templates = availableWorkflowTemplates
+            if (templates.isEmpty()) {
+                Toast.makeText(
+                    this,
+                    R.string.workflows_start_no_templates,
+                    Toast.LENGTH_SHORT
+                ).show()
+                return@setOnClickListener
+            }
+            val names = templates
+                .map { it.name ?: getString(R.string.workflow_details_na) }
+                .toTypedArray()
+            MaterialAlertDialogBuilder(this)
+                .setTitle(R.string.workflows_start_dialog_title)
+                .setItems(names) { _, index ->
+                    viewModel.startWorkflow(templates[index])
+                    Toast.makeText(
+                        this,
+                        R.string.workflows_start_success,
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+                .setNegativeButton(android.R.string.cancel, null)
+                .show()
         }
     }
 

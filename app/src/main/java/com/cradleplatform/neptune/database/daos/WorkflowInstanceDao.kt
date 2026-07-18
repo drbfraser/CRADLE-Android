@@ -17,6 +17,15 @@ interface WorkflowInstanceDao {
     @Query("SELECT * FROM WorkflowInstance WHERE patientId = :patientId")
     suspend fun getByPatientId(patientId: String): List<WorkflowInstance>
 
+    @Query("SELECT * FROM WorkflowInstance WHERE isUploadedToServer = 0")
+    suspend fun getUnuploaded(): List<WorkflowInstance>
+
+    @Query("DELETE FROM WorkflowInstance WHERE id = :id")
+    suspend fun deleteById(id: String)
+
+    @Query("DELETE FROM WorkflowInstance WHERE isUploadedToServer = 1")
+    suspend fun deleteAllUploaded()
+
     @Query("DELETE FROM WorkflowInstance")
     suspend fun deleteAll()
 }

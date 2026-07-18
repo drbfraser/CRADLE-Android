@@ -497,6 +497,15 @@
                     android:layout_marginTop="8dp"
                     android:shrinkColumns="0,4"
                     android:stretchColumns="*" />
+
+                <Button
+                    android:id="@+id/startWorkflowButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:background="@drawable/rounded_button"
+                    android:text="@string/workflows_start_new"
+                    android:textAllCaps="false" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 

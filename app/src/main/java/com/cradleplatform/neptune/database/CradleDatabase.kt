@@ -15,6 +15,7 @@ import com.cradleplatform.neptune.database.daos.PatientDao
 import com.cradleplatform.neptune.database.daos.ReadingDao
 import com.cradleplatform.neptune.database.daos.ReferralDao
 import com.cradleplatform.neptune.database.daos.WorkflowInstanceDao
+import com.cradleplatform.neptune.database.daos.WorkflowTemplateDao
 import com.cradleplatform.neptune.database.views.LocalSearchPatient
 import com.cradleplatform.neptune.model.Assessment
 import com.cradleplatform.neptune.model.FormClassification
@@ -24,8 +25,9 @@ import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.Reading
 import com.cradleplatform.neptune.model.Referral
 import com.cradleplatform.neptune.model.WorkflowInstance
+import com.cradleplatform.neptune.model.WorkflowTemplate
 
-const val CURRENT_DATABASE_VERSION = 3
+const val CURRENT_DATABASE_VERSION = 4
 
 /**
  * An interface for the local CRADLE database.
@@ -44,7 +46,8 @@ const val CURRENT_DATABASE_VERSION = 3
         Assessment::class,
         FormClassification::class,
         FormResponse::class,
-        WorkflowInstance::class
+        WorkflowInstance::class,
+        WorkflowTemplate::class
     ],
     views = [LocalSearchPatient::class],
     version = CURRENT_DATABASE_VERSION,
@@ -60,6 +63,7 @@ abstract class CradleDatabase : RoomDatabase() {
     abstract fun formClassificationDao(): FormClassificationDao
     abstract fun formResponseDao(): FormResponseDao
     abstract fun workflowInstanceDao(): WorkflowInstanceDao
+    abstract fun workflowTemplateDao(): WorkflowTemplateDao
 
     companion object {
         private const val DATABASE_NAME = "room-readingDB"
@@ -97,7 +101,7 @@ abstract class CradleDatabase : RoomDatabase() {
 @Suppress("MagicNumber", "NestedBlockDepth", "ObjectPropertyNaming")
 internal object Migrations {
     val ALL_MIGRATIONS: Array<Migration> by lazy {
-        arrayOf(MIGRATION_1_2, MIGRATION_2_3)
+        arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
     }
 
     /**
@@ -201,6 +205,30 @@ internal object Migrations {
                 execSQL(
                     "CREATE INDEX IF NOT EXISTS " +
                         "`index_WorkflowInstance_patientId` ON `WorkflowInstance` (`patientId`)"
+                )
+            }
+        }
+    }
+
+    /**
+     * Version 4:
+     * Track upload state on WorkflowInstance and create WorkflowTemplate table
+     */
+    private val MIGRATION_3_4 = object : Migration(3, 4) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            database.apply {
+                execSQL(
+                    "ALTER TABLE WorkflowInstance " +
+                        "ADD COLUMN isUploadedToServer INTEGER NOT NULL DEFAULT 1"
+                )
+                execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS WorkflowTemplate (
+                        `id` TEXT NOT NULL,
+                        `name` TEXT,
+                        PRIMARY KEY(`id`)
+                    )
+                    """.trimIndent()
                 )
             }
         }

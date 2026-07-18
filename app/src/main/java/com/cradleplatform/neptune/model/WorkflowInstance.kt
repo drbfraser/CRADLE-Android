@@ -5,6 +5,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
@@ -33,7 +34,9 @@ data class WorkflowInstance(
     @ColumnInfo @JsonProperty("lastEdited")
     val lastEdited: Long? = null,
     @ColumnInfo @JsonProperty("steps")
-    val steps: List<WorkflowInstanceStep> = emptyList()
+    val steps: List<WorkflowInstanceStep> = emptyList(),
+    @ColumnInfo(defaultValue = "1") @JsonIgnore
+    val isUploadedToServer: Boolean = true
 )
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -78,20 +81,30 @@ data class WorkflowAvailableActions(
     val actions: List<WorkflowAction> = emptyList()
 )
 
+@Entity
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class WorkflowTemplate(
-    @JsonProperty("id")
+    @PrimaryKey @ColumnInfo @JsonProperty("id")
     val id: String,
-    @JsonProperty("name")
-    val name: String? = null,
-    @JsonProperty("classification")
-    val classification: WorkflowClassification? = null
+    @ColumnInfo @JsonProperty("name")
+    val name: String? = null
 )
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-data class WorkflowClassification(
+data class WorkflowTemplateList(
+    @JsonProperty("items")
+    val items: List<WorkflowTemplate> = emptyList()
+)
+
+data class CreateWorkflowInstanceRequest(
+    @JsonProperty("workflowTemplateId")
+    val workflowTemplateId: String,
+    @JsonProperty("patientId")
+    val patientId: String,
     @JsonProperty("name")
-    val name: String
+    val name: String,
+    @JsonProperty("description")
+    val description: String
 )
 
 @Parcelize

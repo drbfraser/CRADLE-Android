@@ -363,6 +363,7 @@ class SyncAllWorker @AssistedInject constructor(
             )
         }
 
+        patientManager.syncWorkflowTemplates()
         patientManager.syncWorkflowInstances()
 
         val lastFormResponseSyncTime = BigInteger(

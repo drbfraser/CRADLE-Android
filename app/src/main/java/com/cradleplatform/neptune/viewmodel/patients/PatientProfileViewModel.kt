@@ -16,6 +16,7 @@ import com.cradleplatform.neptune.model.Reading
 import com.cradleplatform.neptune.model.Referral
 import com.cradleplatform.neptune.model.WorkflowRow
 import com.cradleplatform.neptune.model.WorkflowStepRow
+import com.cradleplatform.neptune.model.WorkflowTemplate
 import com.cradleplatform.neptune.utilities.DateUtil
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -56,6 +57,9 @@ class PatientProfileViewModel @Inject constructor(
 
     private val _workflows = MutableLiveData<List<WorkflowRow>>()
     val workflows: LiveData<List<WorkflowRow>> = _workflows
+
+    private val _workflowTemplates = MutableLiveData<List<WorkflowTemplate>>()
+    val workflowTemplates: LiveData<List<WorkflowTemplate>> = _workflowTemplates
 
     /**
      * Load patient data by ID
@@ -106,6 +110,12 @@ class PatientProfileViewModel @Inject constructor(
         val submittedForms = formResponseManager.searchForSubmittedFormsByPatientId(patientId)
         _submittedForms.postValue(submittedForms ?: emptyList())
 
+        _workflowTemplates.postValue(patientManager.getWorkflowTemplates())
+
+        loadWorkflows(patientId)
+    }
+
+    private suspend fun loadWorkflows(patientId: String) {
         val instances = patientManager.getWorkflowInstancesForPatient(patientId)
         val rows = instances.map { instance ->
             val currentIndex = instance.currentStepId
@@ -143,6 +153,14 @@ class PatientProfileViewModel @Inject constructor(
             )
         }
         _workflows.postValue(rows)
+    }
+
+    fun startWorkflow(template: WorkflowTemplate) {
+        val patientId = _patient.value?.id ?: return
+        viewModelScope.launch {
+            patientManager.startWorkflowInstance(patientId, template)
+            loadWorkflows(patientId)
+        }
     }
 
     /**
