@@ -118,12 +118,13 @@ class PatientProfileViewModel @Inject constructor(
     private suspend fun loadWorkflows(patientId: String) {
         val instances = patientManager.getWorkflowInstancesForPatient(patientId)
         val rows = instances.map { instance ->
-            val currentIndex = instance.currentStepId
-                ?.let { stepId -> instance.steps.indexOfFirst { it.id == stepId } }
-                ?.takeIf { it >= 0 }
-                ?: 0
-            val currentInstanceStep = instance.steps.getOrNull(currentIndex)
-            val currentStep = currentInstanceStep?.name ?: "N/A"
+            val activeStep = instance.steps.firstOrNull {
+                it.status?.equals("Active", ignoreCase = true) == true
+            }
+            val currentStep = activeStep?.name ?: "N/A"
+            val completedSteps = instance.steps.count {
+                it.status?.equals("Completed", ignoreCase = true) == true
+            }
             val lastEdited = instance.lastEdited
                 ?.let { DateUtil.getDateStringFromTimestamp(it) }
                 ?: "N/A"
@@ -144,14 +145,13 @@ class PatientProfileViewModel @Inject constructor(
                 lastEdited = lastEdited,
                 stepCount = instance.steps.size,
                 currentStep = currentStep,
-                completedSteps = currentIndex,
+                completedSteps = completedSteps,
                 instanceId = instance.id,
-                currentStepId = currentInstanceStep?.id,
-                currentStepActive =
-                    currentInstanceStep?.status?.equals("Active", ignoreCase = true) == true,
+                currentStepId = activeStep?.id,
+                currentStepActive = activeStep != null,
                 steps = stepRows
             )
-        }
+        }.sortedWith(compareBy({ it.templateName.lowercase() }, { it.instanceId }))
         _workflows.postValue(rows)
     }
 

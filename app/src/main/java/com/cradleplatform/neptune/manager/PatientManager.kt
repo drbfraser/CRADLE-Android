@@ -5,6 +5,7 @@ import com.cradleplatform.neptune.database.CradleDatabase
 import com.cradleplatform.neptune.database.daos.PatientDao
 import com.cradleplatform.neptune.database.daos.ReadingDao
 import com.cradleplatform.neptune.database.daos.WorkflowInstanceDao
+import com.cradleplatform.neptune.database.daos.WorkflowInstanceStepTransitionDao
 import com.cradleplatform.neptune.database.daos.WorkflowTemplateDao
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
@@ -15,12 +16,18 @@ import com.cradleplatform.neptune.model.Reading
 import com.cradleplatform.neptune.model.CreateWorkflowInstanceRequest
 import com.cradleplatform.neptune.model.WorkflowAction
 import com.cradleplatform.neptune.model.WorkflowInstance
+import com.cradleplatform.neptune.model.WorkflowInstanceStepTransition
+import com.cradleplatform.neptune.model.WorkflowNextStep
+import com.cradleplatform.neptune.model.WorkflowNextStepResult
 import com.cradleplatform.neptune.model.WorkflowTemplate
 import com.cradleplatform.neptune.utilities.Protocol
 import kotlinx.coroutines.yield
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
+
+private const val INVALID_ACTION_STATUS = 400
+private const val MILLIS_PER_SECOND = 1000L
 
 /**
  * Manager to interact with the [Patient] table in the database.
@@ -32,6 +39,7 @@ class PatientManager @Inject constructor(
     private val readingDao: ReadingDao,
     private val workflowInstanceDao: WorkflowInstanceDao,
     private val workflowTemplateDao: WorkflowTemplateDao,
+    private val workflowInstanceStepTransitionDao: WorkflowInstanceStepTransitionDao,
     private val restApi: RestApi,
 ) {
     /**
@@ -224,9 +232,13 @@ class PatientManager @Inject constructor(
     suspend fun syncWorkflowTemplates(): NetworkResult<Unit> {
         val result = restApi.getAllWorkflowTemplates()
         if (result is NetworkResult.Success) {
+            val templates = result.value.map { template ->
+                val full = restApi.getWorkflowTemplate(template.id)
+                if (full is NetworkResult.Success) full.value else template
+            }
             database.withTransaction {
                 workflowTemplateDao.deleteAll()
-                workflowTemplateDao.insertAll(result.value)
+                workflowTemplateDao.insertAll(templates)
             }
         }
         return result.map { }
@@ -251,14 +263,69 @@ class PatientManager @Inject constructor(
             }
         }
 
+        syncWorkflowStepTransitions()
+
         val result = restApi.getAllWorkflowInstances()
         if (result is NetworkResult.Success) {
             database.withTransaction {
                 workflowInstanceDao.deleteAllUploaded()
                 workflowInstanceDao.insertAll(result.value)
             }
+            ensureTemplatesForInstances(result.value)
         }
         return result.map { }
+    }
+
+    private suspend fun ensureTemplatesForInstances(instances: List<WorkflowInstance>) {
+        val existingIds = workflowTemplateDao.getAll().map { it.id }.toSet()
+        val missingIds = instances.mapNotNull { it.workflowTemplateId }
+            .distinct()
+            .filter { it !in existingIds }
+        val fetched = missingIds.mapNotNull { id ->
+            val full = restApi.getWorkflowTemplate(id)
+            if (full is NetworkResult.Success) full.value else null
+        }
+        if (fetched.isNotEmpty()) {
+            workflowTemplateDao.insertAll(fetched)
+        }
+    }
+
+    private suspend fun syncWorkflowStepTransitions() {
+        for (transition in workflowInstanceStepTransitionDao.getAll()) {
+            val completeResult = restApi.applyWorkflowInstanceAction(
+                transition.instanceId,
+                WorkflowAction(type = "complete_step", stepId = transition.fromStepId)
+            )
+            if (!completeResult.isAppliedOrAlreadyDone()) break
+
+            val toStepId = transition.toStepId
+            val advanced = if (toStepId != null) {
+                val overrideResult =
+                    restApi.overrideWorkflowInstanceStep(transition.instanceId, toStepId)
+                if (!overrideResult.isAppliedOrAlreadyDone()) {
+                    false
+                } else {
+                    restApi.applyWorkflowInstanceAction(
+                        transition.instanceId,
+                        WorkflowAction(type = "start_step", stepId = toStepId)
+                    ).isAppliedOrAlreadyDone()
+                }
+            } else {
+                restApi.applyWorkflowInstanceAction(
+                    transition.instanceId,
+                    WorkflowAction(type = "complete_workflow")
+                ).isAppliedOrAlreadyDone()
+            }
+
+            if (!advanced) break
+            workflowInstanceStepTransitionDao.deleteById(transition.id)
+        }
+    }
+
+    private fun NetworkResult<*>.isAppliedOrAlreadyDone(): Boolean = when (this) {
+        is NetworkResult.Success -> true
+        is NetworkResult.Failure -> statusCode == INVALID_ACTION_STATUS
+        is NetworkResult.NetworkException -> false
     }
 
     suspend fun getWorkflowTemplates(): List<WorkflowTemplate> = workflowTemplateDao.getAll()
@@ -281,40 +348,76 @@ class PatientManager @Inject constructor(
         workflowInstanceDao.insertAll(listOf(instance))
     }
 
-    /**
-     * Completes the current active step of a workflow instance and advances the
-     * instance to the next step (starting it), or completes the workflow if the
-     * current step is the final one.
-     */
-    suspend fun goToNextWorkflowStep(
-        instanceId: String,
-        currentStepId: String
-    ): NetworkResult<Unit> {
-        val completeResult = restApi.applyWorkflowInstanceAction(
-            instanceId,
-            WorkflowAction(type = "complete_step", stepId = currentStepId)
-        )
-        if (completeResult !is NetworkResult.Success) return completeResult
+    suspend fun getNextStepCandidates(instanceId: String): WorkflowNextStepResult {
+        val instance = workflowInstanceDao.getById(instanceId)
+            ?: return WorkflowNextStepResult.Unavailable
+        val currentStepId = instance.currentStepId
+            ?: return WorkflowNextStepResult.Unavailable
+        val currentStep = instance.steps.firstOrNull { it.id == currentStepId }
+            ?: return WorkflowNextStepResult.Unavailable
+        val templateStepId = currentStep.workflowTemplateStepId
+            ?: return WorkflowNextStepResult.Unavailable
+        val templateId = instance.workflowTemplateId
+            ?: return WorkflowNextStepResult.Unavailable
+        val template = workflowTemplateDao.getAll().firstOrNull { it.id == templateId }
+            ?: return WorkflowNextStepResult.Unavailable
+        val templateStep = template.steps.firstOrNull { it.id == templateStepId }
+            ?: return WorkflowNextStepResult.Unavailable
 
-        val advanceResult = restApi.advanceWorkflowInstance(instanceId)
-        if (advanceResult !is NetworkResult.Success) return advanceResult
+        val targetTemplateStepIds = templateStep.branches.mapNotNull { it.targetStepId }.distinct()
+        if (targetTemplateStepIds.isEmpty()) {
+            return WorkflowNextStepResult.CompleteWorkflow
+        }
 
-        val actionsResult = restApi.getWorkflowInstanceActions(instanceId)
-        if (actionsResult !is NetworkResult.Success) return actionsResult.cast()
+        val candidates = targetTemplateStepIds.mapNotNull { targetId ->
+            instance.steps.firstOrNull { it.workflowTemplateStepId == targetId }
+                ?.let { WorkflowNextStep(instanceStepId = it.id, name = it.name) }
+        }
 
-        val nextAction = actionsResult.value.firstOrNull()
-            ?: return NetworkResult.Success(Unit, actionsResult.statusCode)
+        return if (candidates.isEmpty()) {
+            WorkflowNextStepResult.Unavailable
+        } else {
+            WorkflowNextStepResult.Options(candidates)
+        }
+    }
 
-        return when (nextAction.type) {
-            "start_step" -> restApi.applyWorkflowInstanceAction(
-                instanceId,
-                WorkflowAction(type = "start_step", stepId = nextAction.stepId)
+    suspend fun advanceWorkflowStep(instanceId: String, chosenInstanceStepId: String?) {
+        val instance = workflowInstanceDao.getById(instanceId) ?: return
+        val currentStepId = instance.currentStepId ?: return
+        val now = System.currentTimeMillis() / MILLIS_PER_SECOND
+
+        val updatedSteps = instance.steps.map { step ->
+            when (step.id) {
+                currentStepId -> step.copy(status = "Completed", completionDate = now)
+                chosenInstanceStepId -> step.copy(status = "Active", startDate = now)
+                else -> step
+            }
+        }
+
+        val updatedInstance = if (chosenInstanceStepId != null) {
+            instance.copy(
+                steps = updatedSteps,
+                currentStepId = chosenInstanceStepId,
+                status = "Active",
+                lastEdited = now
             )
-            "complete_workflow" -> restApi.applyWorkflowInstanceAction(
-                instanceId,
-                WorkflowAction(type = "complete_workflow")
+        } else {
+            instance.copy(
+                steps = updatedSteps,
+                status = "Completed",
+                lastEdited = now
             )
-            else -> NetworkResult.Success(Unit, actionsResult.statusCode)
+        }
+
+        database.withTransaction {
+            workflowInstanceDao.insertAll(listOf(updatedInstance))
+            workflowInstanceStepTransitionDao.insert(
+                WorkflowInstanceStepTransition(
+                    instanceId = instanceId,
+                    fromStepId = currentStepId,
+                    toStepId = chosenInstanceStepId
+                )
+            )
         }
     }
 

@@ -17,6 +17,9 @@ interface WorkflowInstanceDao {
     @Query("SELECT * FROM WorkflowInstance WHERE patientId = :patientId")
     suspend fun getByPatientId(patientId: String): List<WorkflowInstance>
 
+    @Query("SELECT * FROM WorkflowInstance WHERE id = :id")
+    suspend fun getById(id: String): WorkflowInstance?
+
     @Query("SELECT * FROM WorkflowInstance WHERE isUploadedToServer = 0")
     suspend fun getUnuploaded(): List<WorkflowInstance>
 

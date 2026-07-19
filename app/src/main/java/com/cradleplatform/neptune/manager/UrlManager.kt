@@ -77,8 +77,11 @@ class UrlManager @Inject constructor(val settings: Settings) {
     fun advanceWorkflowInstance(instanceId: String) =
         "$base/workflow/instances/$instanceId/advance"
 
+    fun overrideWorkflowInstanceStep(instanceId: String) =
+        "$base/workflow/instances/$instanceId/override_current_step"
+
     fun getWorkflowTemplate(templateId: String) =
-        "$base/workflow/templates/$templateId?with_classification=true"
+        "$base/workflow/templates/$templateId?with_steps=true"
 
     /**
      * Endpoint for posting a new patient.

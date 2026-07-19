@@ -15,10 +15,12 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import com.cradleplatform.neptune.R
-import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.manager.PatientManager
+import com.cradleplatform.neptune.model.WorkflowNextStep
+import com.cradleplatform.neptune.model.WorkflowNextStepResult
 import com.cradleplatform.neptune.model.WorkflowRow
 import com.cradleplatform.neptune.model.WorkflowStepRow
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -63,22 +65,31 @@ class WorkflowInstanceDetailsActivity : AppCompatActivity() {
         findViewById<TextView>(R.id.workflowStartedValue).text = workflow.lastEdited
         findViewById<TextView>(R.id.workflowLastEditedValue).text = workflow.lastEdited
 
-        val remaining = (workflow.stepCount - workflow.completedSteps).coerceAtLeast(0)
         findViewById<TextView>(R.id.workflowProgressValue).text = getString(
             R.string.workflow_details_progress_value,
             workflow.completedSteps,
             workflow.stepCount
         )
-        findViewById<TextView>(R.id.workflowRemainingValue).text = resources.getQuantityString(
-            R.plurals.workflow_details_remaining,
-            remaining,
-            remaining
-        )
+        val remainingView = findViewById<TextView>(R.id.workflowRemainingValue)
+        val isFinished = workflow.status.equals("Completed", ignoreCase = true) ||
+            workflow.status.equals("Cancelled", ignoreCase = true)
+        if (isFinished) {
+            remainingView.visibility = View.GONE
+        } else {
+            val remaining = (workflow.stepCount - workflow.completedSteps).coerceAtLeast(0)
+            remainingView.visibility = View.VISIBLE
+            remainingView.text = resources.getQuantityString(
+                R.plurals.workflow_details_remaining,
+                remaining,
+                remaining
+            )
+        }
 
         val stepSection = findViewById<View>(R.id.workflowCurrentStepSection)
-        if (workflow.currentStep == getString(R.string.workflow_details_na)) {
+        if (!workflow.currentStepActive) {
             stepSection.visibility = View.GONE
         } else {
+            stepSection.visibility = View.VISIBLE
             findViewById<TextView>(R.id.workflowCurrentStepName).text = workflow.currentStep
             findViewById<TextView>(R.id.workflowCurrentStepStatus).text =
                 getString(R.string.workflow_details_step_status, workflow.lastEdited)
@@ -91,35 +102,80 @@ class WorkflowInstanceDetailsActivity : AppCompatActivity() {
 
     private fun setupNextStepButton(workflow: WorkflowRow) {
         val nextStepButton = findViewById<Button>(R.id.workflowNextStepButton)
-        val currentStepId = workflow.currentStepId
 
-        if (!workflow.currentStepActive || currentStepId.isNullOrBlank()) {
+        if (!workflow.currentStepActive || workflow.currentStepId.isNullOrBlank()) {
             nextStepButton.visibility = View.GONE
             return
         }
 
         nextStepButton.visibility = View.VISIBLE
-        nextStepButton.setOnClickListener {
-            nextStepButton.isEnabled = false
-            lifecycleScope.launch {
-                val result =
-                    patientManager.goToNextWorkflowStep(workflow.instanceId, currentStepId)
-                if (result is NetworkResult.Success) {
-                    Toast.makeText(
-                        this@WorkflowInstanceDetailsActivity,
-                        R.string.workflow_details_next_step_success,
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    finish()
-                } else {
+        nextStepButton.isEnabled = false
+        lifecycleScope.launch {
+            when (val result = patientManager.getNextStepCandidates(workflow.instanceId)) {
+                is WorkflowNextStepResult.Options -> {
+                    nextStepButton.setText(R.string.workflow_details_next_step_button)
                     nextStepButton.isEnabled = true
-                    Toast.makeText(
-                        this@WorkflowInstanceDetailsActivity,
-                        R.string.workflow_details_next_step_error,
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    nextStepButton.setOnClickListener {
+                        nextStepButton.isEnabled = false
+                        showNextStepPicker(workflow.instanceId, result.steps, nextStepButton)
+                    }
                 }
+                WorkflowNextStepResult.CompleteWorkflow -> {
+                    nextStepButton.setText(R.string.workflow_complete_button)
+                    nextStepButton.isEnabled = true
+                    nextStepButton.setOnClickListener {
+                        confirmCompleteWorkflow(workflow.instanceId)
+                    }
+                }
+                WorkflowNextStepResult.Unavailable ->
+                    nextStepButton.visibility = View.GONE
             }
+        }
+    }
+
+    private fun showNextStepPicker(
+        instanceId: String,
+        steps: List<WorkflowNextStep>,
+        nextStepButton: Button
+    ) {
+        val names = steps.map { it.name }.toTypedArray()
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.workflow_next_step_choose_title)
+            .setItems(names) { _, index ->
+                advanceWorkflowStep(instanceId, steps[index].instanceStepId)
+            }
+            .setOnCancelListener { nextStepButton.isEnabled = true }
+            .setNegativeButton(android.R.string.cancel) { _, _ ->
+                nextStepButton.isEnabled = true
+            }
+            .show()
+    }
+
+    private fun confirmCompleteWorkflow(instanceId: String) {
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.workflow_complete_confirm_title)
+            .setMessage(R.string.workflow_complete_confirm_message)
+            .setPositiveButton(R.string.workflow_complete_button) { _, _ ->
+                advanceWorkflowStep(instanceId, null)
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
+    private fun advanceWorkflowStep(instanceId: String, chosenInstanceStepId: String?) {
+        lifecycleScope.launch {
+            patientManager.advanceWorkflowStep(instanceId, chosenInstanceStepId)
+            val message = if (chosenInstanceStepId == null) {
+                R.string.workflow_complete_success
+            } else {
+                R.string.workflow_details_next_step_success
+            }
+            Toast.makeText(
+                this@WorkflowInstanceDetailsActivity,
+                message,
+                Toast.LENGTH_SHORT
+            ).show()
+            finish()
         }
     }
 

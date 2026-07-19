@@ -52,7 +52,9 @@ data class WorkflowInstanceStep(
     @JsonProperty("startDate")
     val startDate: Long? = null,
     @JsonProperty("completionDate")
-    val completionDate: Long? = null
+    val completionDate: Long? = null,
+    @JsonProperty("workflowTemplateStepId")
+    val workflowTemplateStepId: String? = null
 )
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -87,7 +89,25 @@ data class WorkflowTemplate(
     @PrimaryKey @ColumnInfo @JsonProperty("id")
     val id: String,
     @ColumnInfo @JsonProperty("name")
-    val name: String? = null
+    val name: String? = null,
+    @ColumnInfo(defaultValue = "[]") @JsonProperty("steps")
+    val steps: List<WorkflowTemplateStep> = emptyList()
+)
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class WorkflowTemplateStep(
+    @JsonProperty("id")
+    val id: String,
+    @JsonProperty("name")
+    val name: String? = null,
+    @JsonProperty("branches")
+    val branches: List<WorkflowTemplateStepBranch> = emptyList()
+)
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class WorkflowTemplateStepBranch(
+    @JsonProperty("targetStepId")
+    val targetStepId: String? = null
 )
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -95,6 +115,34 @@ data class WorkflowTemplateList(
     @JsonProperty("items")
     val items: List<WorkflowTemplate> = emptyList()
 )
+
+data class OverrideCurrentStepRequest(
+    @JsonProperty("workflowInstanceStepId")
+    val workflowInstanceStepId: String
+)
+
+@Entity
+data class WorkflowInstanceStepTransition(
+    @PrimaryKey(autoGenerate = true) @ColumnInfo
+    val id: Long = 0,
+    @ColumnInfo
+    val instanceId: String,
+    @ColumnInfo
+    val fromStepId: String,
+    @ColumnInfo
+    val toStepId: String? = null
+)
+
+data class WorkflowNextStep(
+    val instanceStepId: String,
+    val name: String
+)
+
+sealed class WorkflowNextStepResult {
+    data class Options(val steps: List<WorkflowNextStep>) : WorkflowNextStepResult()
+    object CompleteWorkflow : WorkflowNextStepResult()
+    object Unavailable : WorkflowNextStepResult()
+}
 
 data class CreateWorkflowInstanceRequest(
     @JsonProperty("workflowTemplateId")

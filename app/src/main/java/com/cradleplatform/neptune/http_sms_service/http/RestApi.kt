@@ -33,6 +33,7 @@ import com.cradleplatform.neptune.model.RelayPhoneNumberResponse
 import com.cradleplatform.neptune.model.Statistics
 import com.cradleplatform.neptune.model.ApplyActionRequest
 import com.cradleplatform.neptune.model.CreateWorkflowInstanceRequest
+import com.cradleplatform.neptune.model.OverrideCurrentStepRequest
 import com.cradleplatform.neptune.model.WorkflowAction
 import com.cradleplatform.neptune.model.WorkflowAvailableActions
 import com.cradleplatform.neptune.model.WorkflowInstance
@@ -2393,6 +2394,28 @@ class RestApi(
                 }
             }
         }
+
+    suspend fun overrideWorkflowInstanceStep(
+        instanceId: String,
+        instanceStepId: String
+    ): NetworkResult<Unit> = withContext(IO) {
+        val body = createWriter<OverrideCurrentStepRequest>()
+            .writeValueAsBytes(OverrideCurrentStepRequest(instanceStepId))
+        http.makeRequest(
+            method = Http.Method.POST,
+            url = urlManager.overrideWorkflowInstanceStep(instanceId),
+            headers = makeAuthorizationHeader(),
+            requestBody = buildJsonRequestBody(body),
+            inputStreamReader = {}
+        ).also {
+            when (it) {
+                is NetworkResult.Success ->
+                    Log.d(TAG, "Overrode current step of $instanceId to $instanceStepId")
+                else ->
+                    Log.e(TAG, "Failed to override current step of $instanceId")
+            }
+        }
+    }
 
     suspend fun getWorkflowInstanceActions(
         instanceId: String

@@ -15,6 +15,7 @@ import com.cradleplatform.neptune.database.daos.PatientDao
 import com.cradleplatform.neptune.database.daos.ReadingDao
 import com.cradleplatform.neptune.database.daos.ReferralDao
 import com.cradleplatform.neptune.database.daos.WorkflowInstanceDao
+import com.cradleplatform.neptune.database.daos.WorkflowInstanceStepTransitionDao
 import com.cradleplatform.neptune.database.daos.WorkflowTemplateDao
 import com.cradleplatform.neptune.database.views.LocalSearchPatient
 import com.cradleplatform.neptune.model.Assessment
@@ -25,9 +26,10 @@ import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.Reading
 import com.cradleplatform.neptune.model.Referral
 import com.cradleplatform.neptune.model.WorkflowInstance
+import com.cradleplatform.neptune.model.WorkflowInstanceStepTransition
 import com.cradleplatform.neptune.model.WorkflowTemplate
 
-const val CURRENT_DATABASE_VERSION = 4
+const val CURRENT_DATABASE_VERSION = 5
 
 /**
  * An interface for the local CRADLE database.
@@ -47,7 +49,8 @@ const val CURRENT_DATABASE_VERSION = 4
         FormClassification::class,
         FormResponse::class,
         WorkflowInstance::class,
-        WorkflowTemplate::class
+        WorkflowTemplate::class,
+        WorkflowInstanceStepTransition::class
     ],
     views = [LocalSearchPatient::class],
     version = CURRENT_DATABASE_VERSION,
@@ -64,6 +67,7 @@ abstract class CradleDatabase : RoomDatabase() {
     abstract fun formResponseDao(): FormResponseDao
     abstract fun workflowInstanceDao(): WorkflowInstanceDao
     abstract fun workflowTemplateDao(): WorkflowTemplateDao
+    abstract fun workflowInstanceStepTransitionDao(): WorkflowInstanceStepTransitionDao
 
     companion object {
         private const val DATABASE_NAME = "room-readingDB"
@@ -101,7 +105,7 @@ abstract class CradleDatabase : RoomDatabase() {
 @Suppress("MagicNumber", "NestedBlockDepth", "ObjectPropertyNaming")
 internal object Migrations {
     val ALL_MIGRATIONS: Array<Migration> by lazy {
-        arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+        arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
     }
 
     /**
@@ -227,6 +231,31 @@ internal object Migrations {
                         `id` TEXT NOT NULL,
                         `name` TEXT,
                         PRIMARY KEY(`id`)
+                    )
+                    """.trimIndent()
+                )
+            }
+        }
+    }
+
+    /**
+     * Version 5:
+     * Store the template step graph and track offline step transitions
+     */
+    private val MIGRATION_4_5 = object : Migration(4, 5) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            database.apply {
+                execSQL(
+                    "ALTER TABLE WorkflowTemplate " +
+                        "ADD COLUMN steps TEXT NOT NULL DEFAULT '[]'"
+                )
+                execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS WorkflowInstanceStepTransition (
+                        `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        `instanceId` TEXT NOT NULL,
+                        `fromStepId` TEXT NOT NULL,
+                        `toStepId` TEXT
                     )
                     """.trimIndent()
                 )

@@ -11,6 +11,7 @@ import com.cradleplatform.neptune.model.Referral
 import com.cradleplatform.neptune.model.Sex
 import com.cradleplatform.neptune.model.UrineTest
 import com.cradleplatform.neptune.model.WorkflowInstanceStep
+import com.cradleplatform.neptune.model.WorkflowTemplateStep
 import com.cradleplatform.neptune.utilities.jackson.JacksonMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.google.gson.Gson
@@ -97,5 +98,13 @@ class DatabaseTypeConverters {
 
     @TypeConverter
     fun toWorkflowInstanceStepList(string: String): List<WorkflowInstanceStep> =
+        JacksonMapper.mapper.readValue(string)
+
+    @TypeConverter
+    fun fromWorkflowTemplateStepList(list: List<WorkflowTemplateStep>): String =
+        JacksonMapper.mapper.writeValueAsString(list)
+
+    @TypeConverter
+    fun toWorkflowTemplateStepList(string: String): List<WorkflowTemplateStep> =
         JacksonMapper.mapper.readValue(string)
 }

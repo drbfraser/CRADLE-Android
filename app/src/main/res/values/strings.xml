@@ -724,6 +724,11 @@
     <string name="workflow_details_next_step_button">Go to Next Step</string>
     <string name="workflow_details_next_step_success">Moved to next step</string>
     <string name="workflow_details_next_step_error">Unable to move to next step</string>
+    <string name="workflow_next_step_choose_title">Choose the next step</string>
+    <string name="workflow_complete_button">Complete Workflow</string>
+    <string name="workflow_complete_confirm_title">Complete workflow</string>
+    <string name="workflow_complete_confirm_message">This is the final step. Mark this workflow as completed?</string>
+    <string name="workflow_complete_success">Workflow completed</string>
     <string name="form_submitted">Form Submitted</string>
     <string name="form_name_label">Form:</string>
     <string name="form_date_submitted_label">Date Submitted:</string>

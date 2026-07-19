@@ -13,6 +13,7 @@ import com.cradleplatform.neptune.database.daos.PatientDao
 import com.cradleplatform.neptune.database.daos.ReadingDao
 import com.cradleplatform.neptune.database.daos.ReferralDao
 import com.cradleplatform.neptune.database.daos.WorkflowInstanceDao
+import com.cradleplatform.neptune.database.daos.WorkflowInstanceStepTransitionDao
 import com.cradleplatform.neptune.database.daos.WorkflowTemplateDao
 import com.cradleplatform.neptune.http_sms_service.http.Http
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
@@ -53,6 +54,7 @@ class DataModule {
         readingDao: ReadingDao,
         workflowInstanceDao: WorkflowInstanceDao,
         workflowTemplateDao: WorkflowTemplateDao,
+        workflowInstanceStepTransitionDao: WorkflowInstanceStepTransitionDao,
         restApi: RestApi
     ) = PatientManager(
         database,
@@ -60,6 +62,7 @@ class DataModule {
         readingDao,
         workflowInstanceDao,
         workflowTemplateDao,
+        workflowInstanceStepTransitionDao,
         restApi
     )
 
@@ -128,6 +131,12 @@ class DataModule {
     @Provides
     fun provideWorkflowTemplateDao(database: CradleDatabase): WorkflowTemplateDao =
         database.workflowTemplateDao()
+
+    @Provides
+    fun provideWorkflowInstanceStepTransitionDao(
+        database: CradleDatabase
+    ): WorkflowInstanceStepTransitionDao =
+        database.workflowInstanceStepTransitionDao()
 
     @Provides
     fun provideFormClassificationDao(database: CradleDatabase): FormClassificationDao =
