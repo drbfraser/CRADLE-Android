@@ -49,6 +49,7 @@ import com.cradleplatform.neptune.utilities.Protocol
 import com.cradleplatform.neptune.utilities.jackson.JacksonMapper
 import com.cradleplatform.neptune.utilities.jackson.JacksonMapper.createWriter
 import com.cradleplatform.neptune.viewmodel.UserViewModel
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.readValue
@@ -1012,7 +1013,19 @@ class RestApi(
      */
     suspend fun putPatient(patient: Patient, protocol: Protocol): NetworkResult<Unit> =
         withContext(IO) {
-            val body = JacksonMapper.writerForPatient.writeValueAsBytes(patient)
+            val jsonObject = JSONObject()
+            jsonObject.put("id", patient.id)
+            jsonObject.put("name", patient.name)
+            jsonObject.put("sex", patient.sex.name)
+            jsonObject.put("date_of_birth", patient.dateOfBirth)
+            jsonObject.put("is_exact_date_of_birth", patient.isExactDateOfBirth)
+            jsonObject.put("is_pregnant", patient.isPregnant)
+            jsonObject.put("household_number", patient.householdNumber)
+            jsonObject.put("zone", patient.zone)
+            jsonObject.put("village_number", patient.villageNumber)
+            jsonObject.put("is_archived", patient.isArchived)
+            jsonObject.put("allergy", patient.allergy)
+            val body = jsonObject.toString().toByteArray()
             val method = Http.Method.PUT
             val url = urlManager.getPatientInfoOnly(patient.id)
 
@@ -1052,11 +1065,12 @@ class RestApi(
     ): NetworkResult<Unit> = withContext(IO) {
         val jsonObject = JSONObject()
 
-        if (isDrugRecord) {
-            jsonObject.put("drugHistory", patient.drugHistory)
-        } else {
-            jsonObject.put("medicalHistory", patient.medicalHistory)
-        }
+        jsonObject.put("patient_id", patient.id)
+        jsonObject.put("is_drug_record", isDrugRecord)
+        jsonObject.put(
+            "information",
+            if (isDrugRecord) patient.drugHistory else patient.medicalHistory
+        )
 
         val mediaType = "application/json; charset=utf-8".toMediaType()
         val requestBody = jsonObject.toString().toRequestBody(mediaType)
@@ -1202,6 +1216,7 @@ class RestApi(
             }
         }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     object PregnancyResponse {
         var id: Int? = null
         var lastEdited: Int? = null
@@ -1226,9 +1241,8 @@ class RestApi(
     ): NetworkResult<PregnancyResponse> = withContext(IO) {
         val jsonObject = JSONObject()
 
-        val startDate = patient.gestationalAge?.timestamp.toString()
-
-        jsonObject.put("pregnancyStartDate", startDate)
+        jsonObject.put("patient_id", patient.id)
+        jsonObject.put("start_date", patient.gestationalAge?.timestamp)
 
         val mediaType = "application/json; charset=utf-8".toMediaType()
         val requestBody = jsonObject.toString().toRequestBody(mediaType)
@@ -1260,12 +1274,16 @@ class RestApi(
 
     suspend fun putPregnancy(
         patient: Patient,
+        startDate: BigInteger?,
         protocol: Protocol
     ): NetworkResult<PregnancyResponse> = withContext(IO) {
         val jsonObject = JSONObject()
 
-        jsonObject.put("pregnancyEndDate", patient.prevPregnancyEndDate.toString())
-        jsonObject.put("pregnancyOutcome", patient.prevPregnancyOutcome ?: "")
+        jsonObject.put("id", patient.pregnancyId)
+        jsonObject.put("patient_id", patient.id)
+        jsonObject.put("start_date", startDate)
+        jsonObject.put("end_date", patient.prevPregnancyEndDate)
+        jsonObject.put("outcome", patient.prevPregnancyOutcome ?: "")
 
         val mediaType = "application/json; charset=utf-8".toMediaType()
         val requestBody = jsonObject.toString().toRequestBody(mediaType)
