@@ -1,17 +1,15 @@
 package com.cradleplatform.neptune.model
-import com.cradleplatform.neptune.api.model.v2.CreateFormSubmissionRequestV2
-import com.cradleplatform.neptune.api.model.v2.FormAnswerV2
 
 /**
- * Converts between the existing v1 form models and the V2 models,
- * so that the local db can stay unchanged while the v2 API is used 
+ * Converts between the existing local (V1-shaped) form models and the V2 wire models,
+ * so [FormResponse]/[FormTemplate]/[McOption]/[Answer] and the local database schema
+ * can stay unchanged while the app talks to the V2 API. See [Settings.useFormsV2].
+ *
+ * MCQ options are matched by array position (same as V1's [McOption.mcId]), since neither
+ * [FormResponse] nor [Answer] has anywhere to store a V2 [MCOptionV2.stringId].
  */
 
-/**
-  * Converts a FormResponse to a CreateFormSubmissionRequestV2, mapping answers to the appropriate AnswerV2 type based on the question type.
-  */
 fun FormResponse.toCreateSubmissionRequestV2(): CreateFormSubmissionRequestV2 {
-    // Get the question type for each question id from the form template
     val questionTypeById = formTemplate.questions?.associate { it.id to it.questionType } ?: emptyMap()
 
     return CreateFormSubmissionRequestV2(
@@ -27,7 +25,6 @@ fun FormResponse.toCreateSubmissionRequestV2(): CreateFormSubmissionRequestV2 {
     )
 }
 
-// Converts an answer to an answerv2, mapping the answer to the appropriate type based on the question type.
 private fun Answer.toAnswerV2(questionType: QuestionTypeEnum?): AnswerV2 = when {
     numericAnswer != null -> AnswerV2.createNumericAnswer(numericAnswer, comment)
     mcIdArrayAnswer != null -> AnswerV2.createMcAnswer(mcIdArrayAnswer, comment)
@@ -37,7 +34,6 @@ private fun Answer.toAnswerV2(questionType: QuestionTypeEnum?): AnswerV2 = when 
     else -> AnswerV2.createTextAnswer("", comment)
 }
 
-// Converts a FormTemplateV2 to a FormTemplate, mapping questions and their language versions.
 fun FormTemplateV2.toLocalFormTemplate(): FormTemplate = FormTemplate(
     version = version.toString(),
     archived = archived ?: false,
@@ -48,7 +44,6 @@ fun FormTemplateV2.toLocalFormTemplate(): FormTemplate = FormTemplate(
     questions = questions?.map { it.toLocalQuestion() } ?: emptyList()
 )
 
-// Converts a FormTemplateQuestionV2 to a Question, mapping language versions and multiple choice options.
 private fun FormTemplateQuestionV2.toLocalQuestion(): Question {
     val languageVersions = questionText.keys.map { lang ->
         QuestionLangVersion(
@@ -81,14 +76,12 @@ private fun FormTemplateQuestionV2.toLocalQuestion(): Question {
     )
 }
 
-// Converts a VisibleConditionV2 to a VisibleCondition, mapping the relation and answers.
 private fun VisibleConditionV2.toLocalVisibleCondition(): VisibleCondition = VisibleCondition(
     questionIndex = questionIndex,
     relation = relation.name,
     answerCondition = answers.toLocalAnswer()
 )
 
-// Converts a answerV2 to a answer, mapping the answer to the appropriate type based on which field is not null.
 private fun AnswerV2.toLocalAnswer(): Answer = when {
     numericAnswer != null -> Answer.createNumericAnswer(numericAnswer, comment ?: "")
     mcIdArrayAnswer != null -> Answer.createMcAnswer(mcIdArrayAnswer, comment ?: "")
@@ -96,4 +89,3 @@ private fun AnswerV2.toLocalAnswer(): Answer = when {
     textAnswer != null -> Answer.createTextAnswer(textAnswer, comment ?: "")
     else -> Answer.createEmptyAnswer(comment ?: "")
 }
-
