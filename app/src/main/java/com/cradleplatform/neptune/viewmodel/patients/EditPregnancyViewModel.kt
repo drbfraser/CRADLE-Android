@@ -272,7 +272,7 @@ class EditPregnancyViewModel @Inject constructor(
 
         return if (isNetworkAvailable.value == true) {
 
-            when (patientManager.pushAndSaveEndPregnancy(patient)) {
+            when (patientManager.pushAndSaveEndPregnancy(patient, pregnancyStartTimestamp.value)) {
                 is NetworkResult.Success -> {
                     // everything good, continue
                     Log.d(TAG, "everything good")
