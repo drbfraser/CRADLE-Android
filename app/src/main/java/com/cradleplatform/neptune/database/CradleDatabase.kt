@@ -29,7 +29,7 @@ import com.cradleplatform.neptune.model.WorkflowInstance
 import com.cradleplatform.neptune.model.WorkflowInstanceStepTransition
 import com.cradleplatform.neptune.model.WorkflowTemplate
 
-const val CURRENT_DATABASE_VERSION = 5
+const val CURRENT_DATABASE_VERSION = 6
 
 /**
  * An interface for the local CRADLE database.
@@ -105,7 +105,7 @@ abstract class CradleDatabase : RoomDatabase() {
 @Suppress("MagicNumber", "NestedBlockDepth", "ObjectPropertyNaming")
 internal object Migrations {
     val ALL_MIGRATIONS: Array<Migration> by lazy {
-        arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
+        arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
     }
 
     /**
@@ -260,6 +260,16 @@ internal object Migrations {
                     """.trimIndent()
                 )
             }
+        }
+    }
+
+    /**
+     * Version 6:
+     * Store the template starting step so instances can be generated offline
+     */
+    private val MIGRATION_5_6 = object : Migration(5, 6) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            database.execSQL("ALTER TABLE WorkflowTemplate ADD COLUMN startingStepId TEXT")
         }
     }
 }

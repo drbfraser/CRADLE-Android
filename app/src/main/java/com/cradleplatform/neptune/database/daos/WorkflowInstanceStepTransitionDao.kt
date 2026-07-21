@@ -3,6 +3,7 @@ package com.cradleplatform.neptune.database.daos
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.Update
 import com.cradleplatform.neptune.model.WorkflowInstanceStepTransition
 
 /**
@@ -12,6 +13,9 @@ import com.cradleplatform.neptune.model.WorkflowInstanceStepTransition
 interface WorkflowInstanceStepTransitionDao {
     @Insert
     suspend fun insert(transition: WorkflowInstanceStepTransition)
+
+    @Update
+    suspend fun update(transition: WorkflowInstanceStepTransition)
 
     @Query("SELECT * FROM WorkflowInstanceStepTransition ORDER BY id ASC")
     suspend fun getAll(): List<WorkflowInstanceStepTransition>

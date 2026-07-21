@@ -90,6 +90,8 @@ data class WorkflowTemplate(
     val id: String,
     @ColumnInfo @JsonProperty("name")
     val name: String? = null,
+    @ColumnInfo @JsonProperty("startingStepId")
+    val startingStepId: String? = null,
     @ColumnInfo(defaultValue = "[]") @JsonProperty("steps")
     val steps: List<WorkflowTemplateStep> = emptyList()
 )
@@ -100,6 +102,8 @@ data class WorkflowTemplateStep(
     val id: String,
     @JsonProperty("name")
     val name: String? = null,
+    @JsonProperty("description")
+    val description: String? = null,
     @JsonProperty("branches")
     val branches: List<WorkflowTemplateStepBranch> = emptyList()
 )
