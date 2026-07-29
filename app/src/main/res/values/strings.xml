@@ -686,6 +686,10 @@
     <string name="saved_forms_empty_title">No Draft Forms Saved</string>
     <string name="saved_forms_empty_message">Forms you save as drafts will appear here.\nYou can save a form as a draft while filling it out.</string>
     <string name="see_submitted_forms">See Submitted Forms</string>
+    <string name="form_template_v2_title">Form Templates (V2)</string>
+    <string name="form_template_v2_subtitle">Version %1$d · %2$s</string>
+    <string name="form_template_v2_empty">No form templates found.</string>
+    <string name="form_template_v2_error">Couldn\'t load form templates: %1$s</string>
     <string name="form_submitted">Form Submitted</string>
     <string name="form_name_label">Form:</string>
     <string name="form_date_submitted_label">Date Submitted:</string>
