@@ -1,10 +1,14 @@
 package com.cradleplatform.neptune.viewmodel.forms
 
+import android.content.SharedPreferences
+import androidx.core.content.edit
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
 import com.cradleplatform.neptune.model.FormTemplateShallowV2
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -20,7 +24,8 @@ sealed class FormTemplateListV2State {
 
 @HiltViewModel
 class FormTemplateListV2ViewModel @Inject constructor(
-    private val restApi: RestApi
+    private val restApi: RestApi,
+    private val sharedPreferences: SharedPreferences
 ) : ViewModel() {
 
     private val _state = MutableStateFlow<FormTemplateListV2State>(FormTemplateListV2State.Loading)
@@ -34,12 +39,30 @@ class FormTemplateListV2ViewModel @Inject constructor(
         _state.value = FormTemplateListV2State.Loading
         viewModelScope.launch {
             _state.value = when (val result = restApi.getAllFormTemplatesV2()) {
-                is NetworkResult.Success -> FormTemplateListV2State.Success(result.value.templates)
-                is NetworkResult.Failure -> FormTemplateListV2State.Error("Server error (${result.statusCode})")
-                is NetworkResult.NetworkException -> FormTemplateListV2State.Error(
-                    result.cause.message ?: "Network error"
-                )
+                is NetworkResult.Success -> {
+                    cacheTemplates(result.value.templates)
+                    FormTemplateListV2State.Success(result.value.templates)
+                }
+                is NetworkResult.Failure -> readCachedTemplates()
+                    ?: FormTemplateListV2State.Error("Server error (${result.statusCode})")
+                is NetworkResult.NetworkException -> readCachedTemplates()
+                    ?: FormTemplateListV2State.Error(result.cause.message ?: "Network error")
             }
         }
+    }
+
+    private fun cacheTemplates(templates: List<FormTemplateShallowV2>) {
+        sharedPreferences.edit { putString(CACHE_KEY, Gson().toJson(templates)) }
+    }
+
+    private fun readCachedTemplates(): FormTemplateListV2State.Success? {
+        val json = sharedPreferences.getString(CACHE_KEY, null) ?: return null
+        val type = object : TypeToken<List<FormTemplateShallowV2>>() {}.type
+        val templates: List<FormTemplateShallowV2> = Gson().fromJson(json, type)
+        return FormTemplateListV2State.Success(templates)
+    }
+
+    companion object {
+        private const val CACHE_KEY = "v2-form-template-cached"
     }
 }
