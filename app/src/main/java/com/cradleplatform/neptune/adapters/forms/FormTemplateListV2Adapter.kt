@@ -10,10 +10,10 @@ import com.cradleplatform.neptune.model.FormTemplateShallowV2
 import com.cradleplatform.neptune.utilities.DateUtil
 
 /**
- * adapter for the RecyclerView in FormTemplateListV2Activity. 
+ * adapter for the RecyclerView in FormTemplateListV2Activity.
  * Displays a list of form templates, each with a name and subtitle.
  * it also uses shallow model to avoid unnecessary data transfer and processing.
- * 
+ *
  */
 class FormTemplateListV2Adapter(
     private val templates: List<FormTemplateShallowV2>

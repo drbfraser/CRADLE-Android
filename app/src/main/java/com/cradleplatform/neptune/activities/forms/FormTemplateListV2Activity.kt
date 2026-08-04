@@ -19,7 +19,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 /**
- * displays the list of form templates available to the user. This is the V2 version of the form template list, 
+ * displays the list of form templates available to the user. This is the V2 version of the form template list,
  * which uses the new FormTemplateV2 model.
  */
 @AndroidEntryPoint
