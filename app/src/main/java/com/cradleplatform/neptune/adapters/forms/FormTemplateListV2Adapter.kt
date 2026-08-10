@@ -16,7 +16,8 @@ import com.cradleplatform.neptune.utilities.DateUtil
  *
  */
 class FormTemplateListV2Adapter(
-    private val templates: List<FormTemplateShallowV2>
+    private val templates: List<FormTemplateShallowV2>,
+    private val onItemClick: (FormTemplateShallowV2) -> Unit = {}
 ) : RecyclerView.Adapter<FormTemplateListV2Adapter.ViewHolder>() {
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -38,6 +39,7 @@ class FormTemplateListV2Adapter(
             template.version,
             DateUtil.getDateStringFromTimestamp(template.dateCreated)
         )
+        holder.itemView.setOnClickListener { onItemClick(template) }
     }
 
     override fun getItemCount(): Int = templates.size
