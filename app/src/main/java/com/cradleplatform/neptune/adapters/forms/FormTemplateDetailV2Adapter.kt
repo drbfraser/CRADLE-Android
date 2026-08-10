@@ -47,7 +47,10 @@ class FormTemplateDetailV2Adapter(
             holder.optionsText.visibility = View.GONE
         } else {
             holder.optionsText.visibility = View.VISIBLE
-            holder.optionsText.text = context.getString(R.string.form_question_v2_options, optionNames.joinToString(", "))
+            holder.optionsText.text = context.getString(
+                R.string.form_question_v2_options,
+                optionNames.joinToString(", ")
+            )
         }
     }
 
