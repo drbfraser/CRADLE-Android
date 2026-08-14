@@ -23,6 +23,8 @@ import com.cradleplatform.neptune.http_sms_service.http.ReadingSyncResult
 import com.cradleplatform.neptune.http_sms_service.http.ReferralSyncResult
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
 import com.cradleplatform.neptune.http_sms_service.http.SyncException
+import com.cradleplatform.neptune.http_sms_service.http.WorkflowInstanceSyncResult
+import com.cradleplatform.neptune.http_sms_service.http.WorkflowTemplateSyncResult
 import com.cradleplatform.neptune.manager.AssessmentManager
 import com.cradleplatform.neptune.manager.FormManager
 import com.cradleplatform.neptune.manager.FormResponseManager
@@ -30,6 +32,7 @@ import com.cradleplatform.neptune.manager.HealthFacilityManager
 import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.manager.ReadingManager
 import com.cradleplatform.neptune.manager.ReferralManager
+import com.cradleplatform.neptune.manager.WorkflowManager
 import com.cradleplatform.neptune.model.Assessment
 import com.cradleplatform.neptune.model.FormClassification
 import com.cradleplatform.neptune.model.FormResponse
@@ -37,6 +40,8 @@ import com.cradleplatform.neptune.model.HealthFacility
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.Reading
 import com.cradleplatform.neptune.model.Referral
+import com.cradleplatform.neptune.model.WorkflowInstance
+import com.cradleplatform.neptune.model.WorkflowTemplate
 import com.cradleplatform.neptune.utilities.Protocol
 import com.cradleplatform.neptune.utilities.RateLimitRunner
 import com.cradleplatform.neptune.utilities.UnixTimestamp
@@ -70,6 +75,7 @@ class SyncAllWorker @AssistedInject constructor(
     private val healthFacilityManager: HealthFacilityManager,
     private val formManager: FormManager,
     private val formResponseManager: FormResponseManager,
+    private val workflowManager: WorkflowManager,
     private val sharedPreferences: SharedPreferences,
     private val database: CradleDatabase
 ) : CoroutineWorker(context, params) {
@@ -109,6 +115,17 @@ class SyncAllWorker @AssistedInject constructor(
          * Downloading submitted Form Responses from server
          */
         DOWNLOADING_FORM_RESPONSES,
+
+        /**
+         * Downloading Workflow Templates from server
+         */
+        DOWNLOADING_WORKFLOW_TEMPLATES,
+
+        /**
+         * Checking the server for new workflow instances by uploading an empty list
+         */
+        CHECKING_SERVER_WORKFLOW_INSTANCES, UPLOADING_WORKFLOW_INSTANCES,
+        DOWNLOADING_WORKFLOW_INSTANCES,
     }
 
     companion object {
@@ -131,6 +148,12 @@ class SyncAllWorker @AssistedInject constructor(
 
         /** SharedPreferences key for last time form responses were synced */
         const val LAST_FORM_RESPONSE_SYNC = "lastSyncTimeFormResponses"
+
+        /** SharedPreferences key for last time workflow templates were synced */
+        const val LAST_WORKFLOW_TEMPLATE_SYNC = "lastSyncTimeWorkflowTemplates"
+
+        /** SharedPreferences key for last time workflow instances were synced */
+        const val LAST_WORKFLOW_INSTANCE_SYNC = "lastSyncTimeWorkflowInstances"
 
         /** Default last sync timestamp. Note that using 0 will result in server rejecting param */
         const val LAST_SYNC_DEFAULT = "1"
@@ -356,6 +379,54 @@ class SyncAllWorker @AssistedInject constructor(
             )
         }
 
+        val lastWorkflowTemplateSyncTime = BigInteger(
+            sharedPreferences.getString(
+                LAST_WORKFLOW_TEMPLATE_SYNC, LAST_SYNC_DEFAULT
+            )!!
+        )
+        val workflowTemplateResult = syncWorkflowTemplates(lastWorkflowTemplateSyncTime)
+        if (workflowTemplateResult.networkResult is NetworkResult.Success) {
+            sharedPreferences.edit(commit = true) {
+                putString(LAST_WORKFLOW_TEMPLATE_SYNC, syncTimestampToSave.toString())
+            }
+        } else {
+            return Result.failure(
+                workDataOf(
+                    RESULT_MESSAGE to getResultErrorMessage(workflowTemplateResult.networkResult)
+                )
+            )
+        }
+
+        val lastWorkflowInstanceSyncTime = BigInteger(
+            sharedPreferences.getString(
+                LAST_WORKFLOW_INSTANCE_SYNC, LAST_SYNC_DEFAULT
+            )!!
+        )
+        val workflowInstancesToUpload = workflowManager.getWorkflowInstancesToUpload()
+        val workflowInstanceResult = syncWorkflowInstances(
+            workflowInstancesToUpload, lastWorkflowInstanceSyncTime
+        )
+        val workflowInstancesLeftToUpload = workflowManager.countWorkflowInstancesToUpload()
+        if (workflowInstancesLeftToUpload > 0) {
+            workflowInstanceResult.totalWorkflowInstancesUploaded -= workflowInstancesLeftToUpload
+
+            Log.wtf(
+                TAG, "There are $workflowInstancesLeftToUpload workflow instances left to upload"
+            )
+        }
+
+        if (workflowInstanceResult.networkResult is NetworkResult.Success) {
+            sharedPreferences.edit(commit = true) {
+                putString(LAST_WORKFLOW_INSTANCE_SYNC, syncTimestampToSave.toString())
+            }
+        } else {
+            return Result.failure(
+                workDataOf(
+                    RESULT_MESSAGE to getResultErrorMessage(workflowInstanceResult.networkResult)
+                )
+            )
+        }
+
         val formTemplateResult = syncFormTemplates()
         if (formTemplateResult.networkResult !is NetworkResult.Success) {
             return Result.failure(
@@ -381,7 +452,9 @@ class SyncAllWorker @AssistedInject constructor(
                 readingResult,
                 referralResult,
                 assessmentResult,
-                formTemplateResult
+                formTemplateResult,
+                workflowTemplateResult,
+                workflowInstanceResult
             )
         )
 
@@ -603,6 +676,83 @@ class SyncAllWorker @AssistedInject constructor(
         }
     }
 
+    private suspend fun syncWorkflowTemplates(
+        lastSyncTime: BigInteger
+    ): WorkflowTemplateSyncResult = withContext(Dispatchers.Default) {
+        setProgress(
+            workDataOf(PROGRESS_CURRENT_STATE to State.DOWNLOADING_WORKFLOW_TEMPLATES.name)
+        )
+        val channel = Channel<WorkflowTemplate>()
+        launch {
+            try {
+                database.withTransaction {
+                    for (workflowTemplate in channel) {
+                        workflowManager.addWorkflowTemplate(workflowTemplate)
+                    }
+                }
+            } catch (e: SyncException) {
+                withContext(Dispatchers.Main) {
+                    Log.e(TAG, "workflow templates sync failed", e)
+                }
+            }
+            withContext(Dispatchers.Main) { Log.d(TAG, "workflow templates job done") }
+        }
+
+        restApi.syncWorkflowTemplates(
+            lastSyncTimestamp = lastSyncTime,
+            workflowTemplateChannel = channel
+        ) { current, total ->
+            reportProgress(
+                state = State.DOWNLOADING_WORKFLOW_TEMPLATES,
+                progress = current,
+                total = total,
+            )
+        }
+    }
+
+    private suspend fun syncWorkflowInstances(
+        workflowInstancesToUpload: List<WorkflowInstance>,
+        lastSyncTime: BigInteger
+    ): WorkflowInstanceSyncResult = withContext(Dispatchers.Default) {
+        setProgress(
+            if (workflowInstancesToUpload.isEmpty()) {
+                workDataOf(
+                    PROGRESS_CURRENT_STATE to State.CHECKING_SERVER_WORKFLOW_INSTANCES.name
+                )
+            } else {
+                workDataOf(PROGRESS_CURRENT_STATE to State.UPLOADING_WORKFLOW_INSTANCES.name)
+            }
+        )
+        Log.d(TAG, "preparing to upload ${workflowInstancesToUpload.size} workflow instances")
+        val channel = Channel<WorkflowInstance>()
+        launch {
+            try {
+                database.withTransaction {
+                    for (workflowInstance in channel) {
+                        workflowManager.addWorkflowInstance(workflowInstance, true)
+                    }
+                }
+            } catch (e: SyncException) {
+                withContext(Dispatchers.Main) {
+                    Log.e(TAG, "workflow instances sync failed", e)
+                }
+            }
+            withContext(Dispatchers.Main) { Log.d(TAG, "workflow instances job done") }
+        }
+
+        restApi.syncWorkflowInstances(
+            workflowInstancesToUpload,
+            lastSyncTimestamp = lastSyncTime,
+            workflowInstanceChannel = channel
+        ) { current, total ->
+            reportProgress(
+                state = State.DOWNLOADING_WORKFLOW_INSTANCES,
+                progress = current,
+                total = total,
+            )
+        }
+    }
+
     private suspend fun syncFormTemplates(): FormSyncResult = withContext(Dispatchers.Default) {
         val channel = Channel<FormClassification>()
         launch {
@@ -714,7 +864,9 @@ class SyncAllWorker @AssistedInject constructor(
         readingSyncResult: ReadingSyncResult,
         referralSyncResult: ReferralSyncResult,
         assessmentSyncResult: AssessmentSyncResult,
-        formTemplateSyncResult: FormSyncResult
+        formTemplateSyncResult: FormSyncResult,
+        workflowTemplateSyncResult: WorkflowTemplateSyncResult,
+        workflowInstanceSyncResult: WorkflowInstanceSyncResult
     ): String {
         val success = patientSyncResult.networkResult.getStatusMessage(applicationContext)
         val totalPatientsUploaded = applicationContext.getString(
@@ -752,6 +904,19 @@ class SyncAllWorker @AssistedInject constructor(
             formTemplateSyncResult.totalFormClassDownloaded
         )
 
+        val totalWorkflowTemplatesDownloaded = applicationContext.getString(
+            R.string.sync_total_workflow_templates_downloaded_s,
+            workflowTemplateSyncResult.totalWorkflowTemplatesDownloaded
+        )
+        val totalWorkflowInstancesUploaded = applicationContext.getString(
+            R.string.sync_total_workflow_instances_uploaded_s,
+            workflowInstanceSyncResult.totalWorkflowInstancesUploaded
+        )
+        val totalWorkflowInstancesDownloaded = applicationContext.getString(
+            R.string.sync_total_workflow_instances_downloaded_s,
+            workflowInstanceSyncResult.totalWorkflowInstancesDownloaded
+        )
+
         val errors = patientSyncResult.errors.let { if (it != "[ ]") "\nErrors:\n$it" else "" }
 
         return """
@@ -766,6 +931,9 @@ class SyncAllWorker @AssistedInject constructor(
             $totalAssessmentsUploaded
             $totalAssessmentsDownloaded
             $totalFormsDownloaded
+            $totalWorkflowTemplatesDownloaded
+            $totalWorkflowInstancesUploaded
+            $totalWorkflowInstancesDownloaded
             $errors
         """.trimIndent()
     }
@@ -785,4 +953,12 @@ enum class ReferralSyncField(override val text: String) : Field {
 
 enum class AssessmentSyncField(override val text: String) : Field {
     ASSESSMENTS("assessments"), ERRORS("errors")
+}
+
+enum class WorkflowTemplateSyncField(override val text: String) : Field {
+    WORKFLOW_TEMPLATES("workflowTemplates")
+}
+
+enum class WorkflowInstanceSyncField(override val text: String) : Field {
+    WORKFLOW_INSTANCES("workflowInstances"), ERRORS("errors")
 }

@@ -224,6 +224,18 @@ class SyncActivity : AppCompatActivity() {
                     SyncAllWorker.State.DOWNLOADING_FORM_RESPONSES -> getString(
                         R.string.sync_activitiy_status_downloading_form_responses
                     )
+                    SyncAllWorker.State.DOWNLOADING_WORKFLOW_TEMPLATES -> getString(
+                        R.string.sync_activity_status_downloading_workflow_templates
+                    )
+                    SyncAllWorker.State.CHECKING_SERVER_WORKFLOW_INSTANCES -> getString(
+                        R.string.sync_activity_status_checking_for_new_workflows
+                    )
+                    SyncAllWorker.State.UPLOADING_WORKFLOW_INSTANCES -> getString(
+                        R.string.sync_activity_status_uploading_workflows
+                    )
+                    SyncAllWorker.State.DOWNLOADING_WORKFLOW_INSTANCES -> getString(
+                        R.string.sync_activity_status_downloading_workflows
+                    )
                 }
                 if (syncStatusText.text != newStateString) {
                     syncStatusText.text = newStateString

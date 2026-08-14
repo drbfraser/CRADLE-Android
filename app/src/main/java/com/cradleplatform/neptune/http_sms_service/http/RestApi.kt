@@ -31,11 +31,15 @@ import com.cradleplatform.neptune.model.Reading
 import com.cradleplatform.neptune.model.Referral
 import com.cradleplatform.neptune.model.RelayPhoneNumberResponse
 import com.cradleplatform.neptune.model.Statistics
+import com.cradleplatform.neptune.model.WorkflowInstance
+import com.cradleplatform.neptune.model.WorkflowTemplate
 import com.cradleplatform.neptune.sync.workers.AssessmentSyncField
 import com.cradleplatform.neptune.sync.workers.PatientSyncField
 import com.cradleplatform.neptune.sync.workers.ReadingSyncField
 import com.cradleplatform.neptune.sync.workers.ReferralSyncField
 import com.cradleplatform.neptune.sync.workers.SyncAllWorker
+import com.cradleplatform.neptune.sync.workers.WorkflowInstanceSyncField
+import com.cradleplatform.neptune.sync.workers.WorkflowTemplateSyncField
 import com.cradleplatform.neptune.utilities.Protocol
 import com.cradleplatform.neptune.utilities.jackson.JacksonMapper
 import com.cradleplatform.neptune.utilities.jackson.JacksonMapper.createWriter
@@ -89,6 +93,7 @@ class RestApi(
 ) {
     companion object {
         private const val TAG = "RestApi"
+        private const val EMPTY_JSON_ARRAY = "[]"
     }
 
     private fun setupSmsReceiver() {
@@ -2349,6 +2354,133 @@ class RestApi(
         }
 
         FormResponseSyncResult(result, totalDownloaded)
+    }
+
+    suspend fun syncWorkflowTemplates(
+        lastSyncTimestamp: BigInteger,
+        workflowTemplateChannel: SendChannel<WorkflowTemplate>,
+        reportProgressBlock: suspend (Int, Int) -> Unit
+    ): WorkflowTemplateSyncResult = withContext(IO) {
+        val url = urlManager.getWorkflowTemplatesSync(lastSyncTimestamp)
+        var totalWorkflowTemplatesDownloaded = 0
+        var failedParse = false
+
+        val result = http.makeRequest(
+            method = Http.Method.POST,
+            url = url,
+            headers = makeAuthorizationHeader(),
+            requestBody = buildJsonRequestBody(EMPTY_JSON_ARRAY.toByteArray())
+        ) { inputStream ->
+            try {
+                val reader = JacksonMapper.createReader<WorkflowTemplate>()
+                reader.createParser(inputStream).use { parser ->
+                    parser.parseObject {
+                        when (currentName) {
+                            WorkflowTemplateSyncField.WORKFLOW_TEMPLATES.text -> {
+                                parseObjectArray<WorkflowTemplate>(reader) {
+                                    workflowTemplateChannel.send(it)
+                                    totalWorkflowTemplatesDownloaded++
+                                    reportProgressBlock(
+                                        totalWorkflowTemplatesDownloaded,
+                                        totalWorkflowTemplatesDownloaded
+                                    )
+                                }
+                                workflowTemplateChannel.close()
+                            }
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, e.toString())
+                failedParse = true
+            }
+        }.also {
+            if (it is NetworkResult.Success) {
+                if (failedParse) {
+                    workflowTemplateChannel.close(
+                        SyncException("workflow templates sync response parsing had failure(s)")
+                    )
+                } else {
+                    workflowTemplateChannel.close()
+                }
+            } else {
+                workflowTemplateChannel.close(
+                    SyncException("workflow template download wasn't done properly")
+                )
+            }
+        }
+
+        WorkflowTemplateSyncResult(result, totalWorkflowTemplatesDownloaded)
+    }
+
+    suspend fun syncWorkflowInstances(
+        workflowInstancesToUpload: List<WorkflowInstance>,
+        lastSyncTimestamp: BigInteger,
+        workflowInstanceChannel: SendChannel<WorkflowInstance>,
+        reportProgressBlock: suspend (Int, Int) -> Unit
+    ): WorkflowInstanceSyncResult = withContext(IO) {
+        val body = createWriter<List<WorkflowInstance>>().writeValueAsBytes(workflowInstancesToUpload)
+        val url = urlManager.getWorkflowInstancesSync(lastSyncTimestamp)
+        var totalWorkflowInstancesDownloaded = 0
+        var errors: String? = null
+        var failedParse = false
+
+        val result = http.makeRequest(
+            method = Http.Method.POST,
+            url = url,
+            headers = makeAuthorizationHeader(),
+            requestBody = buildJsonRequestBody(body)
+        ) { inputStream ->
+            try {
+                val reader = JacksonMapper.createReader<WorkflowInstance>()
+                reader.createParser(inputStream).use { parser ->
+                    parser.parseObject {
+                        when (currentName) {
+                            WorkflowInstanceSyncField.WORKFLOW_INSTANCES.text -> {
+                                parseObjectArray<WorkflowInstance>(reader) {
+                                    workflowInstanceChannel.send(it)
+                                    totalWorkflowInstancesDownloaded++
+                                    reportProgressBlock(
+                                        totalWorkflowInstancesDownloaded,
+                                        totalWorkflowInstancesDownloaded
+                                    )
+                                }
+                                workflowInstanceChannel.close()
+                            }
+
+                            WorkflowInstanceSyncField.ERRORS.text -> {
+                                nextToken()
+                                errors = readValueAsTree<JsonNode>().toPrettyString()
+                            }
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, e.toString())
+                failedParse = true
+            }
+        }.also {
+            if (it is NetworkResult.Success) {
+                if (failedParse) {
+                    workflowInstanceChannel.close(
+                        SyncException("workflow instances sync response parsing had failure(s)")
+                    )
+                } else {
+                    workflowInstanceChannel.close()
+                }
+            } else {
+                workflowInstanceChannel.close(
+                    SyncException("workflow instance download wasn't done properly")
+                )
+            }
+        }
+
+        WorkflowInstanceSyncResult(
+            result,
+            workflowInstancesToUpload.size,
+            totalWorkflowInstancesDownloaded,
+            errors
+        )
     }
 
     private data class FormResponseSyncItem(

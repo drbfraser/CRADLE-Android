@@ -177,6 +177,12 @@ class UrlManager @Inject constructor(val settings: Settings) {
     fun getFormResponsesSync(lastSyncTimestamp: BigInteger): String =
         "$base/sync/forms?since=$lastSyncTimestamp"
 
+    fun getWorkflowTemplatesSync(lastSyncTimestamp: BigInteger): String =
+        "$base/sync/workflow_templates?since=$lastSyncTimestamp"
+
+    fun getWorkflowInstancesSync(lastSyncTimestamp: BigInteger): String =
+        "$base/sync/workflow_instances?since=$lastSyncTimestamp"
+
     fun getUpdatesNew(): String = "$base/sync/updates"
 
     /**
