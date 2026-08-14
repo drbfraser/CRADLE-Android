@@ -4,6 +4,7 @@ import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.graphics.Typeface
 import android.os.Build
 import android.os.Bundle
 import android.view.Menu
@@ -13,6 +14,8 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.RadioGroup
+import android.widget.TableLayout
+import android.widget.TableRow
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -36,6 +39,8 @@ import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.Reading
 import com.cradleplatform.neptune.model.Referral
 import com.cradleplatform.neptune.model.Sex
+import com.cradleplatform.neptune.model.WorkflowRow
+import com.cradleplatform.neptune.model.WorkflowTemplate
 import com.cradleplatform.neptune.utilities.SnackbarHelper
 import com.cradleplatform.neptune.utilities.Util
 import com.cradleplatform.neptune.activities.forms.FormSelectionActivity
@@ -91,6 +96,7 @@ open class PatientProfileActivity : AppCompatActivity() {
     private var patientReferrals: List<Referral>? = null
     private var patientAssessments: List<Assessment>? = null
     private var patientSubmittedForms: List<FormResponse> = emptyList()
+    private var availableWorkflowTemplates: List<WorkflowTemplate> = emptyList()
 
     // Data Model
     @Inject
@@ -114,6 +120,7 @@ open class PatientProfileActivity : AppCompatActivity() {
     companion object {
         private const val EXTRA_PATIENT = "patient"
         private const val EXTRA_PATIENT_ID = "patientId"
+        private const val WORKFLOW_CELL_PADDING = 8
 
         fun makeIntentForPatientId(context: Context, patientId: String): Intent {
             val intent = Intent(context, PatientProfileActivity::class.java)
@@ -129,6 +136,7 @@ open class PatientProfileActivity : AppCompatActivity() {
         setupToolBar()
         setupUpdateRecord()
         setupViewModelObservers()
+        setupStartWorkflowButton()
 
         if (!getLocalPatient()) {
             // Not a local patient, might be a child class so we let the child do the init stuff
@@ -181,6 +189,81 @@ open class PatientProfileActivity : AppCompatActivity() {
             patientSubmittedForms = forms
             setupReadingsRecyclerView()
         }
+
+        viewModel.workflows.observe(this) { workflows ->
+            populateWorkflowTable(workflows)
+        }
+
+        viewModel.workflowTemplates.observe(this) { templates ->
+            availableWorkflowTemplates = templates ?: emptyList()
+        }
+    }
+
+    private fun setupStartWorkflowButton() {
+        findViewById<Button>(R.id.startWorkflowButton).setOnClickListener {
+            val templates = availableWorkflowTemplates
+            if (templates.isEmpty()) {
+                Toast.makeText(this, R.string.workflows_start_no_templates, Toast.LENGTH_SHORT)
+                    .show()
+                return@setOnClickListener
+            }
+            val names = templates
+                .map { it.name ?: getString(R.string.workflows_unnamed) }
+                .toTypedArray()
+            MaterialAlertDialogBuilder(this)
+                .setTitle(R.string.workflows_start_dialog_title)
+                .setItems(names) { _, index ->
+                    viewModel.startWorkflow(templates[index])
+                    Toast.makeText(this, R.string.workflows_start_success, Toast.LENGTH_SHORT)
+                        .show()
+                }
+                .setNegativeButton(android.R.string.cancel, null)
+                .show()
+        }
+    }
+
+    private fun populateWorkflowTable(workflows: List<WorkflowRow>) {
+        val table = findViewById<TableLayout>(R.id.workflowTable)
+        table.removeAllViews()
+
+        val headerRow = TableRow(this)
+        headerRow.addView(makeWorkflowCell(getString(R.string.workflows_column_template), true))
+        headerRow.addView(makeWorkflowCell(getString(R.string.workflows_column_status), true))
+        headerRow.addView(makeWorkflowCell(getString(R.string.workflows_column_last_edited), true))
+        headerRow.addView(makeWorkflowCell(getString(R.string.workflows_column_steps), true))
+        headerRow.addView(makeWorkflowCell(getString(R.string.workflows_column_current_step), true))
+        table.addView(headerRow)
+
+        if (workflows.isEmpty()) {
+            val emptyRow = TableRow(this)
+            emptyRow.addView(makeWorkflowCell(getString(R.string.workflows_empty), false))
+            table.addView(emptyRow)
+            return
+        }
+
+        for (workflow in workflows) {
+            val row = TableRow(this)
+            row.addView(makeWorkflowCell(workflow.templateName, false))
+            row.addView(makeWorkflowCell(workflow.status, false))
+            row.addView(makeWorkflowCell(workflow.lastEdited, false))
+            row.addView(makeWorkflowCell(workflow.stepCount.toString(), false))
+            row.addView(makeWorkflowCell(workflow.currentStep, false))
+            row.isClickable = true
+            row.setOnClickListener {
+                startActivity(WorkflowInstanceDetailsActivity.makeIntent(this, workflow))
+            }
+            table.addView(row)
+        }
+    }
+
+    private fun makeWorkflowCell(text: String, isHeader: Boolean): TextView {
+        val cell = TextView(this)
+        cell.text = text
+        cell.setPadding(WORKFLOW_CELL_PADDING, WORKFLOW_CELL_PADDING, WORKFLOW_CELL_PADDING, WORKFLOW_CELL_PADDING)
+        if (isHeader) {
+            cell.setTypeface(cell.typeface, Typeface.BOLD)
+        }
+        return cell
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
