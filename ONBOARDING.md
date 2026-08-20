@@ -457,8 +457,8 @@ neptune/
 │   └── Statistics.kt             # Analytics data model
 │
 ├── database/                     # Room database layer
-│   ├── CradleDatabase.kt         # @Database class, version 2
-│   ├── Migrations.kt             # v1 -> v2 migration SQL
+│   ├── CradleDatabase.kt         # @Database class, version 3
+│   ├── Migrations.kt             # v1 -> v3 migration SQL
 │   ├── daos/                     # Data Access Objects (one per entity)
 │   │   ├── PatientDao
 │   │   ├── ReadingDao
@@ -725,9 +725,9 @@ The app uses **Bearer token authentication**:
 
 Data flows in two directions:
 
-**Download (Server -> App):** New/updated patients, readings, form templates, health facilities, and assessments are fetched and stored locally in Room.
+**Download (Server -> App):** New/updated patients, readings, form templates, health facilities, assessments, and workflows are fetched and stored locally in Room.
 
-**Upload (App -> Server):** Locally created patients, readings, referrals, assessments, and form responses that haven't been uploaded yet are sent to the server.
+**Upload (App -> Server):** Locally created patients, readings, referrals, assessments, workflows, and form responses that haven't been uploaded yet are sent to the server.
 
 ### Sync Trigger Points
 
@@ -750,6 +750,8 @@ Data flows in two directions:
 6. Upload unsent referrals
 7. Upload unsent assessments
 8. Download server-side assessments
+9. Download workflow templates
+10. Upload unsent workflows and download server-side workflows
 
 Each step is independent - a failure in step 3 doesn't abort steps 4+. The last sync timestamp is stored in `SharedPreferences` and updated only on complete success.
 
@@ -947,7 +949,7 @@ Located in `app/src/test/`. Run without a device.
 | `SmsSenderTests.kt` | SMS sending logic |
 | `DatabaseTypeConvertersTests.kt` | Room type converters for custom types |
 | `PatientReadingViewModelTests.kt` | ViewModel business logic |
-| `MigrationTest.kt` | Room database schema migration (v1 -> v2) |
+| `MigrationTest.kt` | Room database schema migration (v1 -> v3) |
 
 **Mocking stack:** `Mockk` is preferred (idiomatic Kotlin) Useful links: [Mockk docs](https://mockk.io/) · [Mockk crash course (video)](https://www.youtube.com/watch?v=4prbIk2TuX4); legacy tests may use `Mockito`.
 
