@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:id="@+id/question_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="@style/TextAppearance.Cradle.Body1"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        tools:text="Select symptoms" />
+
+    <TextView
+        android:id="@+id/question_subtitle_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:alpha="0.6"
+        android:textAppearance="@style/TextAppearance.Cradle.Body1"
+        android:textSize="13sp"
+        tools:text="Multiple Choice · Required" />
+
+    <TextView
+        android:id="@+id/question_options_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:textAppearance="@style/TextAppearance.Cradle.Body1"
+        android:textSize="14sp"
+        android:visibility="gone"
+        tools:text="Options: Headache, Fever, Nausea"
+        tools:visibility="visible" />
+
+</LinearLayout>

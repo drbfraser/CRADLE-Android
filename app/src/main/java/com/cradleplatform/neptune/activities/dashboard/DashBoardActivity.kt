@@ -236,6 +236,12 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
             )
             return true
         }
+        if (id == R.id.action_form_template_v2) {
+            startActivity(
+                Intent(this, com.cradleplatform.neptune.activities.forms.FormTemplateListV2Activity::class.java)
+            )
+            return true
+        }
         return super.onOptionsItemSelected(item)
     }
 

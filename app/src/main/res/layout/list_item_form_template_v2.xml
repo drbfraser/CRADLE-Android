@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?attr/selectableItemBackground"
+    android:clickable="true"
+    android:focusable="true"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:id="@+id/template_name_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="@style/TextAppearance.Cradle.Body1"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        tools:text="Antenatal" />
+
+    <TextView
+        android:id="@+id/template_subtitle_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:alpha="0.6"
+        android:textAppearance="@style/TextAppearance.Cradle.Body1"
+        android:textSize="14sp"
+        tools:text="Version 1 · Jul 14, 2026" />
+
+</LinearLayout>
