@@ -9,11 +9,15 @@ import com.cradleplatform.neptune.manager.FormResponseManager
 import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.manager.ReadingManager
 import com.cradleplatform.neptune.manager.ReferralManager
+import com.cradleplatform.neptune.manager.WorkflowManager
 import com.cradleplatform.neptune.model.Assessment
 import com.cradleplatform.neptune.model.FormResponse
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.Reading
 import com.cradleplatform.neptune.model.Referral
+import com.cradleplatform.neptune.model.WorkflowRow
+import com.cradleplatform.neptune.model.WorkflowTemplate
+import com.cradleplatform.neptune.model.toWorkflowRow
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -24,7 +28,8 @@ class PatientProfileViewModel @Inject constructor(
     private val readingManager: ReadingManager,
     private val referralManager: ReferralManager,
     private val assessmentManager: AssessmentManager,
-    private val formResponseManager: FormResponseManager
+    private val formResponseManager: FormResponseManager,
+    private val workflowManager: WorkflowManager
 ) : ViewModel() {
 
     private val _patient = MutableLiveData<Patient?>()
@@ -50,6 +55,12 @@ class PatientProfileViewModel @Inject constructor(
 
     private val _submittedForms = MutableLiveData<List<FormResponse>>()
     val submittedForms: LiveData<List<FormResponse>> = _submittedForms
+
+    private val _workflows = MutableLiveData<List<WorkflowRow>>()
+    val workflows: LiveData<List<WorkflowRow>> = _workflows
+
+    private val _workflowTemplates = MutableLiveData<List<WorkflowTemplate>>()
+    val workflowTemplates: LiveData<List<WorkflowTemplate>> = _workflowTemplates
 
     /**
      * Load patient data by ID
@@ -99,6 +110,25 @@ class PatientProfileViewModel @Inject constructor(
         // Load submitted forms
         val submittedForms = formResponseManager.searchForSubmittedFormsByPatientId(patientId)
         _submittedForms.postValue(submittedForms ?: emptyList())
+
+        _workflowTemplates.postValue(workflowManager.getWorkflowTemplates())
+
+        loadWorkflows(patientId)
+    }
+
+    fun startWorkflow(workflowTemplate: WorkflowTemplate) {
+        val patientId = _patient.value?.id ?: return
+        viewModelScope.launch {
+            workflowManager.startWorkflowInstance(patientId, workflowTemplate)
+            loadWorkflows(patientId)
+        }
+    }
+
+    private suspend fun loadWorkflows(patientId: String) {
+        val rows = workflowManager.getWorkflowInstancesForPatient(patientId)
+            .map { it.toWorkflowRow() }
+            .sortedWith(compareBy({ it.templateName.lowercase() }, { it.instanceId }))
+        _workflows.postValue(rows)
     }
 
     /**

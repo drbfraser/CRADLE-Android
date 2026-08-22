@@ -72,6 +72,7 @@
             android:name=".activities.patients.PatientProfileActivity"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden" />
         <activity android:name=".activities.patients.PatientReferralActivity" />
+        <activity android:name=".activities.patients.WorkflowInstanceDetailsActivity" />
         <activity
             android:name=".activities.patients.PatientUpdateDrugMedicalActivity"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden" />

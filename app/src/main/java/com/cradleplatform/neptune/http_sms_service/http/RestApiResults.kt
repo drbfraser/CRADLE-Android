@@ -41,3 +41,15 @@ data class FormResponseSyncResult(
     val networkResult: NetworkResult<Unit>,
     val totalFormResponsesDownloaded: Int
 )
+
+data class WorkflowTemplateSyncResult(
+    val networkResult: NetworkResult<Unit>,
+    var totalWorkflowTemplatesDownloaded: Int
+)
+
+data class WorkflowInstanceSyncResult(
+    val networkResult: NetworkResult<Unit>,
+    var totalWorkflowInstancesUploaded: Int,
+    var totalWorkflowInstancesDownloaded: Int,
+    var errors: String?
+)

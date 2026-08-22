@@ -159,6 +159,9 @@ class LoginManager @Inject constructor(
             remove(SyncAllWorker.LAST_REFERRAL_SYNC)
             remove(SyncAllWorker.LAST_ASSESSMENT_SYNC)
             remove(SyncAllWorker.LAST_HEALTH_FACILITIES_SYNC)
+            remove(SyncAllWorker.LAST_FORM_RESPONSE_SYNC)
+            remove(SyncAllWorker.LAST_WORKFLOW_TEMPLATE_SYNC)
+            remove(SyncAllWorker.LAST_WORKFLOW_INSTANCE_SYNC)
         }
         smsKeyManager.clearSmsKey()
     }

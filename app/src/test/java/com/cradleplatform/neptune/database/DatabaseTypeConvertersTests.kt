@@ -1,5 +1,9 @@
 package com.cradleplatform.neptune.database
 
+import com.cradleplatform.neptune.model.WorkflowInstanceStep
+import com.cradleplatform.neptune.model.WorkflowStatus
+import com.cradleplatform.neptune.model.WorkflowTemplateStep
+import com.cradleplatform.neptune.model.WorkflowTemplateStepBranch
 import org.junit.jupiter.api.Test
 
 class DatabaseTypeConvertersTests {
@@ -41,4 +45,78 @@ class DatabaseTypeConvertersTests {
 
     private fun runStringListConversion(list: List<String>?): List<String>? =
         typeConverter.toStringList(typeConverter.fromStringList(list))
+
+    @Test
+    fun `workflow instance step list is preserved`() {
+
+        val listsToTest: Array<List<WorkflowInstanceStep>> = arrayOf(
+            listOf(),
+            listOf(
+                WorkflowInstanceStep(
+                    id = "step-1",
+                    workflowInstanceId = "instance-1",
+                    name = "Assessment"
+                )
+            ),
+            listOf(
+                WorkflowInstanceStep(
+                    id = "step-1",
+                    workflowInstanceId = "instance-1",
+                    name = "Assessment",
+                    description = "Initial assessment",
+                    status = WorkflowStatus.COMPLETED,
+                    startDate = 1604530201,
+                    completionDate = 1604616601,
+                    lastEdited = 1604616601,
+                    workflowTemplateStepId = "template-step-1"
+                ),
+                WorkflowInstanceStep(
+                    id = "step-2",
+                    workflowInstanceId = "instance-1",
+                    name = "Follow up"
+                )
+            )
+        )
+
+        listsToTest.forEach { originalList ->
+            val convertedList =
+                typeConverter.toWorkflowInstanceStepList(
+                    typeConverter.fromWorkflowInstanceStepList(originalList)
+                )
+            assert(originalList == convertedList) {
+                "expected $originalList, but got $convertedList"
+            }
+        }
+    }
+
+    @Test
+    fun `workflow template step list is preserved`() {
+
+        val listsToTest: Array<List<WorkflowTemplateStep>> = arrayOf(
+            listOf(),
+            listOf(WorkflowTemplateStep(id = "template-step-1")),
+            listOf(
+                WorkflowTemplateStep(
+                    id = "template-step-1",
+                    name = "Assessment",
+                    description = "Initial assessment",
+                    branches = listOf(
+                        WorkflowTemplateStepBranch(targetStepId = "template-step-2"),
+                        WorkflowTemplateStepBranch(targetStepId = null)
+                    )
+                ),
+                WorkflowTemplateStep(id = "template-step-2", name = "Follow up")
+            )
+        )
+
+        listsToTest.forEach { originalList ->
+            val convertedList =
+                typeConverter.toWorkflowTemplateStepList(
+                    typeConverter.fromWorkflowTemplateStepList(originalList)
+                )
+            assert(originalList == convertedList) {
+                "expected $originalList, but got $convertedList"
+            }
+        }
+    }
 }

@@ -12,6 +12,8 @@ import com.cradleplatform.neptune.database.daos.HealthFacilityDao
 import com.cradleplatform.neptune.database.daos.PatientDao
 import com.cradleplatform.neptune.database.daos.ReadingDao
 import com.cradleplatform.neptune.database.daos.ReferralDao
+import com.cradleplatform.neptune.database.daos.WorkflowInstanceDao
+import com.cradleplatform.neptune.database.daos.WorkflowTemplateDao
 import com.cradleplatform.neptune.http_sms_service.http.Http
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
 import com.cradleplatform.neptune.http_sms_service.sms.SMSReceiver
@@ -27,6 +29,7 @@ import com.cradleplatform.neptune.manager.ReadingManager
 import com.cradleplatform.neptune.manager.ReferralManager
 import com.cradleplatform.neptune.manager.ReferralUploadManager
 import com.cradleplatform.neptune.manager.UrlManager
+import com.cradleplatform.neptune.manager.WorkflowManager
 import com.cradleplatform.neptune.model.Settings
 import dagger.Module
 import dagger.Provides
@@ -85,6 +88,13 @@ class DataModule {
 
     @Provides
     @Singleton
+    fun provideWorkflowManager(
+        workflowInstanceDao: WorkflowInstanceDao,
+        workflowTemplateDao: WorkflowTemplateDao
+    ) = WorkflowManager(workflowInstanceDao, workflowTemplateDao)
+
+    @Provides
+    @Singleton
     fun provideFormResponseManager(
         formResponseDao: FormResponseDao,
         formClassificationDao: FormClassificationDao
@@ -109,6 +119,14 @@ class DataModule {
 
     @Provides
     fun provideAssessmentDao(database: CradleDatabase): AssessmentDao = database.assessmentDao()
+
+    @Provides
+    fun provideWorkflowInstanceDao(database: CradleDatabase): WorkflowInstanceDao =
+        database.workflowInstanceDao()
+
+    @Provides
+    fun provideWorkflowTemplateDao(database: CradleDatabase): WorkflowTemplateDao =
+        database.workflowTemplateDao()
 
     @Provides
     fun provideFormClassificationDao(database: CradleDatabase): FormClassificationDao =
