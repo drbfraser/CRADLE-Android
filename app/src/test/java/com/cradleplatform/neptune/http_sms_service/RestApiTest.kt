@@ -6,7 +6,11 @@ import com.cradleplatform.neptune.http_sms_service.http.RestApi
 import com.cradleplatform.neptune.manager.LoginResponse
 import com.cradleplatform.neptune.manager.LoginResponseUser
 import com.cradleplatform.neptune.manager.SmsKey
+import com.cradleplatform.neptune.model.GestationalAgeWeeks
+import com.cradleplatform.neptune.model.Patient
+import com.cradleplatform.neptune.model.Sex
 import com.cradleplatform.neptune.testutils.MockWebServerUtils
+import com.cradleplatform.neptune.utilities.Protocol
 import io.mockk.every
 import io.mockk.mockkStatic
 import kotlinx.coroutines.runBlocking
@@ -20,6 +24,7 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import java.math.BigInteger
 import java.security.GeneralSecurityException
 
 internal class RestApiTest {
@@ -159,6 +164,106 @@ internal class RestApiTest {
         assertEquals(expectedLoginResponseForVht, loginResponse)
     }
 
+    private fun sampleEditablePatient() = Patient(
+        id = "123456",
+        name = "Test Patient",
+        dateOfBirth = "1994-05-20",
+        isExactDateOfBirth = true,
+        sex = Sex.FEMALE,
+        isPregnant = true,
+        gestationalAge = GestationalAgeWeeks(BigInteger.valueOf(1596091500)),
+        pregnancyId = 77,
+        zone = "37",
+        villageNumber = "200",
+        householdNumber = "20",
+        drugHistory = "previous drug history",
+        medicalHistory = "previous medical history",
+        allergy = "peanuts",
+        isArchived = false
+    )
+
+    private fun restApiCapturing(responseBody: String = "{}"): Pair<RestApi, MockWebServer> =
+        MockWebServerUtils.createRestApiWithServerBlock {
+            dispatcher = object : Dispatcher() {
+                override fun dispatch(request: RecordedRequest) =
+                    MockResponse().setResponseCode(200).setBody(responseBody)
+            }
+        }
+
+    @Test
+    fun putPatient_sendsPersonalInfoFieldsInSnakeCase() {
+        val (api, server) = restApiCapturing()
+        val patient = sampleEditablePatient()
+
+        val result = runBlocking { api.putPatient(patient, Protocol.HTTP) }
+        check(result is NetworkResult.Success) { "got $result" }
+
+        val request = server.takeRequest()
+        assertEquals("PUT", request.method)
+        assertEquals("/api/patients/${patient.id}/info", request.path)
+
+        val body = JSONObject(request.body.readString(Charsets.UTF_8))
+        assertEquals(patient.id, body.getString("id"))
+        assertEquals(patient.name, body.getString("name"))
+        assertEquals(patient.sex.name, body.getString("sex"))
+        assertEquals(patient.dateOfBirth, body.getString("date_of_birth"))
+        assertEquals(patient.isExactDateOfBirth, body.getBoolean("is_exact_date_of_birth"))
+        assertEquals(patient.isPregnant, body.getBoolean("is_pregnant"))
+        assertEquals(patient.householdNumber, body.getString("household_number"))
+        assertEquals(patient.zone, body.getString("zone"))
+        assertEquals(patient.villageNumber, body.getString("village_number"))
+        assertEquals(patient.isArchived, body.getBoolean("is_archived"))
+        assertEquals(patient.allergy, body.getString("allergy"))
+
+        server.shutdown()
+    }
+
+    @Test
+    fun postMedicalRecord_drugRecord_sendsDrugHistoryAsInformation() {
+        val (api, server) = restApiCapturing()
+        val patient = sampleEditablePatient()
+
+        val result = runBlocking { api.postMedicalRecord(patient, isDrugRecord = true, Protocol.HTTP) }
+        check(result is NetworkResult.Success) { "got $result" }
+
+        val request = server.takeRequest()
+        assertEquals("POST", request.method)
+        assertEquals("/api/patients/${patient.id}/medical_records", request.path)
+
+        val body = JSONObject(request.body.readString(Charsets.UTF_8))
+        assertEquals(patient.id, body.getString("patient_id"))
+        assertTrue(body.getBoolean("is_drug_record"))
+        assertEquals(patient.drugHistory, body.getString("information"))
+
+        server.shutdown()
+    }
+
+    @Test
+    fun putPregnancy_sendsStartAndEndDateForEndingPregnancy() {
+        val (api, server) = restApiCapturing("""{"id": 77, "patientId": "123456"}""")
+        val patient = sampleEditablePatient().apply {
+            prevPregnancyEndDate = 1620000000
+            prevPregnancyOutcome = "Live birth"
+        }
+        val startDate = BigInteger.valueOf(1596091500)
+
+        val result = runBlocking { api.putPregnancy(patient, startDate, Protocol.HTTP) }
+        check(result is NetworkResult.Success) { "got $result" }
+
+        val request = server.takeRequest()
+        assertEquals("PUT", request.method)
+        assertEquals("/api/pregnancies/${patient.pregnancyId}", request.path)
+
+        val body = JSONObject(request.body.readString(Charsets.UTF_8))
+        assertEquals(patient.pregnancyId, body.getInt("id"))
+        assertEquals(patient.id, body.getString("patient_id"))
+        assertEquals(startDate.toString(), body.get("start_date").toString())
+        assertEquals(patient.prevPregnancyEndDate, body.getLong("end_date"))
+        assertEquals(patient.prevPregnancyOutcome, body.getString("outcome"))
+
+        server.shutdown()
+    }
+
     /*
     @Test
     fun getAllPatientsStreaming() {
@@ -186,10 +291,6 @@ internal class RestApiTest {
 
     @Test
     fun postPatient() {
-    }
-
-    @Test
-    fun putPatient() {
     }
 
     @Test

@@ -167,12 +167,12 @@ jobs:
       # because of no permission to write, cloudsdk_config needs to be set to dir with write permissions.
       # link provided of the official documentation
       # https://cloud.google.com/sdk/docs/properties#setting_properties_via_environment_variables
-      strategy: 
+      strategy:
         matrix:
-          device: 
-            - model: "Pixel2.arm"
+          device:
+            - model: "MediumPhone.arm"
               version: "26"
-            - model: "Pixel2.arm"
+            - model: "MediumPhone.arm"
               version: "28"
       env:
         GCLOUD_SERVICE_ACCOUNT_KEY: ${{ secrets.GCLOUD_SERVICE_ACCOUNT_KEY }}

@@ -60,6 +60,37 @@ class UrlManager @Inject constructor(val settings: Settings) {
         get() = "$base/forms/classifications/summary"
 
     /**
+     * V2 endpoint for creating a form submission.
+     */
+    val formsV2Submissions: String
+        get() = "$base/forms/v2/submissions"
+
+    /**
+     * V2 endpoint for getting or updating (PATCH) a single form submission.
+     */
+    fun formsV2Submission(formSubmissionId: String): String =
+        "$base/forms/v2/submissions/$formSubmissionId"
+
+    /**
+     * V2 endpoint for listing all form templates.
+     */
+    val formsV2Templates: String
+        get() = "$base/forms/v2/templates"
+
+    /**
+     * V2 endpoint for getting a single form template with questions.
+     */
+    fun formsV2Template(formTemplateId: String): String =
+        "$base/forms/v2/templates/$formTemplateId"
+
+    /**
+     * V2 endpoint for getting the most recent non-archived template per classification
+     * (V2 equivalent of [getAllFormsAsSummary]).
+     */
+    val formsV2ClassificationsSummary: String
+        get() = "$base/forms/v2/classifications/summary"
+
+    /**
      * Endpoint for posting a new patient.
      */
     val postPatient: String

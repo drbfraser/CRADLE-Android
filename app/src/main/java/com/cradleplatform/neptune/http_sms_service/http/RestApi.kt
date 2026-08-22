@@ -19,9 +19,16 @@ import com.cradleplatform.neptune.manager.RefreshTokenResponse
 import com.cradleplatform.neptune.manager.SmsKey
 import com.cradleplatform.neptune.manager.UrlManager
 import com.cradleplatform.neptune.model.Assessment
+import com.cradleplatform.neptune.model.CreateFormSubmissionRequestV2
+import com.cradleplatform.neptune.model.FormAnswerV2
 import com.cradleplatform.neptune.model.FormClassification
 import com.cradleplatform.neptune.model.FormResponse
+import com.cradleplatform.neptune.model.FormSubmissionV2
+import com.cradleplatform.neptune.model.FormSubmissionWithAnswersV2
 import com.cradleplatform.neptune.model.FormTemplate
+import com.cradleplatform.neptune.model.FormTemplateListV2Response
+import com.cradleplatform.neptune.model.FormTemplateV2
+import com.cradleplatform.neptune.model.UpdateFormRequestBodyV2
 import com.cradleplatform.neptune.model.GlobalPatient
 import com.cradleplatform.neptune.model.HealthFacility
 import com.cradleplatform.neptune.model.Patient
@@ -44,11 +51,13 @@ import com.cradleplatform.neptune.utilities.Protocol
 import com.cradleplatform.neptune.utilities.jackson.JacksonMapper
 import com.cradleplatform.neptune.utilities.jackson.JacksonMapper.createWriter
 import com.cradleplatform.neptune.viewmodel.UserViewModel
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.channels.Channel
@@ -998,6 +1007,110 @@ class RestApi(
     }
 
     /**
+     * V2: Creates a form submission. HTTP-only for now (basic connectivity validation
+     * pass);
+     * todo: sms support can be added the same way as postFormResponse once V2 is
+     * further along.
+     */
+    suspend fun postFormSubmissionV2(
+        request: CreateFormSubmissionRequestV2
+    ): NetworkResult<FormSubmissionV2> = withContext(IO) {
+        val gson = GsonBuilder().excludeFieldsWithoutExposeAnnotation().create()
+        val body = gson.toJson(request).toByteArray()
+
+        http.makeRequest(
+            method = Http.Method.POST,
+            url = urlManager.formsV2Submissions,
+            headers = makeAuthorizationHeader(),
+            requestBody = buildJsonRequestBody(body),
+            inputStreamReader = { input ->
+                Gson().fromJson(input.bufferedReader(), FormSubmissionV2::class.java)
+            },
+        )
+    }
+
+    /**
+     * V2: Retrieves a form submission with all answers and full question context.
+     */
+    suspend fun getFormSubmissionV2(
+        formSubmissionId: String
+    ): NetworkResult<FormSubmissionWithAnswersV2> = withContext(IO) {
+        http.makeRequest(
+            method = Http.Method.GET,
+            url = urlManager.formsV2Submission(formSubmissionId),
+            headers = makeAuthorizationHeader(),
+            inputStreamReader = { input ->
+                Gson().fromJson(input.bufferedReader(), FormSubmissionWithAnswersV2::class.java)
+            },
+        )
+    }
+
+    /**
+     * V2: Partially updates a form submission's answers .
+     */
+    suspend fun patchFormSubmissionV2(
+        formSubmissionId: String,
+        answers: List<FormAnswerV2>
+    ): NetworkResult<FormSubmissionV2> = withContext(IO) {
+        val gson = GsonBuilder().excludeFieldsWithoutExposeAnnotation().create()
+        val body = gson.toJson(UpdateFormRequestBodyV2(answers)).toByteArray()
+
+        http.makeRequest(
+            method = Http.Method.PATCH,
+            url = urlManager.formsV2Submission(formSubmissionId),
+            headers = makeAuthorizationHeader(),
+            requestBody = buildJsonRequestBody(body),
+            inputStreamReader = { input ->
+                Gson().fromJson(input.bufferedReader(), FormSubmissionV2::class.java)
+            },
+        )
+    }
+
+    /**
+     * v2: lists all form templates
+     */
+    suspend fun getAllFormTemplatesV2(): NetworkResult<FormTemplateListV2Response> = withContext(IO) {
+        http.makeRequest(
+            method = Http.Method.GET,
+            url = urlManager.formsV2Templates,
+            headers = makeAuthorizationHeader(),
+            inputStreamReader = { input ->
+                Gson().fromJson(input.bufferedReader(), FormTemplateListV2Response::class.java)
+            },
+        )
+    }
+
+    /**
+     * v2: retrieves a single form template with questions.
+     */
+    suspend fun getFormTemplateV2(formTemplateId: String): NetworkResult<FormTemplateV2> = withContext(IO) {
+        http.makeRequest(
+            method = Http.Method.GET,
+            url = urlManager.formsV2Template(formTemplateId),
+            headers = makeAuthorizationHeader(),
+            inputStreamReader = { input ->
+                Gson().fromJson(input.bufferedReader(), FormTemplateV2::class.java)
+            },
+        )
+    }
+
+    /**
+     * V2: gets the most recent non-archived template per classification same as v1 getAllFormTemplates
+     * Response is a jsomn array of full FormTemplateV2 objects with questions.
+     */
+    suspend fun getAllClassificationsSummaryV2(): NetworkResult<List<FormTemplateV2>> = withContext(IO) {
+        http.makeRequest(
+            method = Http.Method.GET,
+            url = urlManager.formsV2ClassificationsSummary,
+            headers = makeAuthorizationHeader(),
+            inputStreamReader = { input ->
+                val type = object : TypeToken<List<FormTemplateV2>>() {}.type
+                Gson().fromJson<List<FormTemplateV2>>(input.bufferedReader(), type)
+            },
+        )
+    }
+
+    /**
      * Uploads a patient's demographic information with the intent of modifying
      * an existing patient already on the server. To upload a new patient
      * use [postPatient].
@@ -1008,7 +1121,19 @@ class RestApi(
      */
     suspend fun putPatient(patient: Patient, protocol: Protocol): NetworkResult<Unit> =
         withContext(IO) {
-            val body = JacksonMapper.writerForPatient.writeValueAsBytes(patient)
+            val jsonObject = JSONObject()
+            jsonObject.put("id", patient.id)
+            jsonObject.put("name", patient.name)
+            jsonObject.put("sex", patient.sex.name)
+            jsonObject.put("date_of_birth", patient.dateOfBirth)
+            jsonObject.put("is_exact_date_of_birth", patient.isExactDateOfBirth)
+            jsonObject.put("is_pregnant", patient.isPregnant)
+            jsonObject.put("household_number", patient.householdNumber)
+            jsonObject.put("zone", patient.zone)
+            jsonObject.put("village_number", patient.villageNumber)
+            jsonObject.put("is_archived", patient.isArchived)
+            jsonObject.put("allergy", patient.allergy)
+            val body = jsonObject.toString().toByteArray()
             val method = Http.Method.PUT
             val url = urlManager.getPatientInfoOnly(patient.id)
 
@@ -1048,11 +1173,12 @@ class RestApi(
     ): NetworkResult<Unit> = withContext(IO) {
         val jsonObject = JSONObject()
 
-        if (isDrugRecord) {
-            jsonObject.put("drugHistory", patient.drugHistory)
-        } else {
-            jsonObject.put("medicalHistory", patient.medicalHistory)
-        }
+        jsonObject.put("patient_id", patient.id)
+        jsonObject.put("is_drug_record", isDrugRecord)
+        jsonObject.put(
+            "information",
+            if (isDrugRecord) patient.drugHistory else patient.medicalHistory
+        )
 
         val mediaType = "application/json; charset=utf-8".toMediaType()
         val requestBody = jsonObject.toString().toRequestBody(mediaType)
@@ -1198,6 +1324,7 @@ class RestApi(
             }
         }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     object PregnancyResponse {
         var id: Int? = null
         var lastEdited: Int? = null
@@ -1222,9 +1349,8 @@ class RestApi(
     ): NetworkResult<PregnancyResponse> = withContext(IO) {
         val jsonObject = JSONObject()
 
-        val startDate = patient.gestationalAge?.timestamp.toString()
-
-        jsonObject.put("pregnancyStartDate", startDate)
+        jsonObject.put("patient_id", patient.id)
+        jsonObject.put("start_date", patient.gestationalAge?.timestamp)
 
         val mediaType = "application/json; charset=utf-8".toMediaType()
         val requestBody = jsonObject.toString().toRequestBody(mediaType)
@@ -1256,12 +1382,16 @@ class RestApi(
 
     suspend fun putPregnancy(
         patient: Patient,
+        startDate: BigInteger?,
         protocol: Protocol
     ): NetworkResult<PregnancyResponse> = withContext(IO) {
         val jsonObject = JSONObject()
 
-        jsonObject.put("pregnancyEndDate", patient.prevPregnancyEndDate.toString())
-        jsonObject.put("pregnancyOutcome", patient.prevPregnancyOutcome ?: "")
+        jsonObject.put("id", patient.pregnancyId)
+        jsonObject.put("patient_id", patient.id)
+        jsonObject.put("start_date", startDate)
+        jsonObject.put("end_date", patient.prevPregnancyEndDate)
+        jsonObject.put("outcome", patient.prevPregnancyOutcome ?: "")
 
         val mediaType = "application/json; charset=utf-8".toMediaType()
         val requestBody = jsonObject.toString().toRequestBody(mediaType)
