@@ -38,6 +38,9 @@ class FormTemplateDetailV2Activity : AppCompatActivity() {
 
         val recyclerView: RecyclerView = findViewById(R.id.recycler_view)
         recyclerView.layoutManager = LinearLayoutManager(this)
+        findViewById<View>(R.id.start_v2_form_button).setOnClickListener {
+            startActivity(FormV2RenderingActivity.makeIntent(this, intent.getStringExtra(FormTemplateDetailV2ViewModel.EXTRA_TEMPLATE_ID)!!))
+        }
 
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {

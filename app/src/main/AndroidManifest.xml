@@ -41,6 +41,9 @@
             android:name=".activities.forms.FormTemplateDetailV2Activity"
             android:exported="false" />
         <activity
+            android:name=".activities.forms.FormV2RenderingActivity"
+            android:exported="false" />
+        <activity
             android:name=".sync.views.SyncActivity"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".activities.patients.GlobalPatientProfileActivity" />
