@@ -22,7 +22,7 @@ class SMSFormatter {
          * Since the message is greater than 160 chars, only 153 can be used for contents.
          * First 7 are reserved for header.
          */
-        const val PACKET_SIZE = 153
+        const val PACKET_SIZE = 153 * 2
         // private const val MAX_PACKET_NUMBER = 99
 
         //Fixed strings, prefixes, suffixes involved in the SMS Protocol

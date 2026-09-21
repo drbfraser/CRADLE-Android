@@ -90,52 +90,52 @@ class SMSReceiver @Inject constructor(
 
         val messageBody = smsMessages.joinToString("", transform = { it.messageBody.orEmpty() })
 
-            // send next part of the message when ACK is received
-            if (smsFormatter.isAckMessage(messageBody)) {
-                smsSender.sendSmsMessage(true)
-                smsStateReporter.incrementSent()
+        // send next part of the message when ACK is received
+        if (smsFormatter.isAckMessage(messageBody)) {
+            smsSender.sendSmsMessage(true)
+            smsStateReporter.incrementSent()
+        }
+        // start storing message data and send ACK message
+        else if (smsFormatter.isFirstReplyMessage(messageBody)) {
+            isError = smsFormatter.isFirstReplyError(messageBody)
+            if (isError == true) {
+                errorCode = smsFormatter.getErrorCode(messageBody)
             }
-            // start storing message data and send ACK message
-            else if (smsFormatter.isFirstReplyMessage(messageBody)) {
-                isError = smsFormatter.isFirstReplyError(messageBody)
-                if (isError == true) {
-                    errorCode = smsFormatter.getErrorCode(messageBody)
-                }
 
-                requestIdentifier = smsFormatter.getRequestIdentifier(messageBody)
-                relayData = smsFormatter.getFirstMessageString(messageBody)
+            requestIdentifier = smsFormatter.getRequestIdentifier(messageBody)
+            relayData = smsFormatter.getFirstMessageString(messageBody)
 
-                smsFormatter.getTotalNumMessages(messageBody).let {
-                    totalMessages = it
-                    smsStateReporter.initReceiving(it)
-                }
+            smsFormatter.getTotalNumMessages(messageBody).let {
+                totalMessages = it
+                smsStateReporter.initReceiving(it)
+            }
 
-                numberReceivedMessages = 1
+            numberReceivedMessages = 1
+            smsSender.sendAckMessage(
+                requestIdentifier,
+                numberReceivedMessages - 1,
+                totalMessages
+            )
+            check()
+        }
+        // continue storing message data and send ACK message
+        else if (smsFormatter.isRestMessage(messageBody)) {
+
+            if (smsFormatter.getMessageNumber(messageBody) <= totalMessages &&
+                numberReceivedMessages < totalMessages
+            ) {
+                numberReceivedMessages += 1
+                smsStateReporter.incrementReceived()
+                smsStateReporter.retry.postValue(false)
+                relayData += smsFormatter.getRestMessageString(messageBody)
                 smsSender.sendAckMessage(
                     requestIdentifier,
                     numberReceivedMessages - 1,
                     totalMessages
                 )
-                check()
             }
-            // continue storing message data and send ACK message
-            else if (smsFormatter.isRestMessage(messageBody)) {
-
-                if (smsFormatter.getMessageNumber(messageBody) <= totalMessages &&
-                    numberReceivedMessages < totalMessages
-                ) {
-                    numberReceivedMessages += 1
-                    smsStateReporter.incrementReceived()
-                    smsStateReporter.retry.postValue(false)
-                    relayData += smsFormatter.getRestMessageString(messageBody)
-                    smsSender.sendAckMessage(
-                        requestIdentifier,
-                        numberReceivedMessages - 1,
-                        totalMessages
-                    )
-                }
-                check()
-            }
+            check()
+        }
     }
 
     //TODO remove this function when data is being read in an activity
