@@ -5,7 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.SharedPreferences
-import android.telephony.SmsMessage
+import android.provider.Telephony
 import android.util.Log
 import com.cradleplatform.neptune.viewmodel.UserViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -77,18 +77,18 @@ class SMSReceiver @Inject constructor(
     }
 
     override fun onReceive(context: Context?, intent: Intent?) {
-        val data = intent?.extras
-        val pdus = data?.get("pdus") as Array<*>
+        val receivedIntent = intent ?: return
+        val smsMessages = Telephony.Sms.Intents.getMessagesFromIntent(receivedIntent)
 
-        for (element in pdus) {
-            val smsMessage = SmsMessage.createFromPdu(element as ByteArray?) ?: continue
+        // check if all messages are from the relay phone
+        val isMessageFromRelayPhone = smsMessages.all {
+            it.originatingAddress.equals(relayPhoneNumber)
+        }
+        if (!isMessageFromRelayPhone) {
+            return
+        }
 
-            val isMessageFromRelayPhone = smsMessage.originatingAddress.equals(relayPhoneNumber)
-            if (!isMessageFromRelayPhone) {
-                continue
-            }
-
-            val messageBody = smsMessage.messageBody
+        val messageBody = smsMessages.joinToString("", transform = { it.messageBody.orEmpty() })
 
             // send next part of the message when ACK is received
             if (smsFormatter.isAckMessage(messageBody)) {
@@ -136,7 +136,6 @@ class SMSReceiver @Inject constructor(
                 }
                 check()
             }
-        }
     }
 
     //TODO remove this function when data is being read in an activity
