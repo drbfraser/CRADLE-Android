@@ -39,7 +39,13 @@ class FormTemplateDetailV2Activity : AppCompatActivity() {
         val recyclerView: RecyclerView = findViewById(R.id.recycler_view)
         recyclerView.layoutManager = LinearLayoutManager(this)
         findViewById<View>(R.id.start_v2_form_button).setOnClickListener {
-            startActivity(FormV2RenderingActivity.makeIntent(this, intent.getStringExtra(FormTemplateDetailV2ViewModel.EXTRA_TEMPLATE_ID)!!))
+            startActivity(
+                FormV2RenderingActivity.makeIntent(
+                    this,
+                    intent.getStringExtra(FormTemplateDetailV2ViewModel.EXTRA_TEMPLATE_ID)!!,
+                    intent.getStringExtra(FormTemplateListV2Activity.EXTRA_PATIENT_ID),
+                )
+            )
         }
 
         lifecycleScope.launch {
@@ -87,9 +93,10 @@ class FormTemplateDetailV2Activity : AppCompatActivity() {
 
     companion object {
         @JvmStatic
-        fun makeIntent(context: Context, templateId: String): Intent =
+        fun makeIntent(context: Context, templateId: String, patientId: String? = null): Intent =
             Intent(context, FormTemplateDetailV2Activity::class.java).apply {
                 putExtra(FormTemplateDetailV2ViewModel.EXTRA_TEMPLATE_ID, templateId)
+                putExtra(FormTemplateListV2Activity.EXTRA_PATIENT_ID, patientId)
             }
     }
 }

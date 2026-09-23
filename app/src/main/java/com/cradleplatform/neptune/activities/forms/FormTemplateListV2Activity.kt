@@ -63,7 +63,13 @@ class FormTemplateListV2Activity : AppCompatActivity() {
                 } else {
                     recyclerView.visibility = View.VISIBLE
                     recyclerView.adapter = FormTemplateListV2Adapter(state.templates) { template ->
-                        startActivity(FormTemplateDetailV2Activity.makeIntent(this, template.id))
+                        startActivity(
+                            FormTemplateDetailV2Activity.makeIntent(
+                                this,
+                                template.id,
+                                intent.getStringExtra(EXTRA_PATIENT_ID),
+                            )
+                        )
                     }
                 }
             }
@@ -86,7 +92,12 @@ class FormTemplateListV2Activity : AppCompatActivity() {
     }
 
     companion object {
+        const val EXTRA_PATIENT_ID = "form_v2_patient_id"
+
         @JvmStatic
-        fun makeIntent(context: Context): Intent = Intent(context, FormTemplateListV2Activity::class.java)
+        fun makeIntent(context: Context, patientId: String? = null): Intent =
+            Intent(context, FormTemplateListV2Activity::class.java).apply {
+                putExtra(EXTRA_PATIENT_ID, patientId)
+            }
     }
 }

@@ -44,6 +44,7 @@ import com.cradleplatform.neptune.model.WorkflowTemplate
 import com.cradleplatform.neptune.utilities.SnackbarHelper
 import com.cradleplatform.neptune.utilities.Util
 import com.cradleplatform.neptune.activities.forms.FormSelectionActivity
+import com.cradleplatform.neptune.activities.forms.FormTemplateListV2Activity
 import com.cradleplatform.neptune.activities.newPatient.ReadingActivity
 import com.cradleplatform.neptune.activities.dashboard.DashBoardActivity.Companion.READING_ACTIVITY_DONE
 import com.cradleplatform.neptune.activities.newPatient.ReadingActivity.Companion.makeIntentForEditReading
@@ -288,6 +289,12 @@ open class PatientProfileActivity : AppCompatActivity() {
             R.id.create_form -> {
                 Toast.makeText(this, "Creating a new Form", Toast.LENGTH_SHORT).show()
                 createNewForm()
+                true
+            }
+
+            R.id.create_form_v2 -> {
+                Toast.makeText(this, "Creating a new Form", Toast.LENGTH_SHORT).show()
+                createNewFormV2()
                 true
             }
 
@@ -589,6 +596,12 @@ open class PatientProfileActivity : AppCompatActivity() {
                 patient
             )
             startActivity(intent)
+        }
+    }
+
+    private fun createNewFormV2() {
+        currPatient?.let { patient ->
+            startActivity(FormTemplateListV2Activity.makeIntent(this, patient.id))
         }
     }
 

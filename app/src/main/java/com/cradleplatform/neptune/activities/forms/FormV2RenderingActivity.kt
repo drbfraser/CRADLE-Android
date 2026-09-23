@@ -1,26 +1,29 @@
 package com.cradleplatform.neptune.activities.forms
 
-import android.content.Context
-import android.content.Intent
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.text.InputType
+import android.view.View
 import android.widget.Button
 import android.widget.CheckBox
-import android.widget.RadioButton
-import android.widget.RadioGroup
-import android.view.View
 import android.widget.EditText
 import android.widget.LinearLayout
+import android.widget.RadioButton
+import android.widget.RadioGroup
 import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.model.FormTemplateQuestionV2
+import com.cradleplatform.neptune.model.FormV2AnswerState
+import com.cradleplatform.neptune.model.AnswerV2
 import com.cradleplatform.neptune.model.QuestionTypeEnum
 import com.cradleplatform.neptune.viewmodel.forms.FormTemplateDetailV2State
 import com.cradleplatform.neptune.viewmodel.forms.FormTemplateDetailV2ViewModel
@@ -30,12 +33,13 @@ import kotlinx.coroutines.launch
 import java.util.Calendar
 
 /**
- * First V2 filling screen. Supports only STRING questions for now.
+ * First V2 filling screen. Collects basic scalar answers in memory; submission is a later step.
  */
 @AndroidEntryPoint
 class FormV2RenderingActivity : AppCompatActivity() {
 
     private val viewModel: FormTemplateDetailV2ViewModel by viewModels()
+    private val answerState = FormV2AnswerState()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,15 +65,24 @@ class FormV2RenderingActivity : AppCompatActivity() {
                 status.text = ""
                 state.template.questions.orEmpty().sortedBy { it.order }.forEach { question ->
                     val label = TextView(this).apply {
-                        text = question.questionText["english"] ?: question.questionText.values.firstOrNull().orEmpty()
+                        text = question.questionText["english"]
+                            ?: question.questionText.values.firstOrNull().orEmpty()
                         setPadding(0, 16, 0, 4)
                     }
                     content.addView(label)
+
+                    if (question.questionType == QuestionTypeEnum.CATEGORY) {
+                        label.textSize = 20f
+                        label.setTextColor(getColor(R.color.colorPrimaryDark))
+                        return@forEach
+                    }
 
                     if (question.questionType == QuestionTypeEnum.MULTIPLE_CHOICE ||
                         question.questionType == QuestionTypeEnum.MULTIPLE_SELECT
                     ) {
                         content.addView(makeChoiceInput(question))
+                    } else if (question.questionType == QuestionTypeEnum.TIME) {
+                        content.addView(makeTimeInput(question))
                     } else if (question.questionType == QuestionTypeEnum.DATE ||
                         question.questionType == QuestionTypeEnum.DATETIME
                     ) {
@@ -86,8 +99,23 @@ class FormV2RenderingActivity : AppCompatActivity() {
                                 QuestionTypeEnum.INTEGER -> InputType.TYPE_CLASS_NUMBER or
                                     InputType.TYPE_NUMBER_FLAG_SIGNED
                                 QuestionTypeEnum.DECIMAL -> InputType.TYPE_CLASS_NUMBER or
-                                    InputType.TYPE_NUMBER_FLAG_DECIMAL or InputType.TYPE_NUMBER_FLAG_SIGNED
+                                    InputType.TYPE_NUMBER_FLAG_DECIMAL or
+                                    InputType.TYPE_NUMBER_FLAG_SIGNED
                                 else -> InputType.TYPE_CLASS_TEXT
+                            }
+                            addTextChangedListener { text ->
+                                val value = text?.toString().orEmpty()
+                                if (value.isNotEmpty()) {
+                                    val answer = if (question.questionType == QuestionTypeEnum.STRING) {
+                                        AnswerV2.createTextAnswer(value)
+                                    } else {
+                                        AnswerV2.createNumericAnswer(
+                                            value.toDoubleOrNull()
+                                                ?: return@addTextChangedListener
+                                        )
+                                    }
+                                    answerState.setAnswer(question.id, answer)
+                                }
                             }
                         })
                     } else {
@@ -108,7 +136,8 @@ class FormV2RenderingActivity : AppCompatActivity() {
                 options.forEach { option ->
                     addView(RadioButton(context).apply {
                         id = View.generateViewId()
-                        text = option.translations["english"] ?: option.translations.values.firstOrNull().orEmpty()
+                        text = option.translations["english"]
+                            ?: option.translations.values.firstOrNull().orEmpty()
                     })
                 }
             }
@@ -118,7 +147,8 @@ class FormV2RenderingActivity : AppCompatActivity() {
             orientation = LinearLayout.VERTICAL
             options.forEach { option ->
                 addView(CheckBox(context).apply {
-                    text = option.translations["english"] ?: option.translations.values.firstOrNull().orEmpty()
+                    text = option.translations["english"]
+                        ?: option.translations.values.firstOrNull().orEmpty()
                 })
             }
         }
@@ -136,10 +166,15 @@ class FormV2RenderingActivity : AppCompatActivity() {
                     val date = "%04d-%02d-%02d".format(year, month + 1, day)
                     if (question.questionType == QuestionTypeEnum.DATE) {
                         button.text = date
+                        answerState.setAnswer(question.id, AnswerV2.createDateAnswer(date))
                     } else {
                         TimePickerDialog(
                             this,
-                            { _, hour, minute -> button.text = "%s %02d:%02d".format(date, hour, minute) },
+                            { _, hour, minute ->
+                                val value = "%s %02d:%02d".format(date, hour, minute)
+                                button.text = value
+                                answerState.setAnswer(question.id, AnswerV2.createDateAnswer(value))
+                            },
                             now.get(Calendar.HOUR_OF_DAY),
                             now.get(Calendar.MINUTE),
                             true,
@@ -150,11 +185,33 @@ class FormV2RenderingActivity : AppCompatActivity() {
                 now.get(Calendar.MONTH),
                 now.get(Calendar.DAY_OF_MONTH),
             )
-            if (question.allowPastDates == false) datePicker.datePicker.minDate = System.currentTimeMillis()
-            if (question.allowFutureDates == false) datePicker.datePicker.maxDate = System.currentTimeMillis()
+            if (question.allowPastDates == false) {
+                datePicker.datePicker.minDate = System.currentTimeMillis()
+            }
+            if (question.allowFutureDates == false) {
+                datePicker.datePicker.maxDate = System.currentTimeMillis()
+            }
             datePicker.show()
         }
         return button
+    }
+
+    private fun makeTimeInput(question: FormTemplateQuestionV2): Button = Button(this).apply {
+        text = getString(R.string.form_v2_rendering_time_hint)
+        setOnClickListener {
+            val now = Calendar.getInstance()
+            TimePickerDialog(
+                this@FormV2RenderingActivity,
+                { _, hour, minute ->
+                    val value = "%02d:%02d".format(hour, minute)
+                    text = value
+                    answerState.setAnswer(question.id, AnswerV2.createDateAnswer(value))
+                },
+                now.get(Calendar.HOUR_OF_DAY),
+                now.get(Calendar.MINUTE),
+                true,
+            ).show()
+        }
     }
 
     @Suppress("DEPRECATION")
@@ -164,9 +221,10 @@ class FormV2RenderingActivity : AppCompatActivity() {
     }
 
     companion object {
-        fun makeIntent(context: Context, templateId: String): Intent =
+        fun makeIntent(context: Context, templateId: String, patientId: String? = null): Intent =
             Intent(context, FormV2RenderingActivity::class.java).apply {
                 putExtra(FormTemplateDetailV2ViewModel.EXTRA_TEMPLATE_ID, templateId)
+                putExtra(FormTemplateListV2Activity.EXTRA_PATIENT_ID, patientId)
             }
     }
 }

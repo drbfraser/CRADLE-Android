@@ -739,9 +739,11 @@
     <string name="form_template_detail_v2_empty">This template has no questions.</string>
     <string name="form_template_detail_v2_error">Couldn\'t load this template: %1$s</string>
     <string name="form_v2_start_button">Start V2 form</string>
+    <string name="create_new_form_v2">Create new form (V2)</string>
     <string name="form_v2_rendering_loading">Loading V2 form…</string>
     <string name="form_v2_rendering_string_hint">Enter answer</string>
     <string name="form_v2_rendering_date_hint">Choose date</string>
+    <string name="form_v2_rendering_time_hint">Choose time</string>
     <string name="form_v2_rendering_unsupported">Question type %1$s is not supported yet.</string>
     <string name="form_question_v2_required">Required</string>
     <string name="form_question_v2_optional">Optional</string>
