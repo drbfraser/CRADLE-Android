@@ -741,6 +741,7 @@
     <string name="form_v2_start_button">Start V2 form</string>
     <string name="form_v2_rendering_loading">Loading V2 form…</string>
     <string name="form_v2_rendering_string_hint">Enter answer</string>
+    <string name="form_v2_rendering_date_hint">Choose date</string>
     <string name="form_v2_rendering_unsupported">Question type %1$s is not supported yet.</string>
     <string name="form_question_v2_required">Required</string>
     <string name="form_question_v2_optional">Optional</string>
