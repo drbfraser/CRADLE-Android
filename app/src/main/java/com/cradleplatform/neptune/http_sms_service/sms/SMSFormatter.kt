@@ -141,7 +141,7 @@ class SMSFormatter {
             if (PACKET_SIZE < msg.length + headerSize) {
                 val remainderMsgLength = msg.length + headerSize - PACKET_SIZE
                 packetCount += kotlin.math.ceil(
-                    remainderMsgLength.toDouble() / (PACKET_SIZE - FRAGMENT_HEADER_LENGTH)
+                    remainderMsgLength.toDouble() / (PACKET_SIZE - FRAGMENT_HEADER_LENGTH - 1)
                 ).toInt()
             }
 
