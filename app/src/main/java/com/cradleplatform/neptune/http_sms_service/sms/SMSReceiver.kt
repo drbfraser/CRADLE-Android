@@ -5,7 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.SharedPreferences
-import android.telephony.SmsMessage
+import android.provider.Telephony
 import android.util.Log
 import com.cradleplatform.neptune.viewmodel.UserViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -77,65 +77,64 @@ class SMSReceiver @Inject constructor(
     }
 
     override fun onReceive(context: Context?, intent: Intent?) {
-        val data = intent?.extras
-        val pdus = data?.get("pdus") as Array<*>
+        val receivedIntent = intent ?: return
+        val smsMessages = Telephony.Sms.Intents.getMessagesFromIntent(receivedIntent)
 
-        for (element in pdus) {
-            val smsMessage = SmsMessage.createFromPdu(element as ByteArray?) ?: continue
+        // check if all messages are from the relay phone
+        val isMessageFromRelayPhone = smsMessages.all {
+            it.originatingAddress.equals(relayPhoneNumber)
+        }
+        if (!isMessageFromRelayPhone) {
+            return
+        }
 
-            val isMessageFromRelayPhone = smsMessage.originatingAddress.equals(relayPhoneNumber)
-            if (!isMessageFromRelayPhone) {
-                continue
+        val messageBody = smsMessages.joinToString("", transform = { it.messageBody.orEmpty() })
+
+        // send next part of the message when ACK is received
+        if (smsFormatter.isAckMessage(messageBody)) {
+            smsSender.sendSmsMessage(true)
+            smsStateReporter.incrementSent()
+        }
+        // start storing message data and send ACK message
+        else if (smsFormatter.isFirstReplyMessage(messageBody)) {
+            isError = smsFormatter.isFirstReplyError(messageBody)
+            if (isError == true) {
+                errorCode = smsFormatter.getErrorCode(messageBody)
             }
 
-            val messageBody = smsMessage.messageBody
+            requestIdentifier = smsFormatter.getRequestIdentifier(messageBody)
+            relayData = smsFormatter.getFirstMessageString(messageBody)
 
-            // send next part of the message when ACK is received
-            if (smsFormatter.isAckMessage(messageBody)) {
-                smsSender.sendSmsMessage(true)
-                smsStateReporter.incrementSent()
+            smsFormatter.getTotalNumMessages(messageBody).let {
+                totalMessages = it
+                smsStateReporter.initReceiving(it)
             }
-            // start storing message data and send ACK message
-            else if (smsFormatter.isFirstReplyMessage(messageBody)) {
-                isError = smsFormatter.isFirstReplyError(messageBody)
-                if (isError == true) {
-                    errorCode = smsFormatter.getErrorCode(messageBody)
-                }
 
-                requestIdentifier = smsFormatter.getRequestIdentifier(messageBody)
-                relayData = smsFormatter.getFirstMessageString(messageBody)
+            numberReceivedMessages = 1
+            smsSender.sendAckMessage(
+                requestIdentifier,
+                numberReceivedMessages - 1,
+                totalMessages
+            )
+            check()
+        }
+        // continue storing message data and send ACK message
+        else if (smsFormatter.isRestMessage(messageBody)) {
 
-                smsFormatter.getTotalNumMessages(messageBody).let {
-                    totalMessages = it
-                    smsStateReporter.initReceiving(it)
-                }
-
-                numberReceivedMessages = 1
+            if (smsFormatter.getMessageNumber(messageBody) <= totalMessages &&
+                numberReceivedMessages < totalMessages
+            ) {
+                numberReceivedMessages += 1
+                smsStateReporter.incrementReceived()
+                smsStateReporter.retry.postValue(false)
+                relayData += smsFormatter.getRestMessageString(messageBody)
                 smsSender.sendAckMessage(
                     requestIdentifier,
                     numberReceivedMessages - 1,
                     totalMessages
                 )
-                check()
             }
-            // continue storing message data and send ACK message
-            else if (smsFormatter.isRestMessage(messageBody)) {
-
-                if (smsFormatter.getMessageNumber(messageBody) <= totalMessages &&
-                    numberReceivedMessages < totalMessages
-                ) {
-                    numberReceivedMessages += 1
-                    smsStateReporter.incrementReceived()
-                    smsStateReporter.retry.postValue(false)
-                    relayData += smsFormatter.getRestMessageString(messageBody)
-                    smsSender.sendAckMessage(
-                        requestIdentifier,
-                        numberReceivedMessages - 1,
-                        totalMessages
-                    )
-                }
-                check()
-            }
+            check()
         }
     }
 
