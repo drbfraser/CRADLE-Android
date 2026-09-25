@@ -39,6 +39,9 @@ import com.cradleplatform.neptune.activities.statistics.StatsActivity
 import com.cradleplatform.neptune.activities.forms.FormSelectionActivity
 import com.cradleplatform.neptune.activities.forms.SavedFormsActivity
 import com.cradleplatform.neptune.activities.forms.FormRenderingActivity
+import com.cradleplatform.neptune.activities.forms.FormTemplateListV2Activity
+import com.cradleplatform.neptune.activities.forms.FormTemplateDetailV2Activity
+import com.cradleplatform.neptune.activities.forms.FormV2RenderingActivity
 
 import com.jakewharton.threetenabp.AndroidThreeTen
 import dagger.hilt.android.HiltAndroidApp
@@ -130,7 +133,10 @@ class CradleApplication : Application(), Configuration.Provider {
             is PinPassActivity,
             is FormSelectionActivity,
             is SavedFormsActivity,
-            is FormRenderingActivity -> true
+            is FormRenderingActivity,
+            is FormTemplateListV2Activity,
+            is FormTemplateDetailV2Activity,
+            is FormV2RenderingActivity -> true
             // Add other activities that should support rotation here
             else -> false
         }
