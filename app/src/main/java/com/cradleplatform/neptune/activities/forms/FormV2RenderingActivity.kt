@@ -21,12 +21,12 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.cradleplatform.neptune.R
-import com.cradleplatform.neptune.model.FormTemplateQuestionV2
-import com.cradleplatform.neptune.model.FormV2AnswerState
 import com.cradleplatform.neptune.model.AnswerV2
+import com.cradleplatform.neptune.model.FormTemplateQuestionV2
 import com.cradleplatform.neptune.model.QuestionTypeEnum
-import com.cradleplatform.neptune.viewmodel.forms.FormTemplateDetailV2State
 import com.cradleplatform.neptune.viewmodel.forms.FormTemplateDetailV2ViewModel
+import com.cradleplatform.neptune.viewmodel.forms.FormV2RenderingState
+import com.cradleplatform.neptune.viewmodel.forms.FormV2RenderingViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -38,8 +38,7 @@ import java.util.Calendar
 @AndroidEntryPoint
 class FormV2RenderingActivity : AppCompatActivity() {
 
-    private val viewModel: FormTemplateDetailV2ViewModel by viewModels()
-    private val answerState = FormV2AnswerState()
+    private val viewModel: FormV2RenderingViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,15 +52,15 @@ class FormV2RenderingActivity : AppCompatActivity() {
         }
     }
 
-    private fun render(state: FormTemplateDetailV2State) {
+    private fun render(state: FormV2RenderingState) {
         val content = findViewById<LinearLayout>(R.id.form_v2_content)
         val status = findViewById<TextView>(R.id.form_v2_status)
         content.removeAllViews()
 
         when (state) {
-            FormTemplateDetailV2State.Loading -> status.text = getString(R.string.form_v2_rendering_loading)
-            is FormTemplateDetailV2State.Error -> status.text = state.message
-            is FormTemplateDetailV2State.Success -> {
+            FormV2RenderingState.Loading -> status.text = getString(R.string.form_v2_rendering_loading)
+            is FormV2RenderingState.Error -> status.text = state.message
+            is FormV2RenderingState.Success -> {
                 status.text = ""
                 state.template.questions.orEmpty().sortedBy { it.order }.forEach { question ->
                     val label = TextView(this).apply {
@@ -103,18 +102,46 @@ class FormV2RenderingActivity : AppCompatActivity() {
                                     InputType.TYPE_NUMBER_FLAG_SIGNED
                                 else -> InputType.TYPE_CLASS_TEXT
                             }
+                            viewModel.answerState.getAnswer(question.id)?.let { answer ->
+                                setText(
+                                    if (question.questionType == QuestionTypeEnum.STRING) {
+                                        answer.textAnswer.orEmpty()
+                                    } else if (question.questionType == QuestionTypeEnum.INTEGER) {
+                                        answer.numericAnswer?.toLong()?.toString().orEmpty()
+                                    } else {
+                                        answer.numericAnswer?.toString().orEmpty()
+                                    }
+                                )
+                            }
                             addTextChangedListener { text ->
                                 val value = text?.toString().orEmpty()
-                                if (value.isNotEmpty()) {
-                                    val answer = if (question.questionType == QuestionTypeEnum.STRING) {
+                                if (value.isEmpty()) {
+                                    viewModel.answerState.removeAnswer(question.id)
+                                } else if (question.questionType == QuestionTypeEnum.STRING) {
+                                    viewModel.answerState.setAnswer(
+                                        question.id,
                                         AnswerV2.createTextAnswer(value)
+                                    )
+                                } else if (question.questionType == QuestionTypeEnum.INTEGER) {
+                                    val number = value.toLongOrNull()
+                                    if (number == null) {
+                                        viewModel.answerState.removeAnswer(question.id)
                                     } else {
-                                        AnswerV2.createNumericAnswer(
-                                            value.toDoubleOrNull()
-                                                ?: return@addTextChangedListener
+                                        viewModel.answerState.setAnswer(
+                                            question.id,
+                                            AnswerV2.createNumericAnswer(number)
                                         )
                                     }
-                                    answerState.setAnswer(question.id, answer)
+                                } else {
+                                    val number = value.toDoubleOrNull()
+                                    if (number == null) {
+                                        viewModel.answerState.removeAnswer(question.id)
+                                    } else {
+                                        viewModel.answerState.setAnswer(
+                                            question.id,
+                                            AnswerV2.createNumericAnswer(number)
+                                        )
+                                    }
                                 }
                             }
                         })
@@ -140,15 +167,47 @@ class FormV2RenderingActivity : AppCompatActivity() {
                             ?: option.translations.values.firstOrNull().orEmpty()
                     })
                 }
+                viewModel.answerState.getAnswer(question.id)?.mcIdArrayAnswer
+                    ?.firstOrNull()
+                    ?.takeIf { it in 0 until childCount }
+                    ?.let { check(getChildAt(it).id) }
+                setOnCheckedChangeListener { group, checkedId ->
+                    val selectedIndex = (0 until group.childCount)
+                        .firstOrNull { group.getChildAt(it).id == checkedId }
+                    if (selectedIndex == null) {
+                        viewModel.answerState.removeAnswer(question.id)
+                    } else {
+                        viewModel.answerState.setAnswer(
+                            question.id,
+                            AnswerV2.createMcAnswer(listOf(selectedIndex))
+                        )
+                    }
+                }
             }
         }
 
         return LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            options.forEach { option ->
+            val selectedIndices = viewModel.answerState.getAnswer(question.id)
+                ?.mcIdArrayAnswer
+                ?.toMutableSet()
+                ?: mutableSetOf()
+            options.forEachIndexed { index, option ->
                 addView(CheckBox(context).apply {
                     text = option.translations["english"]
                         ?: option.translations.values.firstOrNull().orEmpty()
+                    isChecked = index in selectedIndices
+                    setOnCheckedChangeListener { _, isChecked ->
+                        if (isChecked) selectedIndices.add(index) else selectedIndices.remove(index)
+                        if (selectedIndices.isEmpty()) {
+                            viewModel.answerState.removeAnswer(question.id)
+                        } else {
+                            viewModel.answerState.setAnswer(
+                                question.id,
+                                AnswerV2.createMcAnswer(selectedIndices.sorted())
+                            )
+                        }
+                    }
                 })
             }
         }
@@ -156,7 +215,8 @@ class FormV2RenderingActivity : AppCompatActivity() {
 
     private fun makeDateInput(question: FormTemplateQuestionV2): Button {
         val button = Button(this).apply {
-            text = getString(R.string.form_v2_rendering_date_hint)
+            text = viewModel.answerState.getAnswer(question.id)?.dateAnswer
+                ?: getString(R.string.form_v2_rendering_date_hint)
         }
         button.setOnClickListener {
             val now = Calendar.getInstance()
@@ -166,14 +226,23 @@ class FormV2RenderingActivity : AppCompatActivity() {
                     val date = "%04d-%02d-%02d".format(year, month + 1, day)
                     if (question.questionType == QuestionTypeEnum.DATE) {
                         button.text = date
-                        answerState.setAnswer(question.id, AnswerV2.createDateAnswer(date))
+                        viewModel.answerState.setAnswer(question.id, AnswerV2.createDateAnswer(date))
                     } else {
                         TimePickerDialog(
                             this,
                             { _, hour, minute ->
-                                val value = "%s %02d:%02d".format(date, hour, minute)
-                                button.text = value
-                                answerState.setAnswer(question.id, AnswerV2.createDateAnswer(value))
+                                if (isDateTimeAllowed(question, year, month, day, hour, minute)) {
+                                    val value = "%s %02d:%02d".format(date, hour, minute)
+                                    button.text = value
+                                    button.error = null
+                                    viewModel.answerState.setAnswer(
+                                        question.id,
+                                        AnswerV2.createDateAnswer(value)
+                                    )
+                                } else {
+                                    button.error = getString(R.string.form_v2_rendering_datetime_not_allowed)
+                                    viewModel.answerState.removeAnswer(question.id)
+                                }
                             },
                             now.get(Calendar.HOUR_OF_DAY),
                             now.get(Calendar.MINUTE),
@@ -196,8 +265,30 @@ class FormV2RenderingActivity : AppCompatActivity() {
         return button
     }
 
+    private fun isDateTimeAllowed(
+        question: FormTemplateQuestionV2,
+        year: Int,
+        month: Int,
+        day: Int,
+        hour: Int,
+        minute: Int,
+    ): Boolean {
+        val selected = Calendar.getInstance().apply {
+            set(year, month, day, hour, minute, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+        val now = Calendar.getInstance()
+
+        return when {
+            question.allowPastDates == false && selected.before(now) -> false
+            question.allowFutureDates == false && selected.after(now) -> false
+            else -> true
+        }
+    }
+
     private fun makeTimeInput(question: FormTemplateQuestionV2): Button = Button(this).apply {
-        text = getString(R.string.form_v2_rendering_time_hint)
+        text = viewModel.answerState.getAnswer(question.id)?.dateAnswer
+            ?: getString(R.string.form_v2_rendering_time_hint)
         setOnClickListener {
             val now = Calendar.getInstance()
             TimePickerDialog(
@@ -205,7 +296,7 @@ class FormV2RenderingActivity : AppCompatActivity() {
                 { _, hour, minute ->
                     val value = "%02d:%02d".format(hour, minute)
                     text = value
-                    answerState.setAnswer(question.id, AnswerV2.createDateAnswer(value))
+                    viewModel.answerState.setAnswer(question.id, AnswerV2.createDateAnswer(value))
                 },
                 now.get(Calendar.HOUR_OF_DAY),
                 now.get(Calendar.MINUTE),
