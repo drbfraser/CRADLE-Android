@@ -15,5 +15,9 @@
         android:title="@string/create_new_form"
         app:showAsAction="never"/>
 
+    <item android:id="@+id/create_form_v2"
+        android:title="@string/create_new_form_v2"
+        app:showAsAction="never"/>
+
 
 </menu>
