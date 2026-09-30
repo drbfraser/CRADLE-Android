@@ -135,7 +135,10 @@
     <!-- SMS Relay -->
     <string name="send_sms_dialog_retry_message"> Data has been saved on local device.
         Retry the action or perform a sync later using an internet connection (WiFi, 3G, etc.).</string>
-
+    <string name="dialog_referral_toast_sms_failed_saved_locally"> SMS could not be sent. The data has
+        been saved on this device and will be uploaded the next time you sync with an internet connection.</string>
+    <string name="dialog_referral_toast_no_sim">No SIM card detected, so the referral cannot be
+        sent by SMS. Please send it via data instead.</string>
 
     <!-- NOTE: May not want to translate, as sent to doctors -->
     <!-- TODO: Use translatable="false" if you need to enforce this, or create separate

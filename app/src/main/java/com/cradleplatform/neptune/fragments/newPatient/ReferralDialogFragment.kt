@@ -36,6 +36,7 @@ import com.cradleplatform.neptune.viewmodel.patients.ReferralOption
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import android.telephony.TelephonyManager
 
 /**
  * src: https://medium.com/alexander-schaefer/
@@ -157,6 +158,16 @@ class ReferralDialogFragment : DialogFragment(), BetterConnectivityDialogFragmen
         if (referralDialogViewModel.isSelectedHealthFacilityValid() &&
             referralDialogViewModel.isSending.value != true
         ) {
+            // Check if a SIM card exists, otherwise SMS sync it is guaranteed to fail
+            val telephonyManager = requireContext().getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+            if (telephonyManager.simState != TelephonyManager.SIM_STATE_READY){
+                Toast.makeText(
+                    requireContext(),
+                    R.string.dialog_referral_toast_no_sim,
+                    Toast.LENGTH_LONG
+                ).show()
+                return
+            }
             // Retrieve and validate the locally stored smsKey
             val keyStatus: SmsKeyManager.KeyState = smsKeyManager.validateSmsKey()
             if (keyStatus == SmsKeyManager.KeyState.NORMAL || keyStatus == SmsKeyManager.KeyState.WARN) {
@@ -234,11 +245,16 @@ class ReferralDialogFragment : DialogFragment(), BetterConnectivityDialogFragmen
                         else -> {
 
                             Log.e(TAG, "Reading with Referral SMS upload failed!")
-                            // TODO: Add some kind of feedback indicating failure.
-//                            CustomToast.shortToast(
-//                                applicationContext,
-//                                "Error: Reading and Referral upload failed..."
-//                            )
+                            // TODO: Add some kind of feedback indicating failure
+                            // The patient/reading were already saved locally and are not marked as
+                            // uploaded, so the next sync over data will upload them. Close the screen
+                            // since saving again would be refuse
+                            Toast.makeText(
+                                view.context,
+                                R.string.dialog_referral_toast_sms_failed_saved_locally,
+                                Toast.LENGTH_LONG
+                            ).show()
+                            activity?.finish()
                         }
                     }
                 }
