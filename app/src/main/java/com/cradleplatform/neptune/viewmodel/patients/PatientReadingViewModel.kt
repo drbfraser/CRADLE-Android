@@ -1532,7 +1532,9 @@ class PatientReadingViewModel @Inject constructor(
                             // Save the patient and reading in local database
                             // Note: If patient already exists on server, then
                             val patientFromServer = result.value.patient
-                            val readingFromServer = result.value.readings[0]
+                            // POST /api/patients may respond without nested readings; in that
+                            // case fall back to the reading we just uploaded.
+                            val readingFromServer = result.value.readings.firstOrNull() ?: readingFromBuilder
                             check(readingFromBuilder.id == readingFromServer.id)
 
                             patientManager.addPatientWithReading(

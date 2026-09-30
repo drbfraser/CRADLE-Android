@@ -259,7 +259,7 @@ class SyncActivity : AppCompatActivity() {
         return date
     }
 
-    private fun showLastSyncStatus(workInfo: WorkInfo?) {
+        private fun showLastSyncStatus(workInfo: WorkInfo?) {
         val syncProgressBar = findViewById<ProgressBar>(R.id.sync_progress_bar)
         val downloadProgressText = findViewById<TextView>(R.id.download_progress_text_view)
         val syncStatusText = findViewById<TextView>(R.id.sync_status_text)
@@ -275,7 +275,7 @@ class SyncActivity : AppCompatActivity() {
         workInfo?.let {
             lastSyncResultText.apply {
                 text = SyncAllWorker.getSyncResultMessage(it)
-                text = sharedPreferences.getString(LAST_SYNC_RESULT_MESSAGE, "No previous sync found.")
+                    ?: sharedPreferences.getString(LAST_SYNC_RESULT_MESSAGE, "No previous sync found.")
                 visibility = View.VISIBLE
             }
         }

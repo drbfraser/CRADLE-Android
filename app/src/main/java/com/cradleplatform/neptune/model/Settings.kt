@@ -5,6 +5,7 @@ import android.content.SharedPreferences
 import com.cradleplatform.neptune.BuildConfig
 import com.cradleplatform.neptune.R
 import javax.inject.Singleton
+import androidx.core.content.edit
 
 // Implementation note: this class and all it's properties are marked `open`
 // so that we can mock them out for testing.
@@ -19,11 +20,18 @@ open class Settings constructor(
 ) {
 
     init {
-        /* Set default debug settings. */
+        /* Set default debug settings.
+        * Only reset the missing values, so the app survives
+        * user entered values like IP on restarts */
         if (BuildConfig.DEBUG) {
-            sharedPreferences.edit().putBoolean(context.getString(R.string.key_server_use_https), false).apply()
-            sharedPreferences.edit().putString(context.getString(R.string.key_server_hostname), "10.0.2.2").apply()
-            sharedPreferences.edit().putString(context.getString(R.string.key_server_port), "5000").apply()
+            val httpsKey = context.getString(R.string.key_server_use_https)
+            val hostNameKey = context.getString(R.string.key_server_hostname)
+            val portKey = context.getString(R.string.key_server_port)
+            sharedPreferences.edit {
+                if (!sharedPreferences.contains(httpsKey)) putBoolean(httpsKey, false)
+                if (!sharedPreferences.contains(hostNameKey)) putString(hostNameKey, "10.0.2.2")
+                if (!sharedPreferences.contains(portKey)) putString(portKey, "5000")
+            }
         }
     }
 
