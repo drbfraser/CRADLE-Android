@@ -52,6 +52,12 @@ class FormV2RenderingActivity : AppCompatActivity() {
         }
     }
 
+    override fun onStop() {
+        // Covers normal navigation, backgrounding, and rotation.
+        viewModel.saveDraft()
+        super.onStop()
+    }
+
     private fun render(state: FormV2RenderingState) {
         val content = findViewById<LinearLayout>(R.id.form_v2_content)
         val status = findViewById<TextView>(R.id.form_v2_status)
