@@ -10,6 +10,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import com.cradleplatform.neptune.database.daos.AssessmentDao
 import com.cradleplatform.neptune.database.daos.FormClassificationDao
 import com.cradleplatform.neptune.database.daos.FormResponseDao
+import com.cradleplatform.neptune.database.daos.FormV2DraftDao
 import com.cradleplatform.neptune.database.daos.HealthFacilityDao
 import com.cradleplatform.neptune.database.daos.PatientDao
 import com.cradleplatform.neptune.database.daos.ReadingDao
@@ -20,6 +21,7 @@ import com.cradleplatform.neptune.database.views.LocalSearchPatient
 import com.cradleplatform.neptune.model.Assessment
 import com.cradleplatform.neptune.model.FormClassification
 import com.cradleplatform.neptune.model.FormResponse
+import com.cradleplatform.neptune.model.FormV2Draft
 import com.cradleplatform.neptune.model.HealthFacility
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.Reading
@@ -27,7 +29,7 @@ import com.cradleplatform.neptune.model.Referral
 import com.cradleplatform.neptune.model.WorkflowInstance
 import com.cradleplatform.neptune.model.WorkflowTemplate
 
-const val CURRENT_DATABASE_VERSION = 3
+const val CURRENT_DATABASE_VERSION = 4
 
 /**
  * An interface for the local CRADLE database.
@@ -46,6 +48,7 @@ const val CURRENT_DATABASE_VERSION = 3
         Assessment::class,
         FormClassification::class,
         FormResponse::class,
+        FormV2Draft::class,
         WorkflowInstance::class,
         WorkflowTemplate::class
     ],
@@ -62,6 +65,7 @@ abstract class CradleDatabase : RoomDatabase() {
     abstract fun assessmentDao(): AssessmentDao
     abstract fun formClassificationDao(): FormClassificationDao
     abstract fun formResponseDao(): FormResponseDao
+    abstract fun formV2DraftDao(): FormV2DraftDao
     abstract fun workflowInstanceDao(): WorkflowInstanceDao
     abstract fun workflowTemplateDao(): WorkflowTemplateDao
 
@@ -101,7 +105,7 @@ abstract class CradleDatabase : RoomDatabase() {
 @Suppress("MagicNumber", "NestedBlockDepth", "ObjectPropertyNaming")
 internal object Migrations {
     val ALL_MIGRATIONS: Array<Migration> by lazy {
-        arrayOf(MIGRATION_1_2, MIGRATION_2_3)
+        arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
     }
 
     /**
@@ -224,6 +228,33 @@ internal object Migrations {
                         "`index_WorkflowInstance_patientId` ON `WorkflowInstance` (`patientId`)"
                 )
             }
+        }
+    }
+
+    /**
+     * Version 4:
+     * Add V2 drafts without changing any existing table or data. Drafts cascade with their patient
+     * so existing patient deletion and logout cleanup cannot leave orphaned medical data.
+     */
+    private val MIGRATION_3_4 = object : Migration(3, 4) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            database.execSQL(
+                """
+                CREATE TABLE IF NOT EXISTS FormV2Draft (
+                    `patientId` TEXT NOT NULL,
+                    `formTemplateId` TEXT NOT NULL,
+                    `formTemplateVersion` INTEGER NOT NULL,
+                    `formTemplate` TEXT NOT NULL,
+                    `answers` TEXT NOT NULL,
+                    `language` TEXT NOT NULL,
+                    `createdAt` INTEGER NOT NULL,
+                    `updatedAt` INTEGER NOT NULL,
+                    PRIMARY KEY(`patientId`, `formTemplateId`),
+                    FOREIGN KEY(`patientId`) REFERENCES `Patient`(`id`)
+                        ON UPDATE CASCADE ON DELETE CASCADE
+                )
+                """.trimIndent()
+            )
         }
     }
 }
