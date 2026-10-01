@@ -74,7 +74,7 @@ class DashboardViewModel @Inject constructor(
             val telManager =
                 getApplication<Application>().getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
             val fetchedPhoneNumber = telManager.line1Number
-            if (fetchedPhoneNumber.isNullOrEmpty()){
+            if (fetchedPhoneNumber.isNullOrEmpty()) {
                 return ""
             }
             val currentPhoneNumber = sharedPreferences.getString(UserViewModel.USER_PHONE_NUMBER, "") ?: ""

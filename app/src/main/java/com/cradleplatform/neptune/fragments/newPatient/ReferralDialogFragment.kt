@@ -160,7 +160,7 @@ class ReferralDialogFragment : DialogFragment(), BetterConnectivityDialogFragmen
         ) {
             // Check if a SIM card exists, otherwise SMS sync it is guaranteed to fail
             val telephonyManager = requireContext().getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
-            if (telephonyManager.simState != TelephonyManager.SIM_STATE_READY){
+            if (telephonyManager.simState != TelephonyManager.SIM_STATE_READY) {
                 Toast.makeText(
                     requireContext(),
                     R.string.dialog_referral_toast_no_sim,
