@@ -37,11 +37,11 @@ class FormV2DraftTypeConverters {
 
     @TypeConverter
     fun jsonToFormAnswersV2(json: String): List<FormAnswerV2> =
-        requireNotNull(gson.fromJson<List<FormAnswerV2>>(json, FORM_ANSWERS_V2_TYPE)) {
+        requireNotNull(gson.fromJson<List<FormAnswerV2>>(json, formAnswersV2Type)) {
             "Missing V2 draft answers"
         }
 
     companion object {
-        private val FORM_ANSWERS_V2_TYPE = object : TypeToken<List<FormAnswerV2>>() {}.type
+        private val formAnswersV2Type = object : TypeToken<List<FormAnswerV2>>() {}.type
     }
 }
