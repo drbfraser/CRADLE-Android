@@ -158,16 +158,6 @@ class ReferralDialogFragment : DialogFragment(), BetterConnectivityDialogFragmen
         if (referralDialogViewModel.isSelectedHealthFacilityValid() &&
             referralDialogViewModel.isSending.value != true
         ) {
-            // Check if a SIM card exists, otherwise SMS sync it is guaranteed to fail
-            val telephonyManager = requireContext().getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
-            if (telephonyManager.simState != TelephonyManager.SIM_STATE_READY) {
-                Toast.makeText(
-                    requireContext(),
-                    R.string.dialog_referral_toast_no_sim,
-                    Toast.LENGTH_LONG
-                ).show()
-                return
-            }
             // Retrieve and validate the locally stored smsKey
             val keyStatus: SmsKeyManager.KeyState = smsKeyManager.validateSmsKey()
             if (keyStatus == SmsKeyManager.KeyState.NORMAL || keyStatus == SmsKeyManager.KeyState.WARN) {
@@ -221,6 +211,19 @@ class ReferralDialogFragment : DialogFragment(), BetterConnectivityDialogFragmen
             )
             when (roomDbSaveResult) {
                 is ReadingFlowSaveResult.SaveSuccessful.ReferralSmsNeeded -> {
+                    // The patient, reading, and referral are now saved locally and are not marked
+                    // as uploaded, so the next sync will upload them. Without a SIM the SMS send is
+                    // guaranteed to fail, so skip it and close the screen.
+                    if (!isSimReady(view.context)) {
+                        Toast.makeText(
+                            view.context,
+                            R.string.dialog_referral_toast_no_sim,
+                            Toast.LENGTH_LONG
+                        ).show()
+                        activity?.finish()
+                        return
+                    }
+
                     showStatusToast(view.context, roomDbSaveResult, ReferralOption.SMS)
 
                     /* Initiate SMS Request. */
@@ -243,12 +246,10 @@ class ReferralDialogFragment : DialogFragment(), BetterConnectivityDialogFragmen
                             activity?.finish()
                         }
                         else -> {
-
                             Log.e(TAG, "Reading with Referral SMS upload failed!")
-                            // TODO: Add some kind of feedback indicating failure
                             // The patient/reading were already saved locally and are not marked as
                             // uploaded, so the next sync over data will upload them. Close the screen
-                            // since saving again would be refuse
+                            // since saving again would be refused.
                             Toast.makeText(
                                 view.context,
                                 R.string.dialog_referral_toast_sms_failed_saved_locally,
@@ -286,6 +287,11 @@ class ReferralDialogFragment : DialogFragment(), BetterConnectivityDialogFragmen
         } finally {
             referralDialogViewModel.isSending.value = false
         }
+    }
+
+    private fun isSimReady(context: Context): Boolean {
+        val telephonyManager = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+        return telephonyManager.simState == TelephonyManager.SIM_STATE_READY
     }
 
     private fun openSmsTransmissionDialog(): SmsTransmissionDialogFragment {
