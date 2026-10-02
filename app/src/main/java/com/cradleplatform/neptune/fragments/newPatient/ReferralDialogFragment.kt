@@ -158,18 +158,8 @@ class ReferralDialogFragment : DialogFragment(), BetterConnectivityDialogFragmen
         if (referralDialogViewModel.isSelectedHealthFacilityValid() &&
             referralDialogViewModel.isSending.value != true
         ) {
-            // Retrieve and validate the locally stored smsKey
-            val keyStatus: SmsKeyManager.KeyState = smsKeyManager.validateSmsKey()
-            if (keyStatus == SmsKeyManager.KeyState.NORMAL || keyStatus == SmsKeyManager.KeyState.WARN) {
-                // SmsKey is normal or stale ==> Send SMS
-                referralDialogViewModel.isSending.value = true
-                lifecycleScope.launch { handleSmsReferralSend(requireView()) }
-            } else {
-                // SmsKey is invalid or expired ==> cannot send SMS
-                val toastMessage = "Your SMS key has expired\n" +
-                    "Unable to send SMS. Ensure internet connectivity and refresh your SMS key in the settings."
-                Toast.makeText(requireContext(), toastMessage, Toast.LENGTH_LONG).show()
-            }
+            referralDialogViewModel.isSending.value = true
+            lifecycleScope.launch { handleSmsReferralSend(requireView()) }
         }
     }
 
@@ -212,12 +202,23 @@ class ReferralDialogFragment : DialogFragment(), BetterConnectivityDialogFragmen
             when (roomDbSaveResult) {
                 is ReadingFlowSaveResult.SaveSuccessful.ReferralSmsNeeded -> {
                     // The patient, reading, and referral are now saved locally and are not marked
-                    // as uploaded, so the next sync will upload them. Without a SIM the SMS send is
-                    // guaranteed to fail, so skip it and close the screen.
+                    // as uploaded, so the next sync will upload them. Without a SIM or valid
+                    // SMS Key the SMS send is guaranteed to fail, so skip it and close the screen
+                    // so user is not stuck on that screen.
                     if (!isSimReady(view.context)) {
                         Toast.makeText(
                             view.context,
                             R.string.dialog_referral_toast_no_sim,
+                            Toast.LENGTH_LONG
+                        ).show()
+                        activity?.finish()
+                        return
+                    }
+
+                    if (!isSmsKeyValid()) {
+                        Toast.makeText(
+                            view.context,
+                            R.string.dialog_referral_toast_sms_key_invalid,
                             Toast.LENGTH_LONG
                         ).show()
                         activity?.finish()
@@ -289,9 +290,16 @@ class ReferralDialogFragment : DialogFragment(), BetterConnectivityDialogFragmen
         }
     }
 
+    /** Helper method checking if SIM card exists (for physical devices) */
     private fun isSimReady(context: Context): Boolean {
         val telephonyManager = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
         return telephonyManager.simState == TelephonyManager.SIM_STATE_READY
+    }
+
+    /** Helper method to retrieve and validate the locally stored smsKey */
+    private fun isSmsKeyValid(): Boolean {
+        val keyStatus: SmsKeyManager.KeyState = smsKeyManager.validateSmsKey()
+        return (keyStatus == SmsKeyManager.KeyState.NORMAL || keyStatus == SmsKeyManager.KeyState.WARN)
     }
 
     private fun openSmsTransmissionDialog(): SmsTransmissionDialogFragment {

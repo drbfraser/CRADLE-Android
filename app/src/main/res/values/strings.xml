@@ -139,6 +139,8 @@
         Saved on this device and will upload on your next sync.</string>
     <string name="dialog_referral_toast_no_sim">No SIM card. Saved on this device
         and will upload on your next sync.</string>
+    <string name="dialog_referral_toast_sms_key_invalid">SMS key expired. Saved on this device
+        and will upload on your next sync.</string>
 
     <!-- NOTE: May not want to translate, as sent to doctors -->
     <!-- TODO: Use translatable="false" if you need to enforce this, or create separate
