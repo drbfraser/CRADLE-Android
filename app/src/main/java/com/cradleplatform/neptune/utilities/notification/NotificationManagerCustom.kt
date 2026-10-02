@@ -130,7 +130,7 @@ class NotificationManagerCustom {
                 context,
                 notificationID,
                 notificationIntent,
-                0
+                PendingIntent.FLAG_IMMUTABLE
             )
         }
 

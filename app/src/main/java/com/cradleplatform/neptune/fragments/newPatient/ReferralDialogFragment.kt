@@ -36,6 +36,7 @@ import com.cradleplatform.neptune.viewmodel.patients.ReferralOption
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import android.telephony.TelephonyManager
 
 /**
  * src: https://medium.com/alexander-schaefer/
@@ -210,6 +211,19 @@ class ReferralDialogFragment : DialogFragment(), BetterConnectivityDialogFragmen
             )
             when (roomDbSaveResult) {
                 is ReadingFlowSaveResult.SaveSuccessful.ReferralSmsNeeded -> {
+                    // The patient, reading, and referral are now saved locally and are not marked
+                    // as uploaded, so the next sync will upload them. Without a SIM the SMS send is
+                    // guaranteed to fail, so skip it and close the screen.
+                    if (!isSimReady(view.context)) {
+                        Toast.makeText(
+                            view.context,
+                            R.string.dialog_referral_toast_no_sim,
+                            Toast.LENGTH_LONG
+                        ).show()
+                        activity?.finish()
+                        return
+                    }
+
                     showStatusToast(view.context, roomDbSaveResult, ReferralOption.SMS)
 
                     /* Initiate SMS Request. */
@@ -232,13 +246,16 @@ class ReferralDialogFragment : DialogFragment(), BetterConnectivityDialogFragmen
                             activity?.finish()
                         }
                         else -> {
-
                             Log.e(TAG, "Reading with Referral SMS upload failed!")
-                            // TODO: Add some kind of feedback indicating failure.
-//                            CustomToast.shortToast(
-//                                applicationContext,
-//                                "Error: Reading and Referral upload failed..."
-//                            )
+                            // The patient/reading were already saved locally and are not marked as
+                            // uploaded, so the next sync over data will upload them. Close the screen
+                            // since saving again would be refused.
+                            Toast.makeText(
+                                view.context,
+                                R.string.dialog_referral_toast_sms_failed_saved_locally,
+                                Toast.LENGTH_LONG
+                            ).show()
+                            activity?.finish()
                         }
                     }
                 }
@@ -270,6 +287,11 @@ class ReferralDialogFragment : DialogFragment(), BetterConnectivityDialogFragmen
         } finally {
             referralDialogViewModel.isSending.value = false
         }
+    }
+
+    private fun isSimReady(context: Context): Boolean {
+        val telephonyManager = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+        return telephonyManager.simState == TelephonyManager.SIM_STATE_READY
     }
 
     private fun openSmsTransmissionDialog(): SmsTransmissionDialogFragment {

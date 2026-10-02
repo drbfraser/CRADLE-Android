@@ -275,7 +275,7 @@ class SyncActivity : AppCompatActivity() {
         workInfo?.let {
             lastSyncResultText.apply {
                 text = SyncAllWorker.getSyncResultMessage(it)
-                text = sharedPreferences.getString(LAST_SYNC_RESULT_MESSAGE, "No previous sync found.")
+                    ?: sharedPreferences.getString(LAST_SYNC_RESULT_MESSAGE, "No previous sync found.")
                 visibility = View.VISIBLE
             }
         }
