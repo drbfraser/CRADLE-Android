@@ -74,7 +74,8 @@ android {
     buildTypes {
         debug {
             versionNameSuffix ".debug"
-            testCoverageEnabled true
+            enableUnitTestCoverage true
+            enableAndroidTestCoverage true
         }
         release {
             signingConfig signingConfigs.release
@@ -269,7 +270,6 @@ task jacocoCombinedReport(type: JacocoReport, dependsOn: ['compileDebugKotlin', 
 
     def excludes = [
         '**/R.class', '**/R$*.class', '**/BuildConfig.*', '**/Manifest*.*',
-        '**/*Test*.*', 'android/**/*.*',
         '**/*_Hilt*.*', '**/Hilt_*.*',
         '**/*_Factory*.*', '**/*_MembersInjector*.*',
         '**/*Dao_Impl*.*',
