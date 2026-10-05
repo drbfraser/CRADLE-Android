@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Cradle — Testing overview</title>
+    <style>
+        :root {
+          color-scheme: light;
+          font-family: system-ui, sans-serif;
+          color: #172033;
+          background: #f3f5f9;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+          margin: 0;
+          padding: 32px 20px;
+        }
+
+        main {
+          max-width: 1100px;
+          margin: auto;
+        }
+
+        h1 { margin-bottom: 8px; }
+        h2 { margin-top: 0; font-size: 1.2rem; }
+        p { line-height: 1.6; }
+        a { color: #2459b8; }
+        a:hover { text-decoration-thickness: 2px; }
+        a:focus-visible { outline: 3px solid #2459b8; outline-offset: 4px; }
+
+        .muted { color: #526078; }
+        .metadata { overflow-wrap: anywhere; }
+
+        .notice {
+          padding: 12px 16px;
+          border-left: 4px solid #2459b8;
+          background: #eaf1ff;
+          line-height: 1.6;
+        }
+
+        .cards {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+          gap: 16px;
+          margin: 24px 0;
+        }
+
+        .card, section {
+          background: white;
+          border: 1px solid #dce2eb;
+          border-radius: 10px;
+          padding: 20px;
+        }
+
+        .card h2 {
+          font-size: 0.9rem;
+          color: #526078;
+          margin-bottom: 12px;
+        }
+
+        .value {
+          font-size: 1.8rem;
+          font-weight: 700;
+          margin: 0;
+        }
+
+        section { margin-bottom: 20px; }
+
+        .table-wrapper { overflow-x: auto; }
+
+        table {
+          width: 100%;
+          border-collapse: collapse;
+          text-align: left;
+        }
+
+        caption {
+          text-align: left;
+          color: #526078;
+          padding-bottom: 12px;
+        }
+
+        th, td {
+          padding: 12px;
+          border-bottom: 1px solid #e5e9f0;
+          vertical-align: top;
+          line-height: 1.5;
+        }
+
+        th { background: #f7f9fc; }
+        tbody tr:last-child td { border-bottom: 0; }
+
+        .links {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 16px;
+        }
+
+        footer {
+          color: #526078;
+          font-size: 0.9rem;
+          line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+<main>
+    <header>
+        <h1>Cradle testing overview</h1>
+        <p class="muted metadata">
+            Generated: {{generated_at}} · Commit: {{commit}} ·
+            Build: {{build_variant}}
+        </p>
+        <p><strong>Run status:</strong> {{run_status}}</p>
+
+        <!-- Example scope: Local unit tests only; Android device tests not run. -->
+        <p class="notice">
+            <strong>Report scope:</strong> {{report_scope}}<br>
+            <strong>Data availability:</strong> {{data_status}}
+        </p>
+    </header>
+
+    <div class="cards" aria-label="Testing summary">
+        <article class="card">
+            <h2>Passed tests</h2>
+            <p class="value">{{passed_tests}}</p>
+        </article>
+
+        <article class="card">
+            <h2>Failed tests</h2>
+            <p class="value">{{failed_tests}}</p>
+        </article>
+
+        <article class="card">
+            <h2>Skipped tests</h2>
+            <p class="value">{{skipped_tests}}</p>
+        </article>
+
+        <article class="card">
+            <h2>Line coverage</h2>
+            <p class="value">{{line_coverage}}</p>
+        </article>
+
+        <article class="card">
+            <h2>Branch coverage</h2>
+            <p class="value">{{branch_coverage}}</p>
+        </article>
+    </div>
+
+    <section aria-labelledby="coverage-heading">
+        <h2 id="coverage-heading">Coverage by component</h2>
+        <p class="muted">
+            Line coverage measures executable source lines reached by tests.
+            Branch coverage measures decision paths exercised.
+            Neither proves that behavior is correct.
+        </p>
+
+        <div class="table-wrapper">
+            <table>
+                <caption>Components are grouped by production-code package.</caption>
+                <thead>
+                <tr>
+                    <th scope="col">Component</th>
+                    <th scope="col">Line coverage</th>
+                    <th scope="col">Branch coverage</th>
+                    <th scope="col">Uncovered lines</th>
+                </tr>
+                </thead>
+                <tbody>
+                <!-- Replace with one <tr> per component. -->
+                {{component_rows}}
+                </tbody>
+            </table>
+        </div>
+        <p class="muted">Coverage exclusions: {{coverage_exclusions}}</p>
+    </section>
+
+    <section aria-labelledby="suites-heading">
+        <h2 id="suites-heading">Test execution</h2>
+        <div class="table-wrapper">
+            <table>
+                <caption>
+                    Suites that were not run are reported separately from skipped tests.
+                </caption>
+                <thead>
+                <tr>
+                    <th scope="col">Suite</th>
+                    <th scope="col">Execution status</th>
+                    <th scope="col">Environment</th>
+                    <th scope="col">Notes</th>
+                </tr>
+                </thead>
+                <tbody>
+                {{suite_rows}}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section aria-labelledby="tools-heading">
+        <h2 id="tools-heading">Testing tools</h2>
+        <div class="table-wrapper">
+            <table>
+                <caption>
+                    Project tools and whether they were used in this run.
+                </caption>
+                <thead>
+                <tr>
+                    <th scope="col">Tool</th>
+                    <th scope="col">Purpose</th>
+                    <th scope="col">Used in this run</th>
+                </tr>
+                </thead>
+                <tbody>
+                {{tool_rows}}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section aria-labelledby="plan-heading">
+        <h2 id="plan-heading">Proposed next tests</h2>
+        <p class="muted">
+            Maintained by the team using coverage, requirements, and known issues.
+            These suggestions are not automatically inferred from coverage.
+        </p>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                <tr>
+                    <th scope="col">Priority</th>
+                    <th scope="col">Component</th>
+                    <th scope="col">Scenario to test</th>
+                    <th scope="col">Reason</th>
+                    <th scope="col">Status</th>
+                </tr>
+                </thead>
+                <tbody>
+                {{test_plan_rows}}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section aria-labelledby="reports-heading">
+        <h2 id="reports-heading">Detailed reports</h2>
+        <!-- Only include links when the corresponding reports exist. -->
+        <div class="links">
+            {{report_links}}
+        </div>
+    </section>
+
+    <footer>
+        Missing results are shown as “Unavailable,” not zero.
+        Coverage reflects only the test executions included in this report.
+    </footer>
+</main>
+</body>
+</html>

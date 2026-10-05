@@ -258,12 +258,15 @@ kotlin {
     jvmToolchain(17)
 }
 
-task jacocoCombinedReport(type: JacocoReport, dependsOn: ['compileDebugKotlin', 'compileDebugJavaWithJavac']) {
+task jacocoCombinedReport(type: JacocoReport, dependsOn: ['testDebugUnitTest']) {
     group = "Reporting"
     description = "Generates a combined coverage report from unit and instrumented tests using JaCoCo"
 
     reports {
         xml.required = true
+        xml.outputLocation = layout.buildDirectory.file(
+                'reports/coverage/combined/report.xml'
+        )
         html.required = true
         html.outputLocation = layout.buildDirectory.dir('reports/coverage/combined')
     }
@@ -278,10 +281,12 @@ task jacocoCombinedReport(type: JacocoReport, dependsOn: ['compileDebugKotlin', 
         'dagger/hilt/**', '**/dagger/hilt/**'
     ]
 
-    classDirectories.setFrom(files([
-        fileTree(dir: "${buildDir}/tmp/kotlin-classes/debug", excludes: excludes),
-        fileTree(dir: "${buildDir}/intermediates/javac/debug/classes", excludes: excludes)
-    ]))
+    classDirectories.setFrom(
+            fileTree(
+                    dir: "${buildDir}/intermediates/classes/debug/transformDebugClassesWithAsm/dirs",
+                    excludes: excludes
+            )
+    )
 
     sourceDirectories.setFrom(files(['src/main/java', 'src/main/kotlin']))
 
