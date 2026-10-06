@@ -52,6 +52,7 @@ class ReferralUploadManager @Inject constructor(
         return when (uploadResult) {
             is NetworkResult.Success -> {
                 updatePatientLastEdited(patient)
+                markReferralAsUploaded(referral)
                 ReferralFlowSaveResult.SaveSuccessful.NoSmsNeeded
             }
 
@@ -63,5 +64,14 @@ class ReferralUploadManager @Inject constructor(
     private suspend fun updatePatientLastEdited(patient: Patient) {
         patient.lastServerUpdate = patient.lastEdited
         patientManager.add(patient)
+    }
+
+    /**
+     * Marks [referral] as uploaded so that sync does not upload it again. Without this, the
+     * referral only gets marked when the server echoes it back during a sync.
+     */
+    private suspend fun markReferralAsUploaded(referral: Referral) {
+        referral.lastServerUpdate = referral.lastEdited
+        referralManager.addReferral(referral, true)
     }
 }
