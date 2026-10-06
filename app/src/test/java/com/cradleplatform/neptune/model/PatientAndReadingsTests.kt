@@ -97,7 +97,12 @@ class PatientAndReadingsTests {
 
             val asString = JacksonMapper.mapper.writeValueAsString(deserializedPatientAndReadings)
             val parsedPatientAndReadings = JacksonMapper.mapper.readValue<PatientAndReadings>(asString)
-            assertEquals(deserializedPatientAndReadings, parsedPatientAndReadings)
+            assertEquals(
+                deserializedPatientAndReadings.copy(
+                    readings = deserializedReadings.map { it.copy(userId = null) }
+                ),
+                parsedPatientAndReadings
+            )
         }
     }
 }

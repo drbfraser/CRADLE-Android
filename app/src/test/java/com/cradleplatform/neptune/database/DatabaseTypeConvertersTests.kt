@@ -1,13 +1,34 @@
 package com.cradleplatform.neptune.database
 
+import com.cradleplatform.neptune.model.CommonPatientReferralJsons
 import com.cradleplatform.neptune.model.WorkflowInstanceStep
 import com.cradleplatform.neptune.model.WorkflowStatus
 import com.cradleplatform.neptune.model.WorkflowTemplateStep
 import com.cradleplatform.neptune.model.WorkflowTemplateStepBranch
+import com.cradleplatform.neptune.utilities.jackson.JacksonMapper
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Test
 
 class DatabaseTypeConvertersTests {
     private val typeConverter = DatabaseTypeConverters()
+
+    @Test
+    fun `referral creator is preserved in Room but omitted from network JSON`() {
+        val referral = CommonPatientReferralJsons.patientWithStandaloneReferral.second.referrals[0]
+        val referralsToTest = listOf(null, referral, referral.copy(userId = null))
+
+        referralsToTest.forEach { originalReferral ->
+            val restoredReferral = typeConverter.toReferral(typeConverter.fromReferral(originalReferral))
+            assertEquals(originalReferral, restoredReferral)
+        }
+
+        // Database conversion must not change the shared network mapper's behaviour.
+        val networkJson = JacksonMapper.mapper.readTree(
+            JacksonMapper.writerForReferral.writeValueAsString(referral)
+        )
+        assertFalse(networkJson.has("userId"))
+    }
 
     @Test
     fun `string list is preserved`() {

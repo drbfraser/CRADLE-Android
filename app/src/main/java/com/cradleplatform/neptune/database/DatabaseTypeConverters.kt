@@ -13,6 +13,7 @@ import com.cradleplatform.neptune.model.UrineTest
 import com.cradleplatform.neptune.model.WorkflowInstanceStep
 import com.cradleplatform.neptune.model.WorkflowTemplateStep
 import com.cradleplatform.neptune.utilities.jackson.JacksonMapper
+import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -61,7 +62,12 @@ class DatabaseTypeConverters {
     fun toReferral(string: String?): Referral? = readStringValueByJackson(string)
 
     @TypeConverter
-    fun fromReferral(referral: Referral?): String? = writeStringByJackson(referral)
+    fun fromReferral(referral: Referral?): String? = referral?.let {
+        val referralJson = JacksonMapper.mapper.valueToTree<ObjectNode>(it)
+        // Network serialization omits the creator，Room retain it in Reading.referral.
+        it.userId?.let { userId -> referralJson.put("userId", userId) }
+        JacksonMapper.mapper.writeValueAsString(referralJson)
+    }
 
     @TypeConverter
     fun toFollowUp(string: String?): Assessment? = readStringValueByJackson(string)

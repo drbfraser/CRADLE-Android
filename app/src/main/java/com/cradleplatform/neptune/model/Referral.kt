@@ -9,7 +9,6 @@ import com.cradleplatform.neptune.ext.Field
 import com.cradleplatform.neptune.ext.jackson.get
 import com.cradleplatform.neptune.ext.jackson.writeBooleanField
 import com.cradleplatform.neptune.ext.jackson.writeLongField
-import com.cradleplatform.neptune.ext.jackson.writeOptIntField
 import com.cradleplatform.neptune.ext.jackson.writeOptLongField
 import com.cradleplatform.neptune.ext.jackson.writeOptStringField
 import com.cradleplatform.neptune.ext.jackson.writeStringField
@@ -131,7 +130,6 @@ data class Referral(
                 gen.writeOptStringField(ReferralField.COMMENT, comment)
                 gen.writeStringField(ReferralField.HEALTH_FACILITY_NAME, healthFacilityName)
                 gen.writeLongField(ReferralField.DATE_REFERRED, dateReferred)
-                gen.writeOptIntField(ReferralField.USER_ID, userId)
                 gen.writeStringField(ReferralField.PATIENT_ID, patientId)
                 gen.writeOptStringField(ReferralField.ACTION_TAKEN, actionTaken)
                 gen.writeOptStringField(ReferralField.CANCEL_REASON, cancelReason)

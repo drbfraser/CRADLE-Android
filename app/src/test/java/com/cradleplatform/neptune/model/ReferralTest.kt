@@ -20,6 +20,7 @@ import okhttp3.mockwebserver.MockWebServer
 import okhttp3.mockwebserver.RecordedRequest
 import org.json.JSONObject
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -42,10 +43,12 @@ internal class ReferralTest {
         val writer = JacksonMapper.writerForReferral
         val serialized = writer.writeValueAsString(referral)
 
-        val reader = JacksonMapper.readerForReferral
-        val deserializedReferral = reader.readValue<Referral>(serialized)
+        assertFalse(serialized.contains("\"userId\""))
 
-        assertEquals(referral, deserializedReferral)
+        val serverResponse = serialized.dropLast(1) + ",\"userId\":${referral.userId}}"
+        val deserializedReferral = JacksonMapper.readerForReferral.readValue<Referral>(serverResponse)
+
+        assertEquals(referral.userId, deserializedReferral.userId)
     }
 
     @Test

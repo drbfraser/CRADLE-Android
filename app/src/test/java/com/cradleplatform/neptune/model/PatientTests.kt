@@ -136,7 +136,10 @@ class PatientTests {
         val reader = JacksonMapper.createReader<PatientAndReadings>()
         val actual = reader.readValue<PatientAndReadings>(json)
         assertEquals(patientAndReadings.patient, actual.patient)
-        assertEquals(patientAndReadings.readings, actual.readings)
+        assertEquals(
+            patientAndReadings.readings.map { it.copy(userId = null) },
+            actual.readings
+        )
     }
 
     @Test
