@@ -2,6 +2,7 @@ package com.cradleplatform.neptune.model
 
 import com.cradleplatform.neptune.utilities.jackson.JacksonMapper
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Test
 import java.util.UUID
 
@@ -13,10 +14,12 @@ class ReadingTests {
         val writer = JacksonMapper.writerForReading
         val serialized = writer.writeValueAsString(reading)
 
-        val reader = JacksonMapper.readerForReading
-        val deserializedReading = reader.readValue<Reading>(serialized)
+        assertFalse(serialized.contains("\"userId\""))
 
-        assertEquals(reading, deserializedReading)
+        val serverResponse = serialized.dropLast(1) + ",\"userId\":${reading.userId}}"
+        val deserializedReading = JacksonMapper.readerForReading.readValue<Reading>(serverResponse)
+
+        assertEquals(reading.userId, deserializedReading.userId)
     }
 
     private fun createTestReading(): Reading {

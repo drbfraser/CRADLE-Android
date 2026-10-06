@@ -140,7 +140,6 @@ data class CreateFormSubmissionRequestV2(
     @Expose @SerializedName("id") val id: String? = null,
     @Expose @SerializedName("formTemplateId") val formTemplateId: String,
     @Expose @SerializedName("patientId") val patientId: String,
-    @Expose @SerializedName("userId") val userId: Int? = null,
     @Expose @SerializedName("lang") val lang: String = "English",
     @Expose @SerializedName("answers") val answers: List<FormAnswerV2>,
 ) : Serializable

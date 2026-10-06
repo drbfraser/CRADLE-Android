@@ -17,6 +17,7 @@ import okhttp3.mockwebserver.RecordedRequest
 import org.json.JSONObject
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -99,7 +100,6 @@ internal class RestApiFormsV2Test {
         val request = CreateFormSubmissionRequestV2(
             formTemplateId = "template-1",
             patientId = "patient-1",
-            userId = 3,
             answers = listOf(
                 FormAnswerV2(questionId = "q1", answer = AnswerV2.createTextAnswer("Normal")),
                 FormAnswerV2(questionId = "q2", answer = AnswerV2.createMcAnswer(listOf(0, 2))),
@@ -118,6 +118,7 @@ internal class RestApiFormsV2Test {
         val sentBody = JSONObject(lastRequest!!.body.readString(Charsets.UTF_8))
         assertEquals("template-1", sentBody.getString("formTemplateId"))
         assertEquals("patient-1", sentBody.getString("patientId"))
+        assertFalse(sentBody.has("userId"))
         val sentAnswers = sentBody.getJSONArray("answers")
         assertEquals(2, sentAnswers.length())
         assertEquals("q1", sentAnswers.getJSONObject(0).getString("questionId"))

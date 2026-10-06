@@ -16,7 +16,6 @@ import com.cradleplatform.neptune.ext.jackson.writeBooleanField
 import com.cradleplatform.neptune.ext.jackson.writeIntField
 import com.cradleplatform.neptune.ext.jackson.writeLongField
 import com.cradleplatform.neptune.ext.jackson.writeObjectField
-import com.cradleplatform.neptune.ext.jackson.writeOptIntField
 import com.cradleplatform.neptune.ext.jackson.writeOptLongField
 import com.cradleplatform.neptune.ext.jackson.writeOptObjectField
 import com.cradleplatform.neptune.ext.jackson.writeStringField
@@ -173,7 +172,6 @@ data class Reading(
                     previousReadingIds.joinToString(",")
                 )
                 gen.writeLongField(ReadingField.LAST_EDITED, lastEdited)
-                gen.writeOptIntField(ReadingField.USER_ID, userId)
 
                 gen.writeEndObject()
             }
