@@ -5,6 +5,7 @@ import android.util.Log
 import com.cradleplatform.neptune.utilities.jackson.JacksonMapper
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.CertificatePinner
@@ -97,9 +98,11 @@ class Http(
      * returns a [Success], the value inside of the [Success] will be the return value of
      * the [inputStreamReader]. The [inputStreamReader] is only called if the server returns a
      * successful response code. Not expected to close the given [InputStream]. Note: [IOException]s
-     * will be caught by [makeRequest] and return a [NetworkException] as the result.
+     * and any exception thrown by [inputStreamReader] (other than cancellation) will be caught by
+     * [makeRequest] and return a [NetworkException] as the result.
      * @return The result of the network request: [Success] if it succeeds, [Failure] if the server
-     * returns a non-successful status code, and [NetworkException] if an [IOException] occurs.
+     * returns a non-successful status code, and [NetworkException] if an [IOException] occurs or
+     * the response can't be parsed.
      *
      * @throws IllegalArgumentException - if url is not a valid HTTP or HTTPS URL, or if using an
      * HTTP method that requires a non-null [requestBody] (like POST or PUT).
@@ -128,10 +131,17 @@ class Http(
                 if (it.isSuccessful) {
                     Log.i(TAG, "$message - Success ${it.code}")
                     // The byte stream is closed by the `use` function above.
-                    return@use NetworkResult.Success(
-                        inputStreamReader(it.body!!.byteStream()),
-                        it.code
-                    )
+                    // A response we can't parse (e.g. a missing required field hitting `!!` in a
+                    // deserializer) is returned as a NetworkException instead of crashing the app.
+                    val parsedResponse = try {
+                        inputStreamReader(it.body!!.byteStream())
+                    } catch (e: CancellationException) {
+                        throw e
+                    } catch (e: Exception) {
+                        Log.e(TAG, "$message - Failed to parse response", e)
+                        return@use NetworkResult.NetworkException(e)
+                    }
+                    return@use NetworkResult.Success(parsedResponse, it.code)
                 } else {
                     Log.i(TAG, "$message - Failure ${it.code}")
                     return@use NetworkResult.Failure(it.body!!.bytes(), it.code)
