@@ -1,5 +1,6 @@
 package com.cradleplatform.neptune.viewmodel.forms
 
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -11,10 +12,13 @@ import com.cradleplatform.neptune.model.FormV2Draft
 import com.cradleplatform.neptune.model.FormTemplateV2
 import com.cradleplatform.neptune.model.FormV2AnswerState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import javax.inject.Inject
 
 /**
@@ -24,6 +28,14 @@ sealed class FormV2RenderingState {
     object Loading : FormV2RenderingState()
     data class Success(val template: FormTemplateV2) : FormV2RenderingState()
     data class Error(val message: String) : FormV2RenderingState()
+}
+
+/** State of the local V2 draft write */
+sealed class FormV2DraftSaveState {
+    object Idle : FormV2DraftSaveState()
+    object Saving : FormV2DraftSaveState()
+    object Saved : FormV2DraftSaveState()
+    object Error : FormV2DraftSaveState()
 }
 
 @HiltViewModel
@@ -45,6 +57,12 @@ class FormV2RenderingViewModel @Inject constructor(
     private val _state = MutableStateFlow<FormV2RenderingState>(FormV2RenderingState.Loading)
     val state: StateFlow<FormV2RenderingState> = _state.asStateFlow()
     val answerState = FormV2AnswerState()
+    private val _draftSaveState = MutableStateFlow<FormV2DraftSaveState>(FormV2DraftSaveState.Idle)
+    val draftSaveState: StateFlow<FormV2DraftSaveState> = _draftSaveState.asStateFlow()
+    private val draftSaveMutex = Mutex()
+
+    val canSaveDraft: Boolean
+        get() = !patientId.isNullOrBlank() && _state.value is FormV2RenderingState.Success
 
     init {
         loadTemplate()
@@ -76,22 +94,37 @@ class FormV2RenderingViewModel @Inject constructor(
 
     /** Saves only patient-based forms after their template has finished loading. */
     fun saveDraft() {
-        val patient = patientId ?: return
+        // Avoid overwriting a stored draft before its answers finish restoring
+        if (!canSaveDraft) return
+        val patient = patientId?.takeIf { it.isNotBlank() } ?: return
         val template = loadedTemplate ?: return
+        val now = System.currentTimeMillis()
+        // Capture the answers at the save request, before a queued write or further edits
+        val draft = FormV2Draft(
+            patientId = patient,
+            formTemplateId = template.id,
+            formTemplateVersion = template.version,
+            formTemplate = template,
+            answers = answerState.toFormAnswers(),
+            createdAt = now,
+            updatedAt = now
+        )
+        _draftSaveState.value = FormV2DraftSaveState.Saving
         viewModelScope.launch {
-            val now = System.currentTimeMillis()
-            // The DAO keeps the existing createdAt value when this key already has a draft.
-            formV2DraftDao.upsert(
-                FormV2Draft(
-                    patientId = patient,
-                    formTemplateId = template.id,
-                    formTemplateVersion = template.version,
-                    formTemplate = template,
-                    answers = answerState.toFormAnswers(),
-                    createdAt = now,
-                    updatedAt = now
-                )
-            )
+            // Keep manual and lifecycle saves in order
+            draftSaveMutex.withLock {
+                _draftSaveState.value = FormV2DraftSaveState.Saving
+                try {
+                    // The DAO preserves createdAt on updates. Success follows the completed transaction.
+                    formV2DraftDao.upsert(draft)
+                    _draftSaveState.value = FormV2DraftSaveState.Saved
+                } catch (exception: CancellationException) {
+                    throw exception
+                } catch (exception: Exception) {
+                    Log.e(javaClass.simpleName, "Failed to save V2 draft", exception)
+                    _draftSaveState.value = FormV2DraftSaveState.Error
+                }
+            }
         }
     }
 }

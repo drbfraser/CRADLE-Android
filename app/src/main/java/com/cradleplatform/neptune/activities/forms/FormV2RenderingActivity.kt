@@ -25,6 +25,7 @@ import com.cradleplatform.neptune.model.AnswerV2
 import com.cradleplatform.neptune.model.FormTemplateQuestionV2
 import com.cradleplatform.neptune.model.QuestionTypeEnum
 import com.cradleplatform.neptune.viewmodel.forms.FormTemplateDetailV2ViewModel
+import com.cradleplatform.neptune.viewmodel.forms.FormV2DraftSaveState
 import com.cradleplatform.neptune.viewmodel.forms.FormV2RenderingState
 import com.cradleplatform.neptune.viewmodel.forms.FormV2RenderingViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -45,9 +46,20 @@ class FormV2RenderingActivity : AppCompatActivity() {
         setContentView(R.layout.activity_form_v2_rendering)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
+        findViewById<Button>(R.id.form_v2_save_draft_button).setOnClickListener {
+            viewModel.saveDraft()
+        }
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.state.collectLatest { state -> render(state) }
+                launch {
+                    viewModel.state.collectLatest { state ->
+                        render(state)
+                    }
+                }
+                // Draft writes update the footer without rebuilding the form fields.
+                launch {
+                    viewModel.draftSaveState.collectLatest { state -> renderDraftSaveState(state) }
+                }
             }
         }
     }
@@ -56,6 +68,18 @@ class FormV2RenderingActivity : AppCompatActivity() {
         // Covers normal navigation, backgrounding, and rotation.
         viewModel.saveDraft()
         super.onStop()
+    }
+
+    private fun renderDraftSaveState(state: FormV2DraftSaveState) {
+        val saveButton = findViewById<Button>(R.id.form_v2_save_draft_button)
+        val saveStatus = findViewById<TextView>(R.id.form_v2_draft_save_status)
+        saveButton.isEnabled = viewModel.canSaveDraft && state != FormV2DraftSaveState.Saving
+        saveStatus.text = when (state) {
+            FormV2DraftSaveState.Idle -> ""
+            FormV2DraftSaveState.Saving -> getString(R.string.form_v2_draft_saving)
+            FormV2DraftSaveState.Saved -> getString(R.string.form_submission_saved_draft_success)
+            FormV2DraftSaveState.Error -> getString(R.string.form_v2_draft_save_error)
+        }
     }
 
     private fun render(state: FormV2RenderingState) {

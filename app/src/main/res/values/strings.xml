@@ -746,6 +746,8 @@
     <string name="form_v2_rendering_time_hint">Choose time</string>
     <string name="form_v2_rendering_datetime_not_allowed">Selected date and time is not allowed.</string>
     <string name="form_v2_rendering_unsupported">Question type %1$s is not supported yet.</string>
+    <string name="form_v2_draft_saving">Saving draft…</string>
+    <string name="form_v2_draft_save_error">Could not save draft. Please try again.</string>
     <string name="form_question_v2_required">Required</string>
     <string name="form_question_v2_optional">Optional</string>
     <string name="form_question_v2_options">Options: %1$s</string>
