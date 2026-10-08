@@ -13,6 +13,8 @@ import com.cradleplatform.neptune.model.FormTemplateV2
 import com.cradleplatform.neptune.model.FormV2AnswerState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -60,6 +62,7 @@ class FormV2RenderingViewModel @Inject constructor(
     private val _draftSaveState = MutableStateFlow<FormV2DraftSaveState>(FormV2DraftSaveState.Idle)
     val draftSaveState: StateFlow<FormV2DraftSaveState> = _draftSaveState.asStateFlow()
     private val draftSaveMutex = Mutex()
+    private var clearSavedDraftStatusJob: Job? = null
 
     val canSaveDraft: Boolean
         get() = !patientId.isNullOrBlank() && _state.value is FormV2RenderingState.Success
@@ -109,6 +112,7 @@ class FormV2RenderingViewModel @Inject constructor(
             createdAt = now,
             updatedAt = now
         )
+        clearSavedDraftStatusJob?.cancel()
         _draftSaveState.value = FormV2DraftSaveState.Saving
         viewModelScope.launch {
             // Keep manual and lifecycle saves in order
@@ -118,6 +122,12 @@ class FormV2RenderingViewModel @Inject constructor(
                     // The DAO preserves createdAt on updates. Success follows the completed transaction.
                     formV2DraftDao.upsert(draft)
                     _draftSaveState.value = FormV2DraftSaveState.Saved
+                    clearSavedDraftStatusJob = viewModelScope.launch {
+                        delay(DRAFT_SAVE_SUCCESS_VISIBLE_MILLIS)
+                        if (_draftSaveState.value == FormV2DraftSaveState.Saved) {
+                            _draftSaveState.value = FormV2DraftSaveState.Idle
+                        }
+                    }
                 } catch (exception: CancellationException) {
                     throw exception
                 } catch (exception: Exception) {
@@ -126,5 +136,9 @@ class FormV2RenderingViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    private companion object {
+        const val DRAFT_SAVE_SUCCESS_VISIBLE_MILLIS = 3_000L
     }
 }

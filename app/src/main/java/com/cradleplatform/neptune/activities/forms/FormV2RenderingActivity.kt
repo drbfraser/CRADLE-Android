@@ -54,6 +54,7 @@ class FormV2RenderingActivity : AppCompatActivity() {
                 launch {
                     viewModel.state.collectLatest { state ->
                         render(state)
+                        updateDraftSaveButton()
                     }
                 }
                 // Draft writes update the footer without rebuilding the form fields.
@@ -71,15 +72,21 @@ class FormV2RenderingActivity : AppCompatActivity() {
     }
 
     private fun renderDraftSaveState(state: FormV2DraftSaveState) {
-        val saveButton = findViewById<Button>(R.id.form_v2_save_draft_button)
         val saveStatus = findViewById<TextView>(R.id.form_v2_draft_save_status)
-        saveButton.isEnabled = viewModel.canSaveDraft && state != FormV2DraftSaveState.Saving
         saveStatus.text = when (state) {
             FormV2DraftSaveState.Idle -> ""
             FormV2DraftSaveState.Saving -> getString(R.string.form_v2_draft_saving)
             FormV2DraftSaveState.Saved -> getString(R.string.form_submission_saved_draft_success)
             FormV2DraftSaveState.Error -> getString(R.string.form_v2_draft_save_error)
         }
+        updateDraftSaveButton(state)
+    }
+
+    private fun updateDraftSaveButton(
+        saveState: FormV2DraftSaveState = viewModel.draftSaveState.value
+    ) {
+        findViewById<Button>(R.id.form_v2_save_draft_button).isEnabled =
+            viewModel.canSaveDraft && saveState != FormV2DraftSaveState.Saving
     }
 
     private fun render(state: FormV2RenderingState) {
