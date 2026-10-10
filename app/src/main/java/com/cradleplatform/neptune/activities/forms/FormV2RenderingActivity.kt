@@ -32,6 +32,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.util.Calendar
+import java.util.Locale
 
 /**
  * First V2 filling screen. Collects basic scalar answers in memory; submission is a later step.
@@ -260,7 +261,13 @@ class FormV2RenderingActivity : AppCompatActivity() {
             val datePicker = DatePickerDialog(
                 this,
                 { _, year, month, day ->
-                    val date = "%04d-%02d-%02d".format(year, month + 1, day)
+                    val date = String.format(
+                        Locale.ROOT,
+                        "%04d-%02d-%02d",
+                        year,
+                        month + 1,
+                        day,
+                    )
                     if (question.questionType == QuestionTypeEnum.DATE) {
                         button.text = date
                         viewModel.answerState.setAnswer(question.id, AnswerV2.createDateAnswer(date))
@@ -269,7 +276,13 @@ class FormV2RenderingActivity : AppCompatActivity() {
                             this,
                             { _, hour, minute ->
                                 if (isDateTimeAllowed(question, year, month, day, hour, minute)) {
-                                    val value = "%s %02d:%02d".format(date, hour, minute)
+                                    val value = String.format(
+                                        Locale.ROOT,
+                                        "%s %02d:%02d",
+                                        date,
+                                        hour,
+                                        minute,
+                                    )
                                     button.text = value
                                     button.error = null
                                     viewModel.answerState.setAnswer(
@@ -331,7 +344,7 @@ class FormV2RenderingActivity : AppCompatActivity() {
             TimePickerDialog(
                 this@FormV2RenderingActivity,
                 { _, hour, minute ->
-                    val value = "%02d:%02d".format(hour, minute)
+                    val value = String.format(Locale.ROOT, "%02d:%02d", hour, minute)
                     text = value
                     viewModel.answerState.setAnswer(question.id, AnswerV2.createDateAnswer(value))
                 },
