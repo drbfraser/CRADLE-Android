@@ -4,6 +4,10 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
+import android.widget.ArrayAdapter
+import android.widget.AutoCompleteTextView
+import android.widget.Button
+import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Lifecycle
@@ -12,6 +16,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.RecyclerView
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.adapters.forms.FormTemplateListV2Adapter
+import com.cradleplatform.neptune.viewmodel.forms.FormTemplateDetailV2State
 import com.cradleplatform.neptune.viewmodel.forms.FormTemplateListV2State
 import com.cradleplatform.neptune.viewmodel.forms.FormTemplateListV2ViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -35,6 +40,51 @@ class FormTemplateListV2Activity : AppCompatActivity() {
 
         val recyclerView: RecyclerView = findViewById(R.id.recycler_view)
         recyclerView.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(this)
+
+        if (intent.getStringExtra(EXTRA_PATIENT_ID) != null) {
+            supportActionBar?.title = getString(R.string.create_new_form)
+            lifecycleScope.launch {
+                repeatOnLifecycle(Lifecycle.State.STARTED) {
+                    viewModel.selectedTemplate.collectLatest { state ->
+                        val language = findViewById<AutoCompleteTextView>(R.id.v2_language_dropdown)
+                        val fetch = findViewById<Button>(R.id.v2_fetch_form_button)
+                        val error = findViewById<TextView>(R.id.error_text)
+                        language.isEnabled = false
+                        fetch.isEnabled = false
+                        language.setText("", false)
+                        error.visibility = View.GONE
+                        findViewById<View>(R.id.loading_indicator).visibility =
+                            if (state is FormTemplateDetailV2State.Loading) View.VISIBLE else View.GONE
+                        if (state is FormTemplateDetailV2State.Success) {
+                            val template = state.template
+                            val languages = (template.classification.name.keys +
+                                template.questions.orEmpty().flatMap { question ->
+                                    question.questionText.keys + question.mcOptions.orEmpty().flatMap { it.translations.keys }
+                                }).distinct().sorted()
+                            language.setAdapter(ArrayAdapter(this@FormTemplateListV2Activity,
+                                R.layout.list_dropdown_menu_item, languages))
+                            language.isEnabled = languages.isNotEmpty()
+                            viewModel.selectedLanguage?.takeIf { it in languages }?.let {
+                                language.setText(it, false)
+                                fetch.isEnabled = true
+                            }
+                            language.setOnItemClickListener { _, _, position, _ ->
+                                viewModel.selectedLanguage = languages[position]
+                                fetch.isEnabled = true
+                            }
+                            fetch.setOnClickListener {
+                                val selectedLanguage = viewModel.selectedLanguage ?: return@setOnClickListener
+                                startActivity(FormV2RenderingActivity.makeIntent(this@FormTemplateListV2Activity,
+                                    template.id, intent.getStringExtra(EXTRA_PATIENT_ID), selectedLanguage))
+                            }
+                        } else if (state is FormTemplateDetailV2State.Error) {
+                            error.text = getString(R.string.form_template_v2_error, state.message)
+                            error.visibility = View.VISIBLE
+                        }
+                    }
+                }
+            }
+        }
 
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -61,6 +111,19 @@ class FormTemplateListV2Activity : AppCompatActivity() {
                     errorText.visibility = View.VISIBLE
                     errorText.text = getString(R.string.form_template_v2_empty)
                 } else {
+                    if (intent.getStringExtra(EXTRA_PATIENT_ID) != null) {
+                        findViewById<View>(R.id.form_v2_selection).visibility = View.VISIBLE
+                        val dropdown = findViewById<AutoCompleteTextView>(R.id.v2_template_dropdown)
+                        dropdown.setAdapter(ArrayAdapter(this, R.layout.list_dropdown_menu_item,
+                            state.templates.map { "${it.name} (v${it.version})" }))
+                        state.templates.firstOrNull { it.id == viewModel.selectedTemplateId }?.let {
+                            dropdown.setText("${it.name} (v${it.version})", false)
+                        }
+                        dropdown.setOnItemClickListener { _, _, position, _ ->
+                            viewModel.selectTemplate(state.templates[position].id)
+                        }
+                        return
+                    }
                     recyclerView.visibility = View.VISIBLE
                     recyclerView.adapter = FormTemplateListV2Adapter(state.templates) { template ->
                         startActivity(
