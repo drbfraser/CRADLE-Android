@@ -1,6 +1,5 @@
 package com.cradleplatform.neptune.viewmodel.forms
 
-import androidx.lifecycle.SavedStateHandle
 import com.cradleplatform.neptune.testutils.MockDependencyUtils
 import com.cradleplatform.neptune.testutils.MockWebServerUtils
 import kotlinx.coroutines.Dispatchers
@@ -62,7 +61,7 @@ internal class FormTemplateListV2ViewModelTest {
         }
         mockServer = server
 
-        val viewModel = FormTemplateListV2ViewModel(restApi, sharedPreferences, SavedStateHandle())
+        val viewModel = FormTemplateListV2ViewModel(restApi, sharedPreferences)
         val state = awaitResult(viewModel)
 
         check(state is FormTemplateListV2State.Success) { "got $state" }
@@ -89,7 +88,7 @@ internal class FormTemplateListV2ViewModelTest {
                     MockResponse().setResponseCode(200).setBody(TEMPLATE_LIST_JSON)
             }
         }
-        val warmUpViewModel = FormTemplateListV2ViewModel(successRestApi, sharedPreferences, SavedStateHandle())
+        val warmUpViewModel = FormTemplateListV2ViewModel(successRestApi, sharedPreferences)
         awaitResult(warmUpViewModel)
         successServer.shutdown()
 
@@ -101,7 +100,7 @@ internal class FormTemplateListV2ViewModelTest {
         }
         mockServer = failingServer
 
-        val viewModel = FormTemplateListV2ViewModel(failingRestApi, sharedPreferences, SavedStateHandle())
+        val viewModel = FormTemplateListV2ViewModel(failingRestApi, sharedPreferences)
         val state = awaitResult(viewModel)
 
         check(state is FormTemplateListV2State.Success) { "got $state, expected cache fallback" }
@@ -128,7 +127,7 @@ internal class FormTemplateListV2ViewModelTest {
         }
         mockServer = server
 
-        val viewModel = FormTemplateListV2ViewModel(restApi, sharedPreferences, SavedStateHandle())
+        val viewModel = FormTemplateListV2ViewModel(restApi, sharedPreferences)
         val state = awaitResult(viewModel)
 
         check(state is FormTemplateListV2State.Error) { "got $state" }

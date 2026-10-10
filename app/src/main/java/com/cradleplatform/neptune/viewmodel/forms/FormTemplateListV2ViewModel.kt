@@ -2,7 +2,6 @@ package com.cradleplatform.neptune.viewmodel.forms
 
 import android.content.SharedPreferences
 import androidx.core.content.edit
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
@@ -26,8 +25,7 @@ sealed class FormTemplateListV2State {
 @HiltViewModel
 class FormTemplateListV2ViewModel @Inject constructor(
     private val restApi: RestApi,
-    private val sharedPreferences: SharedPreferences,
-    private val savedStateHandle: SavedStateHandle
+    private val sharedPreferences: SharedPreferences
 ) : ViewModel() {
 
     private val _state = MutableStateFlow<FormTemplateListV2State>(FormTemplateListV2State.Loading)
@@ -35,20 +33,17 @@ class FormTemplateListV2ViewModel @Inject constructor(
 
     private val _selectedTemplate = MutableStateFlow<FormTemplateDetailV2State?>(null)
     val selectedTemplate = _selectedTemplate.asStateFlow()
-    val selectedTemplateId: String?
-        get() = savedStateHandle["selected_template"]
-
-    var selectedLanguage: String?
-        get() = savedStateHandle["selected_language"]
-        set(value) { savedStateHandle["selected_language"] = value }
+    var selectedTemplateId: String? = null
+        private set
+    var selectedLanguage: String? = null
 
     fun selectTemplate(id: String) {
-        savedStateHandle["selected_template"] = id
+        selectedTemplateId = id
         selectedLanguage = null
         _selectedTemplate.value = FormTemplateDetailV2State.Loading
         viewModelScope.launch {
             val result = restApi.getFormTemplateV2(id)
-            if (savedStateHandle.get<String>("selected_template") != id) return@launch
+            if (selectedTemplateId != id) return@launch
             _selectedTemplate.value = when (result) {
                 is NetworkResult.Success -> FormTemplateDetailV2State.Success(result.value)
                 is NetworkResult.Failure -> FormTemplateDetailV2State.Error("Server error (${result.statusCode})")
@@ -60,9 +55,6 @@ class FormTemplateListV2ViewModel @Inject constructor(
     }
 
     init {
-        val language = selectedLanguage
-        savedStateHandle.get<String>("selected_template")?.let { selectTemplate(it) }
-        selectedLanguage = language
         loadTemplates()
     }
 
