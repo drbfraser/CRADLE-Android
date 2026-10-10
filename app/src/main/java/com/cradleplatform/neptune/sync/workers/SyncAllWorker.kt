@@ -50,6 +50,7 @@ import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.withContext
 import java.math.BigInteger
 
@@ -179,6 +180,9 @@ class SyncAllWorker @AssistedInject constructor(
         /** The key for result of the syncing stored in the finished[WorkInfo] */
         private const val RESULT_MESSAGE = "result_message"
 
+        /** A lock shared by all SyncAllWorker instances so only one sync runs at a time */
+        private val syncMutex: Mutex = Mutex()
+
         /**
          * Given a [WorkInfo] instance from WorkManager's getWorkInfo* methods for observing
          * intermediate progress, it gets the current syncing state.
@@ -230,14 +234,19 @@ class SyncAllWorker @AssistedInject constructor(
     private var syncSucceeded = false
 
     override suspend fun doWork(): Result {
-        val result = runSync()
-        sharedPreferences.edit(commit = true) {
-            putBoolean(LAST_SYNC_SUCCEEDED, syncSucceeded)
-            if (!syncSucceeded) {
-                putString(LAST_FAILED_SYNC_TIME, UnixTimestamp.now.toString())
+        syncMutex.lock()
+        try {
+            val result = runSync()
+            sharedPreferences.edit(commit = true) {
+                putBoolean(LAST_SYNC_SUCCEEDED, syncSucceeded)
+                if (!syncSucceeded) {
+                    putString(LAST_FAILED_SYNC_TIME, UnixTimestamp.now.toString())
+                }
             }
+            return result
+        } finally {
+            syncMutex.unlock()
         }
-        return result
     }
 
     private suspend fun runSync(): Result {

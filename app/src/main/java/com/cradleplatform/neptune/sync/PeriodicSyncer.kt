@@ -34,10 +34,13 @@ class PeriodicSyncer @Inject constructor(
 
         // For testing: Android's minimum allowable interval is 15 minutes
         // For production: user picks time interval (default 24 hours)
+        // An initial delay ensures that concurrent syncs do not run, as login already starts
+        // a one time sync
         val workRequest = PeriodicWorkRequestBuilder<SyncAllWorker>(
             hours.toLong(), TimeUnit.HOURS
         )
             .addTag(PERIODIC_WORK_TAG)
+            .setInitialDelay(hours.toLong(), TimeUnit.HOURS)
             .build()
 
         sharedPreferences.edit {
