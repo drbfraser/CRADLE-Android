@@ -52,7 +52,9 @@ class FormTemplateListV2ViewModel @Inject constructor(
             _selectedTemplate.value = when (result) {
                 is NetworkResult.Success -> FormTemplateDetailV2State.Success(result.value)
                 is NetworkResult.Failure -> FormTemplateDetailV2State.Error("Server error (${result.statusCode})")
-                is NetworkResult.NetworkException -> FormTemplateDetailV2State.Error(result.cause.message ?: "Network error")
+                is NetworkResult.NetworkException -> FormTemplateDetailV2State.Error(
+                    result.cause.message ?: "Network error"
+                )
             }
         }
     }

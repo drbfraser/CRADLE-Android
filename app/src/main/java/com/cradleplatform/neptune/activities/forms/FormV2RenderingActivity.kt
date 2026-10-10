@@ -7,15 +7,12 @@ import android.content.Intent
 import android.os.Bundle
 import android.text.InputType
 import android.view.View
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.RadioButton
 import android.widget.RadioGroup
-import android.widget.Spinner
 import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -210,7 +207,7 @@ class FormV2RenderingActivity : AppCompatActivity() {
                 addView(CheckBox(context).apply {
                     text = option.translations[selectedLanguage]
                         ?: option.translations["english"]
-                            ?: option.translations.values.firstOrNull().orEmpty()
+                        ?: option.translations.values.firstOrNull().orEmpty()
                     isChecked = index in selectedIndices
                     setOnCheckedChangeListener { _, isChecked ->
                         if (isChecked) selectedIndices.add(index) else selectedIndices.remove(index)
@@ -329,7 +326,12 @@ class FormV2RenderingActivity : AppCompatActivity() {
     companion object {
         const val EXTRA_LANGUAGE = "form_v2_language"
 
-        fun makeIntent(context: Context, templateId: String, patientId: String? = null, language: String = "english"): Intent =
+        fun makeIntent(
+            context: Context,
+            templateId: String,
+            patientId: String? = null,
+            language: String = "english"
+        ): Intent =
             Intent(context, FormV2RenderingActivity::class.java).apply {
                 putExtra(FormTemplateDetailV2ViewModel.EXTRA_TEMPLATE_ID, templateId)
                 putExtra(FormTemplateListV2Activity.EXTRA_PATIENT_ID, patientId)

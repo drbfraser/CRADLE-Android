@@ -59,7 +59,8 @@ class FormTemplateListV2Activity : AppCompatActivity() {
                             val template = state.template
                             val languages = (template.classification.name.keys +
                                 template.questions.orEmpty().flatMap { question ->
-                                    question.questionText.keys + question.mcOptions.orEmpty().flatMap { it.translations.keys }
+                                    question.questionText.keys +
+                                        question.mcOptions.orEmpty().flatMap { it.translations.keys }
                                 }).distinct().sorted()
                             language.setAdapter(ArrayAdapter(this@FormTemplateListV2Activity,
                                 R.layout.list_dropdown_menu_item, languages))
