@@ -29,7 +29,7 @@ import com.cradleplatform.neptune.model.Referral
 import com.cradleplatform.neptune.model.WorkflowInstance
 import com.cradleplatform.neptune.model.WorkflowTemplate
 
-const val CURRENT_DATABASE_VERSION = 4
+const val CURRENT_DATABASE_VERSION = 5
 
 /**
  * An interface for the local CRADLE database.
@@ -105,7 +105,7 @@ abstract class CradleDatabase : RoomDatabase() {
 @Suppress("MagicNumber", "NestedBlockDepth", "ObjectPropertyNaming")
 internal object Migrations {
     val ALL_MIGRATIONS: Array<Migration> by lazy {
-        arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+        arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
     }
 
     /**
@@ -255,6 +255,17 @@ internal object Migrations {
                 )
                 """.trimIndent()
             )
+        }
+    }
+
+    /**
+     * Version 5:
+     * Store a client-generated submission ID with a V2 draft. Retrying the same draft can then
+     * reuse the ID and let Platform detect a prior successful POST instead of creating a duplicate.
+     */
+    private val MIGRATION_4_5 = object : Migration(4, 5) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            database.execSQL("ALTER TABLE FormV2Draft ADD COLUMN `submissionId` TEXT")
         }
     }
 }

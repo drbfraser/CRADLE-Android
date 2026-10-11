@@ -47,6 +47,22 @@ class FormV2DraftMigrationTest {
         migrated.close()
     }
 
+    @Test
+    fun migrate4To5KeepsExistingDraftAndAddsAnEmptySubmissionId() {
+        val oldDatabase = helper.createDatabase("form-v2-submission-id-migration-test", 4)
+        oldDatabase.execSQL(
+            "INSERT INTO FormV2Draft VALUES ('patient-1', 'template-1', 1, '{}', '[]', 'English', 1000, 1000)"
+        )
+        oldDatabase.close()
+
+        val migrated = helper.runMigrationsAndValidate(
+            "form-v2-submission-id-migration-test", 5, true, *Migrations.ALL_MIGRATIONS
+        )
+        assertEquals(null, value(migrated, "FormV2Draft", "submissionId"))
+        assertEquals("English", value(migrated, "FormV2Draft", "language"))
+        migrated.close()
+    }
+
     private fun insertPatient(database: SupportSQLiteDatabase) {
         val values = ContentValues().apply {
             put("id", "patient-1")
