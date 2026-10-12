@@ -35,10 +35,15 @@ object FormV2SubmissionValidator {
                 FormV2SubmissionValidationResult.Error(null, "A question has duplicate answers.")
             else -> null
         }
-        if (duplicateError != null) return duplicateError
-        answers.firstOrNull { it.questionId !in questionsById }?.let {
-            return FormV2SubmissionValidationResult.Error(it.questionId, "Question does not belong to this template.")
-        }
+        val structuralError = duplicateError ?: answers
+            .firstOrNull { it.questionId !in questionsById }
+            ?.let {
+                FormV2SubmissionValidationResult.Error(
+                    it.questionId,
+                    "Question does not belong to this template."
+                )
+            }
+        if (structuralError != null) return structuralError
 
         val submissionAnswers = mutableListOf<FormAnswerV2>()
         for (question in questions.sortedBy { it.order }) {
