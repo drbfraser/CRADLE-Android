@@ -79,6 +79,57 @@ internal class FormTemplateListV2ViewModelTest {
     }
 
     @Test
+    fun `selectTemplate loads details successfully and clears previous language`() =
+        runTest(testDispatcher) {
+            val (_, sharedPreferences) = MockDependencyUtils.createMockSharedPreferences()
+
+            val (restApi, server) = MockWebServerUtils.createRestApiWithServerBlock(sharedPreferences) {
+                dispatcher = object : Dispatcher() {
+                    override fun dispatch(request: RecordedRequest) =
+                        when (request.path) {
+                            "/api/forms/v2/templates" ->
+                                MockResponse().setResponseCode(200).setBody(TEMPLATE_LIST_JSON)
+
+                            "/api/forms/v2/templates/template-1" ->
+                                MockResponse().setResponseCode(200).setBody(TEMPLATE_DETAIL_JSON)
+
+                            else -> MockResponse().setResponseCode(404)
+                        }
+                }
+            }
+            mockServer = server
+            val viewModel = FormTemplateListV2ViewModel(restApi, sharedPreferences)
+            val listState = awaitResult(viewModel)
+            check(listState is FormTemplateListV2State.Success) {
+                "got $listState"
+            }
+
+            viewModel.selectedLanguage = "english"
+            viewModel.selectTemplate(listState.templates.first().id)
+
+            assertEquals("template-1", viewModel.selectedTemplateId)
+            assertEquals(null, viewModel.selectedLanguage)
+            assertEquals(
+                FormTemplateDetailV2State.Loading,
+                viewModel.selectedTemplate.value
+            )
+
+            val detailState = viewModel.selectedTemplate.first {
+                it != null && it !is FormTemplateDetailV2State.Loading
+            }
+
+            check(detailState is FormTemplateDetailV2State.Success) {
+                "got $detailState, expected successful template details"
+            }
+            assertEquals("template-1", detailState.template.id)
+            assertEquals(1, detailState.template.version)
+            assertEquals(
+                "Antenatal",
+                detailState.template.classification.name["english"]
+            )
+        }
+
+    @Test
     fun `loadTemplates falls back to the cached list when the network fails`() = runTest(testDispatcher) {
         // first, a successful fetch to populate the cache.
         val (_, sharedPreferences) = MockDependencyUtils.createMockSharedPreferences()
@@ -146,6 +197,23 @@ internal class FormTemplateListV2ViewModelTest {
                         "dateCreated": 1700000000
                     }
                 ]
+            }
+        """
+
+        private const val TEMPLATE_DETAIL_JSON = """
+            {
+                "id": "template-1",
+                "version": 1,
+                "archived": false,
+                "classification": {
+                    "id": "class-1",
+                    "name": {
+                        "english": "Antenatal"
+                    },
+                    "nameStringId": null
+                },
+                "dateCreated": 1700000000,
+                "questions": []
             }
         """
     }
