@@ -22,6 +22,7 @@ import com.cradleplatform.neptune.viewmodel.forms.FormTemplateListV2ViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import org.w3c.dom.Text
 
 /**
  * displays the list of form templates available to the user. This is the V2 version of the form template list,
@@ -48,20 +49,29 @@ class FormTemplateListV2Activity : AppCompatActivity() {
                     viewModel.selectedTemplate.collectLatest { state ->
                         val language = findViewById<AutoCompleteTextView>(R.id.v2_language_dropdown)
                         val fetch = findViewById<Button>(R.id.v2_fetch_form_button)
-                        val error = findViewById<TextView>(R.id.error_text)
+
+                        // selected template's views
+                        val detailError = findViewById<TextView>(R.id.v2_detail_error_test)
+                        val detailLoading = findViewById<View>(R.id.v2_detail_loading_indicator)
+
                         language.isEnabled = false
-                        fetch.isEnabled = false
                         language.setText("", false)
-                        error.visibility = View.GONE
-                        findViewById<View>(R.id.loading_indicator).visibility =
-                            if (state is FormTemplateDetailV2State.Loading) View.VISIBLE else View.GONE
+                        fetch.isEnabled = false
+
+                        detailError.visibility = View.GONE
+                        if (state is FormTemplateDetailV2State.Loading) {
+                            detailLoading.visibility = View.VISIBLE
+                        } else {
+                            detailLoading.visibility = View.GONE
+                        }
+
                         if (state is FormTemplateDetailV2State.Success) {
                             val template = state.template
                             val languages = (template.classification.name.keys +
-                                template.questions.orEmpty().flatMap { question ->
-                                    question.questionText.keys +
-                                        question.mcOptions.orEmpty().flatMap { it.translations.keys }
-                                }).distinct().sorted()
+                                    template.questions.orEmpty().flatMap { question ->
+                                        question.questionText.keys +
+                                                question.mcOptions.orEmpty().flatMap { it.translations.keys }
+                                    }).distinct().sorted()
                             language.setAdapter(ArrayAdapter(this@FormTemplateListV2Activity,
                                 R.layout.list_dropdown_menu_item, languages))
                             language.isEnabled = languages.isNotEmpty()
@@ -79,8 +89,8 @@ class FormTemplateListV2Activity : AppCompatActivity() {
                                     template.id, intent.getStringExtra(EXTRA_PATIENT_ID), selectedLanguage))
                             }
                         } else if (state is FormTemplateDetailV2State.Error) {
-                            error.text = getString(R.string.form_template_v2_error, state.message)
-                            error.visibility = View.VISIBLE
+                            detailError.text = getString(R.string.form_template_v2_error, state.message)
+                            detailError.visibility = View.INVISIBLE
                         }
                     }
                 }
