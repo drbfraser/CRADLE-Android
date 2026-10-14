@@ -31,6 +31,29 @@ class FormTemplateListV2ViewModel @Inject constructor(
     private val _state = MutableStateFlow<FormTemplateListV2State>(FormTemplateListV2State.Loading)
     val state: StateFlow<FormTemplateListV2State> = _state.asStateFlow()
 
+    private val _selectedTemplate = MutableStateFlow<FormTemplateDetailV2State?>(null)
+    val selectedTemplate = _selectedTemplate.asStateFlow()
+    var selectedTemplateId: String? = null
+        private set
+    var selectedLanguage: String? = null
+
+    fun selectTemplate(id: String) {
+        selectedTemplateId = id
+        selectedLanguage = null
+        _selectedTemplate.value = FormTemplateDetailV2State.Loading
+        viewModelScope.launch {
+            val result = restApi.getFormTemplateV2(id)
+            if (selectedTemplateId != id) return@launch
+            _selectedTemplate.value = when (result) {
+                is NetworkResult.Success -> FormTemplateDetailV2State.Success(result.value)
+                is NetworkResult.Failure -> FormTemplateDetailV2State.Error("Server error (${result.statusCode})")
+                is NetworkResult.NetworkException -> FormTemplateDetailV2State.Error(
+                    result.cause.message ?: "Network error"
+                )
+            }
+        }
+    }
+
     init {
         loadTemplates()
     }

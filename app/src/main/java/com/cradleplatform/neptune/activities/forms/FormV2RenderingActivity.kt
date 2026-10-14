@@ -38,6 +38,9 @@ import java.util.Calendar
 @AndroidEntryPoint
 class FormV2RenderingActivity : AppCompatActivity() {
 
+    private val selectedLanguage: String
+        get() = intent.getStringExtra(EXTRA_LANGUAGE) ?: "english"
+
     private val viewModel: FormV2RenderingViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -70,7 +73,8 @@ class FormV2RenderingActivity : AppCompatActivity() {
                 status.text = ""
                 state.template.questions.orEmpty().sortedBy { it.order }.forEach { question ->
                     val label = TextView(this).apply {
-                        text = question.questionText["english"]
+                        text = question.questionText[selectedLanguage]
+                            ?: question.questionText["english"]
                             ?: question.questionText.values.firstOrNull().orEmpty()
                         setPadding(0, 16, 0, 4)
                     }
@@ -169,7 +173,8 @@ class FormV2RenderingActivity : AppCompatActivity() {
                 options.forEach { option ->
                     addView(RadioButton(context).apply {
                         id = View.generateViewId()
-                        text = option.translations["english"]
+                        text = option.translations[selectedLanguage]
+                            ?: option.translations["english"]
                             ?: option.translations.values.firstOrNull().orEmpty()
                     })
                 }
@@ -200,7 +205,8 @@ class FormV2RenderingActivity : AppCompatActivity() {
                 ?: mutableSetOf()
             options.forEachIndexed { index, option ->
                 addView(CheckBox(context).apply {
-                    text = option.translations["english"]
+                    text = option.translations[selectedLanguage]
+                        ?: option.translations["english"]
                         ?: option.translations.values.firstOrNull().orEmpty()
                     isChecked = index in selectedIndices
                     setOnCheckedChangeListener { _, isChecked ->
@@ -318,10 +324,18 @@ class FormV2RenderingActivity : AppCompatActivity() {
     }
 
     companion object {
-        fun makeIntent(context: Context, templateId: String, patientId: String? = null): Intent =
+        const val EXTRA_LANGUAGE = "form_v2_language"
+
+        fun makeIntent(
+            context: Context,
+            templateId: String,
+            patientId: String? = null,
+            language: String = "english"
+        ): Intent =
             Intent(context, FormV2RenderingActivity::class.java).apply {
                 putExtra(FormTemplateDetailV2ViewModel.EXTRA_TEMPLATE_ID, templateId)
                 putExtra(FormTemplateListV2Activity.EXTRA_PATIENT_ID, patientId)
+                putExtra(EXTRA_LANGUAGE, language)
             }
     }
 }
