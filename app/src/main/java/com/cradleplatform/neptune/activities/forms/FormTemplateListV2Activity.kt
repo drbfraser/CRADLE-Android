@@ -89,7 +89,7 @@ class FormTemplateListV2Activity : AppCompatActivity() {
                             }
                         } else if (state is FormTemplateDetailV2State.Error) {
                             detailError.text = getString(R.string.form_template_v2_error, state.message)
-                            detailError.visibility = View.INVISIBLE
+                            detailError.visibility = View.VISIBLE
                         }
                     }
                 }
