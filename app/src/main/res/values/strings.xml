@@ -834,6 +834,8 @@
     <string name="form_submission_save_draft">Save as Draft</string>
     <string name="form_submission_saved_draft_success">Form saved as draft. You can submit it later.</string>
     <string name="form_submitting">Submitting form\u2026</string>
+    <string name="form_v2_submit">Submit form</string>
+    <string name="form_v2_validation_error">%1$s: %2$s</string>
     <string name="form_uncategorized">Uncategorized</string>
     <string name="form_current_section">Section %1$d/%2$d</string>
     <string name="form_maximum_lines_allowed">Maximum %1$s lines allowed</string>

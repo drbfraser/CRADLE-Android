@@ -15,7 +15,6 @@ import com.cradleplatform.neptune.model.FormV2Draft
 import com.cradleplatform.neptune.model.QuestionTypeEnum
 import io.mockk.coEvery
 import io.mockk.coVerify
-import io.mockk.capture
 import io.mockk.mockk
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
@@ -222,6 +221,70 @@ internal class FormV2RenderingViewModelTest {
             viewModel.submissionState.value
         )
         coVerify(exactly = 0) { draftDao.upsert(any()) }
+        coVerify(exactly = 0) { restApi.postFormSubmissionV2(any()) }
+    }
+
+    @Test
+    fun `pending submission locks editing and ignores repeated submit until failure`() = runTest(testDispatcher) {
+        val response = CompletableDeferred<NetworkResult<FormSubmissionV2>>()
+        coEvery { restApi.postFormSubmissionV2(any()) } coAnswers { response.await() }
+        val viewModel = createViewModel()
+        runCurrent()
+        viewModel.answerState.setAnswer("q1", AnswerV2.createTextAnswer("Headache"))
+
+        viewModel.submitForm()
+        assertFalse(viewModel.canEditAnswers)
+        assertFalse(viewModel.canSubmit)
+        viewModel.submitForm()
+        runCurrent()
+        coVerify(exactly = 1) { restApi.postFormSubmissionV2(any()) }
+
+        response.complete(NetworkResult.Failure(ByteArray(0), 500))
+        runCurrent()
+        assertTrue(viewModel.canEditAnswers)
+        assertTrue(viewModel.canSubmit)
+        assertEquals("Headache", viewModel.answerState.getAnswer("q1")?.textAnswer)
+        coVerify(exactly = 0) { draftDao.deleteDraft(any(), any()) }
+    }
+
+    @Test
+    fun `successful POST with cleanup failure cannot be edited or submitted again`() = runTest(testDispatcher) {
+        coEvery { restApi.postFormSubmissionV2(any()) } returns NetworkResult.Success(submission(), 201)
+        coEvery { draftDao.deleteDraft(any(), any()) } throws IllegalStateException("Database unavailable")
+        val viewModel = createViewModel()
+        runCurrent()
+        viewModel.answerState.setAnswer("q1", AnswerV2.createTextAnswer("Headache"))
+
+        viewModel.submitForm()
+        runCurrent()
+
+        assertEquals(
+            FormV2SubmissionState.Error("Form submitted, but the local draft could not be removed."),
+            viewModel.submissionState.value
+        )
+        assertFalse(viewModel.canEditAnswers)
+        assertFalse(viewModel.canSubmit)
+        assertFalse(viewModel.canSaveDraft)
+        viewModel.submitForm()
+        runCurrent()
+        coVerify(exactly = 1) { restApi.postFormSubmissionV2(any()) }
+    }
+
+    @Test
+    fun `failed draft write prevents POST and unlocks editing`() = runTest(testDispatcher) {
+        coEvery { draftDao.upsert(any()) } throws IllegalStateException("Database unavailable")
+        val viewModel = createViewModel()
+        runCurrent()
+        viewModel.answerState.setAnswer("q1", AnswerV2.createTextAnswer("Headache"))
+
+        viewModel.submitForm()
+        runCurrent()
+
+        assertEquals(
+            FormV2SubmissionState.Error("Unable to save form before submission."),
+            viewModel.submissionState.value
+        )
+        assertTrue(viewModel.canEditAnswers)
         coVerify(exactly = 0) { restApi.postFormSubmissionV2(any()) }
     }
 

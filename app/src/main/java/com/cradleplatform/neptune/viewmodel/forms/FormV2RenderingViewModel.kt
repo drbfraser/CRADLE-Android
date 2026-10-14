@@ -45,7 +45,7 @@ sealed class FormV2DraftSaveState {
     object Error : FormV2DraftSaveState()
 }
 
-/** State of the V2 submission request. The Activity will render this in a separate UI step. */
+/** State of the V2 submission request, separate from template loading and draft saving */
 sealed class FormV2SubmissionState {
     object Idle : FormV2SubmissionState()
     object Submitting : FormV2SubmissionState()
@@ -90,6 +90,9 @@ class FormV2RenderingViewModel @Inject constructor(
         get() = !hasSubmitted && !patientId.isNullOrBlank() &&
             _state.value is FormV2RenderingState.Success &&
             _submissionState.value != FormV2SubmissionState.Submitting
+
+    val canEditAnswers: Boolean
+        get() = !hasSubmitted && _submissionState.value != FormV2SubmissionState.Submitting
 
     init {
         loadTemplate()
@@ -159,8 +162,7 @@ class FormV2RenderingViewModel @Inject constructor(
     }
 
     /**
-     * Validates and posts the current V2 answers. The Activity does not expose this action yet.
-     * Only after successful response can remove the local draft
+     * Validates and posts the current V2 answers, only a successful response removes the draft
      */
     fun submitForm() {
         if (!canSubmit) return
