@@ -86,8 +86,10 @@ class FormV2RenderingActivity : AppCompatActivity() {
     private fun updateDraftSaveButton(
         saveState: FormV2DraftSaveState = viewModel.draftSaveState.value
     ) {
-        findViewById<Button>(R.id.form_v2_save_draft_button).isEnabled =
-            viewModel.canSaveDraft && saveState != FormV2DraftSaveState.Saving
+        findViewById<Button>(R.id.form_v2_save_draft_button).apply {
+            visibility = if (viewModel.canSaveDraft) View.VISIBLE else View.GONE
+            isEnabled = viewModel.canSaveDraft && saveState != FormV2DraftSaveState.Saving
+        }
     }
 
     private fun render(state: FormV2RenderingState) {
@@ -337,6 +339,9 @@ class FormV2RenderingActivity : AppCompatActivity() {
     }
 
     private fun makeTimeInput(question: FormTemplateQuestionV2): Button = Button(this).apply {
+        // TODO: Re-enable TIME editing when the V2 submission API supports TIME answers
+        // https://github.sfu.ca/cradle-project/Cradle-Platform/issues/1161
+        isEnabled = false
         text = viewModel.answerState.getAnswer(question.id)?.dateAnswer
             ?: getString(R.string.form_v2_rendering_time_hint)
         setOnClickListener {

@@ -124,7 +124,13 @@ internal class FormV2SubmissionValidatorTest {
 
     @Test
     fun `invalid dates and incomplete datetimes fail strict parsing`() {
-        for (date in listOf("2026-02-30", "2026-2-01", "2026-10-06 trailing")) {
+        val numericValues = listOf(
+            "20261013", "202601013", "-1", "0", "1", "+1", "0001",
+            "1791244800", nowSeconds.toString(), "1791244800000",
+            Long.MIN_VALUE.toString(), Long.MAX_VALUE.toString(),
+            "9223372036854775808", "-9223372036854775809",
+        )
+        for (date in listOf("2026-02-30", "2026-2-01", "2026-10-06 trailing") + numericValues) {
             assertError(validate(listOf(question("q1", QuestionTypeEnum.DATE)), listOf(
                 answer(AnswerV2.createDateAnswer(date))
             )), "q1", "Date or time is invalid.")
@@ -135,17 +141,55 @@ internal class FormV2SubmissionValidatorTest {
         assertError(validate(listOf(question("q1", QuestionTypeEnum.DATETIME)), listOf(
             answer(AnswerV2.createDateAnswer("2026-03-08 02:30"))
         ), TimeZone.getTimeZone("America/Vancouver")), "q1", "Date or time is invalid.")
+        for (value in numericValues) {
+            assertError(validate(listOf(question("q1", QuestionTypeEnum.DATETIME)), listOf(
+                answer(AnswerV2.createDateAnswer(value))
+            )), "q1", "Date or time is invalid.")
+        }
     }
 
     @Test
-    fun `date constraints compare the final instant to now like Platform`() {
+    fun `date constraints allow today and reject disallowed past and future days`() {
         val date = question("q1", QuestionTypeEnum.DATE).copy(allowPastDates = false)
-        assertError(validate(listOf(date), listOf(answer(AnswerV2.createDateAnswer("2026-10-06")))),
+        success(validate(listOf(date.copy(allowFutureDates = false)), listOf(
+            answer(AnswerV2.createDateAnswer("2026-10-06"))
+        )))
+        assertError(validate(listOf(date), listOf(answer(AnswerV2.createDateAnswer("2026-10-05")))),
             "q1", "Past dates are not allowed.")
+        assertError(validate(listOf(date.copy(allowFutureDates = false)), listOf(
+            answer(AnswerV2.createDateAnswer("2026-10-07"))
+        )), "q1", "Future dates are not allowed.")
+    }
+
+    @Test
+    fun `date constraints use the local day when it differs from UTC`() {
+        // At noon UTC it is already October 7 in UTC+14.
+        val zone = TimeZone.getTimeZone("GMT+14:00")
+        val date = question("q1", QuestionTypeEnum.DATE).copy(allowPastDates = false, allowFutureDates = false)
+        success(validate(listOf(date), listOf(answer(AnswerV2.createDateAnswer("2026-10-07"))), zone))
+        assertError(validate(listOf(date), listOf(answer(AnswerV2.createDateAnswer("2026-10-06"))), zone),
+            "q1", "Past dates are not allowed.")
+        assertError(validate(listOf(date), listOf(answer(AnswerV2.createDateAnswer("2026-10-08"))), zone),
+            "q1", "Future dates are not allowed.")
+    }
+
+    @Test
+    fun `datetime constraints still compare the exact instant`() {
         val datetime = question("q1", QuestionTypeEnum.DATETIME).copy(allowFutureDates = false)
         assertError(validate(listOf(datetime), listOf(answer(AnswerV2.createDateAnswer("2026-10-06 12:01")))),
             "q1", "Future dates are not allowed.")
-        success(validate(listOf(datetime), listOf(answer(AnswerV2.createDateAnswer(nowSeconds.toString())))))
+        assertError(validate(listOf(datetime.copy(allowPastDates = false)), listOf(
+            answer(AnswerV2.createDateAnswer("2026-10-06 11:59"))
+        )), "q1", "Past dates are not allowed.")
+        success(validate(listOf(datetime.copy(allowPastDates = false)), listOf(
+            answer(AnswerV2.createDateAnswer("2026-10-06 12:00"))
+        )))
+    }
+
+    @Test
+    fun `required TIME reports unsupported template even without an answer`() {
+        assertError(validate(listOf(question("q1", QuestionTypeEnum.TIME)), emptyList()),
+            "q1", "TIME questions are not supported yet.")
     }
 
     @Test

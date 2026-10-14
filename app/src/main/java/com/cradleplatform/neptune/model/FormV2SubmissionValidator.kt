@@ -2,6 +2,7 @@ package com.cradleplatform.neptune.model
 
 import java.text.ParsePosition
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Locale
 import java.util.TimeZone
 
@@ -77,9 +78,20 @@ object FormV2SubmissionValidator {
                 val seconds = dateToSeconds(answer.dateAnswer.orEmpty(), question.questionType, timeZone)
                     ?: return FormV2SubmissionValidationResult.Error(question.id, "Date or time is invalid.")
 
+                val comparisonSeconds = if (question.questionType == QuestionTypeEnum.DATE) {
+                    Calendar.getInstance(timeZone).apply {
+                        timeInMillis = nowSeconds * 1000
+                        set(Calendar.HOUR_OF_DAY, 0)
+                        set(Calendar.MINUTE, 0)
+                        set(Calendar.SECOND, 0)
+                        set(Calendar.MILLISECOND, 0)
+                    }.timeInMillis / 1000
+                } else {
+                    nowSeconds
+                }
                 val dateError = when {
-                    question.allowPastDates == false && seconds < nowSeconds -> "Past dates are not allowed."
-                    question.allowFutureDates == false && seconds > nowSeconds -> "Future dates are not allowed."
+                    question.allowPastDates == false && seconds < comparisonSeconds -> "Past dates are not allowed."
+                    question.allowFutureDates == false && seconds > comparisonSeconds -> "Future dates are not allowed."
                     else -> null
                 }
                 if (dateError != null) {
@@ -100,6 +112,8 @@ object FormV2SubmissionValidator {
         !question.visibleCondition.isNullOrEmpty() -> "Conditional questions are not supported by this V2 renderer yet."
         question.questionType == QuestionTypeEnum.CATEGORY && question.required ->
             "Category headings cannot require an answer."
+        question.questionType == QuestionTypeEnum.TIME && question.required ->
+            "TIME questions are not supported yet."
         else -> null
     }
 
@@ -159,7 +173,6 @@ object FormV2SubmissionValidator {
     }
 
     private fun dateToSeconds(value: String, type: QuestionTypeEnum, timeZone: TimeZone): Long? {
-        value.toLongOrNull()?.let { return it }
         val pattern = if (type == QuestionTypeEnum.DATE) "yyyy-MM-dd" else "yyyy-MM-dd HH:mm"
         val format = SimpleDateFormat(pattern, Locale.ROOT).apply {
             isLenient = false
