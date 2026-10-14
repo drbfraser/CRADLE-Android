@@ -6,13 +6,16 @@ import com.cradleplatform.neptune.database.daos.FormV2DraftDao
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
 import com.cradleplatform.neptune.model.AnswerV2
+import com.cradleplatform.neptune.model.CreateFormSubmissionRequestV2
 import com.cradleplatform.neptune.model.FormClassificationV2
+import com.cradleplatform.neptune.model.FormSubmissionV2
 import com.cradleplatform.neptune.model.FormTemplateQuestionV2
 import com.cradleplatform.neptune.model.FormTemplateV2
 import com.cradleplatform.neptune.model.FormV2Draft
 import com.cradleplatform.neptune.model.QuestionTypeEnum
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.capture
 import io.mockk.mockk
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
@@ -43,6 +46,7 @@ internal class FormV2RenderingViewModelTest {
         coEvery { restApi.getFormTemplateV2("template-1") } returns NetworkResult.Success(template(), 200)
         coEvery { draftDao.getDraft("patient-1", "template-1") } returns null
         coEvery { draftDao.upsert(any()) } returns Unit
+        coEvery { draftDao.deleteDraft("patient-1", "template-1") } returns 1
     }
 
     @AfterEach
@@ -155,6 +159,72 @@ internal class FormV2RenderingViewModelTest {
         coVerify(exactly = 0) { draftDao.upsert(any()) }
     }
 
+    @Test
+    fun `successful submission persists its ID then removes the draft`() = runTest(testDispatcher) {
+        coEvery { restApi.postFormSubmissionV2(any()) } returns NetworkResult.Success(submission(), 201)
+        val viewModel = createViewModel()
+        runCurrent()
+        viewModel.answerState.setAnswer("q1", AnswerV2.createTextAnswer("Headache"))
+
+        viewModel.submitForm()
+        runCurrent()
+
+        assertEquals(FormV2SubmissionState.Submitted, viewModel.submissionState.value)
+        assertFalse(viewModel.canSaveDraft)
+        coVerify {
+            restApi.postFormSubmissionV2(match {
+                !it.id.isNullOrBlank() &&
+                    it.patientId == "patient-1" &&
+                    it.formTemplateId == "template-1" &&
+                    it.userId == null &&
+                    it.answers.single().answer.textAnswer == "Headache"
+            })
+        }
+        coVerify { draftDao.deleteDraft("patient-1", "template-1") }
+
+        viewModel.saveDraft()
+        runCurrent()
+        coVerify(exactly = 1) { draftDao.upsert(any()) }
+    }
+
+    @Test
+    fun `failed submission retains the draft and reuses its submission ID`() = runTest(testDispatcher) {
+        coEvery { restApi.postFormSubmissionV2(any()) } returns NetworkResult.Failure(ByteArray(0), 500)
+        val requests = mutableListOf<CreateFormSubmissionRequestV2>()
+        val viewModel = createViewModel()
+        runCurrent()
+        viewModel.answerState.setAnswer("q1", AnswerV2.createTextAnswer("Headache"))
+
+        viewModel.submitForm()
+        runCurrent()
+        viewModel.submitForm()
+        runCurrent()
+
+        assertEquals(FormV2SubmissionState.Error("Server error (500)"), viewModel.submissionState.value)
+        assertTrue(viewModel.canSaveDraft)
+        coVerify(exactly = 0) { draftDao.deleteDraft(any(), any()) }
+        coVerify { restApi.postFormSubmissionV2(capture(requests)) }
+        assertEquals(2, requests.size)
+        assertEquals(1, requests.map { it.id }.distinct().size)
+        coVerify(exactly = 2) { draftDao.upsert(any()) }
+    }
+
+    @Test
+    fun `validation failure does not save or post a submission`() = runTest(testDispatcher) {
+        val viewModel = createViewModel()
+        runCurrent()
+
+        viewModel.submitForm()
+        runCurrent()
+
+        assertEquals(
+            FormV2SubmissionState.ValidationError("q1", "An answer is required."),
+            viewModel.submissionState.value
+        )
+        coVerify(exactly = 0) { draftDao.upsert(any()) }
+        coVerify(exactly = 0) { restApi.postFormSubmissionV2(any()) }
+    }
+
     private fun createViewModel(patientId: String? = "patient-1") = FormV2RenderingViewModel(
         restApi,
         draftDao,
@@ -188,5 +258,16 @@ internal class FormV2RenderingViewModelTest {
             userQuestionId = null,
             mcOptions = null,
         )),
+    )
+
+    private fun submission() = FormSubmissionV2(
+        id = "submission-1",
+        formTemplateId = "template-1",
+        patientId = "patient-1",
+        userId = 1,
+        dateSubmitted = 0,
+        lastEdited = 0,
+        lang = "English",
+        archived = false,
     )
 }
