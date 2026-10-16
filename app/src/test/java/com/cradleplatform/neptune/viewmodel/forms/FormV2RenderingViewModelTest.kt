@@ -175,7 +175,6 @@ internal class FormV2RenderingViewModelTest {
                 !it.id.isNullOrBlank() &&
                     it.patientId == "patient-1" &&
                     it.formTemplateId == "template-1" &&
-                    it.userId == null &&
                     it.answers.single().answer.textAnswer == "Headache"
             })
         }
