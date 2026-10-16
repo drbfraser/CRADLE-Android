@@ -25,12 +25,14 @@ import com.cradleplatform.neptune.model.AnswerV2
 import com.cradleplatform.neptune.model.FormTemplateQuestionV2
 import com.cradleplatform.neptune.model.QuestionTypeEnum
 import com.cradleplatform.neptune.viewmodel.forms.FormTemplateDetailV2ViewModel
+import com.cradleplatform.neptune.viewmodel.forms.FormV2DraftSaveState
 import com.cradleplatform.neptune.viewmodel.forms.FormV2RenderingState
 import com.cradleplatform.neptune.viewmodel.forms.FormV2RenderingViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.util.Calendar
+import java.util.Locale
 
 /**
  * First V2 filling screen. Collects basic scalar answers in memory; submission is a later step.
@@ -48,9 +50,21 @@ class FormV2RenderingActivity : AppCompatActivity() {
         setContentView(R.layout.activity_form_v2_rendering)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
+        findViewById<Button>(R.id.form_v2_save_draft_button).setOnClickListener {
+            viewModel.saveDraft()
+        }
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.state.collectLatest { state -> render(state) }
+                launch {
+                    viewModel.state.collectLatest { state ->
+                        render(state)
+                        updateDraftSaveButton()
+                    }
+                }
+                // Draft writes update the footer without rebuilding the form fields.
+                launch {
+                    viewModel.draftSaveState.collectLatest { state -> renderDraftSaveState(state) }
+                }
             }
         }
     }
@@ -59,6 +73,26 @@ class FormV2RenderingActivity : AppCompatActivity() {
         // Covers normal navigation, backgrounding, and rotation.
         viewModel.saveDraft()
         super.onStop()
+    }
+
+    private fun renderDraftSaveState(state: FormV2DraftSaveState) {
+        val saveStatus = findViewById<TextView>(R.id.form_v2_draft_save_status)
+        saveStatus.text = when (state) {
+            FormV2DraftSaveState.Idle -> ""
+            FormV2DraftSaveState.Saving -> getString(R.string.form_v2_draft_saving)
+            FormV2DraftSaveState.Saved -> getString(R.string.form_submission_saved_draft_success)
+            FormV2DraftSaveState.Error -> getString(R.string.form_v2_draft_save_error)
+        }
+        updateDraftSaveButton(state)
+    }
+
+    private fun updateDraftSaveButton(
+        saveState: FormV2DraftSaveState = viewModel.draftSaveState.value
+    ) {
+        findViewById<Button>(R.id.form_v2_save_draft_button).apply {
+            visibility = if (viewModel.canSaveDraft) View.VISIBLE else View.GONE
+            isEnabled = viewModel.canSaveDraft && saveState != FormV2DraftSaveState.Saving
+        }
     }
 
     private fun render(state: FormV2RenderingState) {
@@ -235,7 +269,13 @@ class FormV2RenderingActivity : AppCompatActivity() {
             val datePicker = DatePickerDialog(
                 this,
                 { _, year, month, day ->
-                    val date = "%04d-%02d-%02d".format(year, month + 1, day)
+                    val date = String.format(
+                        Locale.ROOT,
+                        "%04d-%02d-%02d",
+                        year,
+                        month + 1,
+                        day,
+                    )
                     if (question.questionType == QuestionTypeEnum.DATE) {
                         button.text = date
                         viewModel.answerState.setAnswer(question.id, AnswerV2.createDateAnswer(date))
@@ -244,7 +284,13 @@ class FormV2RenderingActivity : AppCompatActivity() {
                             this,
                             { _, hour, minute ->
                                 if (isDateTimeAllowed(question, year, month, day, hour, minute)) {
-                                    val value = "%s %02d:%02d".format(date, hour, minute)
+                                    val value = String.format(
+                                        Locale.ROOT,
+                                        "%s %02d:%02d",
+                                        date,
+                                        hour,
+                                        minute,
+                                    )
                                     button.text = value
                                     button.error = null
                                     viewModel.answerState.setAnswer(
@@ -299,6 +345,9 @@ class FormV2RenderingActivity : AppCompatActivity() {
     }
 
     private fun makeTimeInput(question: FormTemplateQuestionV2): Button = Button(this).apply {
+        // TODO: Re-enable TIME editing when the V2 submission API supports TIME answers
+        // https://github.sfu.ca/cradle-project/Cradle-Platform/issues/1161
+        isEnabled = false
         text = viewModel.answerState.getAnswer(question.id)?.dateAnswer
             ?: getString(R.string.form_v2_rendering_time_hint)
         setOnClickListener {
@@ -306,7 +355,7 @@ class FormV2RenderingActivity : AppCompatActivity() {
             TimePickerDialog(
                 this@FormV2RenderingActivity,
                 { _, hour, minute ->
-                    val value = "%02d:%02d".format(hour, minute)
+                    val value = String.format(Locale.ROOT, "%02d:%02d", hour, minute)
                     text = value
                     viewModel.answerState.setAnswer(question.id, AnswerV2.createDateAnswer(value))
                 },

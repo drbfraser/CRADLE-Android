@@ -33,7 +33,9 @@ data class FormV2Draft(
     val answers: List<FormAnswerV2>,
     val language: String = "English",
     val createdAt: Long,
-    val updatedAt: Long
+    val updatedAt: Long,
+    /** Stable client-generated ID reused if a POST response is lost and the user retries */
+    val submissionId: String? = null
 ) {
     init {
         // Keep the row identity and its serialized template snapshot from silently diverging.

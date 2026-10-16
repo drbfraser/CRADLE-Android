@@ -62,6 +62,16 @@ class FormV2DraftDaoTests {
     }
 
     @Test
+    fun upsertPreservesPreparedSubmissionIdWhenALaterSaveHasNoId() = runBlocking {
+        val dao = database.formV2DraftDao()
+        dao.upsert(draft().copy(submissionId = "submission-1"))
+
+        dao.upsert(draft().copy(updatedAt = 2000L))
+
+        assertEquals("submission-1", dao.getDraft("patient-1", "template-1")!!.submissionId)
+    }
+
+    @Test
     fun compositeKeySeparatesPatientsAndTemplatesAndDeleteUsesBothKeys() = runBlocking {
         val dao = database.formV2DraftDao()
         dao.upsert(draft())
