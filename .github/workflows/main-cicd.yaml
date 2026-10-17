@@ -104,11 +104,27 @@ jobs:
       - name: Run Local Unit Tests
         run: ./gradlew test
         working-directory: ${{ env.CUSTOM_WORKSPACE }}
-      - name: Persist Test Results
+      - name: Generate JaCoCo Report
+        if: always()
+        run: ./gradlew :app:jacocoCombinedReport
+        working-directory: ${{ env.CUSTOM_WORKSPACE }}
+      - name: Upload Unit Test Results 
+        if: always()
         uses: actions/upload-artifact@v2
-        with: 
-          name: test_results
-          path: ${{ env.CUSTOM_WORKSPACE }}/app/build/test-results/
+        with:
+          name: mobile-unit-test-results
+          path: |
+            ${{ env.CUSTOM_WORKSPACE }}/app/build/test-results/
+            ${{ env.CUSTOM_WORKSPACE }}/app/build/reports/tests
+          if-no-files-found: warn
+      - name: Upload JaCoCo Report
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: |
+            ${{ env.CUSTOM_WORKSPACE }}/app/build/reports/jacoco
+            ${{ env.CUSTOM_WORKSPACE }}/app/build/reports/coverage/combined
+          if-no-files-found: warn
 
 
 ######################
