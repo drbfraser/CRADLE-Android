@@ -5,6 +5,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cradleplatform.neptune.activities.forms.FormTemplateListV2Activity
+import com.cradleplatform.neptune.activities.forms.FormV2RenderingActivity
 import com.cradleplatform.neptune.database.daos.FormV2DraftDao
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
@@ -68,6 +69,10 @@ class FormV2RenderingViewModel @Inject constructor(
     }
 
     private val patientId: String? = savedStateHandle[FormTemplateListV2Activity.EXTRA_PATIENT_ID]
+    private var selectedLanguage: String = savedStateHandle[FormV2RenderingActivity.EXTRA_LANGUAGE]
+        ?: "English"
+    val language: String
+        get() = selectedLanguage
     private var loadedTemplate: FormTemplateV2? = null
 
     private val _state = MutableStateFlow<FormV2RenderingState>(FormV2RenderingState.Loading)
@@ -120,6 +125,7 @@ class FormV2RenderingViewModel @Inject constructor(
         if (draft?.formTemplateVersion == template.version) {
             answerState.replaceAnswers(draft.answers)
             submissionId = draft.submissionId
+            selectedLanguage = draft.language
         }
     }
 
@@ -266,6 +272,7 @@ class FormV2RenderingViewModel @Inject constructor(
             formTemplateVersion = template.version,
             formTemplate = template,
             answers = answers,
+            language = selectedLanguage,
             createdAt = now,
             updatedAt = now,
             submissionId = submissionId

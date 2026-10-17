@@ -45,9 +45,6 @@ import java.util.Locale
 @AndroidEntryPoint
 class FormV2RenderingActivity : AppCompatActivity() {
 
-    private val selectedLanguage: String
-        get() = intent.getStringExtra(EXTRA_LANGUAGE) ?: "english"
-
     private val viewModel: FormV2RenderingViewModel by viewModels()
     private val disabledInputs = mutableMapOf<View, Boolean>()
     private val submissionBackCallback = object : OnBackPressedCallback(false) {
@@ -187,7 +184,7 @@ class FormV2RenderingActivity : AppCompatActivity() {
                 status.text = ""
                 state.template.questions.orEmpty().sortedBy { it.order }.forEach { question ->
                     val label = TextView(this).apply {
-                        text = question.questionText[selectedLanguage]
+                        text = question.questionText[viewModel.language]
                             ?: question.questionText["english"]
                             ?: question.questionText.values.firstOrNull().orEmpty()
                         setPadding(0, 16, 0, 4)
@@ -287,7 +284,7 @@ class FormV2RenderingActivity : AppCompatActivity() {
                 options.forEach { option ->
                     addView(RadioButton(context).apply {
                         id = View.generateViewId()
-                        text = option.translations[selectedLanguage]
+                        text = option.translations[viewModel.language]
                             ?: option.translations["english"]
                             ?: option.translations.values.firstOrNull().orEmpty()
                     })
@@ -319,7 +316,7 @@ class FormV2RenderingActivity : AppCompatActivity() {
                 ?: mutableSetOf()
             options.forEachIndexed { index, option ->
                 addView(CheckBox(context).apply {
-                    text = option.translations[selectedLanguage]
+                    text = option.translations[viewModel.language]
                         ?: option.translations["english"]
                         ?: option.translations.values.firstOrNull().orEmpty()
                     isChecked = index in selectedIndices
@@ -459,7 +456,7 @@ class FormV2RenderingActivity : AppCompatActivity() {
             context: Context,
             templateId: String,
             patientId: String? = null,
-            language: String = "english"
+            language: String = "English"
         ): Intent =
             Intent(context, FormV2RenderingActivity::class.java).apply {
                 putExtra(FormTemplateDetailV2ViewModel.EXTRA_TEMPLATE_ID, templateId)

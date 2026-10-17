@@ -2,6 +2,7 @@ package com.cradleplatform.neptune.viewmodel.forms
 
 import androidx.lifecycle.SavedStateHandle
 import com.cradleplatform.neptune.activities.forms.FormTemplateListV2Activity
+import com.cradleplatform.neptune.activities.forms.FormV2RenderingActivity
 import com.cradleplatform.neptune.database.daos.FormV2DraftDao
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
@@ -133,6 +134,17 @@ internal class FormV2RenderingViewModelTest {
 
         assertEquals(FormV2DraftSaveState.Saved, viewModel.draftSaveState.value)
         coVerify { draftDao.upsert(match { it.answers.isEmpty() }) }
+    }
+
+    @Test
+    fun `selected language is saved with the draft`() = runTest(testDispatcher) {
+        val viewModel = createViewModel(language = "French")
+        runCurrent()
+
+        viewModel.saveDraft()
+        runCurrent()
+
+        coVerify { draftDao.upsert(match { it.language == "French" }) }
     }
 
     @Test
@@ -287,12 +299,16 @@ internal class FormV2RenderingViewModelTest {
         coVerify(exactly = 0) { restApi.postFormSubmissionV2(any()) }
     }
 
-    private fun createViewModel(patientId: String? = "patient-1") = FormV2RenderingViewModel(
+    private fun createViewModel(
+        patientId: String? = "patient-1",
+        language: String = "English"
+    ) = FormV2RenderingViewModel(
         restApi,
         draftDao,
         SavedStateHandle(mapOf(
             FormTemplateDetailV2ViewModel.EXTRA_TEMPLATE_ID to "template-1",
             FormTemplateListV2Activity.EXTRA_PATIENT_ID to patientId,
+            FormV2RenderingActivity.EXTRA_LANGUAGE to language,
         )),
     )
 
