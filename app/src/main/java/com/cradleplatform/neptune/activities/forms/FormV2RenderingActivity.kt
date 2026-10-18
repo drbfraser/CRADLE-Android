@@ -14,13 +14,17 @@ import android.widget.LinearLayout
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.TextView
+import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.descendants
 import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.cradleplatform.neptune.R
+import com.cradleplatform.neptune.activities.patients.PatientProfileActivity
 import com.cradleplatform.neptune.model.AnswerV2
 import com.cradleplatform.neptune.model.FormTemplateQuestionV2
 import com.cradleplatform.neptune.model.QuestionTypeEnum
@@ -28,6 +32,7 @@ import com.cradleplatform.neptune.viewmodel.forms.FormTemplateDetailV2ViewModel
 import com.cradleplatform.neptune.viewmodel.forms.FormV2DraftSaveState
 import com.cradleplatform.neptune.viewmodel.forms.FormV2RenderingState
 import com.cradleplatform.neptune.viewmodel.forms.FormV2RenderingViewModel
+import com.cradleplatform.neptune.viewmodel.forms.FormV2SubmissionState
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -35,7 +40,7 @@ import java.util.Calendar
 import java.util.Locale
 
 /**
- * First V2 filling screen. Collects basic scalar answers in memory; submission is a later step.
+ * Renders V2 answers, saves local drafts, and submits validated forms over HTTP.
  */
 @AndroidEntryPoint
 class FormV2RenderingActivity : AppCompatActivity() {
@@ -44,14 +49,26 @@ class FormV2RenderingActivity : AppCompatActivity() {
         get() = intent.getStringExtra(EXTRA_LANGUAGE) ?: "english"
 
     private val viewModel: FormV2RenderingViewModel by viewModels()
+    private val disabledInputs = mutableMapOf<View, Boolean>()
+    private val submissionBackCallback = object : OnBackPressedCallback(false) {
+        override fun handleOnBackPressed() {
+            Toast.makeText(this@FormV2RenderingActivity, R.string.form_submitting, Toast.LENGTH_SHORT).show()
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_form_v2_rendering)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        onBackPressedDispatcher.addCallback(this, submissionBackCallback)
 
         findViewById<Button>(R.id.form_v2_save_draft_button).setOnClickListener {
             viewModel.saveDraft()
+        }
+        findViewById<Button>(R.id.form_v2_submit_button).setOnClickListener {
+            viewModel.submitForm()
+            updateSubmissionControls()
+            updateDraftSaveButton()
         }
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -59,11 +76,15 @@ class FormV2RenderingActivity : AppCompatActivity() {
                     viewModel.state.collectLatest { state ->
                         render(state)
                         updateDraftSaveButton()
+                        updateSubmissionControls()
                     }
                 }
                 // Draft writes update the footer without rebuilding the form fields.
                 launch {
                     viewModel.draftSaveState.collectLatest { state -> renderDraftSaveState(state) }
+                }
+                launch {
+                    viewModel.submissionState.collectLatest { state -> renderSubmissionState(state) }
                 }
             }
         }
@@ -91,14 +112,73 @@ class FormV2RenderingActivity : AppCompatActivity() {
     ) {
         findViewById<Button>(R.id.form_v2_save_draft_button).apply {
             visibility = if (viewModel.canSaveDraft) View.VISIBLE else View.GONE
-            isEnabled = viewModel.canSaveDraft && saveState != FormV2DraftSaveState.Saving
+            isEnabled = viewModel.canSaveDraft && saveState != FormV2DraftSaveState.Saving &&
+                viewModel.submissionState.value != FormV2SubmissionState.Submitting
         }
+    }
+
+    private fun renderSubmissionState(state: FormV2SubmissionState) {
+        val status = findViewById<TextView>(R.id.form_v2_submission_status)
+        status.text = when (state) {
+            FormV2SubmissionState.Idle -> ""
+            FormV2SubmissionState.Submitting -> getString(R.string.form_submitting)
+            FormV2SubmissionState.Submitted -> getString(R.string.form_submission_success)
+            is FormV2SubmissionState.ValidationError -> validationMessage(state)
+            is FormV2SubmissionState.Error -> state.message
+        }
+        status.visibility = if (status.text.isEmpty()) View.GONE else View.VISIBLE
+        updateSubmissionControls()
+        updateDraftSaveButton()
+        if (state == FormV2SubmissionState.Submitted) {
+            Toast.makeText(this, R.string.form_submission_success, Toast.LENGTH_LONG).show()
+            returnToPatientProfile()
+        }
+    }
+
+    private fun validationMessage(error: FormV2SubmissionState.ValidationError): String {
+        val template = (viewModel.state.value as? FormV2RenderingState.Success)?.template
+        val question = template?.questions?.firstOrNull { it.id == error.questionId }
+        val label = question?.questionText?.get("english")
+            ?: question?.questionText?.values?.firstOrNull()
+        return if (label.isNullOrBlank()) error.message else
+            getString(R.string.form_v2_validation_error, label, error.message)
+    }
+
+    private fun updateSubmissionControls() {
+        val submitting = viewModel.submissionState.value == FormV2SubmissionState.Submitting
+        val patientId = intent.getStringExtra(FormTemplateListV2Activity.EXTRA_PATIENT_ID)
+        submissionBackCallback.isEnabled = submitting
+        findViewById<Button>(R.id.form_v2_submit_button).apply {
+            visibility = if (patientId.isNullOrBlank()) View.GONE else View.VISIBLE
+            isEnabled = viewModel.canSubmit
+        }
+        // Remember disabled controls (including unsupported TIME) when unlocking after an error
+        val content = findViewById<LinearLayout>(R.id.form_v2_content)
+        if (!viewModel.canEditAnswers) {
+            content.descendants.forEach { input ->
+                disabledInputs.putIfAbsent(input, input.isEnabled)
+                input.isEnabled = false
+            }
+        } else {
+            disabledInputs.forEach { (input, enabled) -> input.isEnabled = enabled }
+            disabledInputs.clear()
+        }
+    }
+
+    private fun returnToPatientProfile() {
+        intent.getStringExtra(FormTemplateListV2Activity.EXTRA_PATIENT_ID)?.let { patientId ->
+            val intent = PatientProfileActivity.makeIntentForPatientId(this, patientId)
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            startActivity(intent)
+        }
+        finish()
     }
 
     private fun render(state: FormV2RenderingState) {
         val content = findViewById<LinearLayout>(R.id.form_v2_content)
         val status = findViewById<TextView>(R.id.form_v2_status)
         content.removeAllViews()
+        disabledInputs.clear()
 
         when (state) {
             FormV2RenderingState.Loading -> status.text = getString(R.string.form_v2_rendering_loading)
@@ -368,7 +448,7 @@ class FormV2RenderingActivity : AppCompatActivity() {
 
     @Suppress("DEPRECATION")
     override fun onSupportNavigateUp(): Boolean {
-        onBackPressed()
+        onBackPressedDispatcher.onBackPressed()
         return true
     }
 
