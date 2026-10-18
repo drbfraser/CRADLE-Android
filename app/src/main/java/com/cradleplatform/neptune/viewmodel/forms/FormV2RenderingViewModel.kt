@@ -204,14 +204,19 @@ class FormV2RenderingViewModel @Inject constructor(
                 )
                 return@launch
             }
-            val request = CreateFormSubmissionRequestV2(
-                id = requestId,
-                formTemplateId = template.id,
-                patientId = patient,
-                lang = language,
-                answers = answers
-            )
             try {
+                val submissionLanguage = resolveSubmissionLanguage(template.id)
+                if (selectedLanguage != submissionLanguage) {
+                    selectedLanguage = submissionLanguage
+                    persistSubmissionDraft(patient, template, draftAnswers)
+                }
+                val request = CreateFormSubmissionRequestV2(
+                    id = requestId,
+                    formTemplateId = template.id,
+                    patientId = patient,
+                    lang = submissionLanguage,
+                    answers = answers
+                )
                 when (val result = restApi.postFormSubmissionV2(request)) {
                     is NetworkResult.Success -> deleteSubmittedDraft(patient, template.id)
                     is NetworkResult.Failure -> _submissionState.value = FormV2SubmissionState.Error(
@@ -230,6 +235,17 @@ class FormV2RenderingViewModel @Inject constructor(
                 )
             }
         }
+    }
+
+    private suspend fun resolveSubmissionLanguage(templateId: String): String {
+        val languages = when (val result = restApi.getFormTemplateLanguagesV2(templateId)) {
+            is NetworkResult.Success -> result.value.languages
+            is NetworkResult.Failure -> error("Unable to load form languages (${result.statusCode}).")
+            is NetworkResult.NetworkException -> throw result.cause
+        }
+        return languages.firstOrNull { it == language }
+            ?: languages.firstOrNull { it.equals(language, ignoreCase = true) }
+            ?: error("The selected language is no longer available for this form.")
     }
 
     private suspend fun persistSubmissionDraft(
