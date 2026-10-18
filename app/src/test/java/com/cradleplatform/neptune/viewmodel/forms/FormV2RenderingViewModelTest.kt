@@ -13,6 +13,7 @@ import com.cradleplatform.neptune.model.FormClassificationV2
 import com.cradleplatform.neptune.model.FormSubmissionV2
 import com.cradleplatform.neptune.model.FormTemplateQuestionV2
 import com.cradleplatform.neptune.model.FormTemplateV2
+import com.cradleplatform.neptune.model.FormTemplateLanguagesV2Response
 import com.cradleplatform.neptune.model.FormV2Draft
 import com.cradleplatform.neptune.model.QuestionTypeEnum
 import io.mockk.coEvery
@@ -45,6 +46,9 @@ internal class FormV2RenderingViewModelTest {
         restApi = mockk()
         draftDao = mockk()
         coEvery { restApi.getFormTemplateV2("template-1") } returns NetworkResult.Success(template(), 200)
+        coEvery { restApi.getFormTemplateLanguagesV2("template-1") } returns NetworkResult.Success(
+            FormTemplateLanguagesV2Response(listOf("English", "French", "swahili")), 200
+        )
         coEvery { draftDao.getDraft("patient-1", "template-1") } returns null
         coEvery { draftDao.upsert(any()) } returns Unit
         coEvery { draftDao.deleteDraft("patient-1", "template-1") } returns 1
@@ -372,6 +376,56 @@ internal class FormV2RenderingViewModelTest {
             }
             coVerify(exactly = 0) { draftDao.deleteDraft(any(), any()) }
         }
+
+    @Test
+    fun `lowercase language is saved and submitted using the Platform spelling`() = runTest(testDispatcher) {
+        coEvery { restApi.postFormSubmissionV2(any()) } returns NetworkResult.Failure(ByteArray(0), 500)
+        val viewModel = createViewModel(language = "french")
+        runCurrent()
+        viewModel.answerState.setAnswer("q1", AnswerV2.createTextAnswer("Headache"))
+
+        viewModel.submitForm()
+        runCurrent()
+
+        assertEquals("French", viewModel.language)
+        coVerify { draftDao.upsert(match { it.language == "French" && it.submissionId != null }) }
+        coVerify(exactly = 1) { restApi.postFormSubmissionV2(match { it.lang == "French" }) }
+        coVerify(exactly = 0) { draftDao.deleteDraft(any(), any()) }
+    }
+
+    @Test
+    fun `unavailable language retains draft and does not submit in another language`() = runTest(testDispatcher) {
+        val viewModel = createViewModel(language = "missing")
+        runCurrent()
+        viewModel.answerState.setAnswer("q1", AnswerV2.createTextAnswer("Headache"))
+
+        viewModel.submitForm()
+        runCurrent()
+
+        assertTrue(viewModel.submissionState.value is FormV2SubmissionState.Error)
+        assertTrue(viewModel.canEditAnswers)
+        coVerify { draftDao.upsert(match { it.language == "missing" }) }
+        coVerify(exactly = 0) { restApi.postFormSubmissionV2(any()) }
+        coVerify(exactly = 0) { draftDao.deleteDraft(any(), any()) }
+    }
+
+    @Test
+    fun `language request failure retains draft and allows retry`() = runTest(testDispatcher) {
+        coEvery { restApi.getFormTemplateLanguagesV2("template-1") } returns
+            NetworkResult.Failure(ByteArray(0), 503)
+        val viewModel = createViewModel(language = "french")
+        runCurrent()
+        viewModel.answerState.setAnswer("q1", AnswerV2.createTextAnswer("Headache"))
+
+        viewModel.submitForm()
+        runCurrent()
+
+        assertTrue(viewModel.submissionState.value is FormV2SubmissionState.Error)
+        assertTrue(viewModel.canSubmit)
+        coVerify { draftDao.upsert(match { it.language == "french" }) }
+        coVerify(exactly = 0) { restApi.postFormSubmissionV2(any()) }
+        coVerify(exactly = 0) { draftDao.deleteDraft(any(), any()) }
+    }
 
     private fun createViewModel(
         patientId: String? = "patient-1",

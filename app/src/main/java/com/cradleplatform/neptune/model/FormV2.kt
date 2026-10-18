@@ -12,6 +12,10 @@ import java.io.Serializable
 
 typealias MultiLangText = Map<String, String>
 
+data class FormTemplateLanguagesV2Response(
+    @SerializedName("langVersions") val languages: List<String>
+)
+
 /** Preserve exact language tags before accepting case differences from older templates. */
 fun MultiLangText.getTranslation(language: String): String? =
     get(language)
