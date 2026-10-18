@@ -28,6 +28,7 @@ import com.cradleplatform.neptune.activities.patients.PatientProfileActivity
 import com.cradleplatform.neptune.model.AnswerV2
 import com.cradleplatform.neptune.model.FormTemplateQuestionV2
 import com.cradleplatform.neptune.model.QuestionTypeEnum
+import com.cradleplatform.neptune.model.getTranslation
 import com.cradleplatform.neptune.viewmodel.forms.FormTemplateDetailV2ViewModel
 import com.cradleplatform.neptune.viewmodel.forms.FormV2DraftSaveState
 import com.cradleplatform.neptune.viewmodel.forms.FormV2RenderingState
@@ -135,8 +136,7 @@ class FormV2RenderingActivity : AppCompatActivity() {
     private fun validationMessage(error: FormV2SubmissionState.ValidationError): String {
         val template = (viewModel.state.value as? FormV2RenderingState.Success)?.template
         val question = template?.questions?.firstOrNull { it.id == error.questionId }
-        val label = question?.questionText?.get("english")
-            ?: question?.questionText?.values?.firstOrNull()
+        val label = question?.questionText?.getTranslation(viewModel.language)
         return if (label.isNullOrBlank()) error.message else
             getString(R.string.form_v2_validation_error, label, error.message)
     }
@@ -184,9 +184,7 @@ class FormV2RenderingActivity : AppCompatActivity() {
                 status.text = ""
                 state.template.questions.orEmpty().sortedBy { it.order }.forEach { question ->
                     val label = TextView(this).apply {
-                        text = question.questionText[viewModel.language]
-                            ?: question.questionText["english"]
-                            ?: question.questionText.values.firstOrNull().orEmpty()
+                        text = question.questionText.getTranslation(viewModel.language).orEmpty()
                         setPadding(0, 16, 0, 4)
                     }
                     content.addView(label)
@@ -284,9 +282,7 @@ class FormV2RenderingActivity : AppCompatActivity() {
                 options.forEach { option ->
                     addView(RadioButton(context).apply {
                         id = View.generateViewId()
-                        text = option.translations[viewModel.language]
-                            ?: option.translations["english"]
-                            ?: option.translations.values.firstOrNull().orEmpty()
+                        text = option.translations.getTranslation(viewModel.language).orEmpty()
                     })
                 }
                 viewModel.answerState.getAnswer(question.id)?.mcIdArrayAnswer
@@ -316,9 +312,7 @@ class FormV2RenderingActivity : AppCompatActivity() {
                 ?: mutableSetOf()
             options.forEachIndexed { index, option ->
                 addView(CheckBox(context).apply {
-                    text = option.translations[viewModel.language]
-                        ?: option.translations["english"]
-                        ?: option.translations.values.firstOrNull().orEmpty()
+                    text = option.translations.getTranslation(viewModel.language).orEmpty()
                     isChecked = index in selectedIndices
                     setOnCheckedChangeListener { _, isChecked ->
                         if (isChecked) selectedIndices.add(index) else selectedIndices.remove(index)
@@ -456,7 +450,7 @@ class FormV2RenderingActivity : AppCompatActivity() {
             context: Context,
             templateId: String,
             patientId: String? = null,
-            language: String = "English"
+            language: String? = null
         ): Intent =
             Intent(context, FormV2RenderingActivity::class.java).apply {
                 putExtra(FormTemplateDetailV2ViewModel.EXTRA_TEMPLATE_ID, templateId)

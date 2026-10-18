@@ -69,8 +69,9 @@ class FormV2RenderingViewModel @Inject constructor(
     }
 
     private val patientId: String? = savedStateHandle[FormTemplateListV2Activity.EXTRA_PATIENT_ID]
-    private var selectedLanguage: String = savedStateHandle[FormV2RenderingActivity.EXTRA_LANGUAGE]
-        ?: "English"
+    private val requestedLanguage: String? = savedStateHandle.get<String>(FormV2RenderingActivity.EXTRA_LANGUAGE)
+        ?.takeIf { it.isNotBlank() }
+    private var selectedLanguage: String = requestedLanguage ?: "English"
     val language: String
         get() = selectedLanguage
     private var loadedTemplate: FormTemplateV2? = null
@@ -125,7 +126,8 @@ class FormV2RenderingViewModel @Inject constructor(
         if (draft?.formTemplateVersion == template.version) {
             answerState.replaceAnswers(draft.answers)
             submissionId = draft.submissionId
-            selectedLanguage = draft.language
+            // A fresh selection takes precedence when reopening an existing draft.
+            selectedLanguage = requestedLanguage ?: draft.language
         }
     }
 
@@ -206,6 +208,7 @@ class FormV2RenderingViewModel @Inject constructor(
                 id = requestId,
                 formTemplateId = template.id,
                 patientId = patient,
+                lang = language,
                 answers = answers
             )
             try {
