@@ -2,15 +2,18 @@ package com.cradleplatform.neptune.viewmodel.forms
 
 import androidx.lifecycle.SavedStateHandle
 import com.cradleplatform.neptune.activities.forms.FormTemplateListV2Activity
+import com.cradleplatform.neptune.activities.forms.FormV2RenderingActivity
 import com.cradleplatform.neptune.database.daos.FormV2DraftDao
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
 import com.cradleplatform.neptune.model.AnswerV2
 import com.cradleplatform.neptune.model.CreateFormSubmissionRequestV2
+import com.cradleplatform.neptune.model.FormAnswerV2
 import com.cradleplatform.neptune.model.FormClassificationV2
 import com.cradleplatform.neptune.model.FormSubmissionV2
 import com.cradleplatform.neptune.model.FormTemplateQuestionV2
 import com.cradleplatform.neptune.model.FormTemplateV2
+import com.cradleplatform.neptune.model.FormTemplateLanguagesV2Response
 import com.cradleplatform.neptune.model.FormV2Draft
 import com.cradleplatform.neptune.model.QuestionTypeEnum
 import io.mockk.coEvery
@@ -43,6 +46,9 @@ internal class FormV2RenderingViewModelTest {
         restApi = mockk()
         draftDao = mockk()
         coEvery { restApi.getFormTemplateV2("template-1") } returns NetworkResult.Success(template(), 200)
+        coEvery { restApi.getFormTemplateLanguagesV2("template-1") } returns NetworkResult.Success(
+            FormTemplateLanguagesV2Response(listOf("English", "French", "swahili")), 200
+        )
         coEvery { draftDao.getDraft("patient-1", "template-1") } returns null
         coEvery { draftDao.upsert(any()) } returns Unit
         coEvery { draftDao.deleteDraft("patient-1", "template-1") } returns 1
@@ -136,6 +142,17 @@ internal class FormV2RenderingViewModelTest {
     }
 
     @Test
+    fun `selected language is saved with the draft`() = runTest(testDispatcher) {
+        val viewModel = createViewModel(language = "French")
+        runCurrent()
+
+        viewModel.saveDraft()
+        runCurrent()
+
+        coVerify { draftDao.upsert(match { it.language == "French" }) }
+    }
+
+    @Test
     fun `saving is unavailable before restoration finishes or without a patient`() = runTest(testDispatcher) {
         val restorationCompleted = CompletableDeferred<FormV2Draft?>()
         coEvery { draftDao.getDraft("patient-1", "template-1") } coAnswers { restorationCompleted.await() }
@@ -161,7 +178,7 @@ internal class FormV2RenderingViewModelTest {
     @Test
     fun `successful submission persists its ID then removes the draft`() = runTest(testDispatcher) {
         coEvery { restApi.postFormSubmissionV2(any()) } returns NetworkResult.Success(submission(), 201)
-        val viewModel = createViewModel()
+        val viewModel = createViewModel(language = "French")
         runCurrent()
         viewModel.answerState.setAnswer("q1", AnswerV2.createTextAnswer("Headache"))
 
@@ -175,6 +192,7 @@ internal class FormV2RenderingViewModelTest {
                 !it.id.isNullOrBlank() &&
                     it.patientId == "patient-1" &&
                     it.formTemplateId == "template-1" &&
+                    it.lang == "French" &&
                     it.answers.single().answer.textAnswer == "Headache"
             })
         }
@@ -287,12 +305,138 @@ internal class FormV2RenderingViewModelTest {
         coVerify(exactly = 0) { restApi.postFormSubmissionV2(any()) }
     }
 
-    private fun createViewModel(patientId: String? = "patient-1") = FormV2RenderingViewModel(
+    @Test
+    fun `restored draft language is preserved when no language is selected`() = runTest(testDispatcher) {
+        val draft = FormV2Draft(
+            patientId = "patient-1",
+            formTemplateId = "template-1",
+            formTemplateVersion = 1,
+            formTemplate = template(),
+            answers = emptyList(),
+            language = "French",
+            createdAt = 1,
+            updatedAt = 1,
+            submissionId = "saved-submission-id"
+        )
+        coEvery { draftDao.getDraft("patient-1", "template-1") } returns draft
+        coEvery { restApi.postFormSubmissionV2(any()) } returns NetworkResult.Failure(ByteArray(0), 500)
+        val viewModel = createViewModel()
+        runCurrent()
+        assertEquals("French", viewModel.language)
+        viewModel.answerState.setAnswer("q1", AnswerV2.createTextAnswer("Headache"))
+
+        viewModel.submitForm()
+        runCurrent()
+
+        coVerify { draftDao.upsert(match { it.language == "French" }) }
+        coVerify {
+            restApi.postFormSubmissionV2(match {
+                it.lang == "French" && it.id == "saved-submission-id"
+            })
+        }
+        coVerify(exactly = 0) { draftDao.deleteDraft(any(), any()) }
+    }
+
+    @Test
+    fun `explicit language selection overrides draft language without losing answers or submission ID`() =
+        runTest(testDispatcher) {
+            val savedAnswers = listOf(
+                FormAnswerV2(questionId = "q1", answer = AnswerV2.createTextAnswer("Headache"))
+            )
+            val draft = FormV2Draft(
+                patientId = "patient-1",
+                formTemplateId = "template-1",
+                formTemplateVersion = 1,
+                formTemplate = template(),
+                answers = savedAnswers,
+                language = "French",
+                createdAt = 1,
+                updatedAt = 1,
+                submissionId = "saved-submission-id"
+            )
+            coEvery { draftDao.getDraft("patient-1", "template-1") } returns draft
+            coEvery { restApi.postFormSubmissionV2(any()) } returns NetworkResult.Failure(ByteArray(0), 500)
+
+            for (selection in listOf("English", "swahili")) {
+                val viewModel = createViewModel(language = selection)
+                runCurrent()
+
+                assertEquals(selection, viewModel.language)
+                assertEquals("Headache", viewModel.answerState.getAnswer("q1")?.textAnswer)
+                viewModel.submitForm()
+                runCurrent()
+
+                coVerify { draftDao.upsert(match {
+                    it.language == selection && it.answers == savedAnswers &&
+                        it.submissionId == "saved-submission-id"
+                }) }
+                coVerify { restApi.postFormSubmissionV2(match {
+                    it.lang == selection && it.id == "saved-submission-id" && it.answers == savedAnswers
+                }) }
+            }
+            coVerify(exactly = 0) { draftDao.deleteDraft(any(), any()) }
+        }
+
+    @Test
+    fun `lowercase language is saved and submitted using the Platform spelling`() = runTest(testDispatcher) {
+        coEvery { restApi.postFormSubmissionV2(any()) } returns NetworkResult.Failure(ByteArray(0), 500)
+        val viewModel = createViewModel(language = "french")
+        runCurrent()
+        viewModel.answerState.setAnswer("q1", AnswerV2.createTextAnswer("Headache"))
+
+        viewModel.submitForm()
+        runCurrent()
+
+        assertEquals("French", viewModel.language)
+        coVerify { draftDao.upsert(match { it.language == "French" && it.submissionId != null }) }
+        coVerify(exactly = 1) { restApi.postFormSubmissionV2(match { it.lang == "French" }) }
+        coVerify(exactly = 0) { draftDao.deleteDraft(any(), any()) }
+    }
+
+    @Test
+    fun `unavailable language retains draft and does not submit in another language`() = runTest(testDispatcher) {
+        val viewModel = createViewModel(language = "missing")
+        runCurrent()
+        viewModel.answerState.setAnswer("q1", AnswerV2.createTextAnswer("Headache"))
+
+        viewModel.submitForm()
+        runCurrent()
+
+        assertTrue(viewModel.submissionState.value is FormV2SubmissionState.Error)
+        assertTrue(viewModel.canEditAnswers)
+        coVerify { draftDao.upsert(match { it.language == "missing" }) }
+        coVerify(exactly = 0) { restApi.postFormSubmissionV2(any()) }
+        coVerify(exactly = 0) { draftDao.deleteDraft(any(), any()) }
+    }
+
+    @Test
+    fun `language request failure retains draft and allows retry`() = runTest(testDispatcher) {
+        coEvery { restApi.getFormTemplateLanguagesV2("template-1") } returns
+            NetworkResult.Failure(ByteArray(0), 503)
+        val viewModel = createViewModel(language = "french")
+        runCurrent()
+        viewModel.answerState.setAnswer("q1", AnswerV2.createTextAnswer("Headache"))
+
+        viewModel.submitForm()
+        runCurrent()
+
+        assertTrue(viewModel.submissionState.value is FormV2SubmissionState.Error)
+        assertTrue(viewModel.canSubmit)
+        coVerify { draftDao.upsert(match { it.language == "french" }) }
+        coVerify(exactly = 0) { restApi.postFormSubmissionV2(any()) }
+        coVerify(exactly = 0) { draftDao.deleteDraft(any(), any()) }
+    }
+
+    private fun createViewModel(
+        patientId: String? = "patient-1",
+        language: String? = null
+    ) = FormV2RenderingViewModel(
         restApi,
         draftDao,
         SavedStateHandle(mapOf(
             FormTemplateDetailV2ViewModel.EXTRA_TEMPLATE_ID to "template-1",
             FormTemplateListV2Activity.EXTRA_PATIENT_ID to patientId,
+            FormV2RenderingActivity.EXTRA_LANGUAGE to language,
         )),
     )
 

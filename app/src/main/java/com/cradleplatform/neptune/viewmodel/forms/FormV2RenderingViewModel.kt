@@ -5,6 +5,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cradleplatform.neptune.activities.forms.FormTemplateListV2Activity
+import com.cradleplatform.neptune.activities.forms.FormV2RenderingActivity
 import com.cradleplatform.neptune.database.daos.FormV2DraftDao
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
@@ -68,6 +69,11 @@ class FormV2RenderingViewModel @Inject constructor(
     }
 
     private val patientId: String? = savedStateHandle[FormTemplateListV2Activity.EXTRA_PATIENT_ID]
+    private val requestedLanguage: String? = savedStateHandle.get<String>(FormV2RenderingActivity.EXTRA_LANGUAGE)
+        ?.takeIf { it.isNotBlank() }
+    private var selectedLanguage: String = requestedLanguage ?: "English"
+    val language: String
+        get() = selectedLanguage
     private var loadedTemplate: FormTemplateV2? = null
 
     private val _state = MutableStateFlow<FormV2RenderingState>(FormV2RenderingState.Loading)
@@ -120,6 +126,8 @@ class FormV2RenderingViewModel @Inject constructor(
         if (draft?.formTemplateVersion == template.version) {
             answerState.replaceAnswers(draft.answers)
             submissionId = draft.submissionId
+            // A fresh selection takes precedence when reopening an existing draft.
+            selectedLanguage = requestedLanguage ?: draft.language
         }
     }
 
@@ -196,13 +204,19 @@ class FormV2RenderingViewModel @Inject constructor(
                 )
                 return@launch
             }
-            val request = CreateFormSubmissionRequestV2(
-                id = requestId,
-                formTemplateId = template.id,
-                patientId = patient,
-                answers = answers
-            )
             try {
+                val submissionLanguage = resolveSubmissionLanguage(template.id)
+                if (selectedLanguage != submissionLanguage) {
+                    selectedLanguage = submissionLanguage
+                    persistSubmissionDraft(patient, template, draftAnswers)
+                }
+                val request = CreateFormSubmissionRequestV2(
+                    id = requestId,
+                    formTemplateId = template.id,
+                    patientId = patient,
+                    lang = submissionLanguage,
+                    answers = answers
+                )
                 when (val result = restApi.postFormSubmissionV2(request)) {
                     is NetworkResult.Success -> deleteSubmittedDraft(patient, template.id)
                     is NetworkResult.Failure -> _submissionState.value = FormV2SubmissionState.Error(
@@ -221,6 +235,17 @@ class FormV2RenderingViewModel @Inject constructor(
                 )
             }
         }
+    }
+
+    private suspend fun resolveSubmissionLanguage(templateId: String): String {
+        val languages = when (val result = restApi.getFormTemplateLanguagesV2(templateId)) {
+            is NetworkResult.Success -> result.value.languages
+            is NetworkResult.Failure -> error("Unable to load form languages (${result.statusCode}).")
+            is NetworkResult.NetworkException -> throw result.cause
+        }
+        return languages.firstOrNull { it == language }
+            ?: languages.firstOrNull { it.equals(language, ignoreCase = true) }
+            ?: error("The selected language is no longer available for this form.")
     }
 
     private suspend fun persistSubmissionDraft(
@@ -266,6 +291,7 @@ class FormV2RenderingViewModel @Inject constructor(
             formTemplateVersion = template.version,
             formTemplate = template,
             answers = answers,
+            language = selectedLanguage,
             createdAt = now,
             updatedAt = now,
             submissionId = submissionId
