@@ -1,7 +1,7 @@
 name: Cradle-Mobile CI/CD Pipeline
 # Main GitHub CI/CD pipeline definition file
 # For syntax, see: https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions
-# The dockerfile for image sahilmodak/cradle-mobile is in the root directory for the project
+# The dockerfile for image scansy/cradle-mobile:al2023 is in the root directory for the project
 
 on:
   push:
@@ -25,7 +25,7 @@ jobs:
     name: Code Analysis
     runs-on: [self-hosted, docker]
     container:
-      image: sahilmodak/cradle-mobile
+      image: scansy/cradle-mobile:al2023
     steps:
       - name: Checkout repository into Container
         uses: bfraser/cicd/actions/checkout@v1
@@ -39,7 +39,7 @@ jobs:
     name: Build and Assemble Debug APK
     runs-on: [self-hosted, docker]
     container:
-      image: sahilmodak/cradle-mobile
+      image: scansy/cradle-mobile:al2023
     outputs: 
       db_version_artifact: latest_db_version.json
     steps: 
@@ -92,7 +92,7 @@ jobs:
     name: Run Local Unit Tests
     runs-on: [self-hosted, docker]
     container:
-      image: sahilmodak/cradle-mobile
+      image: scansy/cradle-mobile:al2023
     needs: [ build ]
     outputs: 
       test_results: test-results/
@@ -131,7 +131,7 @@ jobs:
       if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'pull_request'
       runs-on: [self-hosted, docker]
       container:
-        image: sahilmodak/cradle-mobile
+        image: scansy/cradle-mobile:al2023 
       needs: [ build ]
       # (Derived from the gcloud CLI help pages)
       # A list of DIMENSION=VALUE pairs which specify a target device to test
