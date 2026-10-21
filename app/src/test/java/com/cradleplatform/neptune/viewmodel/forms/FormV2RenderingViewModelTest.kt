@@ -46,6 +46,7 @@ internal class FormV2RenderingViewModelTest {
         coEvery { draftDao.getDraft("patient-1", "template-1") } returns null
         coEvery { draftDao.upsert(any()) } returns Unit
         coEvery { draftDao.deleteDraft("patient-1", "template-1") } returns 1
+        coEvery { restApi.getFormSubmissionV2(any()) } returns NetworkResult.Failure(ByteArray(0), 404)
     }
 
     @AfterEach

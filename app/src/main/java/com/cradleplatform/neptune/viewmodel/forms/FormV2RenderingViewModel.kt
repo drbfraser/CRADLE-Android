@@ -170,19 +170,8 @@ class FormV2RenderingViewModel @Inject constructor(
         val patient = patientId?.takeIf { it.isNotBlank() } ?: return
         val template = loadedTemplate ?: return
         val draftAnswers = answerState.toFormAnswers()
-        val answers = when (val validation = FormV2SubmissionValidator.validate(
-            template,
-            draftAnswers
-        )) {
-            is FormV2SubmissionValidationResult.Error -> {
-                _submissionState.value = FormV2SubmissionState.ValidationError(
-                    validation.questionId,
-                    validation.message
-                )
-                return
-            }
-            is FormV2SubmissionValidationResult.Success -> validation.answers
-        }
+        val retrying = submissionId != null
+        val newAnswers = if (!retrying) validateAnswers(template, draftAnswers) ?: return else null
 
         _submissionState.value = FormV2SubmissionState.Submitting
         viewModelScope.launch {
@@ -201,14 +190,17 @@ class FormV2RenderingViewModel @Inject constructor(
                 id = requestId,
                 formTemplateId = template.id,
                 patientId = patient,
-                answers = answers
+                answers = draftAnswers
             )
             try {
-                when (val result = restApi.postFormSubmissionV2(request)) {
+                // An accepted date can expire before a lost response is recovered.
+                if (retrying && verifyExistingSubmission(request, template, allowMissing = true)) return@launch
+                val answers = newAnswers ?: validateAnswers(template, draftAnswers) ?: return@launch
+                when (val result = restApi.postFormSubmissionV2(request.copy(answers = answers))) {
                     is NetworkResult.Success -> deleteSubmittedDraft(patient, template.id)
                     is NetworkResult.Failure -> {
                         if (result.statusCode == HTTP_CONFLICT) {
-                            verifyExistingSubmission(request)
+                            verifyExistingSubmission(request, template)
                         } else {
                             _submissionState.value = FormV2SubmissionState.Error(
                                 "Server error (${result.statusCode})"
@@ -230,26 +222,57 @@ class FormV2RenderingViewModel @Inject constructor(
         }
     }
 
-    private suspend fun verifyExistingSubmission(request: CreateFormSubmissionRequestV2) {
+    private fun validateAnswers(template: FormTemplateV2, answers: List<FormAnswerV2>): List<FormAnswerV2>? =
+        when (val validation = FormV2SubmissionValidator.validate(template, answers)) {
+            is FormV2SubmissionValidationResult.Success -> validation.answers
+            is FormV2SubmissionValidationResult.Error -> {
+                _submissionState.value = FormV2SubmissionState.ValidationError(
+                    validation.questionId, validation.message
+                )
+                null
+            }
+        }
+
+    /** False permits a fresh POST only after a preflight GET explicitly returns 404. */
+    private suspend fun verifyExistingSubmission(
+        request: CreateFormSubmissionRequestV2,
+        template: FormTemplateV2,
+        allowMissing: Boolean = false
+    ): Boolean =
         when (val result = restApi.getFormSubmissionV2(requireNotNull(request.id))) {
             is NetworkResult.Success -> {
-                // The request holds the validated answers captured when Submit was pressed.
-                if (FormV2SubmissionComparison.matches(request, result.value)) {
+                // Normalize stored dates without applying today's restrictions to a historical submission.
+                val comparisonTemplate = template.copy(questions = template.questions?.map {
+                    it.copy(allowPastDates = null, allowFutureDates = null)
+                })
+                val answers = validateAnswers(comparisonTemplate, request.answers)
+                if (answers != null &&
+                    FormV2SubmissionComparison.matches(request.copy(answers = answers), result.value)
+                ) {
                     deleteSubmittedDraft(request.patientId, request.formTemplateId)
-                } else {
+                } else if (answers != null) {
                     _submissionState.value = FormV2SubmissionState.Error(
                         "The server form differs from this draft. Your draft was kept; no update was sent."
                     )
                 }
+                true
             }
-            is NetworkResult.Failure -> _submissionState.value = FormV2SubmissionState.Error(
-                "Unable to check the submitted form (${result.statusCode}). Your draft was kept."
-            )
-            is NetworkResult.NetworkException -> _submissionState.value = FormV2SubmissionState.Error(
-                "Unable to check the submitted form. Your draft was kept."
-            )
+            is NetworkResult.Failure -> {
+                val canCreate = allowMissing && result.statusCode == HTTP_NOT_FOUND
+                if (!canCreate) {
+                    _submissionState.value = FormV2SubmissionState.Error(
+                        "Unable to check the submitted form (${result.statusCode}). Your draft was kept."
+                    )
+                }
+                !canCreate
+            }
+            is NetworkResult.NetworkException -> {
+                _submissionState.value = FormV2SubmissionState.Error(
+                    "Unable to check the submitted form. Your draft was kept."
+                )
+                true
+            }
         }
-    }
 
     private suspend fun persistSubmissionDraft(
         patientId: String,
@@ -303,5 +326,6 @@ class FormV2RenderingViewModel @Inject constructor(
     private companion object {
         const val DRAFT_SAVE_SUCCESS_VISIBLE_MILLIS = 3_000L
         const val HTTP_CONFLICT = 409
+        const val HTTP_NOT_FOUND = 404
     }
 }
