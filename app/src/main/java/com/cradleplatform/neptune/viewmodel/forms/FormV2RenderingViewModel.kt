@@ -13,6 +13,7 @@ import com.cradleplatform.neptune.model.FormAnswerV2
 import com.cradleplatform.neptune.model.FormV2Draft
 import com.cradleplatform.neptune.model.FormTemplateV2
 import com.cradleplatform.neptune.model.FormV2AnswerState
+import com.cradleplatform.neptune.model.FormV2SubmissionComparison
 import com.cradleplatform.neptune.model.FormV2SubmissionValidationResult
 import com.cradleplatform.neptune.model.FormV2SubmissionValidator
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -143,7 +144,7 @@ class FormV2RenderingViewModel @Inject constructor(
                 _draftSaveState.value = FormV2DraftSaveState.Saving
                 try {
                     // The DAO preserves createdAt on updates. Success follows the completed transaction.
-                    formV2DraftDao.upsert(draft)
+                    formV2DraftDao.upsert(draft.copy(submissionId = submissionId))
                     _draftSaveState.value = FormV2DraftSaveState.Saved
                     clearSavedDraftStatusJob = viewModelScope.launch {
                         delay(DRAFT_SAVE_SUCCESS_VISIBLE_MILLIS)
@@ -205,9 +206,15 @@ class FormV2RenderingViewModel @Inject constructor(
             try {
                 when (val result = restApi.postFormSubmissionV2(request)) {
                     is NetworkResult.Success -> deleteSubmittedDraft(patient, template.id)
-                    is NetworkResult.Failure -> _submissionState.value = FormV2SubmissionState.Error(
-                        "Server error (${result.statusCode})"
-                    )
+                    is NetworkResult.Failure -> {
+                        if (result.statusCode == HTTP_CONFLICT) {
+                            verifyExistingSubmission(request)
+                        } else {
+                            _submissionState.value = FormV2SubmissionState.Error(
+                                "Server error (${result.statusCode})"
+                            )
+                        }
+                    }
                     is NetworkResult.NetworkException -> _submissionState.value = FormV2SubmissionState.Error(
                         result.cause.message ?: "Network error"
                     )
@@ -220,6 +227,27 @@ class FormV2RenderingViewModel @Inject constructor(
                     exception.message ?: "Unable to submit form."
                 )
             }
+        }
+    }
+
+    private suspend fun verifyExistingSubmission(request: CreateFormSubmissionRequestV2) {
+        when (val result = restApi.getFormSubmissionV2(requireNotNull(request.id))) {
+            is NetworkResult.Success -> {
+                // The request holds the validated answers captured when Submit was pressed.
+                if (FormV2SubmissionComparison.matches(request, result.value)) {
+                    deleteSubmittedDraft(request.patientId, request.formTemplateId)
+                } else {
+                    _submissionState.value = FormV2SubmissionState.Error(
+                        "The server form differs from this draft. Your draft was kept; no update was sent."
+                    )
+                }
+            }
+            is NetworkResult.Failure -> _submissionState.value = FormV2SubmissionState.Error(
+                "Unable to check the submitted form (${result.statusCode}). Your draft was kept."
+            )
+            is NetworkResult.NetworkException -> _submissionState.value = FormV2SubmissionState.Error(
+                "Unable to check the submitted form. Your draft was kept."
+            )
         }
     }
 
@@ -274,5 +302,6 @@ class FormV2RenderingViewModel @Inject constructor(
 
     private companion object {
         const val DRAFT_SAVE_SUCCESS_VISIBLE_MILLIS = 3_000L
+        const val HTTP_CONFLICT = 409
     }
 }
