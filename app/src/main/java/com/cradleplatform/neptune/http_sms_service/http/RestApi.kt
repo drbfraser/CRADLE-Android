@@ -27,6 +27,7 @@ import com.cradleplatform.neptune.model.FormSubmissionV2
 import com.cradleplatform.neptune.model.FormSubmissionWithAnswersV2
 import com.cradleplatform.neptune.model.FormTemplate
 import com.cradleplatform.neptune.model.FormTemplateListV2Response
+import com.cradleplatform.neptune.model.FormTemplateLanguagesV2Response
 import com.cradleplatform.neptune.model.FormTemplateV2
 import com.cradleplatform.neptune.model.UpdateFormRequestBodyV2
 import com.cradleplatform.neptune.model.GlobalPatient
@@ -1093,6 +1094,18 @@ class RestApi(
             },
         )
     }
+
+    suspend fun getFormTemplateLanguagesV2(formTemplateId: String): NetworkResult<FormTemplateLanguagesV2Response> =
+        withContext(IO) {
+            http.makeRequest(
+                method = Http.Method.GET,
+                url = "${urlManager.formsV2Template(formTemplateId)}/languages",
+                headers = makeAuthorizationHeader(),
+                inputStreamReader = { input ->
+                    Gson().fromJson(input.bufferedReader(), FormTemplateLanguagesV2Response::class.java)
+                },
+            )
+        }
 
     /**
      * V2: gets the most recent non-archived template per classification same as v1 getAllFormTemplates

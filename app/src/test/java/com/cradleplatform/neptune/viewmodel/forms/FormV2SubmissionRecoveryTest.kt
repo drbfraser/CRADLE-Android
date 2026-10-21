@@ -2,6 +2,7 @@ package com.cradleplatform.neptune.viewmodel.forms
 
 import androidx.lifecycle.SavedStateHandle
 import com.cradleplatform.neptune.activities.forms.FormTemplateListV2Activity
+import com.cradleplatform.neptune.database.FormV2DraftTypeConverters
 import com.cradleplatform.neptune.database.daos.FormV2DraftDao
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
@@ -14,6 +15,7 @@ import com.cradleplatform.neptune.model.FormSubmissionWithAnswersV2
 import com.cradleplatform.neptune.model.FormSubmissionV2
 import com.cradleplatform.neptune.model.FormTemplateQuestionV2
 import com.cradleplatform.neptune.model.FormTemplateV2
+import com.cradleplatform.neptune.model.FormTemplateLanguagesV2Response
 import com.cradleplatform.neptune.model.FormV2Draft
 import com.cradleplatform.neptune.model.QuestionTypeEnum
 import io.mockk.coEvery
@@ -51,6 +53,9 @@ internal class FormV2SubmissionRecoveryTest {
         restApi = mockk()
         drafts = mockk()
         coEvery { restApi.getFormTemplateV2("template-1") } returns NetworkResult.Success(template(), 200)
+        coEvery { restApi.getFormTemplateLanguagesV2("template-1") } returns NetworkResult.Success(
+            FormTemplateLanguagesV2Response(listOf("English", "French")), 200
+        )
         coEvery { drafts.getDraft("patient-1", "template-1") } returns draft()
         coEvery { drafts.upsert(any()) } returns Unit
         coEvery { drafts.deleteDraft("patient-1", "template-1") } returns 1
@@ -61,6 +66,97 @@ internal class FormV2SubmissionRecoveryTest {
     @AfterEach
     fun tearDown() {
         Dispatchers.resetMain()
+    }
+
+    @Test
+    fun `restored draft language is normalized before confirming a saved submission`() = runTest(dispatcher) {
+        coEvery { drafts.getDraft("patient-1", "template-1") } returns draft().copy(language = "french")
+        coEvery { restApi.getFormSubmissionV2("submission-1") } returns
+            NetworkResult.Success(saved().copy(lang = "French"), 200)
+        val viewModel = viewModel()
+        runCurrent()
+        assertEquals("french", viewModel.language)
+        viewModel.submitForm()
+        runCurrent()
+
+        assertEquals("French", viewModel.language)
+        assertEquals(FormV2SubmissionState.Submitted, viewModel.submissionState.value)
+        coVerify { drafts.upsert(match { it.language == "French" && it.submissionId == "submission-1" }) }
+        coVerify(exactly = 0) { restApi.postFormSubmissionV2(any()) }
+        coVerify(exactly = 1) { drafts.deleteDraft("patient-1", "template-1") }
+    }
+
+    @Test
+    fun `a changed language does not discard a draft even when answers match`() = runTest(dispatcher) {
+        coEvery { drafts.getDraft("patient-1", "template-1") } returns draft().copy(language = "French")
+        val viewModel = viewModel()
+        runCurrent()
+        viewModel.submitForm()
+        runCurrent()
+
+        assertDraftKept(viewModel)
+        coVerify { drafts.upsert(match { it.language == "French" }) }
+        coVerify(exactly = 0) { restApi.postFormSubmissionV2(any()) }
+    }
+
+    @Test
+    fun `a recreated ViewModel recovers a lost response using the persisted draft ID`() = runTest(dispatcher) {
+        var storedDraft: FormV2Draft? = draft().copy(submissionId = null)
+        val converters = FormV2DraftTypeConverters()
+        coEvery { drafts.getDraft("patient-1", "template-1") } coAnswers { storedDraft }
+        coEvery { drafts.upsert(any()) } coAnswers {
+            val draft = firstArg<FormV2Draft>()
+            // Round-trip the JSON fields that Room persists rather than sharing the answer objects.
+            storedDraft = draft.copy(
+                formTemplate = converters.jsonToFormTemplateV2(converters.formTemplateV2ToJson(draft.formTemplate)),
+                answers = converters.jsonToFormAnswersV2(converters.formAnswersV2ToJson(draft.answers))
+            )
+        }
+        val request = slot<CreateFormSubmissionRequestV2>()
+        coEvery { restApi.postFormSubmissionV2(capture(request)) } returns
+            NetworkResult.NetworkException(IOException("Response lost"))
+        val original = viewModel()
+        runCurrent()
+        original.submitForm()
+        runCurrent()
+        assertDraftKept(original)
+        val persistedId = requireNotNull(storedDraft?.submissionId)
+        assertEquals(request.captured.id, persistedId)
+        coEvery { restApi.getFormSubmissionV2(persistedId) } returns
+            NetworkResult.Success(saved().copy(id = persistedId), 200)
+        coEvery { drafts.deleteDraft("patient-1", "template-1") } coAnswers {
+            storedDraft = null
+            1
+        }
+
+        val recreated = viewModel()
+        runCurrent()
+        assertEquals("Headache", recreated.answerState.getAnswer("q1")?.textAnswer)
+        recreated.submitForm()
+        runCurrent()
+
+        assertEquals(FormV2SubmissionState.Submitted, recreated.submissionState.value)
+        assertEquals(null, storedDraft)
+        coVerify(exactly = 1) { restApi.postFormSubmissionV2(any()) }
+        coVerify(exactly = 1) { restApi.getFormSubmissionV2(persistedId) }
+        coVerify(exactly = 1) { drafts.deleteDraft("patient-1", "template-1") }
+        coVerify(exactly = 0) { restApi.patchFormSubmissionV2(any(), any()) }
+    }
+
+    @Test
+    fun `failed verification after POST conflict keeps the draft without posting again`() = runTest(dispatcher) {
+        coEvery { drafts.getDraft("patient-1", "template-1") } returns draft().copy(submissionId = null)
+        for (status in listOf(404, 500)) {
+            coEvery { restApi.getFormSubmissionV2(any()) } returns NetworkResult.Failure(ByteArray(0), status)
+            val viewModel = viewModel()
+            runCurrent()
+            viewModel.submitForm()
+            runCurrent()
+
+            assertDraftKept(viewModel)
+        }
+        coVerify(exactly = 2) { restApi.postFormSubmissionV2(any()) }
+        coVerify(exactly = 2) { restApi.getFormSubmissionV2(any()) }
     }
 
     @Test

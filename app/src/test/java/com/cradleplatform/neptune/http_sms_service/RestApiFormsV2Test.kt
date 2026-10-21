@@ -63,6 +63,11 @@ internal class RestApiFormsV2Test {
                         path == "/api/forms/v2/templates" && request.method == "GET" ->
                             MockResponse().setResponseCode(200).setBody(TEMPLATE_LIST_JSON)
 
+                        // end point for getting the server-defined languages for a template
+                        path == "/api/forms/v2/templates/template-1/languages" && request.method == "GET" ->
+                            MockResponse().setResponseCode(200)
+                                .setBody("""{"langVersions":["English","French","pt-BR"]}""")
+
                         // end point for getting a single template by id
                         path == "/api/forms/v2/templates/template-1" && request.method == "GET" ->
                             MockResponse().setResponseCode(200).setBody(TEMPLATE_JSON)
@@ -128,6 +133,15 @@ internal class RestApiFormsV2Test {
         assertEquals(2, mcAnswer.getInt(1))
     }
 
+
+    @Test
+    fun getFormTemplateLanguagesV2() {
+        val result = runBlocking { restApi.getFormTemplateLanguagesV2("template-1") }
+
+        check(result is NetworkResult.Success) { "got $result" }
+        assertEquals(listOf("English", "French", "pt-BR"), result.value.languages)
+        assertEquals("/api/forms/v2/templates/template-1/languages", lastRequest?.path)
+    }
 
     @Test
     fun getFormSubmissionV2() {
