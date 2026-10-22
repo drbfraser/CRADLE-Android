@@ -12,6 +12,18 @@ import java.io.Serializable
 
 typealias MultiLangText = Map<String, String>
 
+data class FormTemplateLanguagesV2Response(
+    @SerializedName("langVersions") val languages: List<String>
+)
+
+/** Preserve exact language tags before accepting case differences from older templates. */
+fun MultiLangText.getTranslation(language: String): String? =
+    get(language)
+        ?: entries.firstOrNull { it.key.equals(language, ignoreCase = true) }?.value
+        ?: get("english")
+        ?: entries.firstOrNull { it.key.equals("english", ignoreCase = true) }?.value
+        ?: values.firstOrNull()
+
 enum class QRelationalEnum {
     LARGER_THAN,
     SMALLER_THAN,
