@@ -1032,7 +1032,7 @@ class RestApi(
     }
 
     /**
-     * V2 submissions from the same patient records endpoint used by Platform's patient page.
+     * Retrieves the patient's V2 form submissions.
      */
     suspend fun getPatientFormSubmissionsV2(
         patientId: String
@@ -1043,13 +1043,15 @@ class RestApi(
             headers = makeAuthorizationHeader(),
             inputStreamReader = { input ->
                 val records = Gson().fromJson(input.bufferedReader(), PatientFormSubmissionsV2Response::class.java)
-                // A missing forms field is a malformed response, not an empty patient history.
+                // Reject responses without a forms array.
                 requireNotNull(records.forms)
             },
         )
     }
 
-    /** V2: Retrieves a form submission with all answers and full question context. */
+    /**
+     * V2: Retrieves a form submission with all answers and full question context.
+     */
     suspend fun getFormSubmissionV2(
         formSubmissionId: String
     ): NetworkResult<FormSubmissionWithAnswersV2> = withContext(IO) {

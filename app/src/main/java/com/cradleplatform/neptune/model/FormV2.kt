@@ -172,7 +172,7 @@ data class FormSubmissionV2(
     @SerializedName("name") val name: String? = null,
 ) : Serializable
 
-/** Forms returned by the patient records endpoint, alongside other record types. */
+/** V2 form submissions returned by the patient records endpoint. */
 data class PatientFormSubmissionsV2Response(
     @SerializedName("forms") val forms: List<FormSubmissionV2>
 )

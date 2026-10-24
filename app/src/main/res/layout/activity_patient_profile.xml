@@ -576,8 +576,19 @@
                 android:background="@drawable/rounded_button"
                 android:text="@string/see_submitted_forms"
                 android:visibility="visible"
-                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintBottom_toTopOf="@+id/seeSubmittedFormsV2Button"
                 app:layout_constraintTop_toBottomOf="@+id/seeSavedFormsButton" />
+
+            <Button
+                android:id="@+id/seeSubmittedFormsV2Button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/reading_flow_previous_reading_item_margin"
+                android:background="@drawable/rounded_button"
+                android:text="@string/see_submitted_forms_v2"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/seeSubmittedFormsButton" />
 
 
         </androidx.constraintlayout.widget.ConstraintLayout>

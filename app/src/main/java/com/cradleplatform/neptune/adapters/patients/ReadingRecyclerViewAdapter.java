@@ -149,7 +149,6 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
                 myViewHolder.formName.setText(form.getName() == null || form.getName().trim().isEmpty()
                         ? myViewHolder.itemView.getContext().getString(R.string.form_v2_unnamed) : form.getName());
                 myViewHolder.formDate.setText(DateUtil.getConciseDateString(form.getDateSubmitted(), false));
-                myViewHolder.formResponseFieldsContainer.removeAllViews();
                 break;
             case FORM_VIEW:
                 FormResponse currFormResponse = (FormResponse) combinedList.get(i);
