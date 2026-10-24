@@ -4,6 +4,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
+import com.cradleplatform.neptune.http_sms_service.http.RestApi
 import com.cradleplatform.neptune.manager.AssessmentManager
 import com.cradleplatform.neptune.manager.FormResponseManager
 import com.cradleplatform.neptune.manager.PatientManager
@@ -12,6 +14,7 @@ import com.cradleplatform.neptune.manager.ReferralManager
 import com.cradleplatform.neptune.manager.WorkflowManager
 import com.cradleplatform.neptune.model.Assessment
 import com.cradleplatform.neptune.model.FormResponse
+import com.cradleplatform.neptune.model.FormSubmissionV2
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.Reading
 import com.cradleplatform.neptune.model.Referral
@@ -20,6 +23,8 @@ import com.cradleplatform.neptune.model.WorkflowTemplate
 import com.cradleplatform.neptune.model.toWorkflowRow
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
 import javax.inject.Inject
 
 @HiltViewModel
@@ -29,7 +34,8 @@ class PatientProfileViewModel @Inject constructor(
     private val referralManager: ReferralManager,
     private val assessmentManager: AssessmentManager,
     private val formResponseManager: FormResponseManager,
-    private val workflowManager: WorkflowManager
+    private val workflowManager: WorkflowManager,
+    private val restApi: RestApi
 ) : ViewModel() {
 
     private val _patient = MutableLiveData<Patient?>()
@@ -55,6 +61,10 @@ class PatientProfileViewModel @Inject constructor(
 
     private val _submittedForms = MutableLiveData<List<FormResponse>>()
     val submittedForms: LiveData<List<FormResponse>> = _submittedForms
+
+    private val _submittedFormsV2 = MutableLiveData<NetworkResult<List<FormSubmissionV2>>>()
+    val submittedFormsV2: LiveData<NetworkResult<List<FormSubmissionV2>>> = _submittedFormsV2
+    private var submittedFormsV2Job: Job? = null
 
     private val _workflows = MutableLiveData<List<WorkflowRow>>()
     val workflows: LiveData<List<WorkflowRow>> = _workflows
@@ -95,6 +105,7 @@ class PatientProfileViewModel @Inject constructor(
      * Load readings, referrals, and assessments for the patient
      */
     private suspend fun loadPatientRelatedData(patientId: String) {
+        loadSubmittedFormsV2(patientId)
         // Load readings
         val readings = readingManager.getReadingsByPatientId(patientId)
         _readings.postValue(readings)
@@ -114,6 +125,21 @@ class PatientProfileViewModel @Inject constructor(
         _workflowTemplates.postValue(workflowManager.getWorkflowTemplates())
 
         loadWorkflows(patientId)
+    }
+
+    private fun loadSubmittedFormsV2(patientId: String) {
+        // Refresh independently so a slow server cannot delay the local patient records.
+        submittedFormsV2Job?.cancel()
+        submittedFormsV2Job = viewModelScope.launch {
+            val result: NetworkResult<List<FormSubmissionV2>> = try {
+                restApi.getPatientFormSubmissionsV2(patientId)
+            } catch (exception: CancellationException) {
+                throw exception
+            } catch (exception: Exception) {
+                NetworkResult.NetworkException(exception)
+            }
+            _submittedFormsV2.value = result
+        }
     }
 
     fun startWorkflow(workflowTemplate: WorkflowTemplate) {

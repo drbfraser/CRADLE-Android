@@ -35,6 +35,8 @@ import com.cradleplatform.neptune.manager.ReadingManager
 import com.cradleplatform.neptune.manager.ReferralManager
 import com.cradleplatform.neptune.model.Assessment
 import com.cradleplatform.neptune.model.FormResponse
+import com.cradleplatform.neptune.model.FormSubmissionV2
+import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.Reading
 import com.cradleplatform.neptune.model.Referral
@@ -97,6 +99,7 @@ open class PatientProfileActivity : AppCompatActivity() {
     private var patientReferrals: List<Referral>? = null
     private var patientAssessments: List<Assessment>? = null
     private var patientSubmittedForms: List<FormResponse> = emptyList()
+    private var patientSubmittedFormsV2: List<FormSubmissionV2> = emptyList()
     private var availableWorkflowTemplates: List<WorkflowTemplate> = emptyList()
 
     // Data Model
@@ -189,6 +192,16 @@ open class PatientProfileActivity : AppCompatActivity() {
         viewModel.submittedForms.observe(this) { forms ->
             patientSubmittedForms = forms
             setupReadingsRecyclerView()
+        }
+
+        viewModel.submittedFormsV2.observe(this) { result ->
+            when (result) {
+                is NetworkResult.Success -> {
+                    patientSubmittedFormsV2 = result.value
+                    setupReadingsRecyclerView()
+                }
+                else -> Toast.makeText(this, R.string.form_v2_records_load_error, Toast.LENGTH_LONG).show()
+            }
         }
 
         viewModel.workflows.observe(this) { workflows ->
@@ -688,6 +701,7 @@ open class PatientProfileActivity : AppCompatActivity() {
         if (patientAssessments != null)
             combinedList.addAll(patientAssessments!!.map { i -> i })
         combinedList.addAll(patientSubmittedForms)
+        combinedList.addAll(patientSubmittedFormsV2)
         combinedList.sortWith(
             compareByDescending {
                 when (it) {
@@ -695,6 +709,7 @@ open class PatientProfileActivity : AppCompatActivity() {
                     is Referral -> it.dateReferred
                     is Assessment -> it.dateAssessed
                     is FormResponse -> it.dateEdited / 1000
+                    is FormSubmissionV2 -> it.dateSubmitted
                     else -> Integer.MAX_VALUE.toLong()
                 }
             }

@@ -24,6 +24,7 @@ import com.cradleplatform.neptune.model.FormAnswerV2
 import com.cradleplatform.neptune.model.FormClassification
 import com.cradleplatform.neptune.model.FormResponse
 import com.cradleplatform.neptune.model.FormSubmissionV2
+import com.cradleplatform.neptune.model.PatientFormSubmissionsV2Response
 import com.cradleplatform.neptune.model.FormSubmissionWithAnswersV2
 import com.cradleplatform.neptune.model.FormTemplate
 import com.cradleplatform.neptune.model.FormTemplateListV2Response
@@ -1031,8 +1032,24 @@ class RestApi(
     }
 
     /**
-     * V2: Retrieves a form submission with all answers and full question context.
+     * V2 submissions from the same patient records endpoint used by Platform's patient page.
      */
+    suspend fun getPatientFormSubmissionsV2(
+        patientId: String
+    ): NetworkResult<List<FormSubmissionV2>> = withContext(IO) {
+        http.makeRequest(
+            method = Http.Method.GET,
+            url = urlManager.getPatientFormSubmissionsV2(patientId),
+            headers = makeAuthorizationHeader(),
+            inputStreamReader = { input ->
+                val records = Gson().fromJson(input.bufferedReader(), PatientFormSubmissionsV2Response::class.java)
+                // A missing forms field is a malformed response, not an empty patient history.
+                requireNotNull(records.forms)
+            },
+        )
+    }
+
+    /** V2: Retrieves a form submission with all answers and full question context. */
     suspend fun getFormSubmissionV2(
         formSubmissionId: String
     ): NetworkResult<FormSubmissionWithAnswersV2> = withContext(IO) {

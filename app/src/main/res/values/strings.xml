@@ -857,4 +857,7 @@
     <string name="form_dialog_not_connected_internet">Connect To Internet</string>
     <string name="default_text_view">TextView</string>
 
+    <string name="form_v2_submitted">Submitted form (V2)</string>
+    <string name="form_v2_unnamed">Unnamed form</string>
+    <string name="form_v2_records_load_error">Couldn\'t refresh V2 forms. Check your connection and reopen the patient.</string>
 </resources>

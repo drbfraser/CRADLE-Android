@@ -7,6 +7,8 @@ import com.cradleplatform.neptune.model.AnswerV2
 import com.cradleplatform.neptune.model.CreateFormSubmissionRequestV2
 import com.cradleplatform.neptune.model.FormAnswerV2
 import com.cradleplatform.neptune.testutils.MockWebServerUtils
+import com.cradleplatform.neptune.testutils.MockDependencyUtils
+import com.cradleplatform.neptune.viewmodel.UserViewModel
 import io.mockk.every
 import io.mockk.mockkStatic
 import kotlinx.coroutines.runBlocking
@@ -21,6 +23,7 @@ import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import java.util.Base64
 
 /**
  * Basic connectivity/parsing tests for the new V2 forms api methods added to [restApi],
@@ -32,15 +35,27 @@ internal class RestApiFormsV2Test {
     private val mockServer: MockWebServer
     private val restApi: RestApi
     private var lastRequest: RecordedRequest? = null
+    private val testAccessToken = "header." +
+        Base64.getEncoder().encodeToString("""{"exp":4102444800}""".toByteArray()) + ".signature"
 
     init {
-        val (api, server) = MockWebServerUtils.createRestApiWithServerBlock {
+        val (preferences, sharedPreferences) = MockDependencyUtils.createMockSharedPreferences()
+        preferences[UserViewModel.ACCESS_TOKEN_KEY] = testAccessToken
+        val (api, server) = MockWebServerUtils.createRestApiWithServerBlock(sharedPreferences) {
             dispatcher = object : Dispatcher() {
                 override fun dispatch(request: RecordedRequest): MockResponse {
                     lastRequest = request
                     val path = request.path ?: return MockResponse().setResponseCode(404)
 
                     return when {
+
+                        path == "/api/patients/patient-1/get_all_records?readings=0&referrals=0&assessments=0&forms=1" &&
+                            request.method == "GET" -> MockResponse().setResponseCode(200)
+                            .setBody("""{"forms":[$SUBMISSION_JSON],"readings":[],"referrals":[],"assessments":[]}""")
+                        path.startsWith("/api/patients/empty/get_all_records?") ->
+                            MockResponse().setResponseCode(200).setBody("""{"forms":[]}""")
+                        path.startsWith("/api/patients/malformed/get_all_records?") ->
+                            MockResponse().setResponseCode(200).setBody("{}")
 
                         // end point for creating a new submission
                         path == "/api/forms/v2/submissions" && request.method == "POST" ->
@@ -98,6 +113,28 @@ internal class RestApiFormsV2Test {
     @AfterEach
     fun tearDown() {
         mockServer.shutdown()
+    }
+
+    @Test
+    fun getPatientFormSubmissionsV2() {
+        val result = runBlocking { restApi.getPatientFormSubmissionsV2("patient-1") }
+        check(result is NetworkResult.Success)
+        assertEquals("sub-1", result.value.single().id)
+        assertEquals("Antenatal", result.value.single().name)
+        assertEquals(1700000000L, result.value.single().dateSubmitted)
+        assertEquals("Bearer $testAccessToken", lastRequest!!.getHeader("Authorization"))
+    }
+
+    @Test
+    fun getPatientFormSubmissionsV2EmptyAndFailedResponses() {
+        val empty = runBlocking { restApi.getPatientFormSubmissionsV2("empty") }
+        check(empty is NetworkResult.Success)
+        assertEquals(emptyList<Any>(), empty.value)
+        val missing = runBlocking { restApi.getPatientFormSubmissionsV2("missing") }
+        check(missing is NetworkResult.Failure)
+        assertEquals(404, missing.statusCode)
+        val malformed = runBlocking { restApi.getPatientFormSubmissionsV2("malformed") }
+        check(malformed is NetworkResult.NetworkException)
     }
 
      @Test
@@ -233,6 +270,7 @@ internal class RestApiFormsV2Test {
         private const val SUBMISSION_JSON = """
             {
                 "id": "sub-1",
+                "name": "Antenatal",
                 "formTemplateId": "template-1",
                 "patientId": "patient-1",
                 "userId": 3,
