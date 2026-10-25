@@ -82,13 +82,6 @@ class FormSubmissionDetailV2Activity : AppCompatActivity() {
             textSize = 22f
             setTypeface(null, Typeface.BOLD)
         })
-        content.addView(TextView(this).apply {
-            text = getString(
-                R.string.form_submission_detail_v2_metadata,
-                form.patientId, formatTimestamp(form.dateSubmitted), form.lang, state.template.version
-            )
-            setPadding(0, 16, 0, 24)
-        })
         // Join by question ID rather than position: optional answers may be absent.
         val answers = form.answers.orEmpty().associateBy { it.questionId }
         state.template.questions.orEmpty().sortedBy { it.order }.forEach { question ->
@@ -129,9 +122,6 @@ class FormSubmissionDetailV2Activity : AppCompatActivity() {
                 }
                 content.addView(makeReadOnlyInput(label, value, question.units))
             }
-        }
-        answer?.comment?.takeIf { it.isNotBlank() }?.let {
-            content.addView(makeReadOnlyInput(getString(R.string.form_submission_detail_v2_comment), it))
         }
     }
 
@@ -179,10 +169,6 @@ class FormSubmissionDetailV2Activity : AppCompatActivity() {
         val pattern = if (type == QuestionTypeEnum.DATE) "yyyy-MM-dd" else "yyyy-MM-dd HH:mm:ss"
         return DateUtil.getZoneTimeFromLong(seconds)?.format(DateTimeFormatter.ofPattern(pattern)) ?: raw
     }
-
-    private fun formatTimestamp(seconds: Long?): String =
-        DateUtil.getZoneTimeFromLong(seconds)?.format(DateTimeFormatter.ofPattern("MMM d, yyyy '@' h:mm a"))
-            ?: getString(R.string.form_submission_detail_v2_unknown_date)
 
     override fun onSupportNavigateUp(): Boolean {
         onBackPressedDispatcher.onBackPressed()
