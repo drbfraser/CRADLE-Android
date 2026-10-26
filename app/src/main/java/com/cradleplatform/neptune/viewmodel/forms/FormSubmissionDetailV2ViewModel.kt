@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
+import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.model.FormSubmissionWithAnswersV2
 import com.cradleplatform.neptune.model.FormTemplateV2
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -20,7 +21,8 @@ sealed class FormSubmissionDetailV2State {
     object Loading : FormSubmissionDetailV2State()
     data class Success(
         val submission: FormSubmissionWithAnswersV2,
-        val template: FormTemplateV2
+        val template: FormTemplateV2,
+        val patientName: String?
     ) : FormSubmissionDetailV2State()
     object Error : FormSubmissionDetailV2State()
 }
@@ -28,6 +30,7 @@ sealed class FormSubmissionDetailV2State {
 @HiltViewModel
 class FormSubmissionDetailV2ViewModel @Inject constructor(
     private val restApi: RestApi,
+    private val patientManager: PatientManager,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
     private val submissionId: String = requireNotNull(savedStateHandle[EXTRA_SUBMISSION_ID])
@@ -63,7 +66,9 @@ class FormSubmissionDetailV2ViewModel @Inject constructor(
         }
         // Use the submission's exact template ID, including unanswered questions and categories.
         return when (val template = restApi.getFormTemplateV2(submission.formTemplateId)) {
-            is NetworkResult.Success -> FormSubmissionDetailV2State.Success(submission, template.value)
+            is NetworkResult.Success -> FormSubmissionDetailV2State.Success(
+                submission, template.value, patientManager.getPatientById(patientId)?.name
+            )
             else -> FormSubmissionDetailV2State.Error
         }
     }

@@ -66,6 +66,9 @@ class FormSubmissionDetailV2Activity : AppCompatActivity() {
                 retry.visibility = View.VISIBLE
             }
             is FormSubmissionDetailV2State.Success -> {
+                supportActionBar?.title = state.patientName?.takeIf { it.isNotBlank() }?.let {
+                    getString(R.string.form_submission_detail_v2_patient_title, it)
+                } ?: getString(R.string.form_submission_detail_v2_title)
                 renderForm(state)
                 scroll.visibility = View.VISIBLE
             }

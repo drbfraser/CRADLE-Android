@@ -149,7 +149,9 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
                 myViewHolder.formTitle.setText(R.string.form_v2_submitted);
                 myViewHolder.formName.setText(form.getName() == null || form.getName().trim().isEmpty()
                         ? myViewHolder.itemView.getContext().getString(R.string.form_v2_unnamed) : form.getName());
-                myViewHolder.formDate.setText(DateUtil.getConciseDateString(form.getDateSubmitted(), false));
+                TextView lastEditedLabel = myViewHolder.itemView.findViewById(R.id.formResponseDateTitle);
+                lastEditedLabel.setText(R.string.list_item_saved_form_date_last_edited_label);
+                myViewHolder.formDate.setText(DateUtil.getConciseDateString(form.getLastEdited(), false));
                 myViewHolder.itemView.findViewById(R.id.formResponseCardView).setOnClickListener(view -> {
                     if (onClickFormV2Listener != null) {
                         onClickFormV2Listener.onClick(form);
