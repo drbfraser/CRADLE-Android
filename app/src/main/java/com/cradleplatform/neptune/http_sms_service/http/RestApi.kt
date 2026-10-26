@@ -24,6 +24,7 @@ import com.cradleplatform.neptune.model.FormAnswerV2
 import com.cradleplatform.neptune.model.FormClassification
 import com.cradleplatform.neptune.model.FormResponse
 import com.cradleplatform.neptune.model.FormSubmissionV2
+import com.cradleplatform.neptune.model.PatientFormSubmissionsV2Response
 import com.cradleplatform.neptune.model.FormSubmissionWithAnswersV2
 import com.cradleplatform.neptune.model.FormTemplate
 import com.cradleplatform.neptune.model.FormTemplateListV2Response
@@ -1026,6 +1027,24 @@ class RestApi(
             requestBody = buildJsonRequestBody(body),
             inputStreamReader = { input ->
                 Gson().fromJson(input.bufferedReader(), FormSubmissionV2::class.java)
+            },
+        )
+    }
+
+    /**
+     * Retrieves the patient's V2 form submissions.
+     */
+    suspend fun getPatientFormSubmissionsV2(
+        patientId: String
+    ): NetworkResult<List<FormSubmissionV2>> = withContext(IO) {
+        http.makeRequest(
+            method = Http.Method.GET,
+            url = urlManager.getPatientFormSubmissionsV2(patientId),
+            headers = makeAuthorizationHeader(),
+            inputStreamReader = { input ->
+                val records = Gson().fromJson(input.bufferedReader(), PatientFormSubmissionsV2Response::class.java)
+                // Reject responses without a forms array.
+                requireNotNull(records.forms)
             },
         )
     }

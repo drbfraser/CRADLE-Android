@@ -857,4 +857,9 @@
     <string name="form_dialog_not_connected_internet">Connect To Internet</string>
     <string name="default_text_view">TextView</string>
 
+    <string name="form_v2_submitted">Submitted form (V2)</string>
+    <string name="form_v2_unnamed">Unnamed form</string>
+    <string name="form_v2_records_load_error">Couldn\'t load V2 forms. Check your connection and try again.</string>
+    <string name="see_submitted_forms_v2">See Submitted Forms (V2)</string>
+    <string name="submitted_forms_v2_empty">No submitted V2 forms for this patient.</string>
 </resources>

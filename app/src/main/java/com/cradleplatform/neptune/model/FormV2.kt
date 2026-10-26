@@ -169,7 +169,13 @@ data class FormSubmissionV2(
     @SerializedName("lastEdited") val lastEdited: Long,
     @SerializedName("lang") val lang: String,
     @SerializedName("archived") val archived: Boolean,
+    @SerializedName("name") val name: String? = null,
 ) : Serializable
+
+/** V2 form submissions returned by the patient records endpoint. */
+data class PatientFormSubmissionsV2Response(
+    @SerializedName("forms") val forms: List<FormSubmissionV2>
+)
 
 data class AnswerWithQuestionV2(
     @SerializedName("id") val id: String?,

@@ -174,6 +174,9 @@ class UrlManager @Inject constructor(val settings: Settings) {
      */
     fun getPatientReadings(id: String) = "$base/patients/$id/readings"
 
+    fun getPatientFormSubmissionsV2(id: String): String =
+        "$base/patients/$id/get_all_records?readings=0&referrals=0&assessments=0&forms=1"
+
     /**
      * Endpoint for getting a single reading.
      *
