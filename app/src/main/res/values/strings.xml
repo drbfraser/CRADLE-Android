@@ -862,4 +862,7 @@
     <string name="form_v2_records_load_error">Couldn\'t load V2 forms. Check your connection and try again.</string>
     <string name="see_submitted_forms_v2">See Submitted Forms (V2)</string>
     <string name="submitted_forms_v2_empty">No submitted V2 forms for this patient.</string>
+    <string name="form_submission_detail_v2_title">View Form (V2)</string>
+    <string name="form_submission_detail_v2_patient_title">View Form for: %1$s</string>
+    <string name="form_submission_detail_v2_error">Couldn\'t load this form. Check your connection and try again.</string>
 </resources>

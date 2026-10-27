@@ -51,6 +51,10 @@
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
             android:exported="false" />
         <activity
+            android:name=".activities.forms.FormSubmissionDetailV2Activity"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
+            android:exported="false" />
+        <activity
             android:name=".sync.views.SyncActivity"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".activities.patients.GlobalPatientProfileActivity" />

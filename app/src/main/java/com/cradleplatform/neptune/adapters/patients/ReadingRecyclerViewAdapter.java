@@ -46,6 +46,7 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
     private List<?> combinedList;
     private RecyclerView recyclerView;
     private OnClickElement onClickElementListener;
+    private OnClickFormV2 onClickFormV2Listener;
 
     public ReadingRecyclerViewAdapter(List<?> combinedList) {
         this.combinedList = combinedList;
@@ -148,7 +149,14 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
                 myViewHolder.formTitle.setText(R.string.form_v2_submitted);
                 myViewHolder.formName.setText(form.getName() == null || form.getName().trim().isEmpty()
                         ? myViewHolder.itemView.getContext().getString(R.string.form_v2_unnamed) : form.getName());
-                myViewHolder.formDate.setText(DateUtil.getConciseDateString(form.getDateSubmitted(), false));
+                TextView lastEditedLabel = myViewHolder.itemView.findViewById(R.id.formResponseDateTitle);
+                lastEditedLabel.setText(R.string.list_item_saved_form_date_last_edited_label);
+                myViewHolder.formDate.setText(DateUtil.getConciseDateString(form.getLastEdited(), false));
+                myViewHolder.itemView.findViewById(R.id.formResponseCardView).setOnClickListener(view -> {
+                    if (onClickFormV2Listener != null) {
+                        onClickFormV2Listener.onClick(form);
+                    }
+                });
                 break;
             case FORM_VIEW:
                 FormResponse currFormResponse = (FormResponse) combinedList.get(i);
@@ -357,6 +365,14 @@ public class ReadingRecyclerViewAdapter extends RecyclerView.Adapter<ReadingRecy
 
     public void setOnClickElementListener(OnClickElement obs) {
         onClickElementListener = obs;
+    }
+
+    public void setOnClickFormV2Listener(OnClickFormV2 listener) {
+        onClickFormV2Listener = listener;
+    }
+
+    public interface OnClickFormV2 {
+        void onClick(FormSubmissionV2 form);
     }
 
     private void onClick(View view) {
