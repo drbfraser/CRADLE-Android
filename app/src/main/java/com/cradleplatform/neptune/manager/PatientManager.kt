@@ -4,6 +4,7 @@ import androidx.room.withTransaction
 import com.cradleplatform.neptune.database.CradleDatabase
 import com.cradleplatform.neptune.database.daos.PatientDao
 import com.cradleplatform.neptune.database.daos.ReadingDao
+import com.cradleplatform.neptune.database.daos.WorkflowInstanceDao
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
 import com.cradleplatform.neptune.http_sms_service.http.map
@@ -24,6 +25,7 @@ class PatientManager @Inject constructor(
     private val database: CradleDatabase,
     private val patientDao: PatientDao,
     private val readingDao: ReadingDao,
+    private val workflowInstanceDao: WorkflowInstanceDao,
     private val restApi: RestApi,
 ) {
     /**
@@ -97,6 +99,25 @@ class PatientManager @Inject constructor(
      * Get the number of patients that have been created or edited offline
      */
     suspend fun getNumberOfPatientsToUpload(): Int = patientDao.countPatientsToUpload()
+
+    /**
+     * IDs of patients that have been synced with the server before. Patients created on this
+     * device and never uploaded are left out, so they are never removed as deleted.
+     */
+    suspend fun getSyncedPatientIds(): List<String> = patientDao.getSyncedPatientIds()
+
+    /**
+     * Removes patients that were deleted on the server. Their readings, referrals, assessments
+     * and form responses are removed with them by the database; workflow instances aren't
+     * linked by a foreign key, so they are removed here.
+     */
+    suspend fun deletePatients(patientIds: List<String>) {
+        if (patientIds.isEmpty()) return
+        database.withTransaction {
+            workflowInstanceDao.deleteByPatientIds(patientIds)
+            patientIds.forEach { patientDao.deleteById(it) }
+        }
+    }
 
     /**
      * Uploads a patient and associated readings to the server.

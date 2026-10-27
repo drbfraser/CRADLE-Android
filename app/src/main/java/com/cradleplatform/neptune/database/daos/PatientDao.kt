@@ -133,6 +133,13 @@ ORDER BY latestReadingDate DESC, name COLLATE NOCASE ASC
     suspend fun getPatientIdsList(): List<String>
 
     /**
+     * IDs of patients that have been synced with the server before. Patients created on this
+     * device and never uploaded have no lastServerUpdate, so they are left out.
+     */
+    @Query("SELECT id FROM Patient WHERE lastServerUpdate IS NOT NULL")
+    suspend fun getSyncedPatientIds(): List<String>
+
+    /**
      * get a single patient by id if exists
      */
     @Query("SELECT * FROM Patient WHERE id = :id")
