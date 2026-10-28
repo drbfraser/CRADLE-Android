@@ -51,6 +51,7 @@ import com.cradleplatform.neptune.activities.newPatient.ReadingActivity.Companio
 import com.cradleplatform.neptune.activities.newPatient.ReadingActivity.Companion.makeIntentForNewReadingExistingPatient
 import com.cradleplatform.neptune.activities.newPatient.ReadingActivity.Companion.makeIntentForRecheck
 import com.cradleplatform.neptune.activities.forms.SavedFormsActivity
+import com.cradleplatform.neptune.activities.forms.DraftFormsV2Activity
 import com.cradleplatform.neptune.activities.forms.SubmittedFormsV2Activity
 import com.cradleplatform.neptune.adapters.patients.ReadingRecyclerViewAdapter
 import com.cradleplatform.neptune.viewmodel.patients.PatientProfileViewModel
@@ -156,6 +157,7 @@ open class PatientProfileActivity : AppCompatActivity() {
                 setupEditPatient(it)
                 setupBtnPregnancy(it)
                 setupSeeSubmittedFormsV2Button()
+                setupSeeDraftFormsV2Button()
 
                 // Setup form buttons when patient is loaded
                 lifecycleScope.launch {
@@ -672,6 +674,17 @@ open class PatientProfileActivity : AppCompatActivity() {
             button.visibility = View.VISIBLE
             button.setOnClickListener {
                 val intent = SubmittedFormsV2Activity.makeIntent(this@PatientProfileActivity, patient.id)
+                startActivity(intent)
+            }
+        }
+    }
+
+    private fun setupSeeDraftFormsV2Button() {
+        currPatient?.let { patient ->
+            val button = findViewById<Button>(R.id.seeDraftFormsV2Button)
+            button.visibility = View.VISIBLE
+            button.setOnClickListener {
+                val intent = DraftFormsV2Activity.makeIntent(this@PatientProfileActivity, patient.id)
                 startActivity(intent)
             }
         }

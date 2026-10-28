@@ -38,6 +38,9 @@ abstract class FormV2DraftDao {
     @Query("SELECT * FROM FormV2Draft WHERE patientId = :patientId AND formTemplateId = :formTemplateId")
     abstract suspend fun getDraft(patientId: String, formTemplateId: String): FormV2Draft?
 
+    @Query("SELECT * FROM FormV2Draft WHERE patientId = :patientId ORDER BY updatedAt DESC")
+    abstract suspend fun getDraftsByPatientId(patientId: String): List<FormV2Draft>
+
     @Query("DELETE FROM FormV2Draft WHERE patientId = :patientId AND formTemplateId = :formTemplateId")
     abstract suspend fun deleteDraft(patientId: String, formTemplateId: String): Int
 }

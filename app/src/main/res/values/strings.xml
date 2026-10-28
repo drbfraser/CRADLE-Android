@@ -865,4 +865,8 @@
     <string name="form_submission_detail_v2_title">View Form (V2)</string>
     <string name="form_submission_detail_v2_patient_title">View Form for: %1$s</string>
     <string name="form_submission_detail_v2_error">Couldn\'t load this form. Check your connection and try again.</string>
+    <string name="see_draft_forms_v2">See Draft Forms (V2)</string>
+    <string name="draft_forms_v2_empty">No V2 draft forms saved for this patient.</string>
+    <string name="draft_forms_v2_load_error">Couldn\'t load V2 drafts. Please try again.</string>
+    <string name="form_v2_draft_last_edited">Last edited: %1$s</string>
 </resources>
