@@ -264,6 +264,10 @@ class SyncAllWorker @AssistedInject constructor(
         // phone if we only use a timestamp after the sync.
         val syncTimestampToSave: BigInteger = UnixTimestamp.now
 
+        // Remove patients deleted on the server first, so stale copies of them (and their
+        // readings and referrals) aren't uploaded again in the steps below.
+        removeDeletedPatients()
+
         val patientsToUpload: List<Patient> = patientManager.getPatientsToUpload()
         val patientResult = syncPatients(patientsToUpload, lastPatientSyncTime)
         val patientsLeftToUpload = patientManager.getNumberOfPatientsToUpload()
@@ -475,6 +479,24 @@ class SyncAllWorker @AssistedInject constructor(
         return Result.success(
             syncResult
         )
+    }
+
+    /**
+     * Asks the server which of the patients synced to this device were deleted, and removes them
+     * locally. A failure here doesn't stop the sync: the server rejects uploads of deleted
+     * patients anyway, and the check is repeated on the next sync.
+     */
+    private suspend fun removeDeletedPatients() {
+        val syncedPatientIds = patientManager.getSyncedPatientIds()
+        if (syncedPatientIds.isEmpty()) return
+
+        when (val result = restApi.syncDeletedPatients(syncedPatientIds)) {
+            is NetworkResult.Success -> {
+                patientManager.deletePatients(result.value)
+                Log.d(TAG, "removed ${result.value.size} patients deleted on the server")
+            }
+            else -> Log.e(TAG, "checking for deleted patients failed; will retry next sync")
+        }
     }
 
     private suspend fun syncPatients(
