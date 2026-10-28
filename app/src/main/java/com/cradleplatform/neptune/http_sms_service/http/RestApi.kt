@@ -1709,9 +1709,8 @@ class RestApi(
                                     }
 
                                     PatientSyncField.ERRORS.text -> {
-                                        // TODO: Parse array of objects (refer to issue #62)
                                         nextToken()
-                                        errors = readValueAsTree<JsonNode>().toPrettyString()
+                                        errors = formatPatientSyncErrors(readValueAsTree())
                                     }
                                 }
                             }
@@ -2715,6 +2714,21 @@ class RestApi(
         }
     }
 }
+
+/**
+ * Turns the `errors` array from the patient sync response, e.g.
+ * `[{"patientId": "123", "errors": "['Some message.']"}]`, into one readable line per patient:
+ * `Patient 123: Some message.` The server sends each message as the string form of a list, so
+ * the `['...']` around it is removed.
+ */
+internal fun formatPatientSyncErrors(errors: JsonNode): String =
+    errors.joinToString("\n") { error ->
+        val patientId = error.path("patientId").asText()
+        val message = error.path("errors").asText()
+            .removeSurrounding("['", "']")
+            .removeSurrounding("[\"", "\"]")
+        "Patient $patientId: $message"
+    }
 
 class SyncException(message: String) : IOException(message)
 

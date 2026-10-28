@@ -926,7 +926,7 @@ class SyncAllWorker @AssistedInject constructor(
             workflowInstanceSyncResult.totalWorkflowInstancesDownloaded
         )
 
-        val errors = patientSyncResult.errors.let { if (it != "[ ]") "\nErrors:\n$it" else "" }
+        val errors = patientSyncResult.errors.let { if (!it.isNullOrBlank()) "\nErrors:\n$it" else "" }
 
         return """
             $success
