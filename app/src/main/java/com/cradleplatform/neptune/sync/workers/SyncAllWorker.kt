@@ -266,7 +266,7 @@ class SyncAllWorker @AssistedInject constructor(
 
         // Remove patients deleted on the server first, so stale copies of them (and their
         // readings and referrals) aren't uploaded again in the steps below.
-        removeDeletedPatients()
+        val totalPatientsRemoved = removeDeletedPatients()
 
         val patientsToUpload: List<Patient> = patientManager.getPatientsToUpload()
         val patientResult = syncPatients(patientsToUpload, lastPatientSyncTime)
@@ -461,6 +461,7 @@ class SyncAllWorker @AssistedInject constructor(
         val syncResult = workDataOf(
             RESULT_MESSAGE to getResultSuccessMessage(
                 patientResult,
+                totalPatientsRemoved,
                 healthFacilitiesResult,
                 readingResult,
                 referralResult,
@@ -485,17 +486,23 @@ class SyncAllWorker @AssistedInject constructor(
      * Asks the server which of the patients synced to this device were deleted, and removes them
      * locally. A failure here doesn't stop the sync: the server rejects uploads of deleted
      * patients anyway, and the check is repeated on the next sync.
+     *
+     * @return the number of patients removed (0 if none, or if the check failed)
      */
-    private suspend fun removeDeletedPatients() {
+    private suspend fun removeDeletedPatients(): Int {
         val syncedPatientIds = patientManager.getSyncedPatientIds()
-        if (syncedPatientIds.isEmpty()) return
+        if (syncedPatientIds.isEmpty()) return 0
 
-        when (val result = restApi.syncDeletedPatients(syncedPatientIds)) {
+        return when (val result = restApi.syncDeletedPatients(syncedPatientIds)) {
             is NetworkResult.Success -> {
                 patientManager.deletePatients(result.value)
                 Log.d(TAG, "removed ${result.value.size} patients deleted on the server")
+                result.value.size
             }
-            else -> Log.e(TAG, "checking for deleted patients failed; will retry next sync")
+            else -> {
+                Log.e(TAG, "checking for deleted patients failed; will retry next sync")
+                0
+            }
         }
     }
 
@@ -891,6 +898,7 @@ class SyncAllWorker @AssistedInject constructor(
 
     private fun getResultSuccessMessage(
         patientSyncResult: PatientSyncResult,
+        totalPatientsRemoved: Int,
         healthFacilitySyncResult: HealthFacilitySyncResult,
         readingSyncResult: ReadingSyncResult,
         referralSyncResult: ReferralSyncResult,
@@ -905,6 +913,9 @@ class SyncAllWorker @AssistedInject constructor(
         )
         val totalPatientsDownloaded = applicationContext.getString(
             R.string.sync_total_patients_downloaded_s, patientSyncResult.totalPatientsDownloaded
+        )
+        val totalPatientsRemovedLine = applicationContext.getString(
+            R.string.sync_total_patients_removed_s, totalPatientsRemoved
         )
         val totalHealthFacilitiesDownloaded = applicationContext.getString(
             R.string.sync_total_HealthFacilities_downloaded_s,
@@ -954,6 +965,7 @@ class SyncAllWorker @AssistedInject constructor(
             $success
             $totalPatientsUploaded
             $totalPatientsDownloaded
+            $totalPatientsRemovedLine
             $totalHealthFacilitiesDownloaded
             $totalReadingsUploaded
             $totalReadingsDownloaded
