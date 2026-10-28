@@ -490,20 +490,13 @@ class SyncAllWorker @AssistedInject constructor(
      * @return the number of patients removed (0 if none, or if the check failed)
      */
     private suspend fun removeDeletedPatients(): Int {
-        val syncedPatientIds = patientManager.getSyncedPatientIds()
-        if (syncedPatientIds.isEmpty()) return 0
-
-        return when (val result = restApi.syncDeletedPatients(syncedPatientIds)) {
-            is NetworkResult.Success -> {
-                patientManager.deletePatients(result.value)
-                Log.d(TAG, "removed ${result.value.size} patients deleted on the server")
-                result.value.size
-            }
-            else -> {
-                Log.e(TAG, "checking for deleted patients failed; will retry next sync")
-                0
-            }
+        val removed = patientManager.removePatientsDeletedOnServer()
+        if (removed == null) {
+            Log.e(TAG, "checking for deleted patients failed; will retry next sync")
+            return 0
         }
+        Log.d(TAG, "removed $removed patients deleted on the server")
+        return removed
     }
 
     private suspend fun syncPatients(

@@ -120,6 +120,25 @@ class PatientManager @Inject constructor(
     }
 
     /**
+     * Asks the server which of the patients synced to this device were deleted, and removes them
+     * locally.
+     *
+     * @return the number of patients removed, or null if the server couldn't be checked
+     */
+    suspend fun removePatientsDeletedOnServer(): Int? {
+        val syncedPatientIds = getSyncedPatientIds()
+        if (syncedPatientIds.isEmpty()) return 0
+
+        return when (val result = restApi.syncDeletedPatients(syncedPatientIds)) {
+            is NetworkResult.Success -> {
+                deletePatients(result.value)
+                result.value.size
+            }
+            else -> null
+        }
+    }
+
+    /**
      * Uploads a patient and associated readings to the server.
      *
      * Upon successful upload, the patient's `base` field will be updated to
