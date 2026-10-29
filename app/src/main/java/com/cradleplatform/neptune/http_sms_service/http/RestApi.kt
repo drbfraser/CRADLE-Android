@@ -20,6 +20,7 @@ import com.cradleplatform.neptune.manager.SmsKey
 import com.cradleplatform.neptune.manager.UrlManager
 import com.cradleplatform.neptune.model.Assessment
 import com.cradleplatform.neptune.model.CreateFormSubmissionRequestV2
+import com.cradleplatform.neptune.model.DeletedPatientsResponse
 import com.cradleplatform.neptune.model.FormAnswerV2
 import com.cradleplatform.neptune.model.FormClassification
 import com.cradleplatform.neptune.model.FormResponse
@@ -68,6 +69,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONArray
 import org.json.JSONObject
 import java.io.IOException
 import java.io.InputStream
@@ -1647,6 +1649,30 @@ class RestApi(
             }
         }
     }
+
+    /**
+     * Asks the server which of the given patient IDs were deleted, so the device can
+     * remove them. The server only returns IDs of patients this user could access.
+     */
+    suspend fun syncDeletedPatients(patientIds: List<String>): NetworkResult<List<String>> =
+        withContext(IO) {
+            val body = JSONObject()
+                .put("patient_ids", JSONArray(patientIds))
+                .toString()
+                .toByteArray()
+
+            http.makeRequest(
+                method = Http.Method.POST,
+                url = urlManager.getDeletedPatientsSync(),
+                headers = makeAuthorizationHeader(),
+                requestBody = buildJsonRequestBody(body),
+                inputStreamReader = {
+                    JacksonMapper.readerForDeletedPatientsResponse
+                        .readValue<DeletedPatientsResponse>(it)
+                        .deletedPatientIds
+                }
+            )
+        }
 
     /**
      * Syncs the patients on the device with the server, where [lastSyncTimestamp] is the last time

@@ -53,8 +53,9 @@ class DataModule {
         database: CradleDatabase,
         patientDao: PatientDao,
         readingDao: ReadingDao,
+        workflowInstanceDao: WorkflowInstanceDao,
         restApi: RestApi
-    ) = PatientManager(database, patientDao, readingDao, restApi)
+    ) = PatientManager(database, patientDao, readingDao, workflowInstanceDao, restApi)
 
     @Provides
     @Singleton

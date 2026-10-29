@@ -199,6 +199,9 @@ class UrlManager @Inject constructor(val settings: Settings) {
     fun getPatientsSync(lastSyncTimestamp: BigInteger): String =
         "$base/sync/patients?since=$lastSyncTimestamp"
 
+    fun getDeletedPatientsSync(): String =
+        "$base/sync/deleted_patients"
+
     fun getReadingsSync(lastSyncTimestamp: BigInteger): String =
         "$base/sync/readings?since=$lastSyncTimestamp"
 

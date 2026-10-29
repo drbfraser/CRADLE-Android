@@ -1,6 +1,7 @@
 package com.cradleplatform.neptune.utilities.jackson
 
 import com.cradleplatform.neptune.model.Assessment
+import com.cradleplatform.neptune.model.DeletedPatientsResponse
 import com.cradleplatform.neptune.model.FormTemplate
 import com.cradleplatform.neptune.model.GestationalAge
 import com.cradleplatform.neptune.model.GlobalPatient
@@ -68,6 +69,10 @@ internal object JacksonMapper {
 
     val readerForRelayPhoneNumberResponse: ObjectReader by lazy {
         mapper.readerFor(RelayPhoneNumberResponse::class.java)
+    }
+
+    val readerForDeletedPatientsResponse: ObjectReader by lazy {
+        mapper.readerFor(DeletedPatientsResponse::class.java)
     }
 
     val readerSmsKey: ObjectReader by lazy {
