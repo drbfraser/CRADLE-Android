@@ -1,5 +1,7 @@
 package com.cradleplatform.neptune.manager
 
+import android.database.sqlite.SQLiteException
+import android.util.Log
 import androidx.room.withTransaction
 import com.cradleplatform.neptune.database.CradleDatabase
 import com.cradleplatform.neptune.database.daos.PatientDao
@@ -107,14 +109,15 @@ class PatientManager @Inject constructor(
     suspend fun getSyncedPatientIds(): List<String> = patientDao.getSyncedPatientIds()
 
     /**
-     * Removes patients that were deleted on the server. Their readings, referrals, assessments
-     * and form responses are removed with them by the database; workflow instances aren't
+     * Removes patients that were deleted on the server. Their readings, referrals, assessments,
+     * form responses and form drafts are removed with them by the database; workflow instances aren't
      * linked by a foreign key, so they are removed here.
      */
     suspend fun deletePatients(patientIds: List<String>) {
         if (patientIds.isEmpty()) return
         database.withTransaction {
-            workflowInstanceDao.deleteByPatientIds(patientIds)
+            // Batched because older SQLite versions allow at most 999 parameters per query.
+            patientIds.chunked(MAX_SQLITE_PARAMS).forEach { workflowInstanceDao.deleteByPatientIds(it) }
             patientIds.forEach { patientDao.deleteById(it) }
         }
     }
@@ -123,7 +126,8 @@ class PatientManager @Inject constructor(
      * Asks the server which of the patients synced to this device were deleted, and removes them
      * locally.
      *
-     * @return the number of patients removed, or null if the server couldn't be checked
+     * @return the number of patients removed, or null if the server couldn't be checked or the
+     * patients couldn't be removed locally
      */
     suspend fun removePatientsDeletedOnServer(): Int? {
         val syncedPatientIds = getSyncedPatientIds()
@@ -131,8 +135,14 @@ class PatientManager @Inject constructor(
 
         return when (val result = restApi.syncDeletedPatients(syncedPatientIds)) {
             is NetworkResult.Success -> {
-                deletePatients(result.value)
-                result.value.size
+                try {
+                    deletePatients(result.value)
+                    result.value.size
+                } catch (e: SQLiteException) {
+                    // The transaction rolled back, so nothing was removed; the next sync tries again.
+                    Log.e(TAG, "removing patients deleted on the server failed", e)
+                    null
+                }
             }
             else -> null
         }
@@ -304,5 +314,12 @@ class PatientManager @Inject constructor(
         addPatientWithReadings(downloadedPatient, downloadedReadings, areReadingsFromServer = true)
 
         return downloadResult
+    }
+
+    companion object {
+        private const val TAG = "PatientManager"
+
+        /** Older Android SQLite versions allow at most 999 parameters per query. */
+        private const val MAX_SQLITE_PARAMS = 999
     }
 }

@@ -1,5 +1,6 @@
 package com.cradleplatform.neptune.manager
 
+import android.database.sqlite.SQLiteException
 import androidx.room.withTransaction
 import com.cradleplatform.neptune.database.CradleDatabase
 import com.cradleplatform.neptune.database.daos.PatientDao
@@ -111,4 +112,27 @@ internal class PatientManagerDeleteTests {
         coVerify(exactly = 0) { patientDao.deleteById(any()) }
         coVerify(exactly = 0) { workflowInstanceDao.deleteByPatientIds(any()) }
     }
+
+    @Test
+    fun `deletePatients removes workflow instances in batches of at most 999 IDs`() = runBlocking {
+        val patientIds = (1..1500).map { it.toString() }
+
+        patientManager.deletePatients(patientIds)
+
+        coVerify(exactly = 1) { workflowInstanceDao.deleteByPatientIds(patientIds.subList(0, 999)) }
+        coVerify(exactly = 1) { workflowInstanceDao.deleteByPatientIds(patientIds.subList(999, 1500)) }
+        coVerify(exactly = 1500) { patientDao.deleteById(any()) }
+    }
+
+    @Test
+    fun `removePatientsDeletedOnServer returns null instead of throwing when the local delete fails`() =
+        runBlocking {
+            coEvery { patientDao.getSyncedPatientIds() } returns listOf("1")
+            coEvery { restApi.syncDeletedPatients(any()) } returns NetworkResult.Success(listOf("1"), 200)
+            coEvery { patientDao.deleteById(any()) } throws SQLiteException("disk I/O error")
+
+            val removed = patientManager.removePatientsDeletedOnServer()
+
+            assertNull(removed)
+        }
 }
