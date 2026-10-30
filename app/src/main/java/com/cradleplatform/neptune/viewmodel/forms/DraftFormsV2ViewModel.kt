@@ -7,9 +7,11 @@ import com.cradleplatform.neptune.database.daos.FormV2DraftDao
 import com.cradleplatform.neptune.model.FormV2Draft
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -27,20 +29,24 @@ class DraftFormsV2ViewModel @Inject constructor(
     private val patientId: String = requireNotNull(savedStateHandle[EXTRA_PATIENT_ID])
     private val _state = MutableStateFlow<DraftFormsV2State>(DraftFormsV2State.Loading)
     val state: StateFlow<DraftFormsV2State> = _state.asStateFlow()
+    private var observeDraftsJob: Job? = null
 
     init {
         loadDrafts()
     }
 
     fun loadDrafts() {
+        observeDraftsJob?.cancel()
         _state.value = DraftFormsV2State.Loading
-        viewModelScope.launch {
-            _state.value = try {
-                DraftFormsV2State.Success(formV2DraftDao.getDraftsByPatientId(patientId))
+        observeDraftsJob = viewModelScope.launch {
+            try {
+                formV2DraftDao.observeDraftsByPatientId(patientId).collect { drafts ->
+                    _state.value = DraftFormsV2State.Success(drafts)
+                }
             } catch (exception: CancellationException) {
                 throw exception
             } catch (exception: Exception) {
-                DraftFormsV2State.Error
+                _state.value = DraftFormsV2State.Error
             }
         }
     }
