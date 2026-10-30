@@ -48,9 +48,21 @@ class FormV2RenderingActivity : AppCompatActivity() {
 
     private val viewModel: FormV2RenderingViewModel by viewModels()
     private val disabledInputs = mutableMapOf<View, Boolean>()
-    private val submissionBackCallback = object : OnBackPressedCallback(false) {
+    private var isLeavingForm = false
+    private val formBackCallback = object : OnBackPressedCallback(true) {
         override fun handleOnBackPressed() {
-            Toast.makeText(this@FormV2RenderingActivity, R.string.form_submitting, Toast.LENGTH_SHORT).show()
+            if (isLeavingForm) return
+            if (viewModel.submissionState.value == FormV2SubmissionState.Submitting) {
+                Toast.makeText(this@FormV2RenderingActivity, R.string.form_submitting, Toast.LENGTH_SHORT).show()
+                return
+            }
+            if (intent.getStringExtra(FormTemplateListV2Activity.EXTRA_PATIENT_ID).isNullOrBlank()) {
+                isEnabled = false
+                onBackPressedDispatcher.onBackPressed()
+                return
+            }
+
+            saveDraftAndReturnToPatientProfile()
         }
     }
 
@@ -58,7 +70,7 @@ class FormV2RenderingActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_form_v2_rendering)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        onBackPressedDispatcher.addCallback(this, submissionBackCallback)
+        onBackPressedDispatcher.addCallback(this, formBackCallback)
 
         findViewById<Button>(R.id.form_v2_save_draft_button).setOnClickListener {
             viewModel.saveDraft()
@@ -90,8 +102,33 @@ class FormV2RenderingActivity : AppCompatActivity() {
 
     override fun onStop() {
         // Covers normal navigation, backgrounding, and rotation.
-        viewModel.saveDraft()
+        if (!isLeavingForm) viewModel.saveDraft()
         super.onStop()
+    }
+
+    private fun saveDraftAndReturnToPatientProfile() {
+        if (isLeavingForm) return
+        isLeavingForm = true
+        updateSubmissionControls()
+        updateDraftSaveButton()
+        lifecycleScope.launch {
+            val saveJob = viewModel.saveDraft()
+            saveJob?.join()
+            if (saveJob != null && viewModel.draftSaveState.value == FormV2DraftSaveState.Error) {
+                isLeavingForm = false
+                updateSubmissionControls()
+                updateDraftSaveButton()
+                return@launch
+            }
+            if (saveJob != null && viewModel.draftSaveState.value == FormV2DraftSaveState.Saved) {
+                Toast.makeText(
+                    this@FormV2RenderingActivity,
+                    R.string.form_submission_saved_draft_success,
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+            returnToPatientProfile()
+        }
     }
 
     private fun renderDraftSaveState(state: FormV2DraftSaveState) {
@@ -110,7 +147,7 @@ class FormV2RenderingActivity : AppCompatActivity() {
     ) {
         findViewById<Button>(R.id.form_v2_save_draft_button).apply {
             visibility = if (viewModel.canSaveDraft) View.VISIBLE else View.GONE
-            isEnabled = viewModel.canSaveDraft && saveState != FormV2DraftSaveState.Saving &&
+            isEnabled = viewModel.canSaveDraft && !isLeavingForm && saveState != FormV2DraftSaveState.Saving &&
                 viewModel.submissionState.value != FormV2SubmissionState.Submitting
         }
     }
@@ -129,7 +166,6 @@ class FormV2RenderingActivity : AppCompatActivity() {
         updateDraftSaveButton()
         if (state == FormV2SubmissionState.Submitted) {
             Toast.makeText(this, R.string.form_submission_success, Toast.LENGTH_LONG).show()
-            returnToPatientProfile()
         }
     }
 
@@ -142,16 +178,14 @@ class FormV2RenderingActivity : AppCompatActivity() {
     }
 
     private fun updateSubmissionControls() {
-        val submitting = viewModel.submissionState.value == FormV2SubmissionState.Submitting
         val patientId = intent.getStringExtra(FormTemplateListV2Activity.EXTRA_PATIENT_ID)
-        submissionBackCallback.isEnabled = submitting
         findViewById<Button>(R.id.form_v2_submit_button).apply {
             visibility = if (patientId.isNullOrBlank()) View.GONE else View.VISIBLE
-            isEnabled = viewModel.canSubmit
+            isEnabled = viewModel.canSubmit && !isLeavingForm
         }
         // Remember disabled controls (including unsupported TIME) when unlocking after an error
         val content = findViewById<LinearLayout>(R.id.form_v2_content)
-        if (!viewModel.canEditAnswers) {
+        if (!viewModel.canEditAnswers || isLeavingForm) {
             content.descendants.forEach { input ->
                 disabledInputs.putIfAbsent(input, input.isEnabled)
                 input.isEnabled = false
@@ -163,6 +197,7 @@ class FormV2RenderingActivity : AppCompatActivity() {
     }
 
     private fun returnToPatientProfile() {
+        if (isFinishing) return
         intent.getStringExtra(FormTemplateListV2Activity.EXTRA_PATIENT_ID)?.let { patientId ->
             val intent = PatientProfileActivity.makeIntentForPatientId(this, patientId)
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)

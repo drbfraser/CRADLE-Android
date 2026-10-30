@@ -143,17 +143,17 @@ class FormV2RenderingViewModel @Inject constructor(
         selectedLanguage = requestedLanguage ?: draft.language
     }
 
-    /** Saves only patient-based forms after their template has finished loading. */
-    fun saveDraft() {
+    /** Saves a patient draft and returns the write job so navigation can wait for it. */
+    fun saveDraft(): Job? {
         // Avoid overwriting a stored draft before its answers finish restoring
-        if (!canSaveDraft) return
-        val patient = patientId?.takeIf { it.isNotBlank() } ?: return
-        val template = loadedTemplate ?: return
+        if (!canSaveDraft) return null
+        val patient = patientId?.takeIf { it.isNotBlank() } ?: return null
+        val template = loadedTemplate ?: return null
         // Capture the answers at the save request, before a queued write or further edits
         val draft = createDraft(patient, template, answerState.toFormAnswers())
         clearSavedDraftStatusJob?.cancel()
         _draftSaveState.value = FormV2DraftSaveState.Saving
-        viewModelScope.launch {
+        return viewModelScope.launch {
             // Keep manual and lifecycle saves in order
             draftSaveMutex.withLock {
                 if (hasSubmitted) {
