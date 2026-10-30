@@ -11,7 +11,8 @@ import com.cradleplatform.neptune.model.getTranslation
 import com.cradleplatform.neptune.utilities.DateUtil
 
 class DraftFormsV2Adapter(
-    private val drafts: List<FormV2Draft>
+    private val drafts: List<FormV2Draft>,
+    private val onDraftClick: (FormV2Draft) -> Unit
 ) : RecyclerView.Adapter<DraftFormsV2Adapter.DraftViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DraftViewHolder {
@@ -29,6 +30,7 @@ class DraftFormsV2Adapter(
             R.string.form_v2_draft_last_edited,
             DateUtil.getConciseDateString(draft.updatedAt / 1000, false)
         )
+        holder.itemView.setOnClickListener { onDraftClick(draft) }
     }
 
     override fun getItemCount(): Int = drafts.size

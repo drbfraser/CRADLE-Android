@@ -106,10 +106,26 @@ class FormV2RenderingViewModel @Inject constructor(
 
     private fun loadTemplate() {
         viewModelScope.launch {
+            val savedDraft = try {
+                patientId?.let { formV2DraftDao.getDraft(it, formTemplateId) }
+            } catch (exception: CancellationException) {
+                throw exception
+            } catch (exception: Exception) {
+                Log.e(javaClass.simpleName, "Failed to load V2 draft", exception)
+                _state.value = FormV2RenderingState.Error("Unable to load saved form.")
+                return@launch
+            }
+
+            if (savedDraft != null) {
+                loadedTemplate = savedDraft.formTemplate
+                restoreDraft(savedDraft)
+                _state.value = FormV2RenderingState.Success(savedDraft.formTemplate)
+                return@launch
+            }
+
             _state.value = when (val result = restApi.getFormTemplateV2(formTemplateId)) {
                 is NetworkResult.Success -> {
                     loadedTemplate = result.value
-                    restoreDraft(result.value)
                     FormV2RenderingState.Success(result.value)
                 }
                 is NetworkResult.Failure -> FormV2RenderingState.Error("Server error (${result.statusCode})")
@@ -120,15 +136,11 @@ class FormV2RenderingViewModel @Inject constructor(
         }
     }
 
-    private suspend fun restoreDraft(template: FormTemplateV2) {
-        val draft = patientId?.let { formV2DraftDao.getDraft(it, formTemplateId) }
-        // Do not apply answers to a newer template whose questions may have changed.
-        if (draft?.formTemplateVersion == template.version) {
-            answerState.replaceAnswers(draft.answers)
-            submissionId = draft.submissionId
-            // A fresh selection takes precedence when reopening an existing draft.
-            selectedLanguage = requestedLanguage ?: draft.language
-        }
+    private fun restoreDraft(draft: FormV2Draft) {
+        answerState.replaceAnswers(draft.answers)
+        submissionId = draft.submissionId
+        // Keep the saved language unless the user explicitly selected one for this form.
+        selectedLanguage = requestedLanguage ?: draft.language
     }
 
     /** Saves only patient-based forms after their template has finished loading. */

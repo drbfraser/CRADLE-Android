@@ -56,7 +56,16 @@ class DraftFormsV2Activity : AppCompatActivity() {
                     status.text = getString(R.string.draft_forms_v2_empty)
                     status.visibility = View.VISIBLE
                 } else {
-                    recyclerView.adapter = DraftFormsV2Adapter(state.drafts)
+                    recyclerView.adapter = DraftFormsV2Adapter(state.drafts) { draft ->
+                        startActivity(
+                            FormV2RenderingActivity.makeIntent(
+                                this,
+                                draft.formTemplateId,
+                                draft.patientId,
+                                draft.language
+                            )
+                        )
+                    }
                     recyclerView.visibility = View.VISIBLE
                 }
             }
