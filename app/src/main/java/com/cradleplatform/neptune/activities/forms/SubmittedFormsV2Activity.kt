@@ -56,7 +56,14 @@ class SubmittedFormsV2Activity : AppCompatActivity() {
                     status.text = getString(R.string.submitted_forms_v2_empty)
                     status.visibility = View.VISIBLE
                 } else {
-                    recyclerView.adapter = ReadingRecyclerViewAdapter(state.forms)
+                    recyclerView.adapter = ReadingRecyclerViewAdapter(state.forms).apply {
+                        setOnClickFormV2Listener { form ->
+                            val intent = FormSubmissionDetailV2Activity.makeIntent(
+                                this@SubmittedFormsV2Activity, form.id, form.patientId
+                            )
+                            startActivity(intent)
+                        }
+                    }
                     recyclerView.visibility = View.VISIBLE
                 }
             }
