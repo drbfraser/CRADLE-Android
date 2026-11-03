@@ -566,7 +566,19 @@
                 android:background="@drawable/rounded_button"
                 android:text="@string/see_saved_forms"
                 android:visibility="visible"
+                app:layout_constraintBottom_toTopOf="@+id/seeDraftFormsV2Button"
                 app:layout_constraintTop_toBottomOf="@+id/newPatientReadingButton" />
+
+            <Button
+                android:id="@+id/seeDraftFormsV2Button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/reading_flow_previous_reading_item_margin"
+                android:background="@drawable/rounded_button"
+                android:text="@string/see_draft_forms_v2"
+                android:visibility="gone"
+                app:layout_constraintBottom_toTopOf="@+id/seeSubmittedFormsButton"
+                app:layout_constraintTop_toBottomOf="@+id/seeSavedFormsButton" />
 
             <Button
                 android:id="@+id/seeSubmittedFormsButton"
@@ -577,7 +589,7 @@
                 android:text="@string/see_submitted_forms"
                 android:visibility="visible"
                 app:layout_constraintBottom_toTopOf="@+id/seeSubmittedFormsV2Button"
-                app:layout_constraintTop_toBottomOf="@+id/seeSavedFormsButton" />
+                app:layout_constraintTop_toBottomOf="@+id/seeDraftFormsV2Button" />
 
             <Button
                 android:id="@+id/seeSubmittedFormsV2Button"

@@ -338,6 +338,37 @@ internal class FormV2RenderingViewModelTest {
     }
 
     @Test
+    fun `reopening a draft uses its saved template snapshot when the server template has changed`() =
+        runTest(testDispatcher) {
+            val savedAnswers = listOf(
+                FormAnswerV2(questionId = "q1", answer = AnswerV2.createTextAnswer("Headache"))
+            )
+            val savedTemplate = template()
+            val draft = FormV2Draft(
+                patientId = "patient-1",
+                formTemplateId = "template-1",
+                formTemplateVersion = savedTemplate.version,
+                formTemplate = savedTemplate,
+                answers = savedAnswers,
+                language = "French",
+                createdAt = 1,
+                updatedAt = 1,
+                submissionId = "saved-submission-id"
+            )
+            coEvery { draftDao.getDraft("patient-1", "template-1") } returns draft
+            coEvery { restApi.getFormTemplateV2("template-1") } returns
+                NetworkResult.Success(template().copy(version = savedTemplate.version + 1), 200)
+
+            val viewModel = createViewModel()
+            runCurrent()
+
+            assertEquals(FormV2RenderingState.Success(savedTemplate), viewModel.state.value)
+            assertEquals("Headache", viewModel.answerState.getAnswer("q1")?.textAnswer)
+            assertEquals("French", viewModel.language)
+            coVerify(exactly = 0) { restApi.getFormTemplateV2("template-1") }
+        }
+
+    @Test
     fun `explicit language selection overrides draft language without losing answers or submission ID`() =
         runTest(testDispatcher) {
             val savedAnswers = listOf(
