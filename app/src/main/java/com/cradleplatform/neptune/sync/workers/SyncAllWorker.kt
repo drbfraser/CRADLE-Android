@@ -36,6 +36,7 @@ import com.cradleplatform.neptune.manager.WorkflowManager
 import com.cradleplatform.neptune.model.Assessment
 import com.cradleplatform.neptune.model.FormClassification
 import com.cradleplatform.neptune.model.FormResponse
+import com.cradleplatform.neptune.model.FormTemplateV2Entity
 import com.cradleplatform.neptune.model.HealthFacility
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.Reading
@@ -48,6 +49,7 @@ import com.cradleplatform.neptune.utilities.UnixTimestamp
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -437,9 +439,14 @@ class SyncAllWorker @AssistedInject constructor(
         }
 
         val formTemplateResult = syncFormTemplates()
-        if (formTemplateResult.networkResult !is NetworkResult.Success) {
+        val formTemplateV2Result = if (formTemplateResult.networkResult is NetworkResult.Success) {
+            syncFormTemplatesV2()
+        } else {
+            formTemplateResult
+        }
+        if (formTemplateV2Result.networkResult !is NetworkResult.Success) {
             return Result.failure(
-                workDataOf(RESULT_MESSAGE to getResultErrorMessage(formTemplateResult.networkResult))
+                workDataOf(RESULT_MESSAGE to getResultErrorMessage(formTemplateV2Result.networkResult))
             )
         }
 
@@ -462,6 +469,7 @@ class SyncAllWorker @AssistedInject constructor(
                 referralResult,
                 assessmentResult,
                 formTemplateResult,
+                formTemplateV2Result,
                 workflowTemplateResult,
                 workflowInstanceResult
             )
@@ -786,6 +794,45 @@ class SyncAllWorker @AssistedInject constructor(
         }
     }
 
+    private suspend fun syncFormTemplatesV2(): FormSyncResult = withContext(Dispatchers.IO) {
+        setProgress(workDataOf(PROGRESS_CURRENT_STATE to State.DOWNLOADING_FORM_TEMPLATES.name))
+        try {
+            val summaryResult = restApi.getAllClassificationsSummaryV2()
+            if (summaryResult !is NetworkResult.Success) {
+                return@withContext FormSyncResult(summaryResult.cast(), 0)
+            }
+
+            val summaries = summaryResult.value.filter { it.archived != true }.distinctBy { it.id }
+            val templates = mutableListOf<FormTemplateV2Entity>()
+            for (summary in summaries) {
+                // The summary endpoint is shallow; fetch questions and all translations separately.
+                val templateResult = restApi.getFormTemplateV2(summary.id)
+                if (templateResult !is NetworkResult.Success) {
+                    return@withContext FormSyncResult(templateResult.cast(), 0)
+                }
+                val template = templateResult.value
+                require(template.id == summary.id && template.questions != null) {
+                    "Incomplete V2 template response for ${summary.id}"
+                }
+                templates.add(FormTemplateV2Entity(template.id, template, availableForNewForms = true))
+                reportProgress(
+                    state = State.DOWNLOADING_FORM_TEMPLATES,
+                    progress = templates.size,
+                    total = summaries.size
+                )
+            }
+
+            // Keep the previous catalog intact unless every full template was downloaded.
+            database.formTemplateV2Dao().replaceAvailableTemplates(templates)
+            FormSyncResult(NetworkResult.Success(Unit, summaryResult.statusCode), templates.size)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Log.e(TAG, "V2 form template sync failed", e)
+            FormSyncResult(NetworkResult.NetworkException(e), 0)
+        }
+    }
+
     private suspend fun syncFormResponses(
         lastSyncTime: BigInteger
     ): FormResponseSyncResult = withContext(Dispatchers.Default) {
@@ -874,6 +921,7 @@ class SyncAllWorker @AssistedInject constructor(
         referralSyncResult: ReferralSyncResult,
         assessmentSyncResult: AssessmentSyncResult,
         formTemplateSyncResult: FormSyncResult,
+        formTemplateV2SyncResult: FormSyncResult,
         workflowTemplateSyncResult: WorkflowTemplateSyncResult,
         workflowInstanceSyncResult: WorkflowInstanceSyncResult
     ): String {
@@ -912,6 +960,10 @@ class SyncAllWorker @AssistedInject constructor(
             R.string.sync_total_form_templates_downloaded,
             formTemplateSyncResult.totalFormClassDownloaded
         )
+        val totalFormsV2Downloaded = applicationContext.getString(
+            R.string.sync_total_form_templates_v2_downloaded,
+            formTemplateV2SyncResult.totalFormClassDownloaded
+        )
 
         val totalWorkflowTemplatesDownloaded = applicationContext.getString(
             R.string.sync_total_workflow_templates_downloaded_s,
@@ -940,6 +992,7 @@ class SyncAllWorker @AssistedInject constructor(
             $totalAssessmentsUploaded
             $totalAssessmentsDownloaded
             $totalFormsDownloaded
+            $totalFormsV2Downloaded
             $totalWorkflowTemplatesDownloaded
             $totalWorkflowInstancesUploaded
             $totalWorkflowInstancesDownloaded
