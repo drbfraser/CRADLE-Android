@@ -11,6 +11,7 @@ import com.cradleplatform.neptune.database.daos.AssessmentDao
 import com.cradleplatform.neptune.database.daos.FormClassificationDao
 import com.cradleplatform.neptune.database.daos.FormResponseDao
 import com.cradleplatform.neptune.database.daos.FormV2DraftDao
+import com.cradleplatform.neptune.database.daos.FormTemplateV2Dao
 import com.cradleplatform.neptune.database.daos.HealthFacilityDao
 import com.cradleplatform.neptune.database.daos.PatientDao
 import com.cradleplatform.neptune.database.daos.ReadingDao
@@ -22,6 +23,7 @@ import com.cradleplatform.neptune.model.Assessment
 import com.cradleplatform.neptune.model.FormClassification
 import com.cradleplatform.neptune.model.FormResponse
 import com.cradleplatform.neptune.model.FormV2Draft
+import com.cradleplatform.neptune.model.FormTemplateV2Entity
 import com.cradleplatform.neptune.model.HealthFacility
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.Reading
@@ -29,7 +31,7 @@ import com.cradleplatform.neptune.model.Referral
 import com.cradleplatform.neptune.model.WorkflowInstance
 import com.cradleplatform.neptune.model.WorkflowTemplate
 
-const val CURRENT_DATABASE_VERSION = 5
+const val CURRENT_DATABASE_VERSION = 6
 
 /**
  * An interface for the local CRADLE database.
@@ -49,6 +51,7 @@ const val CURRENT_DATABASE_VERSION = 5
         FormClassification::class,
         FormResponse::class,
         FormV2Draft::class,
+        FormTemplateV2Entity::class,
         WorkflowInstance::class,
         WorkflowTemplate::class
     ],
@@ -66,6 +69,7 @@ abstract class CradleDatabase : RoomDatabase() {
     abstract fun formClassificationDao(): FormClassificationDao
     abstract fun formResponseDao(): FormResponseDao
     abstract fun formV2DraftDao(): FormV2DraftDao
+    abstract fun formTemplateV2Dao(): FormTemplateV2Dao
     abstract fun workflowInstanceDao(): WorkflowInstanceDao
     abstract fun workflowTemplateDao(): WorkflowTemplateDao
 
@@ -105,7 +109,7 @@ abstract class CradleDatabase : RoomDatabase() {
 @Suppress("MagicNumber", "NestedBlockDepth", "ObjectPropertyNaming")
 internal object Migrations {
     val ALL_MIGRATIONS: Array<Migration> by lazy {
-        arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
+        arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
     }
 
     /**
@@ -266,6 +270,21 @@ internal object Migrations {
     private val MIGRATION_4_5 = object : Migration(4, 5) {
         override fun migrate(database: SupportSQLiteDatabase) {
             database.execSQL("ALTER TABLE FormV2Draft ADD COLUMN `submissionId` TEXT")
+        }
+    }
+
+    /** Version 6: Cache full V2 templates without altering existing tables or drafts. */
+    private val MIGRATION_5_6 = object : Migration(5, 6) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            database.execSQL(
+                """
+                CREATE TABLE IF NOT EXISTS FormTemplateV2Entity (
+                    `id` TEXT NOT NULL PRIMARY KEY,
+                    `template` TEXT NOT NULL,
+                    `availableForNewForms` INTEGER NOT NULL
+                )
+                """.trimIndent()
+            )
         }
     }
 }
