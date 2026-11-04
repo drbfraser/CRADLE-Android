@@ -62,7 +62,7 @@ class FormV2RenderingActivity : AppCompatActivity() {
                 return
             }
 
-            saveDraftAndLeave()
+            saveDraftAndLeave(returnToPatient = false)
         }
     }
 
@@ -73,7 +73,7 @@ class FormV2RenderingActivity : AppCompatActivity() {
         onBackPressedDispatcher.addCallback(this, formBackCallback)
 
         findViewById<Button>(R.id.form_v2_save_draft_button).setOnClickListener {
-            viewModel.saveDraft()
+            saveDraftAndLeave(returnToPatient = true)
         }
         findViewById<Button>(R.id.form_v2_submit_button).setOnClickListener {
             viewModel.submitForm()
@@ -106,7 +106,7 @@ class FormV2RenderingActivity : AppCompatActivity() {
         super.onStop()
     }
 
-    private fun saveDraftAndLeave() {
+    private fun saveDraftAndLeave(returnToPatient: Boolean) {
         if (isLeavingForm) return
         isLeavingForm = true
         updateSubmissionControls()
@@ -127,7 +127,11 @@ class FormV2RenderingActivity : AppCompatActivity() {
                     Toast.LENGTH_LONG
                 ).show()
             }
-            returnToPreviousScreen()
+            if (returnToPatient) {
+                returnToPatientProfile()
+            } else {
+                finish()
+            }
         }
     }
 
@@ -166,7 +170,7 @@ class FormV2RenderingActivity : AppCompatActivity() {
         updateDraftSaveButton()
         if (state == FormV2SubmissionState.Submitted) {
             Toast.makeText(this, R.string.form_submission_success, Toast.LENGTH_LONG).show()
-            returnToPreviousScreen()
+            returnToPatientProfile()
         }
     }
 
@@ -197,15 +201,12 @@ class FormV2RenderingActivity : AppCompatActivity() {
         }
     }
 
-    private fun returnToPreviousScreen() {
+    private fun returnToPatientProfile() {
         if (isFinishing) return
-        // Draft lists stay on the back stack; only new forms skip the selection screens.
-        if (!intent.getBooleanExtra(EXTRA_OPENED_FROM_DRAFT_LIST, false)) {
-            intent.getStringExtra(FormTemplateListV2Activity.EXTRA_PATIENT_ID)?.let { patientId ->
-                val intent = PatientProfileActivity.makeIntentForPatientId(this, patientId)
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                startActivity(intent)
-            }
+        intent.getStringExtra(FormTemplateListV2Activity.EXTRA_PATIENT_ID)?.let { patientId ->
+            val intent = PatientProfileActivity.makeIntentForPatientId(this, patientId)
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            startActivity(intent)
         }
         finish()
     }
@@ -484,20 +485,17 @@ class FormV2RenderingActivity : AppCompatActivity() {
 
     companion object {
         const val EXTRA_LANGUAGE = "form_v2_language"
-        private const val EXTRA_OPENED_FROM_DRAFT_LIST = "form_v2_opened_from_draft_list"
 
         fun makeIntent(
             context: Context,
             templateId: String,
             patientId: String? = null,
-            language: String? = null,
-            openedFromDraftList: Boolean = false
+            language: String? = null
         ): Intent =
             Intent(context, FormV2RenderingActivity::class.java).apply {
                 putExtra(FormTemplateDetailV2ViewModel.EXTRA_TEMPLATE_ID, templateId)
                 putExtra(FormTemplateListV2Activity.EXTRA_PATIENT_ID, patientId)
                 putExtra(EXTRA_LANGUAGE, language)
-                putExtra(EXTRA_OPENED_FROM_DRAFT_LIST, openedFromDraftList)
             }
     }
 }

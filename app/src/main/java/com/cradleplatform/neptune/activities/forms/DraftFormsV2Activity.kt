@@ -65,8 +65,7 @@ class DraftFormsV2Activity : AppCompatActivity() {
                                 this,
                                 draft.formTemplateId,
                                 draft.patientId,
-                                draft.language,
-                                openedFromDraftList = true
+                                draft.language
                             )
                         )
                     }
