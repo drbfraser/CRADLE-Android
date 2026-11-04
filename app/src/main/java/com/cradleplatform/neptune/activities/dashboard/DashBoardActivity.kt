@@ -21,7 +21,7 @@ import com.cradleplatform.neptune.utilities.Util
 import com.cradleplatform.neptune.activities.education.EducationActivity
 import com.cradleplatform.neptune.activities.patients.PatientsActivity
 import com.cradleplatform.neptune.activities.newPatient.ReadingActivity
-import com.cradleplatform.neptune.activities.forms.SavedFormsActivity
+import com.cradleplatform.neptune.activities.forms.DraftFormsV2Activity
 import com.cradleplatform.neptune.activities.statistics.StatsActivity
 import com.cradleplatform.neptune.activities.settings.SettingsActivity.Companion.makeSettingsActivityLaunchIntent
 import com.cradleplatform.neptune.viewmodel.DashboardViewModel
@@ -261,12 +261,8 @@ class DashBoardActivity : AppCompatActivity(), View.OnClickListener {
 
             R.id.statCardView, R.id.statImg -> startActivity(Intent(this, StatsActivity::class.java))
             R.id.formsCardView, R.id.formsImg -> {
-                val intent = Intent(this, SavedFormsActivity::class.java)
-                intent.putExtra("Patient ID that the forms are saved for", "")
-                intent.putExtra("The Patient object that the forms are saved for", "")
-                intent.putExtra("Boolean value indicating whether the forms are saved", true)
-                intent.putExtra("The previous page the backspace leads to", true)
-                startActivity(intent) }
+                startActivity(DraftFormsV2Activity.makeIntent(this))
+            }
         }
     }
 
