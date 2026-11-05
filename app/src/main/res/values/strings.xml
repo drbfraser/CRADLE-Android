@@ -613,6 +613,7 @@
     <string name="sync_total_referrals_downloaded_s">Number of referrals downloaded: %1$d</string>
     <string name="sync_total_form_templates_downloaded">Number of forms downloaded: %1$d</string>
     <string name="sync_total_form_templates_v2_downloaded">Number of V2 forms downloaded: %1$d</string>
+    <string name="sync_form_templates_failure">Forms %1$s template sync failed: %2$s</string>
     <string name="sync_total_workflow_templates_downloaded_s">Number of workflow templates downloaded: %1$d</string>
     <string name="sync_total_workflow_instances_uploaded_s">Number of workflows uploaded: %1$d</string>
     <string name="sync_total_workflow_instances_downloaded_s">Number of workflows downloaded: %1$d</string>

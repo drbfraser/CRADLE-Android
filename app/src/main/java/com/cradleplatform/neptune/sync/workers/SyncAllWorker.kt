@@ -438,15 +438,21 @@ class SyncAllWorker @AssistedInject constructor(
             )
         }
 
+        // Cache V2 templates independently of the legacy endpoint.
+        val formTemplateV2Result = syncFormTemplatesV2()
         val formTemplateResult = syncFormTemplates()
-        val formTemplateV2Result = if (formTemplateResult.networkResult is NetworkResult.Success) {
-            syncFormTemplatesV2()
-        } else {
-            formTemplateResult
-        }
-        if (formTemplateV2Result.networkResult !is NetworkResult.Success) {
+        val formTemplateErrors = listOf(
+            "V1" to formTemplateResult.networkResult,
+            "V2" to formTemplateV2Result.networkResult
+        ).filter { (_, result) -> result !is NetworkResult.Success }
+            .map { (version, result) ->
+                applicationContext.getString(
+                    R.string.sync_form_templates_failure, version, getResultErrorMessage(result)
+                )
+            }
+        if (formTemplateErrors.isNotEmpty()) {
             return Result.failure(
-                workDataOf(RESULT_MESSAGE to getResultErrorMessage(formTemplateV2Result.networkResult))
+                workDataOf(RESULT_MESSAGE to formTemplateErrors.joinToString("\n"))
             )
         }
 

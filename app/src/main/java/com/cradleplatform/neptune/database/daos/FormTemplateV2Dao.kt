@@ -25,7 +25,7 @@ abstract class FormTemplateV2Dao {
     open suspend fun replaceAvailableTemplates(templates: List<FormTemplateV2Entity>) {
         // Older templates remain available to read historical submissions.
         markTemplatesUnavailable()
-        insertTemplates(templates)
+        insertTemplates(templates.map { it.copy(availableForNewForms = true) })
     }
 
     @Transaction
