@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cradleplatform.neptune.database.daos.FormV2DraftDao
+import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.model.FormV2Draft
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
@@ -17,16 +18,21 @@ import javax.inject.Inject
 
 sealed class DraftFormsV2State {
     object Loading : DraftFormsV2State()
-    data class Success(val drafts: List<FormV2Draft>) : DraftFormsV2State()
+    data class Success(
+        val drafts: List<FormV2Draft>,
+        val patientNames: Map<String, String>? = null
+    ) : DraftFormsV2State()
     object Error : DraftFormsV2State()
 }
 
 @HiltViewModel
 class DraftFormsV2ViewModel @Inject constructor(
     private val formV2DraftDao: FormV2DraftDao,
+    private val patientManager: PatientManager,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
-    private val patientId: String = requireNotNull(savedStateHandle[EXTRA_PATIENT_ID])
+    private val patientId: String? = savedStateHandle.get<String>(EXTRA_PATIENT_ID)?.takeIf { it.isNotBlank() }
+    val isAllPatients: Boolean = patientId == null
     private val _state = MutableStateFlow<DraftFormsV2State>(DraftFormsV2State.Loading)
     val state: StateFlow<DraftFormsV2State> = _state.asStateFlow()
     private var observeDraftsJob: Job? = null
@@ -40,8 +46,16 @@ class DraftFormsV2ViewModel @Inject constructor(
         _state.value = DraftFormsV2State.Loading
         observeDraftsJob = viewModelScope.launch {
             try {
-                formV2DraftDao.observeDraftsByPatientId(patientId).collect { drafts ->
-                    _state.value = DraftFormsV2State.Success(drafts)
+                val draftsFlow = patientId?.let { formV2DraftDao.observeDraftsByPatientId(it) }
+                    ?: formV2DraftDao.observeAllDrafts()
+                draftsFlow.collect { drafts ->
+                    // Dashboard drafts need patient labels; patient-specific lists already have context.
+                    val patientNames = if (isAllPatients) {
+                        drafts.map { it.patientId }.distinct().associateWith { id ->
+                            patientManager.getPatientById(id)?.name.orEmpty()
+                        }
+                    } else null
+                    _state.value = DraftFormsV2State.Success(drafts, patientNames)
                 }
             } catch (exception: CancellationException) {
                 throw exception

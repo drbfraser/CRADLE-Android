@@ -62,7 +62,7 @@ class FormV2RenderingActivity : AppCompatActivity() {
                 return
             }
 
-            saveDraftAndReturnToPatientProfile()
+            saveDraftAndLeave(returnToPatient = false)
         }
     }
 
@@ -73,7 +73,7 @@ class FormV2RenderingActivity : AppCompatActivity() {
         onBackPressedDispatcher.addCallback(this, formBackCallback)
 
         findViewById<Button>(R.id.form_v2_save_draft_button).setOnClickListener {
-            viewModel.saveDraft()
+            saveDraftAndLeave(returnToPatient = true)
         }
         findViewById<Button>(R.id.form_v2_submit_button).setOnClickListener {
             viewModel.submitForm()
@@ -106,7 +106,7 @@ class FormV2RenderingActivity : AppCompatActivity() {
         super.onStop()
     }
 
-    private fun saveDraftAndReturnToPatientProfile() {
+    private fun saveDraftAndLeave(returnToPatient: Boolean) {
         if (isLeavingForm) return
         isLeavingForm = true
         updateSubmissionControls()
@@ -127,7 +127,11 @@ class FormV2RenderingActivity : AppCompatActivity() {
                     Toast.LENGTH_LONG
                 ).show()
             }
-            returnToPatientProfile()
+            if (returnToPatient) {
+                returnToPatientProfile()
+            } else {
+                finish()
+            }
         }
     }
 
@@ -166,6 +170,7 @@ class FormV2RenderingActivity : AppCompatActivity() {
         updateDraftSaveButton()
         if (state == FormV2SubmissionState.Submitted) {
             Toast.makeText(this, R.string.form_submission_success, Toast.LENGTH_LONG).show()
+            returnToPatientProfile()
         }
     }
 
