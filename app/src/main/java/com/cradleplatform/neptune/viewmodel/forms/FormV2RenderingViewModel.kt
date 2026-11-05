@@ -9,6 +9,7 @@ import com.cradleplatform.neptune.activities.forms.FormV2RenderingActivity
 import com.cradleplatform.neptune.database.daos.FormV2DraftDao
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
+import com.cradleplatform.neptune.manager.FormTemplateV2Manager
 import com.cradleplatform.neptune.model.CreateFormSubmissionRequestV2
 import com.cradleplatform.neptune.model.FormAnswerV2
 import com.cradleplatform.neptune.model.FormV2Draft
@@ -59,6 +60,7 @@ sealed class FormV2SubmissionState {
 class FormV2RenderingViewModel @Inject constructor(
     private val restApi: RestApi,
     private val formV2DraftDao: FormV2DraftDao,
+    private val formTemplateManager: FormTemplateV2Manager,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -123,7 +125,7 @@ class FormV2RenderingViewModel @Inject constructor(
                 return@launch
             }
 
-            _state.value = when (val result = restApi.getFormTemplateV2(formTemplateId)) {
+            _state.value = when (val result = formTemplateManager.getTemplate(formTemplateId)) {
                 is NetworkResult.Success -> {
                     loadedTemplate = result.value
                     FormV2RenderingState.Success(result.value)

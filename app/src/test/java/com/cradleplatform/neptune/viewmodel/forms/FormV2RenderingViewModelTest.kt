@@ -4,6 +4,9 @@ import androidx.lifecycle.SavedStateHandle
 import com.cradleplatform.neptune.activities.forms.FormTemplateListV2Activity
 import com.cradleplatform.neptune.activities.forms.FormV2RenderingActivity
 import com.cradleplatform.neptune.database.daos.FormV2DraftDao
+import com.cradleplatform.neptune.database.daos.FormTemplateV2Dao
+import com.cradleplatform.neptune.manager.FormTemplateV2Manager
+import com.cradleplatform.neptune.model.FormTemplateV2Entity
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
 import com.cradleplatform.neptune.model.AnswerV2
@@ -39,12 +42,16 @@ internal class FormV2RenderingViewModelTest {
     private val testDispatcher = StandardTestDispatcher()
     private lateinit var restApi: RestApi
     private lateinit var draftDao: FormV2DraftDao
+    private lateinit var templateDao: FormTemplateV2Dao
 
     @BeforeEach
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
         restApi = mockk()
         draftDao = mockk()
+        templateDao = mockk()
+        coEvery { templateDao.getTemplate(any()) } returns null
+        coEvery { templateDao.saveTemplate(any()) } returns Unit
         coEvery { restApi.getFormTemplateV2("template-1") } returns NetworkResult.Success(template(), 200)
         coEvery { restApi.getFormTemplateLanguagesV2("template-1") } returns NetworkResult.Success(
             FormTemplateLanguagesV2Response(listOf("English", "French", "swahili")), 200
@@ -63,6 +70,7 @@ internal class FormV2RenderingViewModelTest {
     fun `save reports success only after the write completes and captures answers at the request`() =
         runTest(testDispatcher) {
             val writeCompleted = CompletableDeferred<Unit>()
+            coEvery { templateDao.getTemplate("template-1") } returns FormTemplateV2Entity("template-1", template())
             var savedDraft: FormV2Draft? = null
             coEvery { draftDao.upsert(any()) } coAnswers {
                 savedDraft = firstArg()
@@ -70,6 +78,7 @@ internal class FormV2RenderingViewModelTest {
             }
             val viewModel = createViewModel()
             runCurrent()
+            coVerify(exactly = 0) { restApi.getFormTemplateV2(any()) }
             viewModel.answerState.setAnswer("q1", AnswerV2.createTextAnswer("Headache"))
 
             viewModel.saveDraft()
@@ -464,6 +473,7 @@ internal class FormV2RenderingViewModelTest {
     ) = FormV2RenderingViewModel(
         restApi,
         draftDao,
+        FormTemplateV2Manager(restApi, templateDao),
         SavedStateHandle(mapOf(
             FormTemplateDetailV2ViewModel.EXTRA_TEMPLATE_ID to "template-1",
             FormTemplateListV2Activity.EXTRA_PATIENT_ID to patientId,
