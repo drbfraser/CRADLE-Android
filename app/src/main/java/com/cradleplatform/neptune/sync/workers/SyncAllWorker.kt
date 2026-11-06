@@ -450,12 +450,8 @@ class SyncAllWorker @AssistedInject constructor(
                     R.string.sync_form_templates_failure, version, getResultErrorMessage(result)
                 )
             }
-        if (formTemplateErrors.isNotEmpty()) {
-            return Result.failure(
-                workDataOf(RESULT_MESSAGE to formTemplateErrors.joinToString("\n"))
-            )
-        }
 
+        // A template download failure must not skip the record download.
         val lastFormResponseSyncTime = BigInteger(
             sharedPreferences.getString(LAST_FORM_RESPONSE_SYNC, LAST_SYNC_DEFAULT)!!
         )
@@ -466,6 +462,11 @@ class SyncAllWorker @AssistedInject constructor(
             }
         }
         // Non-fatal: if form response sync fails, continue and log but don't fail the whole sync
+        if (formTemplateErrors.isNotEmpty()) {
+            return Result.failure(
+                workDataOf(RESULT_MESSAGE to formTemplateErrors.joinToString("\n"))
+            )
+        }
 
         val syncResult = workDataOf(
             RESULT_MESSAGE to getResultSuccessMessage(
