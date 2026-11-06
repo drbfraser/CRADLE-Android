@@ -811,15 +811,25 @@ class SyncAllWorker @AssistedInject constructor(
 
             val summaries = summaryResult.value.filter { it.archived != true }.distinctBy { it.id }
             val templates = mutableListOf<FormTemplateV2Entity>()
+            val templateDao = database.formTemplateV2Dao()
+            var downloadedTemplates = 0
             for (summary in summaries) {
-                // The summary endpoint is shallow; fetch questions and all translations separately.
-                val templateResult = restApi.getFormTemplateV2(summary.id)
-                if (templateResult !is NetworkResult.Success) {
-                    return@withContext FormSyncResult(templateResult.cast(), 0)
-                }
-                val template = templateResult.value
-                require(template.id == summary.id && template.questions != null) {
-                    "Incomplete V2 template response for ${summary.id}"
+                val cachedTemplate = templateDao.getTemplate(summary.id)?.template
+                    ?.takeIf { it.questions != null && it.archived != true }
+                val template = if (cachedTemplate != null && cachedTemplate.version == summary.version) {
+                    cachedTemplate
+                } else {
+                    // The summary endpoint is shallow; download the full template only when needed.
+                    val templateResult = restApi.getFormTemplateV2(summary.id)
+                    if (templateResult !is NetworkResult.Success) {
+                        return@withContext FormSyncResult(templateResult.cast(), 0)
+                    }
+                    val downloadedTemplate = templateResult.value
+                    require(downloadedTemplate.id == summary.id && downloadedTemplate.questions != null) {
+                        "Incomplete V2 template response for ${summary.id}"
+                    }
+                    downloadedTemplates++
+                    downloadedTemplate
                 }
                 templates.add(FormTemplateV2Entity(template.id, template, availableForNewForms = true))
                 reportProgress(
@@ -829,9 +839,9 @@ class SyncAllWorker @AssistedInject constructor(
                 )
             }
 
-            // Keep the previous catalog intact unless every full template was downloaded.
-            database.formTemplateV2Dao().replaceAvailableTemplates(templates)
-            FormSyncResult(NetworkResult.Success(Unit, summaryResult.statusCode), templates.size)
+            // Refresh availability even when every template was reused from the cache.
+            templateDao.replaceAvailableTemplates(templates)
+            FormSyncResult(NetworkResult.Success(Unit, summaryResult.statusCode), downloadedTemplates)
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
