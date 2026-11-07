@@ -93,6 +93,12 @@ class PatientManager @Inject constructor(
     suspend fun getPatientById(id: String): Patient? = patientDao.getPatientById(id)
 
     /**
+     * Gets a patient with the given patient number if one exists. Patient numbers aren't unique.
+     */
+    suspend fun getPatientByPatientNumber(patientNumber: String): Patient? =
+        patientDao.getPatientByPatientNumber(patientNumber)
+
+    /**
      * Get all the patients that have been created or edited offline
      */
     suspend fun getPatientsToUpload(): List<Patient> = patientDao.readPatientsToUpload()

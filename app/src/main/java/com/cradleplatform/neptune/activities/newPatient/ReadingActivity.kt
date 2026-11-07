@@ -29,18 +29,16 @@ import androidx.test.espresso.idling.CountingIdlingResource
 import com.cradleplatform.neptune.R
 import com.cradleplatform.neptune.databinding.ActivityReadingBinding
 import com.cradleplatform.neptune.ext.hideKeyboard
-import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.http_sms_service.sms.SmsStateReporter
 import com.cradleplatform.neptune.manager.SmsKeyManager
 import com.cradleplatform.neptune.sync.SyncStatusManager
 import com.cradleplatform.neptune.sync.bindSyncStatusIndicator
-import com.cradleplatform.neptune.fragments.patients.PatientIdConflictDialogFragment
+import com.cradleplatform.neptune.fragments.patients.PatientNumberConflictDialogFragment
 import com.cradleplatform.neptune.fragments.newPatient.ReferralDialogFragment
 import com.cradleplatform.neptune.viewmodel.patients.PatientReadingViewModel
 import com.cradleplatform.neptune.viewmodel.patients.ReadingFlowError
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -285,22 +283,11 @@ class ReadingActivity : AppCompatActivity(), ReferralDialogFragment.OnReadingSen
             // (CTRL + Q on them).
             when (error) {
                 ReadingFlowError.NO_ERROR -> onNextButtonClickedWithNoErrors(navController)
-                ReadingFlowError.ERROR_PATIENT_ID_IN_USE_LOCAL -> {
+                ReadingFlowError.WARNING_PATIENT_NUMBER_IN_USE_LOCAL -> {
                     check(patient != null)
 
-                    PatientIdConflictDialogFragment.makeInstance(
-                        isPatientLocal = true,
-                        patient = patient
-                    ).show(supportFragmentManager, PATIENT_ID_IN_USE_DIALOG_FRAGMENT_TAG)
-                }
-                ReadingFlowError.ERROR_PATIENT_ID_IN_USE_ON_SERVER -> {
-                    viewModel.clearBottomNavBarMessage()
-                    check(patient != null)
-
-                    PatientIdConflictDialogFragment.makeInstance(
-                        isPatientLocal = false,
-                        patient = patient
-                    ).show(supportFragmentManager, PATIENT_ID_IN_USE_DIALOG_FRAGMENT_TAG)
+                    PatientNumberConflictDialogFragment.makeInstance(patient)
+                        .show(supportFragmentManager, PATIENT_NUMBER_IN_USE_DIALOG_FRAGMENT_TAG)
                 }
                 ReadingFlowError.ERROR_INVALID_FIELDS -> {
                     Toast.makeText(
@@ -392,38 +379,13 @@ class ReadingActivity : AppCompatActivity(), ReferralDialogFragment.OnReadingSen
         else -> error("need a launch reason to be in ReadingActivity")
     }
 
-    fun downloadPatientAndReadingsFromServer(patientId: String) {
-        Toast.makeText(
-            this,
-            R.string.reading_activity_downloading_patient_toast,
-            Toast.LENGTH_SHORT
-        ).show()
-        lifecycleScope.launch(Dispatchers.Main) {
-            when (val result = viewModel.downloadAssociateAndSavePatient(patientId)) {
-                is NetworkResult.Success -> {
-                    Toast.makeText(
-                        this@ReadingActivity,
-                        R.string.reading_activity_downloading_patient_successful_toast,
-                        Toast.LENGTH_SHORT
-                    ).show()
-
-                    val newReadingIntent = makeIntentForNewReadingExistingPatient(
-                        context = this@ReadingActivity,
-                        patientId = result.value.patient.id
-                    )
-                    startActivity(newReadingIntent)
-                    finish()
-                }
-                else -> {
-                    Toast.makeText(
-                        this@ReadingActivity,
-                        R.string.reading_activity_downloading_patient_failed_toast,
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    viewModel.setInputEnabledState(true)
-                }
-            }
-        }
+    /**
+     * Called when the user chooses to create a new patient even though a patient in their local
+     * patients list already has the same patient number.
+     */
+    fun continueWithDuplicatePatientNumber() {
+        viewModel.acceptDuplicatePatientNumber()
+        onNextButtonClickedWithNoErrors(findNavController(R.id.reading_nav_host))
     }
 
     enum class LaunchReason {
@@ -436,7 +398,7 @@ class ReadingActivity : AppCompatActivity(), ReferralDialogFragment.OnReadingSen
         private const val EXTRA_READING_ID = "ID of reading to load"
         private const val EXTRA_PATIENT_ID = "patient_id"
 
-        private const val PATIENT_ID_IN_USE_DIALOG_FRAGMENT_TAG = "patientIdInUse"
+        private const val PATIENT_NUMBER_IN_USE_DIALOG_FRAGMENT_TAG = "patientNumberInUse"
 
         public const val EXTRA_SNACKBAR_MSG = "snackbar message"
 

@@ -88,7 +88,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="4dp"
             android:maxLines="1"
-            android:text="@{localSearchPatient.id}"
+            android:text="@{localSearchPatient.patientNumber}"
             android:textAppearance="@style/TextAppearance.Cradle.Body1"
             app:layout_constraintBaseline_toBaselineOf="@+id/list_item_patient_id_label_text_view"
             app:layout_constraintEnd_toStartOf="@+id/patient_info_guideline"
