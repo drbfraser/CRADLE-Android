@@ -1,5 +1,6 @@
 package com.cradleplatform.neptune.model
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.TypeConverters
@@ -35,7 +36,10 @@ data class FormV2Draft(
     val createdAt: Long,
     val updatedAt: Long,
     /** Stable client-generated ID reused if a POST response is lost and the user retries */
-    val submissionId: String? = null
+    val submissionId: String? = null,
+    /** True after the user submits offline and the draft is waiting for upload. */
+    @ColumnInfo(defaultValue = "0")
+    val pendingSubmission: Boolean = false
 ) {
     init {
         // Keep the row identity and its serialized template snapshot from silently diverging.

@@ -63,6 +63,38 @@ class FormV2DraftMigrationTest {
         migrated.close()
     }
 
+    @Test
+    fun migrate6To7KeepsExistingDraftAndDefaultsPendingSubmissionToFalse() {
+        val databaseName = "form-v2-pending-submission-migration-test"
+        val oldDatabase = helper.createDatabase(databaseName, 6)
+        oldDatabase.execSQL("PRAGMA foreign_keys = ON")
+        insertPatient(oldDatabase)
+        val draft = ContentValues().apply {
+            put("patientId", "patient-1")
+            put("formTemplateId", "template-1")
+            put("formTemplateVersion", 2)
+            put("formTemplate", "{\"id\":\"template-1\",\"version\":2}")
+            put("answers", "[{\"questionId\":\"q1\",\"answer\":{\"text\":\"saved answer\"}}]")
+            put("language", "English")
+            put("createdAt", 1000L)
+            put("updatedAt", 2000L)
+            put("submissionId", "existing-submission-id")
+        }
+        oldDatabase.insert("FormV2Draft", SQLiteDatabase.CONFLICT_ABORT, draft)
+        oldDatabase.close()
+
+        val migrated = helper.runMigrationsAndValidate(databaseName, 7, true, *Migrations.ALL_MIGRATIONS)
+        assertEquals(1, count(migrated, "FormV2Draft"))
+        draft.valueSet().forEach { (column, expected) ->
+            assertEquals(expected.toString(), value(migrated, "FormV2Draft", column))
+        }
+        migrated.query("SELECT pendingSubmission FROM FormV2Draft").use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertFalse(cursor.getInt(0) != 0)
+        }
+        migrated.close()
+    }
+
     private fun insertPatient(database: SupportSQLiteDatabase) {
         val values = ContentValues().apply {
             put("id", "patient-1")

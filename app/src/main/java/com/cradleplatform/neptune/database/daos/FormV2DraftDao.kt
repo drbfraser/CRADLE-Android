@@ -25,7 +25,8 @@ abstract class FormV2DraftDao {
             // A later lifecycle save must not erase an ID prepared for a retryable submission
             updateDraft(draft.copy(
                 createdAt = existing.createdAt,
-                submissionId = draft.submissionId ?: existing.submissionId
+                submissionId = draft.submissionId ?: existing.submissionId,
+                pendingSubmission = draft.pendingSubmission || existing.pendingSubmission
             ))
         }
     }
@@ -41,6 +42,9 @@ abstract class FormV2DraftDao {
 
     @Query("SELECT * FROM FormV2Draft WHERE patientId = :patientId ORDER BY updatedAt DESC")
     abstract fun observeDraftsByPatientId(patientId: String): Flow<List<FormV2Draft>>
+
+    @Query("SELECT * FROM FormV2Draft WHERE pendingSubmission = 1")
+    abstract suspend fun getPendingSubmissions(): List<FormV2Draft>
 
     @Query("DELETE FROM FormV2Draft WHERE patientId = :patientId AND formTemplateId = :formTemplateId")
     abstract suspend fun deleteDraft(patientId: String, formTemplateId: String): Int

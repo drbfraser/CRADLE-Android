@@ -31,7 +31,7 @@ import com.cradleplatform.neptune.model.Referral
 import com.cradleplatform.neptune.model.WorkflowInstance
 import com.cradleplatform.neptune.model.WorkflowTemplate
 
-const val CURRENT_DATABASE_VERSION = 6
+const val CURRENT_DATABASE_VERSION = 7
 
 /**
  * An interface for the local CRADLE database.
@@ -109,7 +109,14 @@ abstract class CradleDatabase : RoomDatabase() {
 @Suppress("MagicNumber", "NestedBlockDepth", "ObjectPropertyNaming")
 internal object Migrations {
     val ALL_MIGRATIONS: Array<Migration> by lazy {
-        arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
+        arrayOf(
+            MIGRATION_1_2,
+            MIGRATION_2_3,
+            MIGRATION_3_4,
+            MIGRATION_4_5,
+            MIGRATION_5_6,
+            MIGRATION_6_7
+        )
     }
 
     /**
@@ -284,6 +291,15 @@ internal object Migrations {
                     `availableForNewForms` INTEGER NOT NULL
                 )
                 """.trimIndent()
+            )
+        }
+    }
+
+    /** Version 7: Distinguish drafts queued for submission from drafts saved for later editing. */
+    private val MIGRATION_6_7 = object : Migration(6, 7) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            database.execSQL(
+                "ALTER TABLE FormV2Draft ADD COLUMN `pendingSubmission` INTEGER NOT NULL DEFAULT 0"
             )
         }
     }
