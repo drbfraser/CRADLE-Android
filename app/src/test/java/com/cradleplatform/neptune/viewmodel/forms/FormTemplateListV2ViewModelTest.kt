@@ -1,5 +1,12 @@
 package com.cradleplatform.neptune.viewmodel.forms
 
+import com.cradleplatform.neptune.database.daos.FormTemplateV2Dao
+import com.cradleplatform.neptune.manager.FormTemplateV2Manager
+import com.cradleplatform.neptune.model.FormTemplateV2
+import com.cradleplatform.neptune.model.FormTemplateV2Entity
+import com.google.gson.Gson
+import io.mockk.coEvery
+import io.mockk.mockk
 import com.cradleplatform.neptune.testutils.MockDependencyUtils
 import com.cradleplatform.neptune.testutils.MockWebServerUtils
 import kotlinx.coroutines.Dispatchers
@@ -20,17 +27,21 @@ import org.junit.jupiter.api.Test
 
 /**
  * tests for FormTemplateListV2ViewModel: the network success path, and the
- * SharedPreferences cache fallback when the network fails.
+ * Room template cache used for offline selection.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class FormTemplateListV2ViewModelTest {
 
     private val testDispatcher = StandardTestDispatcher()
     private var mockServer: MockWebServer? = null
+    private val templateDao = mockk<FormTemplateV2Dao>()
 
     @BeforeEach
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
+        coEvery { templateDao.getAvailableTemplates() } returns emptyList()
+        coEvery { templateDao.getTemplate(any()) } returns null
+        coEvery { templateDao.saveTemplate(any()) } returns Unit
     }
 
     @AfterEach
@@ -61,7 +72,7 @@ internal class FormTemplateListV2ViewModelTest {
         }
         mockServer = server
 
-        val viewModel = FormTemplateListV2ViewModel(restApi, sharedPreferences)
+        val viewModel = FormTemplateListV2ViewModel(FormTemplateV2Manager(restApi, templateDao))
         val state = awaitResult(viewModel)
 
         check(state is FormTemplateListV2State.Success) { "got $state" }
@@ -98,7 +109,7 @@ internal class FormTemplateListV2ViewModelTest {
                 }
             }
             mockServer = server
-            val viewModel = FormTemplateListV2ViewModel(restApi, sharedPreferences)
+            val viewModel = FormTemplateListV2ViewModel(FormTemplateV2Manager(restApi, templateDao))
             val listState = awaitResult(viewModel)
             check(listState is FormTemplateListV2State.Success) {
                 "got $listState"
@@ -130,20 +141,12 @@ internal class FormTemplateListV2ViewModelTest {
         }
 
     @Test
-    fun `loadTemplates falls back to the cached list when the network fails`() = runTest(testDispatcher) {
-        // first, a successful fetch to populate the cache.
+    fun `cached templates support listing and selection without network requests`() = runTest(testDispatcher) {
+        val template = Gson().fromJson(TEMPLATE_DETAIL_JSON, FormTemplateV2::class.java)
+        val cachedTemplate = FormTemplateV2Entity(template.id, template, availableForNewForms = true)
+        coEvery { templateDao.getAvailableTemplates() } returns listOf(cachedTemplate)
+        coEvery { templateDao.getTemplate(template.id) } returns cachedTemplate
         val (_, sharedPreferences) = MockDependencyUtils.createMockSharedPreferences()
-        val (successRestApi, successServer) = MockWebServerUtils.createRestApiWithServerBlock(sharedPreferences) {
-            dispatcher = object : Dispatcher() {
-                override fun dispatch(request: RecordedRequest) =
-                    MockResponse().setResponseCode(200).setBody(TEMPLATE_LIST_JSON)
-            }
-        }
-        val warmUpViewModel = FormTemplateListV2ViewModel(successRestApi, sharedPreferences)
-        awaitResult(warmUpViewModel)
-        successServer.shutdown()
-
-        // second ViewModel, same cached prefs, but the network now fails.
         val (failingRestApi, failingServer) = MockWebServerUtils.createRestApiWithServerBlock(sharedPreferences) {
             dispatcher = object : Dispatcher() {
                 override fun dispatch(request: RecordedRequest) = MockResponse().setResponseCode(500)
@@ -151,10 +154,10 @@ internal class FormTemplateListV2ViewModelTest {
         }
         mockServer = failingServer
 
-        val viewModel = FormTemplateListV2ViewModel(failingRestApi, sharedPreferences)
+        val viewModel = FormTemplateListV2ViewModel(FormTemplateV2Manager(failingRestApi, templateDao))
         val state = awaitResult(viewModel)
 
-        check(state is FormTemplateListV2State.Success) { "got $state, expected cache fallback" }
+        check(state is FormTemplateListV2State.Success) { "got $state, expected cached templates" }
         assertEquals(1, state.templates.size)
         assertEquals("Antenatal", state.templates.first().name)
 
@@ -163,9 +166,11 @@ internal class FormTemplateListV2ViewModelTest {
         assertEquals(null, viewModel.selectedLanguage)
         assertEquals(state.templates.first().id, viewModel.selectedTemplateId)
         val detailState = viewModel.selectedTemplate.first {
-            it is FormTemplateDetailV2State.Error
+            it is FormTemplateDetailV2State.Success
         }
-        check(detailState is FormTemplateDetailV2State.Error)
+        check(detailState is FormTemplateDetailV2State.Success)
+        assertEquals(template, detailState.template)
+        assertEquals(0, failingServer.requestCount)
     }
 
     @Test
@@ -178,7 +183,7 @@ internal class FormTemplateListV2ViewModelTest {
         }
         mockServer = server
 
-        val viewModel = FormTemplateListV2ViewModel(restApi, sharedPreferences)
+        val viewModel = FormTemplateListV2ViewModel(FormTemplateV2Manager(restApi, templateDao))
         val state = awaitResult(viewModel)
 
         check(state is FormTemplateListV2State.Error) { "got $state" }

@@ -4,7 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
-import com.cradleplatform.neptune.http_sms_service.http.RestApi
+import com.cradleplatform.neptune.manager.FormTemplateV2Manager
 import com.cradleplatform.neptune.model.FormTemplateV2
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,8 +14,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
- * Standalone V2 form template detail screen, calling [RestApi.getFormTemplateV2] directly.
- * Read-only, like [FormTemplateListV2ViewModel] - no mapper, no local database involved.
+ * UI state for the standalone V2 template detail screen.
  */
 sealed class FormTemplateDetailV2State {
     object Loading : FormTemplateDetailV2State()
@@ -25,7 +24,7 @@ sealed class FormTemplateDetailV2State {
 
 @HiltViewModel
 class FormTemplateDetailV2ViewModel @Inject constructor(
-    private val restApi: RestApi,
+    private val formTemplateManager: FormTemplateV2Manager,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -43,7 +42,7 @@ class FormTemplateDetailV2ViewModel @Inject constructor(
     fun loadTemplate() {
         _state.value = FormTemplateDetailV2State.Loading
         viewModelScope.launch {
-            _state.value = when (val result = restApi.getFormTemplateV2(formTemplateId)) {
+            _state.value = when (val result = formTemplateManager.getTemplate(formTemplateId)) {
                 is NetworkResult.Success -> FormTemplateDetailV2State.Success(result.value)
                 is NetworkResult.Failure -> FormTemplateDetailV2State.Error("Server error (${result.statusCode})")
                 is NetworkResult.NetworkException -> FormTemplateDetailV2State.Error(
