@@ -406,7 +406,7 @@ class PatientReadingViewModel @Inject constructor(
                 // or not it succeeded. This is used to determine whether the Next button is enabled.
                 arrayOf(
                     patientName,
-                    patientId,
+                    patientNumber,
                     patientDob,
                     patientAge,
                     patientGestationalAge,
