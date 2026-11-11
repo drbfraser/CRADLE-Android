@@ -1157,6 +1157,7 @@ class RestApi(
         withContext(IO) {
             val jsonObject = JSONObject()
             jsonObject.put("id", patient.id)
+            jsonObject.put("patient_number", patient.patientNumber)
             jsonObject.put("name", patient.name)
             jsonObject.put("sex", patient.sex.name)
             jsonObject.put("date_of_birth", patient.dateOfBirth)

@@ -31,7 +31,7 @@ import com.cradleplatform.neptune.model.Referral
 import com.cradleplatform.neptune.model.WorkflowInstance
 import com.cradleplatform.neptune.model.WorkflowTemplate
 
-const val CURRENT_DATABASE_VERSION = 6
+const val CURRENT_DATABASE_VERSION = 7
 
 /**
  * An interface for the local CRADLE database.
@@ -109,7 +109,10 @@ abstract class CradleDatabase : RoomDatabase() {
 @Suppress("MagicNumber", "NestedBlockDepth", "ObjectPropertyNaming")
 internal object Migrations {
     val ALL_MIGRATIONS: Array<Migration> by lazy {
-        arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
+        arrayOf(
+            MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6,
+            MIGRATION_6_7
+        )
     }
 
     /**
@@ -285,6 +288,48 @@ internal object Migrations {
                 )
                 """.trimIndent()
             )
+        }
+    }
+
+    /**
+     * Version 7: Add the user-entered patient number, which is separate from the patient's ID.
+     *
+     * Patients created on the phone have the ID the user typed in as their ID, so it becomes their
+     * patient number. Patients created on the web have a generated UUID as their ID and no
+     * user-entered number, so their patient number is left empty. Their IDs are left as they are,
+     * so that they still match the server.
+     */
+    private val MIGRATION_6_7 = object : Migration(6, 7) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            database.apply {
+                execSQL("ALTER TABLE Patient ADD COLUMN `patientNumber` TEXT")
+
+                val hex = "[0-9a-fA-F]"
+                val uuidPattern =
+                    "${hex.repeat(8)}-${hex.repeat(4)}-${hex.repeat(4)}-${hex.repeat(4)}-${hex.repeat(12)}"
+                execSQL("UPDATE Patient SET patientNumber = id WHERE id NOT GLOB ?", arrayOf(uuidPattern))
+
+                // The patient list view now includes the patient number. Room checks that the
+                // view's SQL is exactly the same as the SQL in LocalSearchPatient.
+                execSQL("DROP VIEW IF EXISTS `LocalSearchPatient`")
+                execSQL(
+                    "CREATE VIEW `LocalSearchPatient` AS SELECT\n" +
+                        "  p.name,\n" +
+                        "  p.id,\n" +
+                        "  p.patientNumber,\n" +
+                        "  p.villageNumber,\n" +
+                        "  r.bloodPressure as latestBloodPressure,\n" +
+                        "  MAX(r.dateTaken) as latestReadingDate,\n" +
+                        "  p.lastEdited,\n" +
+                        "  r.referral,\n" +
+                        "  r.dateRetestNeeded\n" +
+                        "FROM\n" +
+                        "  Patient as p\n" +
+                        "  LEFT JOIN Reading AS r ON p.id = r.patientId\n" +
+                        "GROUP BY \n" +
+                        "  IFNULL(r.patientId, p.id)"
+                )
+            }
         }
     }
 }
