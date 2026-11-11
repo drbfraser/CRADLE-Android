@@ -22,8 +22,6 @@ abstract class FormV2DraftDao {
         if (existing == null) {
             insertDraft(draft)
         } else {
-            // Reject stale lifecycle saves from another screen after the snapshot is queued.
-            check(!existing.pendingSubmission) { "A queued V2 submission cannot be changed." }
             // A later lifecycle save must not erase an ID prepared for a retryable submission
             updateDraft(draft.copy(
                 createdAt = existing.createdAt,

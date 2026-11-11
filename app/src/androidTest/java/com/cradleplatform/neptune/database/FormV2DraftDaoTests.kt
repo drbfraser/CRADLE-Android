@@ -17,6 +17,7 @@ import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Test
@@ -72,18 +73,18 @@ class FormV2DraftDaoTests {
     }
 
     @Test
-    fun queuedSubmissionCannotBeOverwrittenByAStaleDraftSave() = runBlocking {
+    fun previousPendingSubmissionCanBeSavedAsAnEditableDraft() = runBlocking {
         val dao = database.formV2DraftDao()
         val queued = draft().copy(submissionId = "submission-1", pendingSubmission = true)
         dao.upsert(queued)
 
-        try {
-            dao.upsert(draft().copy(updatedAt = 2000L))
-            fail("A queued submission must reject further draft writes")
-        } catch (_: IllegalStateException) {
-            assertEquals(queued, dao.getDraft("patient-1", "template-1"))
-            assertEquals(listOf(queued), dao.getPendingSubmissions())
-        }
+        val edited = draft().copy(updatedAt = 2000L)
+        dao.upsert(edited)
+        assertEquals(
+            edited.copy(createdAt = queued.createdAt, submissionId = queued.submissionId),
+            dao.getDraft("patient-1", "template-1")
+        )
+        assertTrue(dao.getPendingSubmissions().isEmpty())
     }
 
     @Test

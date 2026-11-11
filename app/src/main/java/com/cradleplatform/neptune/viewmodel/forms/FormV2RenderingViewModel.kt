@@ -10,6 +10,7 @@ import com.cradleplatform.neptune.database.daos.FormV2DraftDao
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
 import com.cradleplatform.neptune.manager.FormTemplateV2Manager
+import com.cradleplatform.neptune.model.AnswerV2
 import com.cradleplatform.neptune.model.CreateFormSubmissionRequestV2
 import com.cradleplatform.neptune.model.FormAnswerV2
 import com.cradleplatform.neptune.model.FormV2Draft
@@ -17,6 +18,7 @@ import com.cradleplatform.neptune.model.FormTemplateV2
 import com.cradleplatform.neptune.model.FormV2AnswerState
 import com.cradleplatform.neptune.model.FormV2SubmissionValidationResult
 import com.cradleplatform.neptune.model.FormV2SubmissionValidator
+import com.cradleplatform.neptune.model.QuestionTypeEnum
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
@@ -30,6 +32,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.io.IOException
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import java.util.UUID
 import javax.inject.Inject
 
@@ -55,7 +60,6 @@ sealed class FormV2SubmissionState {
     object Idle : FormV2SubmissionState()
     object Submitting : FormV2SubmissionState()
     object Submitted : FormV2SubmissionState()
-    object PendingUpload : FormV2SubmissionState()
     data class ValidationError(val questionId: String?, val message: String) : FormV2SubmissionState()
     data class Error(val message: String) : FormV2SubmissionState()
 }
@@ -89,19 +93,15 @@ class FormV2RenderingViewModel @Inject constructor(
     val draftSaveState: StateFlow<FormV2DraftSaveState> = _draftSaveState.asStateFlow()
     private val _submissionState = MutableStateFlow<FormV2SubmissionState>(FormV2SubmissionState.Idle)
     val submissionState: StateFlow<FormV2SubmissionState> = _submissionState.asStateFlow()
-    private val _submissionQueuedEvents = Channel<Unit>(Channel.BUFFERED)
-    val submissionQueuedEvents = _submissionQueuedEvents.receiveAsFlow()
+    private val _submissionErrors = Channel<FormV2SubmissionErrorType>(Channel.BUFFERED)
+    val submissionErrors = _submissionErrors.receiveAsFlow()
     private val draftSaveMutex = Mutex()
     private var clearSavedDraftStatusJob: Job? = null
     private var hasSubmitted = false
-    private var hasPendingSubmission = false
     private var submissionId: String? = null
 
-    private val isFormReadOnly: Boolean
-        get() = hasSubmitted || hasPendingSubmission
-
     val canSaveDraft: Boolean
-        get() = !isFormReadOnly && !patientId.isNullOrBlank() &&
+        get() = !hasSubmitted && !patientId.isNullOrBlank() &&
             _state.value is FormV2RenderingState.Success
 
     val canSubmit: Boolean
@@ -109,7 +109,7 @@ class FormV2RenderingViewModel @Inject constructor(
             _submissionState.value != FormV2SubmissionState.Submitting
 
     val canEditAnswers: Boolean
-        get() = !isFormReadOnly &&
+        get() = !hasSubmitted &&
             _submissionState.value != FormV2SubmissionState.Submitting
 
     init {
@@ -149,12 +149,22 @@ class FormV2RenderingViewModel @Inject constructor(
     }
 
     private fun restoreDraft(draft: FormV2Draft) {
-        answerState.replaceAnswers(draft.answers)
+        // Older pending snapshots contain API epoch dates; editable drafts use local date strings.
+        val answers = if (draft.pendingSubmission) draft.answers.map { formAnswer ->
+            val type = draft.formTemplate.questions?.firstOrNull { it.id == formAnswer.questionId }?.questionType
+            val seconds = formAnswer.answer.dateAnswer?.toLongOrNull()
+            if (seconds != null && (type == QuestionTypeEnum.DATE || type == QuestionTypeEnum.DATETIME)) {
+                val pattern = if (type == QuestionTypeEnum.DATE) "yyyy-MM-dd" else "yyyy-MM-dd HH:mm"
+                val value = SimpleDateFormat(pattern, Locale.ROOT).format(Date(seconds * 1000))
+                formAnswer.copy(answer = AnswerV2.createDateAnswer(value, formAnswer.answer.comment))
+            } else {
+                formAnswer
+            }
+        } else draft.answers
+        answerState.replaceAnswers(answers)
         submissionId = draft.submissionId
-        hasPendingSubmission = draft.pendingSubmission
-        // Pending uploads keep the language stored with their answers.
+        // Keep the language of drafts saved by the earlier pending-upload implementation.
         selectedLanguage = if (draft.pendingSubmission) draft.language else requestedLanguage ?: draft.language
-        if (draft.pendingSubmission) _submissionState.value = FormV2SubmissionState.PendingUpload
     }
 
     /** Saves a patient draft and returns the write job so navigation can wait for it. */
@@ -170,7 +180,7 @@ class FormV2RenderingViewModel @Inject constructor(
         return viewModelScope.launch {
             // Keep manual and lifecycle saves in order
             draftSaveMutex.withLock {
-                if (hasSubmitted || hasPendingSubmission) {
+                if (hasSubmitted) {
                     _draftSaveState.value = FormV2DraftSaveState.Idle
                     return@withLock
                 }
@@ -196,7 +206,7 @@ class FormV2RenderingViewModel @Inject constructor(
     }
 
     /**
-     * Validates and posts V2 answers, retaining a pending upload when the connection fails.
+     * Validates and posts V2 answers, retaining an editable draft when the connection fails.
      */
     fun submitForm() {
         if (!canSubmit) return
@@ -231,7 +241,7 @@ class FormV2RenderingViewModel @Inject constructor(
                 return@launch
             }
             try {
-                val submissionLanguage = resolveSubmissionLanguage(template.id)
+                val submissionLanguage = resolveSubmissionLanguage(template.id) ?: return@launch
                 if (selectedLanguage != submissionLanguage) {
                     selectedLanguage = submissionLanguage
                     persistSubmissionDraft(patient, template, draftAnswers)
@@ -245,34 +255,31 @@ class FormV2RenderingViewModel @Inject constructor(
                 )
                 when (val result = restApi.postFormSubmissionV2(request)) {
                     is NetworkResult.Success -> deleteSubmittedDraft(patient, template.id)
-                    is NetworkResult.Failure -> _submissionState.value = FormV2SubmissionState.Error(
-                        "Server error (${result.statusCode})"
+                    is NetworkResult.Failure -> reportHttpSubmissionError(result.statusCode)
+                    is NetworkResult.NetworkException -> reportSubmissionError(
+                        result.cause.message ?: "Network error", FormV2SubmissionErrorType.NETWORK_ERROR
                     )
-                    is NetworkResult.NetworkException -> if (result.cause is IOException) {
-                        savePendingSubmission(patient, template, answers)
-                    } else {
-                        _submissionState.value = FormV2SubmissionState.Error(
-                            result.cause.message ?: "Network error"
-                        )
-                    }
                 }
             } catch (exception: CancellationException) {
                 throw exception
             } catch (exception: IOException) {
-                savePendingSubmission(patient, template, answers)
+                reportSubmissionError(exception.message ?: "Network error", FormV2SubmissionErrorType.NETWORK_ERROR)
             } catch (exception: Exception) {
                 Log.e(javaClass.simpleName, "Failed to submit V2 form", exception)
-                _submissionState.value = FormV2SubmissionState.Error(
-                    exception.message ?: "Unable to submit form."
+                reportSubmissionError(
+                    exception.message ?: "Unable to submit form.", FormV2SubmissionErrorType.SERVER_ERROR
                 )
             }
         }
     }
 
-    private suspend fun resolveSubmissionLanguage(templateId: String): String {
+    private suspend fun resolveSubmissionLanguage(templateId: String): String? {
         val languages = when (val result = restApi.getFormTemplateLanguagesV2(templateId)) {
             is NetworkResult.Success -> result.value.languages
-            is NetworkResult.Failure -> error("Unable to load form languages (${result.statusCode}).")
+            is NetworkResult.Failure -> {
+                reportHttpSubmissionError(result.statusCode)
+                return null
+            }
             is NetworkResult.NetworkException -> throw result.cause
         }
         return languages.firstOrNull { it == language }
@@ -280,28 +287,18 @@ class FormV2RenderingViewModel @Inject constructor(
             ?: error("The selected language is no longer available for this form.")
     }
 
-    private suspend fun savePendingSubmission(
-        patientId: String,
-        template: FormTemplateV2,
-        answers: List<FormAnswerV2>
-    ) {
-        try {
-            draftSaveMutex.withLock {
-                val draft = createDraft(patientId, template, answers).copy(pendingSubmission = true)
-                formV2DraftDao.upsert(draft)
-                // Lock this exact snapshot only after the local write succeeds.
-                hasPendingSubmission = true
-            }
-            clearSavedDraftStatusJob?.cancel()
-            _draftSaveState.value = FormV2DraftSaveState.Idle
-            _submissionState.value = FormV2SubmissionState.PendingUpload
-            _submissionQueuedEvents.send(Unit)
-        } catch (exception: CancellationException) {
-            throw exception
-        } catch (exception: Exception) {
-            Log.e(javaClass.simpleName, "Failed to queue V2 submission", exception)
-            _submissionState.value = FormV2SubmissionState.Error("Unable to save form for later submission.")
+    private suspend fun reportHttpSubmissionError(statusCode: Int) {
+        val errorType = if (statusCode == 401 || statusCode == 403) {
+            FormV2SubmissionErrorType.AUTH_ERROR
+        } else {
+            FormV2SubmissionErrorType.SERVER_ERROR
         }
+        reportSubmissionError("Server error ($statusCode)", errorType)
+    }
+
+    private suspend fun reportSubmissionError(message: String, errorType: FormV2SubmissionErrorType) {
+        _submissionState.value = FormV2SubmissionState.Error(message)
+        _submissionErrors.send(errorType)
     }
 
     private suspend fun persistSubmissionDraft(

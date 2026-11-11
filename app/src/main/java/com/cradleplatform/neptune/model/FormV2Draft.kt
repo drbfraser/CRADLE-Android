@@ -37,7 +37,7 @@ data class FormV2Draft(
     val updatedAt: Long,
     /** Stable client-generated ID reused if a POST response is lost and the user retries */
     val submissionId: String? = null,
-    /** True after the user submits offline and the draft is waiting for upload. */
+    /** Legacy pending-upload flag. New offline saves remain editable drafts with this set to false. */
     @ColumnInfo(defaultValue = "0")
     val pendingSubmission: Boolean = false
 ) {
