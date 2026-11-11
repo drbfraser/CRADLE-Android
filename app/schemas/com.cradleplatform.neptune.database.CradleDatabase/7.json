@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 7,
-    "identityHash": "82096ab73014a205a9eaa7be525ecbee",
+    "identityHash": "c6d862fc0a9d476bcb270d10d816a609",
     "entities": [
       {
         "tableName": "Reading",
@@ -135,13 +135,19 @@
       },
       {
         "tableName": "Patient",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `dateOfBirth` TEXT, `isExactDateOfBirth` INTEGER, `gestationalAge` TEXT, `sex` TEXT NOT NULL, `isPregnant` INTEGER NOT NULL, `pregnancyId` INTEGER, `prevPregnancyEndDate` INTEGER, `prevPregnancyOutcome` TEXT, `zone` TEXT, `villageNumber` TEXT, `householdNumber` TEXT, `drugHistory` TEXT NOT NULL, `medicalHistory` TEXT NOT NULL, `allergy` TEXT NOT NULL, `lastEdited` INTEGER, `drugLastEdited` INTEGER, `medicalLastEdited` INTEGER, `lastServerUpdate` INTEGER, `isArchived` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `patientNumber` TEXT, `name` TEXT NOT NULL, `dateOfBirth` TEXT, `isExactDateOfBirth` INTEGER, `gestationalAge` TEXT, `sex` TEXT NOT NULL, `isPregnant` INTEGER NOT NULL, `pregnancyId` INTEGER, `prevPregnancyEndDate` INTEGER, `prevPregnancyOutcome` TEXT, `zone` TEXT, `villageNumber` TEXT, `householdNumber` TEXT, `drugHistory` TEXT NOT NULL, `medicalHistory` TEXT NOT NULL, `allergy` TEXT NOT NULL, `lastEdited` INTEGER, `drugLastEdited` INTEGER, `medicalLastEdited` INTEGER, `lastServerUpdate` INTEGER, `isArchived` INTEGER NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
             "columnName": "id",
             "affinity": "TEXT",
             "notNull": true
+          },
+          {
+            "fieldPath": "patientNumber",
+            "columnName": "patientNumber",
+            "affinity": "TEXT",
+            "notNull": false
           },
           {
             "fieldPath": "name",
@@ -768,7 +774,7 @@
       },
       {
         "tableName": "FormV2Draft",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`patientId` TEXT NOT NULL, `formTemplateId` TEXT NOT NULL, `formTemplateVersion` INTEGER NOT NULL, `formTemplate` TEXT NOT NULL, `answers` TEXT NOT NULL, `language` TEXT NOT NULL, `createdAt` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL, `submissionId` TEXT, `pendingSubmission` INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(`patientId`, `formTemplateId`), FOREIGN KEY(`patientId`) REFERENCES `Patient`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`patientId` TEXT NOT NULL, `formTemplateId` TEXT NOT NULL, `formTemplateVersion` INTEGER NOT NULL, `formTemplate` TEXT NOT NULL, `answers` TEXT NOT NULL, `language` TEXT NOT NULL, `createdAt` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL, `submissionId` TEXT, PRIMARY KEY(`patientId`, `formTemplateId`), FOREIGN KEY(`patientId`) REFERENCES `Patient`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "patientId",
@@ -823,13 +829,6 @@
             "columnName": "submissionId",
             "affinity": "TEXT",
             "notNull": false
-          },
-          {
-            "fieldPath": "pendingSubmission",
-            "columnName": "pendingSubmission",
-            "affinity": "INTEGER",
-            "notNull": true,
-            "defaultValue": "0"
           }
         ],
         "primaryKey": {
@@ -1041,12 +1040,12 @@
     "views": [
       {
         "viewName": "LocalSearchPatient",
-        "createSql": "CREATE VIEW `${VIEW_NAME}` AS SELECT\n  p.name,\n  p.id,\n  p.villageNumber,\n  r.bloodPressure as latestBloodPressure,\n  MAX(r.dateTaken) as latestReadingDate,\n  p.lastEdited,\n  r.referral,\n  r.dateRetestNeeded\nFROM\n  Patient as p\n  LEFT JOIN Reading AS r ON p.id = r.patientId\nGROUP BY \n  IFNULL(r.patientId, p.id)"
+        "createSql": "CREATE VIEW `${VIEW_NAME}` AS SELECT\n  p.name,\n  p.id,\n  p.patientNumber,\n  p.villageNumber,\n  r.bloodPressure as latestBloodPressure,\n  MAX(r.dateTaken) as latestReadingDate,\n  p.lastEdited,\n  r.referral,\n  r.dateRetestNeeded\nFROM\n  Patient as p\n  LEFT JOIN Reading AS r ON p.id = r.patientId\nGROUP BY \n  IFNULL(r.patientId, p.id)"
       }
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '82096ab73014a205a9eaa7be525ecbee')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'c6d862fc0a9d476bcb270d10d816a609')"
     ]
   }
 }

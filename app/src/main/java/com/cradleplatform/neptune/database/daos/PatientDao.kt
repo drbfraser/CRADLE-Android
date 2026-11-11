@@ -97,7 +97,7 @@ ORDER BY latestReadingDate DESC, name COLLATE NOCASE ASC
 
     /**
      * Searches the database, using % (with SQLite concatenation, ||) to make sure we search for
-     * the names or IDs where the query is contained inside of them.
+     * the names, IDs or patient numbers where the query is contained inside of them.
      *
      * The result will be sorted in descending order by latest reading date, and then by name (more
      * applicable for patients without a reading). Patients that don't have a reading will be
@@ -109,6 +109,7 @@ SELECT * FROM LocalSearchPatient
 WHERE
   name LIKE '%' || :query || '%'
   OR id LIKE '%' || :query || '%'
+  OR patientNumber LIKE '%' || :query || '%'
 ORDER BY latestReadingDate DESC, name COLLATE NOCASE ASC
 """
     )
@@ -133,10 +134,24 @@ ORDER BY latestReadingDate DESC, name COLLATE NOCASE ASC
     suspend fun getPatientIdsList(): List<String>
 
     /**
+     * IDs of patients that have been synced with the server before. Patients created on this
+     * device and never uploaded have no lastServerUpdate, so they are left out.
+     */
+    @Query("SELECT id FROM Patient WHERE lastServerUpdate IS NOT NULL")
+    suspend fun getSyncedPatientIds(): List<String>
+
+    /**
      * get a single patient by id if exists
      */
     @Query("SELECT * FROM Patient WHERE id = :id")
     suspend fun getPatientById(id: String): Patient?
+
+    /**
+     * Gets the first patient with the given patient number, if any. Patient numbers aren't unique,
+     * so there may be others.
+     */
+    @Query("SELECT * FROM Patient WHERE patientNumber = :patientNumber LIMIT 1")
+    suspend fun getPatientByPatientNumber(patientNumber: String): Patient?
 
     /**
      * Gets the patient along with all of its readings if it exists.

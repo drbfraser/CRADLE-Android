@@ -20,6 +20,7 @@ import com.cradleplatform.neptune.manager.SmsKey
 import com.cradleplatform.neptune.manager.UrlManager
 import com.cradleplatform.neptune.model.Assessment
 import com.cradleplatform.neptune.model.CreateFormSubmissionRequestV2
+import com.cradleplatform.neptune.model.DeletedPatientsResponse
 import com.cradleplatform.neptune.model.FormAnswerV2
 import com.cradleplatform.neptune.model.FormClassification
 import com.cradleplatform.neptune.model.FormResponse
@@ -68,6 +69,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONArray
 import org.json.JSONObject
 import java.io.IOException
 import java.io.InputStream
@@ -1155,6 +1157,7 @@ class RestApi(
         withContext(IO) {
             val jsonObject = JSONObject()
             jsonObject.put("id", patient.id)
+            jsonObject.put("patient_number", patient.patientNumber)
             jsonObject.put("name", patient.name)
             jsonObject.put("sex", patient.sex.name)
             jsonObject.put("date_of_birth", patient.dateOfBirth)
@@ -1649,6 +1652,30 @@ class RestApi(
     }
 
     /**
+     * Asks the server which of the given patient IDs were deleted, so the device can
+     * remove them. The server only returns IDs of patients this user could access.
+     */
+    suspend fun syncDeletedPatients(patientIds: List<String>): NetworkResult<List<String>> =
+        withContext(IO) {
+            val body = JSONObject()
+                .put("patient_ids", JSONArray(patientIds))
+                .toString()
+                .toByteArray()
+
+            http.makeRequest(
+                method = Http.Method.POST,
+                url = urlManager.getDeletedPatientsSync(),
+                headers = makeAuthorizationHeader(),
+                requestBody = buildJsonRequestBody(body),
+                inputStreamReader = {
+                    JacksonMapper.readerForDeletedPatientsResponse
+                        .readValue<DeletedPatientsResponse>(it)
+                        .deletedPatientIds
+                }
+            )
+        }
+
+    /**
      * Syncs the patients on the device with the server, where [lastSyncTimestamp] is the last time
      * the patients have been synced with the server. The given [patientsToUpload] should be
      * new patients. Sync conflicts are handled by the server.
@@ -1709,9 +1736,8 @@ class RestApi(
                                     }
 
                                     PatientSyncField.ERRORS.text -> {
-                                        // TODO: Parse array of objects (refer to issue #62)
                                         nextToken()
-                                        errors = readValueAsTree<JsonNode>().toPrettyString()
+                                        errors = formatPatientSyncErrors(readValueAsTree())
                                     }
                                 }
                             }
@@ -2715,6 +2741,21 @@ class RestApi(
         }
     }
 }
+
+/**
+ * Turns the `errors` array from the patient sync response, e.g.
+ * `[{"patientId": "123", "errors": "['Some message.']"}]`, into one readable line per patient:
+ * `Patient 123: Some message.` The server sends each message as the string form of a list, so
+ * the `['...']` around it is removed.
+ */
+internal fun formatPatientSyncErrors(errors: JsonNode): String =
+    errors.joinToString("\n") { error ->
+        val patientId = error.path("patientId").asText()
+        val message = error.path("errors").asText()
+            .removeSurrounding("['", "']")
+            .removeSurrounding("[\"", "\"]")
+        "Patient $patientId: $message"
+    }
 
 class SyncException(message: String) : IOException(message)
 

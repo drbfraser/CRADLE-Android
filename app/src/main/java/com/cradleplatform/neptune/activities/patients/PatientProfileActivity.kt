@@ -379,7 +379,7 @@ open class PatientProfileActivity : AppCompatActivity() {
     }
 
     fun populatePatientInfo(patient: Patient) {
-        patientID.text = patient.id
+        patientID.text = patient.patientNumber
         patientName.text = patient.name
         if (!Util.stringNullOrEmpty(patient.dateOfBirth)) {
             try {

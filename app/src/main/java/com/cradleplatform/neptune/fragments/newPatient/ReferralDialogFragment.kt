@@ -284,6 +284,8 @@ class ReferralDialogFragment : DialogFragment(), BetterConnectivityDialogFragmen
                 // Nothing left for us to do.
                 dataPasser.onMsgPass(getToastMessageForStatus(view.context, webSendResult, ReferralOption.HTTP))
                 activity?.finish()
+            } else {
+                showStatusToast(view.context, webSendResult, ReferralOption.HTTP)
             }
         } finally {
             referralDialogViewModel.isSending.value = false

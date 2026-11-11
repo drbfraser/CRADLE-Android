@@ -29,7 +29,7 @@ class GlobalPatientAdapter(private val patientList: List<GlobalPatient>) :
         val globalPatient = patientList[position]
         holder.village.text = globalPatient.villageNum
             ?: holder.itemView.context.getString(R.string.not_available_n_slash_a)
-        holder.id.text = globalPatient.id
+        holder.id.text = globalPatient.patientNumber
         holder.name.text = globalPatient.name
         if (globalPatient.isMyPatient) {
             holder.addToMyPatientButton.background =

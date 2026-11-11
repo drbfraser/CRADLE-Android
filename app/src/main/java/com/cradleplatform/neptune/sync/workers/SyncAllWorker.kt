@@ -28,6 +28,7 @@ import com.cradleplatform.neptune.http_sms_service.http.WorkflowTemplateSyncResu
 import com.cradleplatform.neptune.manager.AssessmentManager
 import com.cradleplatform.neptune.manager.FormManager
 import com.cradleplatform.neptune.manager.FormResponseManager
+import com.cradleplatform.neptune.manager.FormTemplateV2Manager
 import com.cradleplatform.neptune.manager.HealthFacilityManager
 import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.manager.ReadingManager
@@ -36,7 +37,6 @@ import com.cradleplatform.neptune.manager.WorkflowManager
 import com.cradleplatform.neptune.model.Assessment
 import com.cradleplatform.neptune.model.FormClassification
 import com.cradleplatform.neptune.model.FormResponse
-import com.cradleplatform.neptune.model.FormTemplateV2Entity
 import com.cradleplatform.neptune.model.HealthFacility
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.Reading
@@ -49,7 +49,6 @@ import com.cradleplatform.neptune.utilities.UnixTimestamp
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -78,6 +77,7 @@ class SyncAllWorker @AssistedInject constructor(
     private val healthFacilityManager: HealthFacilityManager,
     private val formManager: FormManager,
     private val formResponseManager: FormResponseManager,
+    private val formTemplateV2Manager: FormTemplateV2Manager,
     private val workflowManager: WorkflowManager,
     private val sharedPreferences: SharedPreferences,
     private val database: CradleDatabase
@@ -266,6 +266,10 @@ class SyncAllWorker @AssistedInject constructor(
         // phone if we only use a timestamp after the sync.
         val syncTimestampToSave: BigInteger = UnixTimestamp.now
 
+        // Remove patients deleted on the server first, so stale copies of them (and their
+        // readings and referrals) aren't uploaded again in the steps below.
+        val totalPatientsRemoved = removeDeletedPatients()
+
         val patientsToUpload: List<Patient> = patientManager.getPatientsToUpload()
         val patientResult = syncPatients(patientsToUpload, lastPatientSyncTime)
         val patientsLeftToUpload = patientManager.getNumberOfPatientsToUpload()
@@ -438,9 +442,16 @@ class SyncAllWorker @AssistedInject constructor(
             )
         }
 
-        // Cache V2 templates independently of the legacy endpoint.
-        val formTemplateV2Result = syncFormTemplatesV2()
-        val formTemplateResult = syncFormTemplates()
+        val lastFormResponseSyncTime = BigInteger(
+            sharedPreferences.getString(LAST_FORM_RESPONSE_SYNC, LAST_SYNC_DEFAULT)!!
+        )
+        val formSyncStages = runFormSyncStages(
+            syncV2Templates = { syncFormTemplatesV2() },
+            syncV1Templates = { syncFormTemplates() },
+            syncFormResponses = { syncFormResponses(lastFormResponseSyncTime) }
+        )
+        val formTemplateV2Result = formSyncStages.v2Templates
+        val formTemplateResult = formSyncStages.v1Templates
         val formTemplateErrors = listOf(
             "V1" to formTemplateResult.networkResult,
             "V2" to formTemplateV2Result.networkResult
@@ -452,10 +463,7 @@ class SyncAllWorker @AssistedInject constructor(
             }
 
         // A template download failure must not skip the record download.
-        val lastFormResponseSyncTime = BigInteger(
-            sharedPreferences.getString(LAST_FORM_RESPONSE_SYNC, LAST_SYNC_DEFAULT)!!
-        )
-        val formResponseResult = syncFormResponses(lastFormResponseSyncTime)
+        val formResponseResult = formSyncStages.formResponses
         if (formResponseResult.networkResult is NetworkResult.Success) {
             sharedPreferences.edit(commit = true) {
                 putString(LAST_FORM_RESPONSE_SYNC, syncTimestampToSave.toString())
@@ -471,6 +479,7 @@ class SyncAllWorker @AssistedInject constructor(
         val syncResult = workDataOf(
             RESULT_MESSAGE to getResultSuccessMessage(
                 patientResult,
+                totalPatientsRemoved,
                 healthFacilitiesResult,
                 readingResult,
                 referralResult,
@@ -490,6 +499,23 @@ class SyncAllWorker @AssistedInject constructor(
         return Result.success(
             syncResult
         )
+    }
+
+    /**
+     * Asks the server which of the patients synced to this device were deleted, and removes them
+     * locally. A failure here doesn't stop the sync: the server rejects uploads of deleted
+     * patients anyway, and the check is repeated on the next sync.
+     *
+     * @return the number of patients removed (0 if none, or if the check failed)
+     */
+    private suspend fun removeDeletedPatients(): Int {
+        val removed = patientManager.removePatientsDeletedOnServer()
+        if (removed == null) {
+            Log.e(TAG, "checking for deleted patients failed; will retry next sync")
+            return 0
+        }
+        Log.d(TAG, "removed $removed patients deleted on the server")
+        return removed
     }
 
     private suspend fun syncPatients(
@@ -801,52 +827,14 @@ class SyncAllWorker @AssistedInject constructor(
         }
     }
 
-    private suspend fun syncFormTemplatesV2(): FormSyncResult = withContext(Dispatchers.IO) {
+    private suspend fun syncFormTemplatesV2(): FormSyncResult {
         setProgress(workDataOf(PROGRESS_CURRENT_STATE to State.DOWNLOADING_FORM_TEMPLATES.name))
-        try {
-            val summaryResult = restApi.getAllClassificationsSummaryV2()
-            if (summaryResult !is NetworkResult.Success) {
-                return@withContext FormSyncResult(summaryResult.cast(), 0)
-            }
-
-            val summaries = summaryResult.value.filter { it.archived != true }.distinctBy { it.id }
-            val templates = mutableListOf<FormTemplateV2Entity>()
-            val templateDao = database.formTemplateV2Dao()
-            var downloadedTemplates = 0
-            for (summary in summaries) {
-                val cachedTemplate = templateDao.getTemplate(summary.id)?.template
-                    ?.takeIf { it.questions != null && it.archived != true }
-                val template = if (cachedTemplate != null && cachedTemplate.version == summary.version) {
-                    cachedTemplate
-                } else {
-                    // The summary endpoint is shallow; download the full template only when needed.
-                    val templateResult = restApi.getFormTemplateV2(summary.id)
-                    if (templateResult !is NetworkResult.Success) {
-                        return@withContext FormSyncResult(templateResult.cast(), 0)
-                    }
-                    val downloadedTemplate = templateResult.value
-                    require(downloadedTemplate.id == summary.id && downloadedTemplate.questions != null) {
-                        "Incomplete V2 template response for ${summary.id}"
-                    }
-                    downloadedTemplates++
-                    downloadedTemplate
-                }
-                templates.add(FormTemplateV2Entity(template.id, template, availableForNewForms = true))
-                reportProgress(
-                    state = State.DOWNLOADING_FORM_TEMPLATES,
-                    progress = templates.size,
-                    total = summaries.size
-                )
-            }
-
-            // Refresh availability even when every template was reused from the cache.
-            templateDao.replaceAvailableTemplates(templates)
-            FormSyncResult(NetworkResult.Success(Unit, summaryResult.statusCode), downloadedTemplates)
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: Exception) {
-            Log.e(TAG, "V2 form template sync failed", e)
-            FormSyncResult(NetworkResult.NetworkException(e), 0)
+        return formTemplateV2Manager.syncAvailableTemplates { current, total ->
+            reportProgress(
+                state = State.DOWNLOADING_FORM_TEMPLATES,
+                progress = current,
+                total = total
+            )
         }
     }
 
@@ -933,6 +921,7 @@ class SyncAllWorker @AssistedInject constructor(
 
     private fun getResultSuccessMessage(
         patientSyncResult: PatientSyncResult,
+        totalPatientsRemoved: Int,
         healthFacilitySyncResult: HealthFacilitySyncResult,
         readingSyncResult: ReadingSyncResult,
         referralSyncResult: ReferralSyncResult,
@@ -948,6 +937,9 @@ class SyncAllWorker @AssistedInject constructor(
         )
         val totalPatientsDownloaded = applicationContext.getString(
             R.string.sync_total_patients_downloaded_s, patientSyncResult.totalPatientsDownloaded
+        )
+        val totalPatientsRemovedLine = applicationContext.getString(
+            R.string.sync_total_patients_removed_s, totalPatientsRemoved
         )
         val totalHealthFacilitiesDownloaded = applicationContext.getString(
             R.string.sync_total_HealthFacilities_downloaded_s,
@@ -995,12 +987,13 @@ class SyncAllWorker @AssistedInject constructor(
             workflowInstanceSyncResult.totalWorkflowInstancesDownloaded
         )
 
-        val errors = patientSyncResult.errors.let { if (it != "[ ]") "\nErrors:\n$it" else "" }
+        val errors = patientSyncResult.errors.let { if (!it.isNullOrBlank()) "\nErrors:\n$it" else "" }
 
         return """
             $success
             $totalPatientsUploaded
             $totalPatientsDownloaded
+            $totalPatientsRemovedLine
             $totalHealthFacilitiesDownloaded
             $totalReadingsUploaded
             $totalReadingsDownloaded

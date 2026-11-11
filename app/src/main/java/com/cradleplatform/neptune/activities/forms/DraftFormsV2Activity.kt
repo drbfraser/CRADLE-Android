@@ -53,10 +53,13 @@ class DraftFormsV2Activity : AppCompatActivity() {
             DraftFormsV2State.Loading -> loadingIndicator.visibility = View.VISIBLE
             is DraftFormsV2State.Success -> {
                 if (state.drafts.isEmpty()) {
-                    status.text = getString(R.string.draft_forms_v2_empty)
+                    status.text = getString(
+                        if (viewModel.isAllPatients) R.string.draft_forms_v2_empty_all
+                        else R.string.draft_forms_v2_empty
+                    )
                     status.visibility = View.VISIBLE
                 } else {
-                    recyclerView.adapter = DraftFormsV2Adapter(state.drafts) { draft ->
+                    recyclerView.adapter = DraftFormsV2Adapter(state.drafts, state.patientNames) { draft ->
                         startActivity(
                             FormV2RenderingActivity.makeIntent(
                                 this,
@@ -83,9 +86,9 @@ class DraftFormsV2Activity : AppCompatActivity() {
     }
 
     companion object {
-        fun makeIntent(context: Context, patientId: String): Intent =
+        fun makeIntent(context: Context, patientId: String? = null): Intent =
             Intent(context, DraftFormsV2Activity::class.java).apply {
-                putExtra(DraftFormsV2ViewModel.EXTRA_PATIENT_ID, patientId)
+                patientId?.let { putExtra(DraftFormsV2ViewModel.EXTRA_PATIENT_ID, it) }
             }
     }
 }

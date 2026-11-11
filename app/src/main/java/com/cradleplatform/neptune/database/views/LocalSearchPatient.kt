@@ -15,6 +15,7 @@ import com.cradleplatform.neptune.model.Referral
 SELECT
   p.name,
   p.id,
+  p.patientNumber,
   p.villageNumber,
   r.bloodPressure as latestBloodPressure,
   MAX(r.dateTaken) as latestReadingDate,
@@ -31,6 +32,7 @@ GROUP BY
 data class LocalSearchPatient(
     val name: String,
     val id: String,
+    val patientNumber: String?,
     val villageNumber: String?,
     val latestBloodPressure: BloodPressure?,
     val latestReadingDate: Long?,
