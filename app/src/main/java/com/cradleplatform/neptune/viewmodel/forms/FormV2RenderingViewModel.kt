@@ -20,13 +20,16 @@ import com.cradleplatform.neptune.model.FormV2SubmissionValidator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import java.io.IOException
 import java.util.UUID
 import javax.inject.Inject
 
@@ -52,6 +55,7 @@ sealed class FormV2SubmissionState {
     object Idle : FormV2SubmissionState()
     object Submitting : FormV2SubmissionState()
     object Submitted : FormV2SubmissionState()
+    object PendingUpload : FormV2SubmissionState()
     data class ValidationError(val questionId: String?, val message: String) : FormV2SubmissionState()
     data class Error(val message: String) : FormV2SubmissionState()
 }
@@ -85,22 +89,28 @@ class FormV2RenderingViewModel @Inject constructor(
     val draftSaveState: StateFlow<FormV2DraftSaveState> = _draftSaveState.asStateFlow()
     private val _submissionState = MutableStateFlow<FormV2SubmissionState>(FormV2SubmissionState.Idle)
     val submissionState: StateFlow<FormV2SubmissionState> = _submissionState.asStateFlow()
+    private val _submissionQueuedEvents = Channel<Unit>(Channel.BUFFERED)
+    val submissionQueuedEvents = _submissionQueuedEvents.receiveAsFlow()
     private val draftSaveMutex = Mutex()
     private var clearSavedDraftStatusJob: Job? = null
     private var hasSubmitted = false
+    private var hasPendingSubmission = false
     private var submissionId: String? = null
 
+    private val isFormReadOnly: Boolean
+        get() = hasSubmitted || hasPendingSubmission
+
     val canSaveDraft: Boolean
-        get() = !hasSubmitted && !patientId.isNullOrBlank() &&
+        get() = !isFormReadOnly && !patientId.isNullOrBlank() &&
             _state.value is FormV2RenderingState.Success
 
     val canSubmit: Boolean
-        get() = !hasSubmitted && !patientId.isNullOrBlank() &&
-            _state.value is FormV2RenderingState.Success &&
+        get() = canSaveDraft &&
             _submissionState.value != FormV2SubmissionState.Submitting
 
     val canEditAnswers: Boolean
-        get() = !hasSubmitted && _submissionState.value != FormV2SubmissionState.Submitting
+        get() = !isFormReadOnly &&
+            _submissionState.value != FormV2SubmissionState.Submitting
 
     init {
         loadTemplate()
@@ -141,8 +151,10 @@ class FormV2RenderingViewModel @Inject constructor(
     private fun restoreDraft(draft: FormV2Draft) {
         answerState.replaceAnswers(draft.answers)
         submissionId = draft.submissionId
-        // Keep the saved language unless the user explicitly selected one for this form.
-        selectedLanguage = requestedLanguage ?: draft.language
+        hasPendingSubmission = draft.pendingSubmission
+        // Pending uploads keep the language stored with their answers.
+        selectedLanguage = if (draft.pendingSubmission) draft.language else requestedLanguage ?: draft.language
+        if (draft.pendingSubmission) _submissionState.value = FormV2SubmissionState.PendingUpload
     }
 
     /** Saves a patient draft and returns the write job so navigation can wait for it. */
@@ -158,7 +170,7 @@ class FormV2RenderingViewModel @Inject constructor(
         return viewModelScope.launch {
             // Keep manual and lifecycle saves in order
             draftSaveMutex.withLock {
-                if (hasSubmitted) {
+                if (hasSubmitted || hasPendingSubmission) {
                     _draftSaveState.value = FormV2DraftSaveState.Idle
                     return@withLock
                 }
@@ -184,7 +196,7 @@ class FormV2RenderingViewModel @Inject constructor(
     }
 
     /**
-     * Validates and posts the current V2 answers, only a successful response removes the draft
+     * Validates and posts V2 answers, retaining a pending upload when the connection fails.
      */
     fun submitForm() {
         if (!canSubmit) return
@@ -236,12 +248,18 @@ class FormV2RenderingViewModel @Inject constructor(
                     is NetworkResult.Failure -> _submissionState.value = FormV2SubmissionState.Error(
                         "Server error (${result.statusCode})"
                     )
-                    is NetworkResult.NetworkException -> _submissionState.value = FormV2SubmissionState.Error(
-                        result.cause.message ?: "Network error"
-                    )
+                    is NetworkResult.NetworkException -> if (result.cause is IOException) {
+                        savePendingSubmission(patient, template, answers)
+                    } else {
+                        _submissionState.value = FormV2SubmissionState.Error(
+                            result.cause.message ?: "Network error"
+                        )
+                    }
                 }
             } catch (exception: CancellationException) {
                 throw exception
+            } catch (exception: IOException) {
+                savePendingSubmission(patient, template, answers)
             } catch (exception: Exception) {
                 Log.e(javaClass.simpleName, "Failed to submit V2 form", exception)
                 _submissionState.value = FormV2SubmissionState.Error(
@@ -260,6 +278,30 @@ class FormV2RenderingViewModel @Inject constructor(
         return languages.firstOrNull { it == language }
             ?: languages.firstOrNull { it.equals(language, ignoreCase = true) }
             ?: error("The selected language is no longer available for this form.")
+    }
+
+    private suspend fun savePendingSubmission(
+        patientId: String,
+        template: FormTemplateV2,
+        answers: List<FormAnswerV2>
+    ) {
+        try {
+            draftSaveMutex.withLock {
+                val draft = createDraft(patientId, template, answers).copy(pendingSubmission = true)
+                formV2DraftDao.upsert(draft)
+                // Lock this exact snapshot only after the local write succeeds.
+                hasPendingSubmission = true
+            }
+            clearSavedDraftStatusJob?.cancel()
+            _draftSaveState.value = FormV2DraftSaveState.Idle
+            _submissionState.value = FormV2SubmissionState.PendingUpload
+            _submissionQueuedEvents.send(Unit)
+        } catch (exception: CancellationException) {
+            throw exception
+        } catch (exception: Exception) {
+            Log.e(javaClass.simpleName, "Failed to queue V2 submission", exception)
+            _submissionState.value = FormV2SubmissionState.Error("Unable to save form for later submission.")
+        }
     }
 
     private suspend fun persistSubmissionDraft(

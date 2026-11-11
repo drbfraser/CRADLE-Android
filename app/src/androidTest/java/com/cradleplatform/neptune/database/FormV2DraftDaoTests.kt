@@ -72,6 +72,21 @@ class FormV2DraftDaoTests {
     }
 
     @Test
+    fun queuedSubmissionCannotBeOverwrittenByAStaleDraftSave() = runBlocking {
+        val dao = database.formV2DraftDao()
+        val queued = draft().copy(submissionId = "submission-1", pendingSubmission = true)
+        dao.upsert(queued)
+
+        try {
+            dao.upsert(draft().copy(updatedAt = 2000L))
+            fail("A queued submission must reject further draft writes")
+        } catch (_: IllegalStateException) {
+            assertEquals(queued, dao.getDraft("patient-1", "template-1"))
+            assertEquals(listOf(queued), dao.getPendingSubmissions())
+        }
+    }
+
+    @Test
     fun compositeKeySeparatesPatientsAndTemplatesAndDeleteUsesBothKeys() = runBlocking {
         val dao = database.formV2DraftDao()
         dao.upsert(draft())

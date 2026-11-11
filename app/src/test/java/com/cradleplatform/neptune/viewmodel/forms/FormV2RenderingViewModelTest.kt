@@ -19,23 +19,32 @@ import com.cradleplatform.neptune.model.FormTemplateV2
 import com.cradleplatform.neptune.model.FormTemplateLanguagesV2Response
 import com.cradleplatform.neptune.model.FormV2Draft
 import com.cradleplatform.neptune.model.QuestionTypeEnum
+import com.cradleplatform.neptune.testutils.MockWebServerUtils
+import com.google.gson.Gson
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import okhttp3.mockwebserver.Dispatcher
+import okhttp3.mockwebserver.MockResponse
+import okhttp3.mockwebserver.RecordedRequest
+import okhttp3.mockwebserver.SocketPolicy
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import java.io.IOException
 
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class FormV2RenderingViewModelTest {
@@ -465,6 +474,154 @@ internal class FormV2RenderingViewModelTest {
         coVerify { draftDao.upsert(match { it.language == "french" }) }
         coVerify(exactly = 0) { restApi.postFormSubmissionV2(any()) }
         coVerify(exactly = 0) { draftDao.deleteDraft(any(), any()) }
+    }
+
+    @Test
+    fun `language connection failure acknowledges pending upload only after saving it`() = runTest(testDispatcher) {
+        coEvery { restApi.getFormTemplateLanguagesV2("template-1") } throws IOException("Offline")
+        val pendingWrite = CompletableDeferred<Unit>()
+        var queuedDraft: FormV2Draft? = null
+        coEvery { draftDao.upsert(any()) } coAnswers {
+            val draft = firstArg<FormV2Draft>()
+            if (draft.pendingSubmission) {
+                queuedDraft = draft
+                pendingWrite.await()
+            }
+        }
+        val viewModel = createViewModel()
+        runCurrent()
+        viewModel.answerState.setAnswer("q1", AnswerV2.createTextAnswer("Headache"))
+
+        val navigationEvent = async { viewModel.submissionQueuedEvents.first() }
+        viewModel.submitForm()
+        runCurrent()
+        assertEquals(FormV2SubmissionState.Submitting, viewModel.submissionState.value)
+        assertFalse(navigationEvent.isCompleted)
+        pendingWrite.complete(Unit)
+        runCurrent()
+
+        assertEquals(FormV2SubmissionState.PendingUpload, viewModel.submissionState.value)
+        assertTrue(navigationEvent.isCompleted)
+        assertTrue(queuedDraft!!.pendingSubmission)
+        assertFalse(queuedDraft!!.submissionId.isNullOrBlank())
+        assertEquals("Headache", queuedDraft!!.answers.single().answer.textAnswer)
+        assertFalse(viewModel.canEditAnswers)
+        assertFalse(viewModel.canSubmit)
+        assertEquals(null, viewModel.saveDraft())
+        viewModel.submitForm()
+        runCurrent()
+        coVerify(exactly = 1) { draftDao.upsert(match { it.pendingSubmission }) }
+        coVerify(exactly = 0) { restApi.postFormSubmissionV2(any()) }
+        coVerify(exactly = 0) { draftDao.deleteDraft(any(), any()) }
+    }
+
+    @Test
+    fun `POST connection failure queues the same request ID answers and language`() = runTest(testDispatcher) {
+        val postRequest = CompletableDeferred<CreateFormSubmissionRequestV2>()
+        val (api, server) = MockWebServerUtils.createRestApiWithServerBlock {
+            dispatcher = object : Dispatcher() {
+                override fun dispatch(request: RecordedRequest): MockResponse = when (request.method) {
+                    "GET" -> MockResponse().setBody("""{"langVersions":["French"]}""")
+                    "POST" -> {
+                        postRequest.complete(Gson().fromJson(
+                            request.body.readUtf8(), CreateFormSubmissionRequestV2::class.java
+                        ))
+                        MockResponse().setSocketPolicy(SocketPolicy.DISCONNECT_AFTER_REQUEST)
+                    }
+                    else -> MockResponse().setResponseCode(404)
+                }
+            }
+        }
+        try {
+            restApi = api
+            coEvery { templateDao.getTemplate("template-1") } returns FormTemplateV2Entity("template-1", template())
+            val viewModel = createViewModel(language = "french")
+            runCurrent()
+            viewModel.answerState.setAnswer("q1", AnswerV2.createTextAnswer("Headache"))
+
+            viewModel.submitForm()
+            val state = viewModel.submissionState.first {
+                it != FormV2SubmissionState.Idle && it != FormV2SubmissionState.Submitting
+            }
+
+            assertEquals(FormV2SubmissionState.PendingUpload, state)
+            val request = postRequest.await()
+            coVerify { draftDao.upsert(match {
+                it.pendingSubmission && it.submissionId == request.id &&
+                    it.answers == request.answers && it.language == request.lang
+            }) }
+            coVerify(exactly = 0) { draftDao.deleteDraft(any(), any()) }
+        } finally {
+            server.shutdown()
+        }
+    }
+
+    @Test
+    fun `pending upload restoration retains saved language and prevents writes`() = runTest(testDispatcher) {
+        coEvery { draftDao.getDraft("patient-1", "template-1") } returns FormV2Draft(
+            patientId = "patient-1",
+            formTemplateId = "template-1",
+            formTemplateVersion = 1,
+            formTemplate = template(),
+            answers = listOf(FormAnswerV2(questionId = "q1", answer = AnswerV2.createTextAnswer("Headache"))),
+            language = "English",
+            createdAt = 1,
+            updatedAt = 1,
+            submissionId = "queued-submission-id",
+            pendingSubmission = true
+        )
+        val viewModel = createViewModel(language = "French")
+        runCurrent()
+
+        assertEquals(FormV2SubmissionState.PendingUpload, viewModel.submissionState.value)
+        val navigationEvent = async { viewModel.submissionQueuedEvents.first() }
+        runCurrent()
+        assertFalse(navigationEvent.isCompleted)
+        navigationEvent.cancel()
+        assertEquals("English", viewModel.language)
+        assertEquals("Headache", viewModel.answerState.getAnswer("q1")?.textAnswer)
+        assertFalse(viewModel.canEditAnswers)
+        assertFalse(viewModel.canSubmit)
+        assertEquals(null, viewModel.saveDraft())
+        viewModel.submitForm()
+        runCurrent()
+        coVerify(exactly = 0) { draftDao.upsert(any()) }
+        coVerify(exactly = 0) { restApi.postFormSubmissionV2(any()) }
+    }
+
+    @Test
+    fun `pending upload save failure shows error and permits retry`() = runTest(testDispatcher) {
+        coEvery { restApi.getFormTemplateLanguagesV2("template-1") } throws IOException("Offline")
+        coEvery { draftDao.upsert(match { it.pendingSubmission }) } throws IllegalStateException("Storage full")
+        val viewModel = createViewModel()
+        runCurrent()
+        viewModel.answerState.setAnswer("q1", AnswerV2.createTextAnswer("Headache"))
+
+        viewModel.submitForm()
+        runCurrent()
+
+        assertEquals(
+            FormV2SubmissionState.Error("Unable to save form for later submission."),
+            viewModel.submissionState.value
+        )
+        assertTrue(viewModel.canEditAnswers)
+        assertTrue(viewModel.canSubmit)
+        coVerify(exactly = 0) { draftDao.deleteDraft(any(), any()) }
+    }
+
+    @Test
+    fun `non-network submission exception does not queue the draft`() = runTest(testDispatcher) {
+        coEvery { restApi.postFormSubmissionV2(any()) } throws IllegalStateException("Invalid response")
+        val viewModel = createViewModel()
+        runCurrent()
+        viewModel.answerState.setAnswer("q1", AnswerV2.createTextAnswer("Headache"))
+
+        viewModel.submitForm()
+        runCurrent()
+
+        assertEquals(FormV2SubmissionState.Error("Invalid response"), viewModel.submissionState.value)
+        assertTrue(viewModel.canEditAnswers)
+        coVerify(exactly = 0) { draftDao.upsert(match { it.pendingSubmission }) }
     }
 
     private fun createViewModel(
