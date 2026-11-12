@@ -472,6 +472,7 @@ internal class FormV2RenderingViewModelTest {
 
         assertTrue(viewModel.submissionState.value is FormV2SubmissionState.Error)
         assertTrue(viewModel.canSubmit)
+        assertEquals(FormV2SubmissionErrorType.SERVER_ERROR, viewModel.submissionErrors.first())
         coVerify { draftDao.upsert(match { it.language == "french" }) }
         coVerify(exactly = 0) { restApi.postFormSubmissionV2(any()) }
         coVerify(exactly = 0) { draftDao.deleteDraft(any(), any()) }
@@ -596,6 +597,54 @@ internal class FormV2RenderingViewModelTest {
     }
 
     @Test
+    fun `offline draft can be reopened and submitted with its saved answers language and ID`() = runTest(testDispatcher) {
+        var savedDraft: FormV2Draft? = null
+        coEvery { draftDao.upsert(any()) } coAnswers { savedDraft = firstArg() }
+        coEvery { draftDao.getDraft("patient-1", "template-1") } coAnswers { savedDraft }
+        coEvery { restApi.postFormSubmissionV2(any()) } throws IOException("Offline")
+        val viewModel = createViewModel(language = "French")
+        runCurrent()
+        viewModel.answerState.setAnswer("q1", AnswerV2.createTextAnswer("Headache"))
+
+        viewModel.submitForm()
+        runCurrent()
+        assertEquals(FormV2SubmissionErrorType.NETWORK_ERROR, viewModel.submissionErrors.first())
+        viewModel.saveDraft()?.join()
+        assertEquals(FormV2DraftSaveState.Saved, viewModel.draftSaveState.value)
+        coVerify(exactly = 0) { draftDao.deleteDraft(any(), any()) }
+        val draft = requireNotNull(savedDraft)
+        assertFalse(draft.submissionId.isNullOrBlank())
+
+        val reopenedViewModel = createViewModel()
+        runCurrent()
+        assertEquals(FormV2RenderingState.Success(draft.formTemplate), reopenedViewModel.state.value)
+        assertEquals("French", reopenedViewModel.language)
+        assertEquals(draft.answers, reopenedViewModel.answerState.toFormAnswers())
+        assertTrue(reopenedViewModel.canSubmit)
+
+        val response = CompletableDeferred<NetworkResult<FormSubmissionV2>>()
+        coEvery { restApi.postFormSubmissionV2(any()) } coAnswers { response.await() }
+        reopenedViewModel.submitForm()
+        runCurrent()
+        coVerify(exactly = 2) {
+            restApi.postFormSubmissionV2(match {
+                it.id == draft.submissionId && it.patientId == draft.patientId &&
+                    it.formTemplateId == draft.formTemplateId &&
+                    it.lang == draft.language && it.answers == draft.answers
+            })
+        }
+        coVerify(exactly = 0) { draftDao.deleteDraft(any(), any()) }
+
+        response.complete(NetworkResult.Success(submission().copy(
+            id = requireNotNull(draft.submissionId), lang = draft.language
+        ), 201))
+        runCurrent()
+        assertEquals(FormV2SubmissionState.Submitted, reopenedViewModel.submissionState.value)
+        assertFalse(reopenedViewModel.canSaveDraft)
+        coVerify(exactly = 1) { draftDao.deleteDraft(draft.patientId, draft.formTemplateId) }
+    }
+
+    @Test
     fun `non-network submission exception does not queue the draft`() = runTest(testDispatcher) {
         coEvery { restApi.postFormSubmissionV2(any()) } throws IllegalStateException("Invalid response")
         val viewModel = createViewModel()
@@ -606,8 +655,10 @@ internal class FormV2RenderingViewModelTest {
         runCurrent()
 
         assertEquals(FormV2SubmissionState.Error("Invalid response"), viewModel.submissionState.value)
+        assertEquals(FormV2SubmissionErrorType.SERVER_ERROR, viewModel.submissionErrors.first())
         assertTrue(viewModel.canEditAnswers)
         coVerify(exactly = 1) { draftDao.upsert(any()) }
+        coVerify(exactly = 0) { draftDao.deleteDraft(any(), any()) }
     }
 
     private fun createViewModel(
