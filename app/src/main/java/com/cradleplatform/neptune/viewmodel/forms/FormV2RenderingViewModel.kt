@@ -10,7 +10,6 @@ import com.cradleplatform.neptune.database.daos.FormV2DraftDao
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
 import com.cradleplatform.neptune.manager.FormTemplateV2Manager
-import com.cradleplatform.neptune.model.AnswerV2
 import com.cradleplatform.neptune.model.CreateFormSubmissionRequestV2
 import com.cradleplatform.neptune.model.FormAnswerV2
 import com.cradleplatform.neptune.model.FormV2Draft
@@ -18,7 +17,6 @@ import com.cradleplatform.neptune.model.FormTemplateV2
 import com.cradleplatform.neptune.model.FormV2AnswerState
 import com.cradleplatform.neptune.model.FormV2SubmissionValidationResult
 import com.cradleplatform.neptune.model.FormV2SubmissionValidator
-import com.cradleplatform.neptune.model.QuestionTypeEnum
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
@@ -32,9 +30,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.io.IOException
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 import java.util.UUID
 import javax.inject.Inject
 
@@ -149,22 +144,10 @@ class FormV2RenderingViewModel @Inject constructor(
     }
 
     private fun restoreDraft(draft: FormV2Draft) {
-        // Older pending snapshots contain API epoch dates; editable drafts use local date strings.
-        val answers = if (draft.pendingSubmission) draft.answers.map { formAnswer ->
-            val type = draft.formTemplate.questions?.firstOrNull { it.id == formAnswer.questionId }?.questionType
-            val seconds = formAnswer.answer.dateAnswer?.toLongOrNull()
-            if (seconds != null && (type == QuestionTypeEnum.DATE || type == QuestionTypeEnum.DATETIME)) {
-                val pattern = if (type == QuestionTypeEnum.DATE) "yyyy-MM-dd" else "yyyy-MM-dd HH:mm"
-                val value = SimpleDateFormat(pattern, Locale.ROOT).format(Date(seconds * 1000))
-                formAnswer.copy(answer = AnswerV2.createDateAnswer(value, formAnswer.answer.comment))
-            } else {
-                formAnswer
-            }
-        } else draft.answers
-        answerState.replaceAnswers(answers)
+        answerState.replaceAnswers(draft.answers)
         submissionId = draft.submissionId
-        // Keep the language of drafts saved by the earlier pending-upload implementation.
-        selectedLanguage = if (draft.pendingSubmission) draft.language else requestedLanguage ?: draft.language
+        // Keep the saved language unless the user explicitly selected one for this form.
+        selectedLanguage = requestedLanguage ?: draft.language
     }
 
     /** Saves a patient draft and returns the write job so navigation can wait for it. */
@@ -205,9 +188,7 @@ class FormV2RenderingViewModel @Inject constructor(
         }
     }
 
-    /**
-     * Validates and posts V2 answers, retaining an editable draft when the connection fails.
-     */
+    /** Validates the current answers, saves a local draft, and submits the form. */
     fun submitForm() {
         if (!canSubmit) return
         val patient = patientId?.takeIf { it.isNotBlank() } ?: return

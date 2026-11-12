@@ -1,6 +1,5 @@
 package com.cradleplatform.neptune.model
 
-import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.TypeConverters
@@ -36,13 +35,9 @@ data class FormV2Draft(
     val createdAt: Long,
     val updatedAt: Long,
     /** Stable client-generated ID reused if a POST response is lost and the user retries */
-    val submissionId: String? = null,
-    /** Legacy pending-upload flag. New offline saves remain editable drafts with this set to false. */
-    @ColumnInfo(defaultValue = "0")
-    val pendingSubmission: Boolean = false
+    val submissionId: String? = null
 ) {
     init {
-        // Keep the row identity and its serialized template snapshot from silently diverging.
         require(patientId.isNotBlank()) { "A draft requires a patient ID" }
         require(formTemplateId.isNotBlank() && formTemplateId == formTemplate.id) {
             "Draft template ID must match its snapshot"

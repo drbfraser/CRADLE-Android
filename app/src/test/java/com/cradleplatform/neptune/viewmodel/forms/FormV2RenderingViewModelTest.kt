@@ -45,9 +45,6 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.io.IOException
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class FormV2RenderingViewModelTest {
@@ -497,7 +494,6 @@ internal class FormV2RenderingViewModelTest {
         assertEquals(FormV2SubmissionState.Error("Offline"), viewModel.submissionState.value)
         assertEquals(FormV2SubmissionErrorType.NETWORK_ERROR, errorEvent.await())
         coVerify(exactly = 1) { draftDao.upsert(any()) }
-        assertFalse(queuedDraft!!.pendingSubmission)
         assertFalse(queuedDraft!!.submissionId.isNullOrBlank())
         assertEquals("Headache", queuedDraft!!.answers.single().answer.textAnswer)
         assertTrue(viewModel.canEditAnswers)
@@ -546,58 +542,13 @@ internal class FormV2RenderingViewModelTest {
             assertEquals(FormV2SubmissionErrorType.NETWORK_ERROR, viewModel.submissionErrors.first())
             val request = postRequest.await()
             coVerify { draftDao.upsert(match {
-                !it.pendingSubmission && it.submissionId == request.id &&
+                it.submissionId == request.id &&
                     it.answers == request.answers && it.language == request.lang
             }) }
             coVerify(exactly = 0) { draftDao.deleteDraft(any(), any()) }
         } finally {
             server.shutdown()
         }
-    }
-
-    @Test
-    fun `previous pending upload restores as an editable draft and permits submission`() = runTest(testDispatcher) {
-        val savedTemplate = template().let { template ->
-            template.copy(questions = template.questions.orEmpty() + template.questions!!.single().copy(
-                id = "date-question", questionType = QuestionTypeEnum.DATE
-            ))
-        }
-        coEvery { draftDao.getDraft("patient-1", "template-1") } returns FormV2Draft(
-            patientId = "patient-1",
-            formTemplateId = "template-1",
-            formTemplateVersion = 1,
-            formTemplate = savedTemplate,
-            answers = listOf(
-                FormAnswerV2(questionId = "q1", answer = AnswerV2.createTextAnswer("Headache")),
-                FormAnswerV2(questionId = "date-question", answer = AnswerV2.createDateAnswer("1700000000"))
-            ),
-            language = "English",
-            createdAt = 1,
-            updatedAt = 1,
-            submissionId = "queued-submission-id",
-            pendingSubmission = true
-        )
-        val viewModel = createViewModel(language = "French")
-        runCurrent()
-
-        assertEquals(FormV2SubmissionState.Idle, viewModel.submissionState.value)
-        val errorEvent = async { viewModel.submissionErrors.first() }
-        runCurrent()
-        assertFalse(errorEvent.isCompleted)
-        errorEvent.cancel()
-        assertEquals("English", viewModel.language)
-        assertEquals("Headache", viewModel.answerState.getAnswer("q1")?.textAnswer)
-        assertEquals(
-            SimpleDateFormat("yyyy-MM-dd", Locale.ROOT).format(Date(1700000000000L)),
-            viewModel.answerState.getAnswer("date-question")?.dateAnswer
-        )
-        assertTrue(viewModel.canEditAnswers)
-        assertTrue(viewModel.canSubmit)
-        coEvery { restApi.postFormSubmissionV2(any()) } returns NetworkResult.Success(submission(), 201)
-        viewModel.submitForm()
-        runCurrent()
-        coVerify { draftDao.upsert(match { !it.pendingSubmission && it.submissionId == "queued-submission-id" }) }
-        coVerify { restApi.postFormSubmissionV2(match { it.id == "queued-submission-id" }) }
     }
 
     @Test
@@ -656,7 +607,7 @@ internal class FormV2RenderingViewModelTest {
 
         assertEquals(FormV2SubmissionState.Error("Invalid response"), viewModel.submissionState.value)
         assertTrue(viewModel.canEditAnswers)
-        coVerify(exactly = 0) { draftDao.upsert(match { it.pendingSubmission }) }
+        coVerify(exactly = 1) { draftDao.upsert(any()) }
     }
 
     private fun createViewModel(

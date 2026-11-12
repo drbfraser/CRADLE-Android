@@ -42,9 +42,6 @@ abstract class FormV2DraftDao {
     @Query("SELECT * FROM FormV2Draft WHERE patientId = :patientId ORDER BY updatedAt DESC")
     abstract fun observeDraftsByPatientId(patientId: String): Flow<List<FormV2Draft>>
 
-    @Query("SELECT * FROM FormV2Draft WHERE pendingSubmission = 1")
-    abstract suspend fun getPendingSubmissions(): List<FormV2Draft>
-
     @Query("SELECT * FROM FormV2Draft ORDER BY updatedAt DESC")
     abstract fun observeAllDrafts(): Flow<List<FormV2Draft>>
 

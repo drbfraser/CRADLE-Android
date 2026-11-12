@@ -30,7 +30,6 @@ import com.cradleplatform.neptune.model.AnswerV2
 import com.cradleplatform.neptune.model.FormTemplateQuestionV2
 import com.cradleplatform.neptune.model.QuestionTypeEnum
 import com.cradleplatform.neptune.model.getTranslation
-import com.cradleplatform.neptune.utilities.DateUtil
 import com.cradleplatform.neptune.viewmodel.forms.FormTemplateDetailV2ViewModel
 import com.cradleplatform.neptune.viewmodel.forms.FormV2DraftSaveState
 import com.cradleplatform.neptune.viewmodel.forms.FormV2RenderingState
@@ -41,7 +40,6 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import org.threeten.bp.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.Locale
 
@@ -409,8 +407,8 @@ class FormV2RenderingActivity : AppCompatActivity() {
 
     private fun makeDateInput(question: FormTemplateQuestionV2): Button {
         val button = Button(this).apply {
-            text = formatAnswerDate(viewModel.answerState.getAnswer(question.id), question.questionType)
-                .ifBlank { getString(R.string.form_v2_rendering_date_hint) }
+            text = viewModel.answerState.getAnswer(question.id)?.dateAnswer
+                ?: getString(R.string.form_v2_rendering_date_hint)
         }
         button.setOnClickListener {
             val now = Calendar.getInstance()
@@ -469,13 +467,6 @@ class FormV2RenderingActivity : AppCompatActivity() {
             datePicker.show()
         }
         return button
-    }
-
-    private fun formatAnswerDate(answer: AnswerV2?, type: QuestionTypeEnum): String {
-        val raw = answer?.dateAnswer.orEmpty()
-        val seconds = raw.toLongOrNull() ?: return raw
-        val pattern = if (type == QuestionTypeEnum.DATE) "yyyy-MM-dd" else "yyyy-MM-dd HH:mm:ss"
-        return DateUtil.getZoneTimeFromLong(seconds)?.format(DateTimeFormatter.ofPattern(pattern)) ?: raw
     }
 
     private fun isDateTimeAllowed(

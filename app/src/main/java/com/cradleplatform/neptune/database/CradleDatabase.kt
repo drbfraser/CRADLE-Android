@@ -31,7 +31,7 @@ import com.cradleplatform.neptune.model.Referral
 import com.cradleplatform.neptune.model.WorkflowInstance
 import com.cradleplatform.neptune.model.WorkflowTemplate
 
-const val CURRENT_DATABASE_VERSION = 8
+const val CURRENT_DATABASE_VERSION = 7
 
 /**
  * An interface for the local CRADLE database.
@@ -111,7 +111,7 @@ internal object Migrations {
     val ALL_MIGRATIONS: Array<Migration> by lazy {
         arrayOf(
             MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6,
-            MIGRATION_6_7, MIGRATION_7_8
+            MIGRATION_6_7
         )
     }
 
@@ -332,29 +332,4 @@ internal object Migrations {
             }
         }
     }
-
-    /** Version 8: Reconcile the two development branches that independently used version 7. */
-    private val MIGRATION_7_8 = object : Migration(7, 8) {
-        override fun migrate(database: SupportSQLiteDatabase) {
-            // main's version 7 has patientNumber; the offline-form branch's version 7 does not.
-            if (!hasColumn(database, "Patient", "patientNumber")) {
-                MIGRATION_6_7.migrate(database)
-            }
-            if (!hasColumn(database, "FormV2Draft", "pendingSubmission")) {
-                database.execSQL(
-                    "ALTER TABLE FormV2Draft ADD COLUMN `pendingSubmission` INTEGER NOT NULL DEFAULT 0"
-                )
-            }
-        }
-    }
-
-    private fun hasColumn(database: SupportSQLiteDatabase, table: String, column: String): Boolean =
-        database.query("PRAGMA table_info(`$table`)").use { cursor ->
-            val nameIndex = cursor.getColumnIndexOrThrow("name")
-            var found = false
-            while (cursor.moveToNext()) {
-                if (cursor.getString(nameIndex) == column) found = true
-            }
-            found
-        }
 }

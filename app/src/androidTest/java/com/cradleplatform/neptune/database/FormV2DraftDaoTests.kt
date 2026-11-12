@@ -17,7 +17,6 @@ import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
-import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Test
@@ -70,21 +69,6 @@ class FormV2DraftDaoTests {
         dao.upsert(draft().copy(updatedAt = 2000L))
 
         assertEquals("submission-1", dao.getDraft("patient-1", "template-1")!!.submissionId)
-    }
-
-    @Test
-    fun previousPendingSubmissionCanBeSavedAsAnEditableDraft() = runBlocking {
-        val dao = database.formV2DraftDao()
-        val queued = draft().copy(submissionId = "submission-1", pendingSubmission = true)
-        dao.upsert(queued)
-
-        val edited = draft().copy(updatedAt = 2000L)
-        dao.upsert(edited)
-        assertEquals(
-            edited.copy(createdAt = queued.createdAt, submissionId = queued.submissionId),
-            dao.getDraft("patient-1", "template-1")
-        )
-        assertTrue(dao.getPendingSubmissions().isEmpty())
     }
 
     @Test
