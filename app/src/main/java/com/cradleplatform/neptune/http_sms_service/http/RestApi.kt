@@ -39,7 +39,7 @@ import com.cradleplatform.neptune.model.PatientAndReadings
 import com.cradleplatform.neptune.model.PatientAndReferrals
 import com.cradleplatform.neptune.model.Reading
 import com.cradleplatform.neptune.model.Referral
-import com.cradleplatform.neptune.model.RelayPhoneNumberResponse
+import com.cradleplatform.neptune.model.RelayPhoneNumber
 import com.cradleplatform.neptune.model.Statistics
 import com.cradleplatform.neptune.model.WorkflowInstance
 import com.cradleplatform.neptune.model.WorkflowTemplate
@@ -1497,7 +1497,7 @@ class RestApi(
         }
     }
 
-    suspend fun getAllRelayPhoneNumbers(protocol: Protocol): NetworkResult<RelayPhoneNumberResponse> =
+    suspend fun getAllRelayPhoneNumbers(protocol: Protocol): NetworkResult<List<RelayPhoneNumber>> =
         withContext(IO) {
             val method = Http.Method.GET
             val url = urlManager.getAllRelayPhoneNumbers()
@@ -1509,7 +1509,7 @@ class RestApi(
                         url = url,
                         headers = makeAuthorizationHeader(),
                         inputStreamReader = {
-                            JacksonMapper.readerForRelayPhoneNumberResponse.readValue(
+                            JacksonMapper.readerForRelayPhoneNumbers.readValue(
                                 it
                             )
                         })
