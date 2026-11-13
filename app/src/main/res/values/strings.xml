@@ -833,6 +833,7 @@
     <string name="form_submission_server_error_message">The server encountered an error and could not process your form. Please try again later or save as a draft.</string>
     <string name="form_submission_network_error_message">Unable to reach the server. Please check your internet connection and try again, or save as a draft to submit later.</string>
     <string name="form_submission_auth_error_message">Your session has expired. Please log in again to submit this form.</string>
+    <string name="form_v2_submission_permission_error_message">You do not have permission to access this patient. You can save the form as a draft.</string>
     <string name="form_submission_retry">Retry</string>
     <string name="form_submission_save_draft">Save as Draft</string>
     <string name="form_submission_saved_draft_success">Form saved as draft. You can submit it later.</string>

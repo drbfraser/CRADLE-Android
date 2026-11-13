@@ -583,7 +583,7 @@ internal class FormV2RenderingViewModelTest {
             } else {
                 NetworkResult.Success(FormTemplateLanguagesV2Response(listOf("English")), 200)
             }
-            coEvery { restApi.postFormSubmissionV2(any()) } returns NetworkResult.Failure(ByteArray(0), 403)
+            coEvery { restApi.postFormSubmissionV2(any()) } returns NetworkResult.Failure(ByteArray(0), 401)
             val viewModel = createViewModel()
             runCurrent()
             viewModel.answerState.setAnswer("q1", AnswerV2.createTextAnswer("Headache"))
@@ -592,9 +592,36 @@ internal class FormV2RenderingViewModelTest {
             runCurrent()
 
             assertEquals(FormV2SubmissionErrorType.AUTH_ERROR, viewModel.submissionErrors.first())
+            assertTrue(viewModel.canSaveDraft)
             coVerify(exactly = 0) { draftDao.deleteDraft(any(), any()) }
         }
     }
+
+    @Test
+    fun `forbidden language or submission request reports a permission error and retains the draft`() =
+        runTest(testDispatcher) {
+            for (failLanguages in listOf(true, false)) {
+                coEvery { restApi.getFormTemplateLanguagesV2("template-1") } returns if (failLanguages) {
+                    NetworkResult.Failure(ByteArray(0), 403)
+                } else {
+                    NetworkResult.Success(FormTemplateLanguagesV2Response(listOf("English")), 200)
+                }
+                coEvery { restApi.postFormSubmissionV2(any()) } returns NetworkResult.Failure(ByteArray(0), 403)
+                val viewModel = createViewModel()
+                runCurrent()
+                viewModel.answerState.setAnswer("q1", AnswerV2.createTextAnswer("Headache"))
+
+                viewModel.submitForm()
+                runCurrent()
+
+                assertEquals(FormV2SubmissionErrorType.PERMISSION_ERROR, viewModel.submissionErrors.first())
+                assertEquals(FormV2SubmissionState.Error("Server error (403)"), viewModel.submissionState.value)
+                assertTrue(viewModel.canSaveDraft)
+                assertTrue(viewModel.canEditAnswers)
+                coVerify { draftDao.upsert(match { it.answers.single().answer.textAnswer == "Headache" }) }
+                coVerify(exactly = 0) { draftDao.deleteDraft(any(), any()) }
+            }
+        }
 
     @Test
     fun `offline draft can be reopened and submitted with its saved answers language and ID`() = runTest(testDispatcher) {

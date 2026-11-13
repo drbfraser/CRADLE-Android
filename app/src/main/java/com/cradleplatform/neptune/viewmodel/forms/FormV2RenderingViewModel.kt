@@ -269,10 +269,10 @@ class FormV2RenderingViewModel @Inject constructor(
     }
 
     private suspend fun reportHttpSubmissionError(statusCode: Int) {
-        val errorType = if (statusCode == 401 || statusCode == 403) {
-            FormV2SubmissionErrorType.AUTH_ERROR
-        } else {
-            FormV2SubmissionErrorType.SERVER_ERROR
+        val errorType = when (statusCode) {
+            401 -> FormV2SubmissionErrorType.AUTH_ERROR
+            403 -> FormV2SubmissionErrorType.PERMISSION_ERROR
+            else -> FormV2SubmissionErrorType.SERVER_ERROR
         }
         reportSubmissionError("Server error ($statusCode)", errorType)
     }

@@ -124,13 +124,18 @@ class FormV2RenderingActivity : AppCompatActivity() {
             FormV2SubmissionErrorType.SERVER_ERROR -> R.string.form_submission_server_error_message
             FormV2SubmissionErrorType.NETWORK_ERROR -> R.string.form_submission_network_error_message
             FormV2SubmissionErrorType.AUTH_ERROR -> R.string.form_submission_auth_error_message
+            FormV2SubmissionErrorType.PERMISSION_ERROR -> R.string.form_v2_submission_permission_error_message
         }
         val builder = MaterialAlertDialogBuilder(this)
             .setTitle(R.string.form_submission_error_title)
             .setIcon(R.drawable.ic_baseline_warning_24)
             .setMessage(messageRes)
-        if (errorType != FormV2SubmissionErrorType.AUTH_ERROR) {
+        if (errorType == FormV2SubmissionErrorType.SERVER_ERROR ||
+            errorType == FormV2SubmissionErrorType.NETWORK_ERROR
+        ) {
             builder.setPositiveButton(R.string.form_submission_retry) { _, _ -> viewModel.submitForm() }
+        }
+        if (errorType != FormV2SubmissionErrorType.AUTH_ERROR) {
             builder.setNeutralButton(R.string.form_submission_save_draft) { _, _ ->
                 saveDraftAndLeave(returnToPatient = true)
             }
