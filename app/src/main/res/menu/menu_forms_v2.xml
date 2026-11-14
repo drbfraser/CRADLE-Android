@@ -3,6 +3,12 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
+        android:id="@+id/formDelete"
+        android:icon="@drawable/baseline_delete_white"
+        android:title="@string/form_v2_delete_title"
+        app:showAsAction="always" />
+
+    <item
         android:id="@+id/formSubmit"
         android:icon="@drawable/ic_send_24"
         android:title="@string/form_v2_submit"

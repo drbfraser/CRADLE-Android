@@ -4,6 +4,7 @@ import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.Context
 import android.content.Intent
+import android.graphics.Typeface
 import android.os.Bundle
 import android.provider.Settings
 import android.text.InputType
@@ -37,6 +38,7 @@ import com.cradleplatform.neptune.utilities.connectivity.api24.ConnectivityOptio
 import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager
 import com.cradleplatform.neptune.viewmodel.forms.FormTemplateDetailV2ViewModel
 import com.cradleplatform.neptune.viewmodel.forms.FormV2DraftSaveState
+import com.cradleplatform.neptune.viewmodel.forms.FormV2DraftDeleteState
 import com.cradleplatform.neptune.viewmodel.forms.FormV2RenderingState
 import com.cradleplatform.neptune.viewmodel.forms.FormV2RenderingViewModel
 import com.cradleplatform.neptune.viewmodel.forms.FormV2SubmissionState
@@ -55,17 +57,19 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class FormV2RenderingActivity : AppCompatActivity() {
 
-    private val viewModel: FormV2RenderingViewModel by viewModels()
     @Inject
     lateinit var networkStateManager: NetworkStateManager
+
+    private val viewModel: FormV2RenderingViewModel by viewModels()
     private val disabledInputs = mutableMapOf<View, Boolean>()
     private var isLeavingForm = false
     private var submissionErrorDialog: AlertDialog? = null
     private var navigationDialog: AlertDialog? = null
     private var submissionModeDialog: android.app.AlertDialog? = null
+    private var draftDeleteDialog: android.app.AlertDialog? = null
     private val formBackCallback = object : OnBackPressedCallback(true) {
         override fun handleOnBackPressed() {
-            if (isLeavingForm) return
+            if (isLeavingForm || viewModel.draftDeleteState.value == FormV2DraftDeleteState.Deleting) return
             if (viewModel.submissionState.value == FormV2SubmissionState.Submitting) {
                 Toast.makeText(this@FormV2RenderingActivity, R.string.form_submitting, Toast.LENGTH_SHORT).show()
                 return
@@ -104,6 +108,9 @@ class FormV2RenderingActivity : AppCompatActivity() {
                 launch {
                     viewModel.submissionErrors.collectLatest { showSubmissionErrorDialog(it) }
                 }
+                launch {
+                    viewModel.draftDeleteState.collectLatest { state -> renderDraftDeleteState(state) }
+                }
             }
         }
     }
@@ -118,6 +125,7 @@ class FormV2RenderingActivity : AppCompatActivity() {
         submissionErrorDialog?.dismiss()
         navigationDialog?.dismiss()
         submissionModeDialog?.dismiss()
+        draftDeleteDialog?.dismiss()
         super.onDestroy()
     }
 
@@ -133,6 +141,10 @@ class FormV2RenderingActivity : AppCompatActivity() {
             isEnabled = viewModel.canSubmit && !isLeavingForm &&
                 viewModel.draftSaveState.value != FormV2DraftSaveState.Saving
         }
+        menu.findItem(R.id.formDelete)?.apply {
+            isVisible = viewModel.hasSavedDraft
+            isEnabled = viewModel.canDeleteDraft && !isLeavingForm
+        }
         return super.onPrepareOptionsMenu(menu)
     }
 
@@ -145,6 +157,10 @@ class FormV2RenderingActivity : AppCompatActivity() {
             if (viewModel.canSubmit && !isLeavingForm) showFormSubmissionModeDialog()
             true
         }
+        R.id.formDelete -> {
+            if (viewModel.canDeleteDraft && !isLeavingForm) showDeleteFormDialog()
+            true
+        }
         else -> super.onOptionsItemSelected(item)
     }
 
@@ -153,12 +169,7 @@ class FormV2RenderingActivity : AppCompatActivity() {
         val builder = android.app.AlertDialog.Builder(this)
         builder.setTitle(R.string.how_to_submit)
         builder.setMessage(R.string.choose_an_option)
-        val internetString = when (networkStateManager.getConnectivity()) {
-            ConnectivityOptions.WIFI -> getString(R.string.form_dialog_connected_to_wifi)
-            ConnectivityOptions.CELLULAR_DATA -> getString(R.string.form_dialog_connected_to_cellular)
-            else -> ""
-        }
-
+        val internetString = getInternetTypeString()
         if (internetString.isEmpty()) {
             builder.setPositiveButton(R.string.form_dialog_not_connected_internet) { _, _ ->
                 startActivity(Intent(Settings.ACTION_WIRELESS_SETTINGS))
@@ -178,6 +189,43 @@ class FormV2RenderingActivity : AppCompatActivity() {
             Toast.makeText(this, R.string.form_v2_sms_not_available, Toast.LENGTH_LONG).show()
         }
         submissionModeDialog = builder.show()
+    }
+
+    private fun getInternetTypeString(): String {
+        return when (networkStateManager.getConnectivity()) {
+            ConnectivityOptions.WIFI -> "Wifi"
+            ConnectivityOptions.CELLULAR_DATA -> "Cellular"
+            ConnectivityOptions.SMS -> "Sms"
+            ConnectivityOptions.NONE -> ""
+        }
+    }
+
+    private fun showDeleteFormDialog() {
+        if (draftDeleteDialog?.isShowing == true) return
+        draftDeleteDialog = android.app.AlertDialog.Builder(this)
+            .setTitle(R.string.form_v2_delete_title)
+            .setMessage(R.string.form_v2_delete_message)
+            .setPositiveButton(R.string.yes) { _, _ ->
+                viewModel.deleteDraft()
+                updateSubmissionControls()
+            }
+            .setNegativeButton(R.string.no, null)
+            .show()
+    }
+
+    private fun renderDraftDeleteState(state: FormV2DraftDeleteState) {
+        updateSubmissionControls()
+        when (state) {
+            FormV2DraftDeleteState.Deleted -> {
+                if (!isLeavingForm) {
+                    isLeavingForm = true
+                    finish()
+                }
+            }
+            FormV2DraftDeleteState.Error ->
+                Toast.makeText(this, R.string.form_v2_delete_error, Toast.LENGTH_LONG).show()
+            else -> Unit
+        }
     }
 
     private fun showUnsavedChangesDialog() {
@@ -318,6 +366,7 @@ class FormV2RenderingActivity : AppCompatActivity() {
                 supportActionBar?.title = state.template.classification.name.getTranslation(viewModel.language)
                     ?: getString(R.string.create_new_form)
                 status.text = ""
+                var questionNumber = 0
                 state.template.questions.orEmpty().sortedBy { it.order }.forEach { question ->
                     val label = TextView(this).apply {
                         text = question.questionText.getTranslation(viewModel.language).orEmpty()
@@ -330,6 +379,11 @@ class FormV2RenderingActivity : AppCompatActivity() {
                         label.setTextColor(getColor(R.color.colorPrimaryDark))
                         return@forEach
                     }
+
+                    questionNumber++
+                    label.text = "$questionNumber. ${label.text}" + if (question.required) " *" else ""
+                    label.setTypeface(label.typeface, Typeface.BOLD)
+                    label.textSize = 18f
 
                     if (question.questionType == QuestionTypeEnum.MULTIPLE_CHOICE ||
                         question.questionType == QuestionTypeEnum.MULTIPLE_SELECT
