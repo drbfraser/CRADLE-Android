@@ -89,6 +89,7 @@ internal class FormV2RenderingViewModelTest {
             runCurrent()
             coVerify(exactly = 0) { restApi.getFormTemplateV2(any()) }
             viewModel.answerState.setAnswer("q1", AnswerV2.createTextAnswer("Headache"))
+            assertTrue(viewModel.hasUnsavedChanges)
 
             viewModel.saveDraft()
             viewModel.answerState.setAnswer("q1", AnswerV2.createTextAnswer("Fever"))
@@ -102,6 +103,7 @@ internal class FormV2RenderingViewModelTest {
             runCurrent()
             assertEquals(FormV2DraftSaveState.Saved, viewModel.draftSaveState.value)
             assertEquals("Fever", viewModel.answerState.getAnswer("q1")?.textAnswer)
+            assertTrue(viewModel.hasUnsavedChanges)
         }
 
     @Test
@@ -114,13 +116,35 @@ internal class FormV2RenderingViewModelTest {
         viewModel.saveDraft()
         runCurrent()
         assertEquals(FormV2DraftSaveState.Error, viewModel.draftSaveState.value)
+        assertTrue(viewModel.hasUnsavedChanges)
         assertEquals("Headache", viewModel.answerState.getAnswer("q1")?.textAnswer)
 
         coEvery { draftDao.upsert(any()) } returns Unit
         viewModel.saveDraft()
         runCurrent()
         assertEquals(FormV2DraftSaveState.Saved, viewModel.draftSaveState.value)
+        assertFalse(viewModel.hasUnsavedChanges)
         coVerify(exactly = 2) { draftDao.upsert(any()) }
+    }
+
+    @Test
+    fun `return confirmation is needed only while answers differ from the saved draft`() = runTest(testDispatcher) {
+        val viewModel = createViewModel()
+        runCurrent()
+        assertFalse(viewModel.hasUnsavedChanges)
+
+        viewModel.answerState.setAnswer("q1", AnswerV2.createTextAnswer("Headache"))
+        assertTrue(viewModel.hasUnsavedChanges)
+        viewModel.answerState.removeAnswer("q1")
+        assertFalse(viewModel.hasUnsavedChanges)
+
+        viewModel.answerState.setAnswer("q1", AnswerV2.createTextAnswer("Headache"))
+        viewModel.saveDraft()?.join()
+        assertFalse(viewModel.hasUnsavedChanges)
+        viewModel.answerState.setAnswer("q1", AnswerV2.createTextAnswer("Fever"))
+        assertTrue(viewModel.hasUnsavedChanges)
+        viewModel.answerState.setAnswer("q1", AnswerV2.createTextAnswer("Headache"))
+        assertFalse(viewModel.hasUnsavedChanges)
     }
 
     @Test
@@ -382,8 +406,11 @@ internal class FormV2RenderingViewModelTest {
             runCurrent()
 
             assertEquals(FormV2RenderingState.Success(savedTemplate), viewModel.state.value)
+            assertFalse(viewModel.hasUnsavedChanges)
             assertEquals("Headache", viewModel.answerState.getAnswer("q1")?.textAnswer)
             assertEquals("French", viewModel.language)
+            viewModel.answerState.removeAnswer("q1")
+            assertTrue(viewModel.hasUnsavedChanges)
             coVerify(exactly = 0) { restApi.getFormTemplateV2("template-1") }
         }
 
