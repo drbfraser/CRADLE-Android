@@ -18,6 +18,7 @@ import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AlertDialog
 import androidx.core.view.descendants
 import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.Lifecycle
@@ -34,6 +35,8 @@ import com.cradleplatform.neptune.viewmodel.forms.FormV2DraftSaveState
 import com.cradleplatform.neptune.viewmodel.forms.FormV2RenderingState
 import com.cradleplatform.neptune.viewmodel.forms.FormV2RenderingViewModel
 import com.cradleplatform.neptune.viewmodel.forms.FormV2SubmissionState
+import com.cradleplatform.neptune.viewmodel.forms.FormV2SubmissionErrorType
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -49,6 +52,7 @@ class FormV2RenderingActivity : AppCompatActivity() {
     private val viewModel: FormV2RenderingViewModel by viewModels()
     private val disabledInputs = mutableMapOf<View, Boolean>()
     private var isLeavingForm = false
+    private var submissionErrorDialog: AlertDialog? = null
     private val formBackCallback = object : OnBackPressedCallback(true) {
         override fun handleOnBackPressed() {
             if (isLeavingForm) return
@@ -96,6 +100,9 @@ class FormV2RenderingActivity : AppCompatActivity() {
                 launch {
                     viewModel.submissionState.collectLatest { state -> renderSubmissionState(state) }
                 }
+                launch {
+                    viewModel.submissionErrors.collectLatest { showSubmissionErrorDialog(it) }
+                }
             }
         }
     }
@@ -104,6 +111,38 @@ class FormV2RenderingActivity : AppCompatActivity() {
         // Covers normal navigation, backgrounding, and rotation.
         if (!isLeavingForm) viewModel.saveDraft()
         super.onStop()
+    }
+
+    override fun onDestroy() {
+        submissionErrorDialog?.dismiss()
+        super.onDestroy()
+    }
+
+    private fun showSubmissionErrorDialog(errorType: FormV2SubmissionErrorType) {
+        if (isLeavingForm || isFinishing) return
+        val messageRes = when (errorType) {
+            FormV2SubmissionErrorType.SERVER_ERROR -> R.string.form_submission_server_error_message
+            FormV2SubmissionErrorType.NETWORK_ERROR -> R.string.form_submission_network_error_message
+            FormV2SubmissionErrorType.AUTH_ERROR -> R.string.form_submission_auth_error_message
+            FormV2SubmissionErrorType.PERMISSION_ERROR -> R.string.form_v2_submission_permission_error_message
+        }
+        val builder = MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.form_submission_error_title)
+            .setIcon(R.drawable.ic_baseline_warning_24)
+            .setMessage(messageRes)
+        if (errorType == FormV2SubmissionErrorType.SERVER_ERROR ||
+            errorType == FormV2SubmissionErrorType.NETWORK_ERROR
+        ) {
+            builder.setPositiveButton(R.string.form_submission_retry) { _, _ -> viewModel.submitForm() }
+        }
+        if (errorType != FormV2SubmissionErrorType.AUTH_ERROR) {
+            builder.setNeutralButton(R.string.form_submission_save_draft) { _, _ ->
+                saveDraftAndLeave(returnToPatient = true)
+            }
+        }
+        builder.setNegativeButton(R.string.cancel, null)
+        submissionErrorDialog?.dismiss()
+        submissionErrorDialog = builder.show()
     }
 
     private fun saveDraftAndLeave(returnToPatient: Boolean) {
@@ -168,7 +207,8 @@ class FormV2RenderingActivity : AppCompatActivity() {
         status.visibility = if (status.text.isEmpty()) View.GONE else View.VISIBLE
         updateSubmissionControls()
         updateDraftSaveButton()
-        if (state == FormV2SubmissionState.Submitted) {
+        if (state == FormV2SubmissionState.Submitted && !isLeavingForm) {
+            isLeavingForm = true
             Toast.makeText(this, R.string.form_submission_success, Toast.LENGTH_LONG).show()
             returnToPatientProfile()
         }
