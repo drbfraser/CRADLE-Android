@@ -1,5 +1,13 @@
 package com.cradleplatform.neptune.http_sms_service.http
 
+/**
+ * A record that the server didn't accept during a sync: the ID of the record, and the reason.
+ */
+data class SyncError(
+    val recordId: String,
+    val message: String,
+)
+
 data class HealthFacilitySyncResult(
     val networkResult: NetworkResult<Unit>,
     var totalHealthFacilitiesDownloaded: Int,
@@ -15,14 +23,15 @@ data class PatientSyncResult(
 data class ReadingSyncResult(
     val networkResult: NetworkResult<Unit>,
     var totalReadingsUploaded: Int,
-    var totalReadingsDownloaded: Int
+    var totalReadingsDownloaded: Int,
+    val errors: List<SyncError> = emptyList(),
 )
 
 data class ReferralSyncResult(
     val networkResult: NetworkResult<Unit>,
     var totalReferralsUploaded: Int,
     var totalReferralsDownloaded: Int,
-    var errors: String?,
+    val errors: List<SyncError> = emptyList(),
 )
 
 data class AssessmentSyncResult(
@@ -51,5 +60,5 @@ data class WorkflowInstanceSyncResult(
     val networkResult: NetworkResult<Unit>,
     var totalWorkflowInstancesUploaded: Int,
     var totalWorkflowInstancesDownloaded: Int,
-    var errors: String?
+    val errors: List<SyncError> = emptyList(),
 )
