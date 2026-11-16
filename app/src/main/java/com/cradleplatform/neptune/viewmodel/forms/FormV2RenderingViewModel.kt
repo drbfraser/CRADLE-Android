@@ -215,6 +215,22 @@ class FormV2RenderingViewModel @Inject constructor(
         }
     }
 
+    fun revalidateQuestion(questionId: String?) {
+        val error = _submissionState.value as? FormV2SubmissionState.ValidationError ?: return
+        if (questionId == null || error.questionId != questionId) return
+        val template = (_state.value as? FormV2RenderingState.Success)?.template ?: return
+        val question = template.questions.orEmpty().firstOrNull { it.id == questionId } ?: return
+        val result = FormV2SubmissionValidator.validate(
+            template.copy(questions = listOf(question)),
+            answerState.toFormAnswers().filter { it.questionId == questionId }
+        )
+        _submissionState.value = when (result) {
+            is FormV2SubmissionValidationResult.Success -> FormV2SubmissionState.Idle
+            is FormV2SubmissionValidationResult.Error ->
+                error.copy(questionId = result.questionId, message = result.message)
+        }
+    }
+
     fun deleteDraft(): Job? {
         if (!canDeleteDraft) return null
         val patient = patientId ?: return null

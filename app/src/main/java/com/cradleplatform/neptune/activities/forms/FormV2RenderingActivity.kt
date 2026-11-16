@@ -4,6 +4,8 @@ import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.Context
 import android.content.Intent
+import android.content.res.ColorStateList
+import android.graphics.Rect
 import android.graphics.Typeface
 import android.os.Bundle
 import android.provider.Settings
@@ -62,6 +64,10 @@ class FormV2RenderingActivity : AppCompatActivity() {
 
     private val viewModel: FormV2RenderingViewModel by viewModels()
     private val disabledInputs = mutableMapOf<View, Boolean>()
+    private val questionErrors = mutableMapOf<String, TextView>()
+    private val questionInputs = mutableMapOf<String, View>()
+    private val inputTints = mutableMapOf<String, ColorStateList?>()
+    private var highlightedQuestionId: String? = null
     private var isLeavingForm = false
     private var submissionErrorDialog: AlertDialog? = null
     private var navigationDialog: AlertDialog? = null
@@ -176,8 +182,7 @@ class FormV2RenderingActivity : AppCompatActivity() {
             }
         } else {
             builder.setPositiveButton(internetString) { _, _ ->
-                viewModel.submitForm()
-                updateSubmissionControls()
+                submitForm()
             }
         }
 
@@ -256,7 +261,7 @@ class FormV2RenderingActivity : AppCompatActivity() {
         if (errorType == FormV2SubmissionErrorType.SERVER_ERROR ||
             errorType == FormV2SubmissionErrorType.NETWORK_ERROR
         ) {
-            builder.setPositiveButton(R.string.form_submission_retry) { _, _ -> viewModel.submitForm() }
+            builder.setPositiveButton(R.string.form_submission_retry) { _, _ -> submitForm() }
         }
         if (errorType != FormV2SubmissionErrorType.AUTH_ERROR) {
             builder.setNeutralButton(R.string.form_submission_save_draft) { _, _ ->
@@ -299,16 +304,26 @@ class FormV2RenderingActivity : AppCompatActivity() {
             FormV2DraftSaveState.Saved -> getString(R.string.form_submission_saved_draft_success)
             FormV2DraftSaveState.Error -> getString(R.string.form_v2_draft_save_error)
         }
+        saveStatus.visibility = if (saveStatus.text.isEmpty()) View.GONE else View.VISIBLE
         invalidateOptionsMenu()
     }
 
+    private fun submitForm() {
+        viewModel.submitForm()
+        // Validation is synchronous; reveal the result even when StateFlow has not changed.
+        highlightedQuestionId = null
+        renderSubmissionState(viewModel.submissionState.value)
+    }
+
     private fun renderSubmissionState(state: FormV2SubmissionState) {
+        renderQuestionError(state)
         val status = findViewById<TextView>(R.id.form_v2_submission_status)
         status.text = when (state) {
             FormV2SubmissionState.Idle -> ""
             FormV2SubmissionState.Submitting -> getString(R.string.form_submitting)
             FormV2SubmissionState.Submitted -> getString(R.string.form_submission_success)
-            is FormV2SubmissionState.ValidationError -> validationMessage(state)
+            is FormV2SubmissionState.ValidationError ->
+                if (state.questionId in questionErrors) "" else validationMessage(state)
             is FormV2SubmissionState.Error -> state.message
         }
         status.visibility = if (status.text.isEmpty()) View.GONE else View.VISIBLE
@@ -326,6 +341,30 @@ class FormV2RenderingActivity : AppCompatActivity() {
         val label = question?.questionText?.getTranslation(viewModel.language)
         return if (label.isNullOrBlank()) error.message else
             getString(R.string.form_v2_validation_error, label, error.message)
+    }
+
+    private fun renderQuestionError(state: FormV2SubmissionState) {
+        val error = state as? FormV2SubmissionState.ValidationError
+        questionErrors.forEach { (id, message) ->
+            val isInvalid = id == error?.questionId
+            message.text = if (isInvalid) error?.message else ""
+            message.visibility = if (isInvalid) View.VISIBLE else View.GONE
+            (questionInputs[id] as? EditText)?.backgroundTintList = if (isInvalid) {
+                ColorStateList.valueOf(getColor(R.color.error))
+            } else {
+                inputTints[id]
+            }
+        }
+        if (error?.questionId != highlightedQuestionId) {
+            questionErrors[error?.questionId]?.let { message ->
+                message.post {
+                    if (message.visibility == View.VISIBLE) {
+                        message.requestRectangleOnScreen(Rect(0, 0, message.width, message.height), false)
+                    }
+                }
+            }
+        }
+        highlightedQuestionId = error?.questionId
     }
 
     private fun updateSubmissionControls() {
@@ -358,6 +397,10 @@ class FormV2RenderingActivity : AppCompatActivity() {
         val status = findViewById<TextView>(R.id.form_v2_status)
         content.removeAllViews()
         disabledInputs.clear()
+        questionErrors.clear()
+        questionInputs.clear()
+        inputTints.clear()
+        highlightedQuestionId = null
 
         when (state) {
             FormV2RenderingState.Loading -> status.text = getString(R.string.form_v2_rendering_loading)
@@ -452,6 +495,7 @@ class FormV2RenderingActivity : AppCompatActivity() {
                                         )
                                     }
                                 }
+                                viewModel.revalidateQuestion(question.id)
                             }
                         })
                     } else {
@@ -460,9 +504,23 @@ class FormV2RenderingActivity : AppCompatActivity() {
                             alpha = 0.65f
                         })
                     }
+                    question.id?.let { id ->
+                        val input = content.getChildAt(content.childCount - 1)
+                        questionInputs[id] = input
+                        inputTints[id] = input.backgroundTintList
+                        val error = TextView(this).apply {
+                            setTextColor(getColor(R.color.error))
+                            accessibilityLiveRegion = View.ACCESSIBILITY_LIVE_REGION_POLITE
+                            visibility = View.GONE
+                        }
+                        questionErrors[id] = error
+                        content.addView(error)
+                    }
                 }
             }
         }
+        status.visibility = if (status.text.isEmpty()) View.GONE else View.VISIBLE
+        renderSubmissionState(viewModel.submissionState.value)
     }
 
     private fun makeChoiceInput(question: FormTemplateQuestionV2): View {
@@ -490,6 +548,7 @@ class FormV2RenderingActivity : AppCompatActivity() {
                             AnswerV2.createMcAnswer(listOf(selectedIndex))
                         )
                     }
+                    viewModel.revalidateQuestion(question.id)
                 }
             }
         }
@@ -514,6 +573,7 @@ class FormV2RenderingActivity : AppCompatActivity() {
                                 AnswerV2.createMcAnswer(selectedIndices.sorted())
                             )
                         }
+                        viewModel.revalidateQuestion(question.id)
                     }
                 })
             }
@@ -540,6 +600,7 @@ class FormV2RenderingActivity : AppCompatActivity() {
                     if (question.questionType == QuestionTypeEnum.DATE) {
                         button.text = date
                         viewModel.answerState.setAnswer(question.id, AnswerV2.createDateAnswer(date))
+                        viewModel.revalidateQuestion(question.id)
                     } else {
                         TimePickerDialog(
                             this,
@@ -562,6 +623,7 @@ class FormV2RenderingActivity : AppCompatActivity() {
                                     button.error = getString(R.string.form_v2_rendering_datetime_not_allowed)
                                     viewModel.answerState.removeAnswer(question.id)
                                 }
+                                viewModel.revalidateQuestion(question.id)
                             },
                             now.get(Calendar.HOUR_OF_DAY),
                             now.get(Calendar.MINUTE),
