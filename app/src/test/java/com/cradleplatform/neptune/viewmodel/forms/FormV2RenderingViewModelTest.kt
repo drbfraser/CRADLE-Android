@@ -89,12 +89,14 @@ internal class FormV2RenderingViewModelTest {
             runCurrent()
             coVerify(exactly = 0) { restApi.getFormTemplateV2(any()) }
             viewModel.answerState.setAnswer("q1", AnswerV2.createTextAnswer("Headache"))
+            assertTrue(viewModel.hasUnsavedChanges)
 
             viewModel.saveDraft()
             viewModel.answerState.setAnswer("q1", AnswerV2.createTextAnswer("Fever"))
             runCurrent()
 
             assertEquals(FormV2DraftSaveState.Saving, viewModel.draftSaveState.value)
+            assertFalse(viewModel.canDeleteDraft)
             assertEquals("Headache", savedDraft?.answers?.single()?.answer?.textAnswer)
             assertEquals("patient-1", savedDraft?.patientId)
             assertEquals(template(), savedDraft?.formTemplate)
@@ -102,6 +104,7 @@ internal class FormV2RenderingViewModelTest {
             runCurrent()
             assertEquals(FormV2DraftSaveState.Saved, viewModel.draftSaveState.value)
             assertEquals("Fever", viewModel.answerState.getAnswer("q1")?.textAnswer)
+            assertTrue(viewModel.hasUnsavedChanges)
         }
 
     @Test
@@ -114,13 +117,91 @@ internal class FormV2RenderingViewModelTest {
         viewModel.saveDraft()
         runCurrent()
         assertEquals(FormV2DraftSaveState.Error, viewModel.draftSaveState.value)
+        assertTrue(viewModel.hasUnsavedChanges)
         assertEquals("Headache", viewModel.answerState.getAnswer("q1")?.textAnswer)
 
         coEvery { draftDao.upsert(any()) } returns Unit
         viewModel.saveDraft()
         runCurrent()
         assertEquals(FormV2DraftSaveState.Saved, viewModel.draftSaveState.value)
+        assertFalse(viewModel.hasUnsavedChanges)
         coVerify(exactly = 2) { draftDao.upsert(any()) }
+    }
+
+    @Test
+    fun `return confirmation is needed only while answers differ from the saved draft`() = runTest(testDispatcher) {
+        val viewModel = createViewModel()
+        runCurrent()
+        assertFalse(viewModel.hasUnsavedChanges)
+
+        viewModel.answerState.setAnswer("q1", AnswerV2.createTextAnswer("Headache"))
+        assertTrue(viewModel.hasUnsavedChanges)
+        viewModel.answerState.removeAnswer("q1")
+        assertFalse(viewModel.hasUnsavedChanges)
+
+        viewModel.answerState.setAnswer("q1", AnswerV2.createTextAnswer("Headache"))
+        viewModel.saveDraft()?.join()
+        assertFalse(viewModel.hasUnsavedChanges)
+        viewModel.answerState.setAnswer("q1", AnswerV2.createTextAnswer("Fever"))
+        assertTrue(viewModel.hasUnsavedChanges)
+        viewModel.answerState.setAnswer("q1", AnswerV2.createTextAnswer("Headache"))
+        assertFalse(viewModel.hasUnsavedChanges)
+    }
+
+    @Test
+    fun `only a saved draft can be deleted and deletion prevents later saves`() = runTest(testDispatcher) {
+        val deleted = CompletableDeferred<Unit>()
+        coEvery { draftDao.deleteDraft("patient-1", "template-1") } coAnswers {
+            deleted.await()
+            1
+        }
+        val viewModel = createViewModel()
+        runCurrent()
+        assertFalse(viewModel.hasSavedDraft)
+        assertFalse(viewModel.canDeleteDraft)
+        assertEquals(null, viewModel.deleteDraft())
+        viewModel.saveDraft()?.join()
+        assertTrue(viewModel.hasSavedDraft)
+        assertTrue(viewModel.canDeleteDraft)
+
+        viewModel.deleteDraft()
+        runCurrent()
+        assertEquals(FormV2DraftDeleteState.Deleting, viewModel.draftDeleteState.value)
+        assertFalse(viewModel.canEditAnswers)
+        assertFalse(viewModel.canSubmit)
+        assertEquals(null, viewModel.saveDraft())
+        assertEquals(null, viewModel.deleteDraft())
+
+        deleted.complete(Unit)
+        runCurrent()
+        assertEquals(FormV2DraftDeleteState.Deleted, viewModel.draftDeleteState.value)
+        assertFalse(viewModel.hasSavedDraft)
+        assertFalse(viewModel.canSaveDraft)
+        assertEquals(null, viewModel.saveDraft())
+        coVerify(exactly = 1) { draftDao.upsert(any()) }
+        coVerify(exactly = 1) { draftDao.deleteDraft("patient-1", "template-1") }
+    }
+
+    @Test
+    fun `delete failure retains the draft and allows retry`() = runTest(testDispatcher) {
+        val viewModel = createViewModel()
+        runCurrent()
+        viewModel.answerState.setAnswer("q1", AnswerV2.createTextAnswer("Headache"))
+        viewModel.saveDraft()?.join()
+        coEvery { draftDao.deleteDraft(any(), any()) } throws IllegalStateException("Database unavailable")
+
+        viewModel.deleteDraft()?.join()
+        assertEquals(FormV2DraftDeleteState.Error, viewModel.draftDeleteState.value)
+        assertTrue(viewModel.hasSavedDraft)
+        assertTrue(viewModel.canSaveDraft)
+        assertTrue(viewModel.canEditAnswers)
+        assertTrue(viewModel.canDeleteDraft)
+        assertEquals("Headache", viewModel.answerState.getAnswer("q1")?.textAnswer)
+
+        coEvery { draftDao.deleteDraft(any(), any()) } returns 1
+        viewModel.deleteDraft()?.join()
+        assertEquals(FormV2DraftDeleteState.Deleted, viewModel.draftDeleteState.value)
+        coVerify(exactly = 2) { draftDao.deleteDraft("patient-1", "template-1") }
     }
 
     @Test
@@ -205,6 +286,7 @@ internal class FormV2RenderingViewModelTest {
 
         assertEquals(FormV2SubmissionState.Submitted, viewModel.submissionState.value)
         assertFalse(viewModel.canSaveDraft)
+        assertFalse(viewModel.hasSavedDraft)
         coVerify {
             restApi.postFormSubmissionV2(match {
                 !it.id.isNullOrBlank() &&
@@ -382,8 +464,13 @@ internal class FormV2RenderingViewModelTest {
             runCurrent()
 
             assertEquals(FormV2RenderingState.Success(savedTemplate), viewModel.state.value)
+            assertFalse(viewModel.hasUnsavedChanges)
+            assertTrue(viewModel.hasSavedDraft)
+            assertTrue(viewModel.canDeleteDraft)
             assertEquals("Headache", viewModel.answerState.getAnswer("q1")?.textAnswer)
             assertEquals("French", viewModel.language)
+            viewModel.answerState.removeAnswer("q1")
+            assertTrue(viewModel.hasUnsavedChanges)
             coVerify(exactly = 0) { restApi.getFormTemplateV2("template-1") }
         }
 
