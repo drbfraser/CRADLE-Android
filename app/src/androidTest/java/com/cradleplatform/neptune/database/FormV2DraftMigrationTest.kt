@@ -63,6 +63,33 @@ class FormV2DraftMigrationTest {
         migrated.close()
     }
 
+    @Test
+    fun migrate7To8PreservesDraftsAndV1ResponsesAndAddsSubmissionCache() {
+        val databaseName = "form-v2-submission-cache-migration-test"
+        val oldDatabase = helper.createDatabase(databaseName, 7)
+        insertPatient(oldDatabase)
+        insertV1FormResponse(oldDatabase)
+        oldDatabase.execSQL(
+            """
+            INSERT INTO FormV2Draft VALUES
+                ('patient-1', 'template-1', 1, '{}', '[]', 'French', 1000, 2000, 'stable-id')
+            """.trimIndent()
+        )
+        oldDatabase.close()
+
+        val migrated = helper.runMigrationsAndValidate(databaseName, 8, true, *Migrations.ALL_MIGRATIONS)
+        assertEquals(1, count(migrated, "Patient"))
+        assertEquals(1, count(migrated, "FormResponse"))
+        assertEquals("{\"q1\":{\"text\":\"existing answer\"}}", value(migrated, "FormResponse", "answers"))
+        assertEquals(1, count(migrated, "FormV2Draft"))
+        assertEquals("stable-id", value(migrated, "FormV2Draft", "submissionId"))
+        assertEquals("French", value(migrated, "FormV2Draft", "language"))
+        assertEquals("1000", value(migrated, "FormV2Draft", "createdAt"))
+        assertEquals("2000", value(migrated, "FormV2Draft", "updatedAt"))
+        assertEquals(0, count(migrated, "FormSubmissionV2Entity"))
+        migrated.close()
+    }
+
     private fun insertPatient(database: SupportSQLiteDatabase) {
         val values = ContentValues().apply {
             put("id", "patient-1")
