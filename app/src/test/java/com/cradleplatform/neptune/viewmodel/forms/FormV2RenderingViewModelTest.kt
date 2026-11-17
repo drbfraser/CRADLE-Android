@@ -775,6 +775,32 @@ internal class FormV2RenderingViewModelTest {
         coVerify(exactly = 0) { draftDao.deleteDraft(any(), any()) }
     }
 
+    @Test
+    fun `question feedback starts after submit and clears only when corrected`() = runTest(testDispatcher) {
+        val viewModel = createViewModel()
+        runCurrent()
+        viewModel.revalidateQuestion("q1")
+        assertEquals(FormV2SubmissionState.Idle, viewModel.submissionState.value)
+
+        viewModel.submitForm()
+        runCurrent()
+        val requiredError = FormV2SubmissionState.ValidationError("q1", "An answer is required.")
+        assertEquals(requiredError, viewModel.submissionState.value)
+        viewModel.submitForm()
+        runCurrent()
+        assertEquals(requiredError, viewModel.submissionState.value)
+        viewModel.revalidateQuestion("q1")
+        assertEquals(requiredError, viewModel.submissionState.value)
+
+        viewModel.answerState.setAnswer("q1", AnswerV2.createTextAnswer("Headache"))
+        viewModel.revalidateQuestion("another-question")
+        assertEquals(requiredError, viewModel.submissionState.value)
+        viewModel.revalidateQuestion("q1")
+        assertEquals(FormV2SubmissionState.Idle, viewModel.submissionState.value)
+        coVerify(exactly = 0) { restApi.postFormSubmissionV2(any()) }
+        coVerify(exactly = 0) { draftDao.upsert(any()) }
+    }
+
     private fun createViewModel(
         patientId: String? = "patient-1",
         language: String? = null
