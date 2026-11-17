@@ -29,6 +29,7 @@ import com.cradleplatform.neptune.manager.AssessmentManager
 import com.cradleplatform.neptune.manager.FormManager
 import com.cradleplatform.neptune.manager.FormResponseManager
 import com.cradleplatform.neptune.manager.FormTemplateV2Manager
+import com.cradleplatform.neptune.manager.FormSubmissionV2Manager
 import com.cradleplatform.neptune.manager.HealthFacilityManager
 import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.manager.ReadingManager
@@ -78,6 +79,7 @@ class SyncAllWorker @AssistedInject constructor(
     private val formManager: FormManager,
     private val formResponseManager: FormResponseManager,
     private val formTemplateV2Manager: FormTemplateV2Manager,
+    private val formSubmissionV2Manager: FormSubmissionV2Manager,
     private val workflowManager: WorkflowManager,
     private val sharedPreferences: SharedPreferences,
     private val database: CradleDatabase
@@ -451,6 +453,7 @@ class SyncAllWorker @AssistedInject constructor(
             syncFormResponses = { syncFormResponses(lastFormResponseSyncTime) }
         )
         val formTemplateV2Result = formSyncStages.v2Templates
+        syncFormSubmissionsV2()
         val formTemplateResult = formSyncStages.v1Templates
         val formTemplateErrors = listOf(
             "V1" to formTemplateResult.networkResult,
@@ -824,6 +827,16 @@ class SyncAllWorker @AssistedInject constructor(
                 progress = current,
                 total = total,
             )
+        }
+    }
+
+    private suspend fun syncFormSubmissionsV2() {
+        setProgress(workDataOf(PROGRESS_CURRENT_STATE to State.DOWNLOADING_FORM_RESPONSES.name))
+        for (patientId in patientManager.getSyncedPatientIds()) {
+            val result = formSubmissionV2Manager.syncPatientSubmissions(patientId)
+            if (result !is NetworkResult.Success) {
+                Log.e(TAG, "V2 form record sync failed: ${getResultErrorMessage(result)}")
+            }
         }
     }
 
