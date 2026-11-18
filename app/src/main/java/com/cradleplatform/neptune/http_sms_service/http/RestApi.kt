@@ -1855,6 +1855,7 @@ class RestApi(
         val url = urlManager.getReadingsSync(lastSyncTimestamp)
 
         var totalReadingsDownloaded = 0
+        var errors: List<SyncError> = emptyList()
 
         val result = when (protocol) {
             Protocol.HTTP -> {
@@ -1882,6 +1883,11 @@ class RestApi(
                                             reportProgressBlock(totalDownloaded, totalDownloaded)
                                         }
                                         readingChannel.close()
+                                    }
+
+                                    ReadingSyncField.ERRORS.text -> {
+                                        nextToken()
+                                        errors = parseSyncErrors(readValueAsTree(), READING_ID_FIELD)
                                     }
                                 }
                             }
@@ -1956,7 +1962,7 @@ class RestApi(
         }
 
         ReadingSyncResult(
-            result, readingsToUpload.size, totalReadingsDownloaded
+            result, readingsToUpload.size, totalReadingsDownloaded, errors
         )
     }
 
@@ -1992,7 +1998,7 @@ class RestApi(
         val url = urlManager.getReferralsSync(lastSyncTimestamp)
 
         var totalReferralsDownloaded = 0
-        var errors: String? = null
+        var errors: List<SyncError> = emptyList()
 
         val result = when (protocol) {
             Protocol.HTTP -> {
@@ -2021,9 +2027,8 @@ class RestApi(
                                     }
 
                                     ReferralSyncField.ERRORS.text -> {
-                                        // TODO: Parse array of objects (refer to issue #62)
                                         nextToken()
-                                        errors = readValueAsTree<JsonNode>().toPrettyString()
+                                        errors = parseSyncErrors(readValueAsTree(), REFERRAL_ID_FIELD)
                                     }
                                 }
                             }
@@ -2067,7 +2072,6 @@ class RestApi(
                         }
 
                         is NetworkResult.Failure -> {
-                            errors = networkResult.body.toString()
                             referralChannel.close(SyncException("failed to download all associated referrals"))
                             NetworkResult.Failure(
                                 networkResult.body, networkResult.statusCode
@@ -2075,7 +2079,6 @@ class RestApi(
                         }
 
                         is NetworkResult.NetworkException -> {
-                            errors = networkResult.cause.toString()
                             referralChannel.close(SyncException("failed to download all associated referrals"))
                             NetworkResult.NetworkException(networkResult.cause)
                         }
@@ -2084,7 +2087,6 @@ class RestApi(
                     newNetworkResult
                 } catch (e: Exception) {
                     val syncException = SyncException("failed to parse all associated referrals")
-                    errors = e.message
 
                     referralChannel.close(syncException)
 
@@ -2610,7 +2612,7 @@ class RestApi(
         val body = createWriter<List<WorkflowInstance>>().writeValueAsBytes(workflowInstancesToUpload)
         val url = urlManager.getWorkflowInstancesSync(lastSyncTimestamp)
         var totalWorkflowInstancesDownloaded = 0
-        var errors: String? = null
+        var errors: List<SyncError> = emptyList()
         var failedParse = false
 
         val result = http.makeRequest(
@@ -2638,7 +2640,7 @@ class RestApi(
 
                             WorkflowInstanceSyncField.ERRORS.text -> {
                                 nextToken()
-                                errors = readValueAsTree<JsonNode>().toPrettyString()
+                                errors = parseSyncErrors(readValueAsTree(), WORKFLOW_INSTANCE_ID_FIELD)
                             }
                         }
                     }
@@ -2751,11 +2753,25 @@ class RestApi(
 internal fun formatPatientSyncErrors(errors: JsonNode): String =
     errors.joinToString("\n") { error ->
         val patientId = error.path("patientId").asText()
-        val message = error.path("errors").asText()
-            .removeSurrounding("['", "']")
-            .removeSurrounding("[\"", "\"]")
-        "Patient $patientId: $message"
+        "Patient $patientId: ${syncErrorMessage(error)}"
     }
+
+internal const val READING_ID_FIELD = "readingId"
+internal const val REFERRAL_ID_FIELD = "referralId"
+internal const val WORKFLOW_INSTANCE_ID_FIELD = "workflowInstanceId"
+
+/**
+ * Reads the `errors` array from a reading, referral or workflow instance sync response, e.g.
+ * `[{"readingId": "abc-123", "errors": "Not authorized to sync this patient."}]`. The [idField] is
+ * the name of the field holding the ID of the record that the server didn't accept.
+ */
+internal fun parseSyncErrors(errors: JsonNode, idField: String): List<SyncError> =
+    errors.map { error -> SyncError(error.path(idField).asText(), syncErrorMessage(error)) }
+
+private fun syncErrorMessage(error: JsonNode): String =
+    error.path("errors").asText()
+        .removeSurrounding("['", "']")
+        .removeSurrounding("[\"", "\"]")
 
 class SyncException(message: String) : IOException(message)
 

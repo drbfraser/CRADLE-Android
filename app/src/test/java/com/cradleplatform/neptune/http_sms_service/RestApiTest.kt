@@ -2,18 +2,33 @@ package com.cradleplatform.neptune.http_sms_service
 
 import android.util.Log
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
+import com.cradleplatform.neptune.http_sms_service.http.ReadingSyncResult
+import com.cradleplatform.neptune.http_sms_service.http.ReferralSyncResult
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
+import com.cradleplatform.neptune.http_sms_service.http.SyncError
 import com.cradleplatform.neptune.manager.LoginResponse
 import com.cradleplatform.neptune.manager.LoginResponseUser
 import com.cradleplatform.neptune.manager.SmsKey
+import com.cradleplatform.neptune.model.CommonReadingJsons
+import com.cradleplatform.neptune.model.CommonReferralJsons
 import com.cradleplatform.neptune.model.GestationalAgeWeeks
 import com.cradleplatform.neptune.model.Patient
+import com.cradleplatform.neptune.model.Reading
+import com.cradleplatform.neptune.model.Referral
 import com.cradleplatform.neptune.model.Sex
 import com.cradleplatform.neptune.testutils.MockWebServerUtils
 import com.cradleplatform.neptune.utilities.Protocol
 import io.mockk.every
 import io.mockk.mockkStatic
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.async
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.toList
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.setMain
 import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
@@ -27,6 +42,7 @@ import org.junit.jupiter.api.Test
 import java.math.BigInteger
 import java.security.GeneralSecurityException
 
+@ExperimentalCoroutinesApi
 internal class RestApiTest {
 
     /**
@@ -114,10 +130,13 @@ internal class RestApiTest {
         every { Log.i(any(), any()) } returns 0
         every { Log.e(any(), any()) } returns 0
         every { Log.e(any(), any(), any()) } returns 0
+        // Reading sync logs on the main dispatcher, which doesn't exist in unit tests.
+        Dispatchers.setMain(UnconfinedTestDispatcher())
     }
 
     @AfterEach
     fun tearDown() {
+        Dispatchers.resetMain()
         mockServer.shutdown()
     }
 
@@ -260,6 +279,128 @@ internal class RestApiTest {
         assertEquals(startDate.toString(), body.get("start_date").toString())
         assertEquals(patient.prevPregnancyEndDate, body.getLong("end_date"))
         assertEquals(patient.prevPregnancyOutcome, body.getString("outcome"))
+
+        server.shutdown()
+    }
+
+    private fun restApiResponding(
+        responseCode: Int,
+        responseBody: String
+    ): Pair<RestApi, MockWebServer> =
+        MockWebServerUtils.createRestApiWithServerBlock {
+            dispatcher = object : Dispatcher() {
+                override fun dispatch(request: RecordedRequest) =
+                    MockResponse().setResponseCode(responseCode).setBody(responseBody)
+            }
+        }
+
+    /** Runs a reading sync against [api], returning its result and the readings it downloaded. */
+    private fun syncReadings(api: RestApi): Pair<ReadingSyncResult, List<Reading>> = runBlocking {
+        val channel = Channel<Reading>()
+        val downloaded = async { channel.toList() }
+        val result = api.syncReadings(
+            readingsToUpload = emptyList(),
+            readingChannel = channel,
+            protocol = Protocol.HTTP
+        ) { _, _ -> }
+        result to downloaded.await()
+    }
+
+    /** Runs a referral sync against [api], returning its result and the referrals it downloaded. */
+    private fun syncReferrals(api: RestApi): Pair<ReferralSyncResult, List<Referral>> = runBlocking {
+        val channel = Channel<Referral>()
+        val downloaded = async { channel.toList() }
+        val result = api.syncReferrals(
+            referralsToUpload = emptyList(),
+            referralChannel = channel,
+            protocol = Protocol.HTTP
+        ) { _, _ -> }
+        result to downloaded.await()
+    }
+
+    @Test
+    fun syncReadings_errorsBeforeReadings_downloadsReadingsAndReturnsErrors() {
+        val (readingsJson, expectedReadings) = CommonReadingJsons.allReadingsJsonExpectedPair
+        val (api, server) = restApiResponding(
+            207,
+            """
+            {
+                "errors": [
+                    {"readingId": "abc-123", "errors": "Not authorized to sync this patient."},
+                    {"readingId": "def-456", "errors": "Patient does not exist."}
+                ],
+                "readings": $readingsJson
+            }
+            """.trimIndent()
+        )
+
+        val (result, readings) = syncReadings(api)
+
+        check(result.networkResult is NetworkResult.Success) { "got ${result.networkResult}" }
+        assertEquals(expectedReadings.map { it.id }, readings.map { it.id })
+        assertEquals(expectedReadings.size, result.totalReadingsDownloaded)
+        assertEquals(
+            listOf(
+                SyncError("abc-123", "Not authorized to sync this patient."),
+                SyncError("def-456", "Patient does not exist.")
+            ),
+            result.errors
+        )
+
+        server.shutdown()
+    }
+
+    @Test
+    fun syncReadings_noErrorsField_downloadsReadingsWithNoErrors() {
+        val (readingsJson, expectedReadings) = CommonReadingJsons.allReadingsJsonExpectedPair
+        val (api, server) = restApiResponding(200, """{"readings": $readingsJson}""")
+
+        val (result, readings) = syncReadings(api)
+
+        check(result.networkResult is NetworkResult.Success) { "got ${result.networkResult}" }
+        assertEquals(expectedReadings.map { it.id }, readings.map { it.id })
+        assertEquals(emptyList<SyncError>(), result.errors)
+
+        server.shutdown()
+    }
+
+    @Test
+    fun syncReferrals_errorsBeforeReferrals_downloadsReferralsAndReturnsErrors() {
+        val (referralsJson, expectedReferrals) = CommonReferralJsons.allReferralsJsonExpectedPair
+        val (api, server) = restApiResponding(
+            207,
+            """
+            {
+                "errors": [
+                    {"referralId": "abc-123", "errors": "Not authorized to sync this patient."}
+                ],
+                "referrals": $referralsJson
+            }
+            """.trimIndent()
+        )
+
+        val (result, referrals) = syncReferrals(api)
+
+        check(result.networkResult is NetworkResult.Success) { "got ${result.networkResult}" }
+        assertEquals(expectedReferrals.map { it.id }, referrals.map { it.id })
+        assertEquals(
+            listOf(SyncError("abc-123", "Not authorized to sync this patient.")),
+            result.errors
+        )
+
+        server.shutdown()
+    }
+
+    @Test
+    fun syncReferrals_noErrorsField_downloadsReferralsWithNoErrors() {
+        val (referralsJson, expectedReferrals) = CommonReferralJsons.allReferralsJsonExpectedPair
+        val (api, server) = restApiResponding(200, """{"referrals": $referralsJson}""")
+
+        val (result, referrals) = syncReferrals(api)
+
+        check(result.networkResult is NetworkResult.Success) { "got ${result.networkResult}" }
+        assertEquals(expectedReferrals.map { it.id }, referrals.map { it.id })
+        assertEquals(emptyList<SyncError>(), result.errors)
 
         server.shutdown()
     }
