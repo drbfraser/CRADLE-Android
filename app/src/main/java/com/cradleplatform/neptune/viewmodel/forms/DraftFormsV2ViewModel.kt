@@ -20,7 +20,8 @@ sealed class DraftFormsV2State {
     object Loading : DraftFormsV2State()
     data class Success(
         val drafts: List<FormV2Draft>,
-        val patientNames: Map<String, String>? = null
+        val patientNames: Map<String, String>? = null,
+        val patientNumbers: Map<String, String>? = null
     ) : DraftFormsV2State()
     object Error : DraftFormsV2State()
 }
@@ -50,12 +51,16 @@ class DraftFormsV2ViewModel @Inject constructor(
                     ?: formV2DraftDao.observeAllDrafts()
                 draftsFlow.collect { drafts ->
                     // Dashboard drafts need patient labels; patient-specific lists already have context.
-                    val patientNames = if (isAllPatients) {
+                    val patients = if (isAllPatients) {
                         drafts.map { it.patientId }.distinct().associateWith { id ->
-                            patientManager.getPatientById(id)?.name.orEmpty()
+                            patientManager.getPatientById(id)
                         }
                     } else null
-                    _state.value = DraftFormsV2State.Success(drafts, patientNames)
+                    _state.value = DraftFormsV2State.Success(
+                        drafts,
+                        patientNames = patients?.mapValues { it.value?.name.orEmpty() },
+                        patientNumbers = patients?.mapValues { it.value?.patientNumber.orEmpty() }
+                    )
                 }
             } catch (exception: CancellationException) {
                 throw exception

@@ -1737,7 +1737,9 @@ class RestApi(
 
                                     PatientSyncField.ERRORS.text -> {
                                         nextToken()
-                                        errors = formatPatientSyncErrors(readValueAsTree())
+                                        errors = formatPatientSyncErrors(
+                                            readValueAsTree(), patientsToUpload
+                                        )
                                     }
                                 }
                             }
@@ -2746,14 +2748,20 @@ class RestApi(
 
 /**
  * Turns the `errors` array from the patient sync response, e.g.
- * `[{"patientId": "123", "errors": "['Some message.']"}]`, into one readable line per patient:
- * `Patient 123: Some message.` The server sends each message as the string form of a list, so
- * the `['...']` around it is removed.
+ * `[{"patientId": "abc-123", "errors": "['Some message.']"}]`, into one readable line per patient:
+ * `Patient 12345: Some message.` The patient ID means nothing to the user, so each patient is
+ * shown by its patient number, or by its name if it has no number. These come from
+ * [uploadedPatients], since the errors are about the patients that were just uploaded. The server
+ * sends each message as the string form of a list, so the `['...']` around it is removed.
  */
-internal fun formatPatientSyncErrors(errors: JsonNode): String =
+internal fun formatPatientSyncErrors(errors: JsonNode, uploadedPatients: List<Patient>): String =
     errors.joinToString("\n") { error ->
         val patientId = error.path("patientId").asText()
-        "Patient $patientId: ${syncErrorMessage(error)}"
+        val patient = uploadedPatients.find { it.id == patientId }
+        val label = patient?.patientNumber?.takeIf { it.isNotBlank() }
+            ?: patient?.name?.takeIf { it.isNotBlank() }
+            ?: patientId
+        "Patient $label: ${syncErrorMessage(error)}"
     }
 
 internal const val READING_ID_FIELD = "readingId"

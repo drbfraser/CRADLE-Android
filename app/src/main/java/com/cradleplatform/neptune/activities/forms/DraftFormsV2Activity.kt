@@ -59,7 +59,9 @@ class DraftFormsV2Activity : AppCompatActivity() {
                     )
                     status.visibility = View.VISIBLE
                 } else {
-                    recyclerView.adapter = DraftFormsV2Adapter(state.drafts, state.patientNames) { draft ->
+                    recyclerView.adapter = DraftFormsV2Adapter(
+                        state.drafts, state.patientNames, state.patientNumbers
+                    ) { draft ->
                         startActivity(
                             FormV2RenderingActivity.makeIntent(
                                 this,

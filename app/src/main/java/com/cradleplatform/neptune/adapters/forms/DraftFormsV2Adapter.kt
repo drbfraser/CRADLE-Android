@@ -13,6 +13,7 @@ import com.cradleplatform.neptune.utilities.DateUtil
 class DraftFormsV2Adapter(
     private val drafts: List<FormV2Draft>,
     private val patientNames: Map<String, String>?,
+    private val patientNumbers: Map<String, String>?,
     private val onDraftClick: (FormV2Draft) -> Unit
 ) : RecyclerView.Adapter<DraftFormsV2Adapter.DraftViewHolder>() {
 
@@ -30,7 +31,8 @@ class DraftFormsV2Adapter(
         holder.patientInfo.visibility = if (patientNames != null) View.VISIBLE else View.GONE
         holder.patientInfo.text = listOfNotNull(
             patientNames?.get(draft.patientId)?.takeIf { it.isNotBlank() },
-            context.getString(R.string.reading_patient_id, draft.patientId)
+            patientNumbers?.get(draft.patientId)?.takeIf { it.isNotBlank() }
+                ?.let { context.getString(R.string.reading_patient_id, it) }
         ).joinToString(" ")
         holder.updatedAt.text = context.getString(
             R.string.form_v2_draft_last_edited,
