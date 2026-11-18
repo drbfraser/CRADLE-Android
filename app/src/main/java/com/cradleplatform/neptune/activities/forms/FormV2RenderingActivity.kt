@@ -4,8 +4,14 @@ import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.Context
 import android.content.Intent
+import android.content.res.ColorStateList
+import android.graphics.Rect
+import android.graphics.Typeface
 import android.os.Bundle
+import android.provider.Settings
 import android.text.InputType
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.widget.Button
 import android.widget.CheckBox
@@ -30,8 +36,11 @@ import com.cradleplatform.neptune.model.AnswerV2
 import com.cradleplatform.neptune.model.FormTemplateQuestionV2
 import com.cradleplatform.neptune.model.QuestionTypeEnum
 import com.cradleplatform.neptune.model.getTranslation
+import com.cradleplatform.neptune.utilities.connectivity.api24.ConnectivityOptions
+import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager
 import com.cradleplatform.neptune.viewmodel.forms.FormTemplateDetailV2ViewModel
 import com.cradleplatform.neptune.viewmodel.forms.FormV2DraftSaveState
+import com.cradleplatform.neptune.viewmodel.forms.FormV2DraftDeleteState
 import com.cradleplatform.neptune.viewmodel.forms.FormV2RenderingState
 import com.cradleplatform.neptune.viewmodel.forms.FormV2RenderingViewModel
 import com.cradleplatform.neptune.viewmodel.forms.FormV2SubmissionState
@@ -42,6 +51,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.util.Calendar
 import java.util.Locale
+import javax.inject.Inject
 
 /**
  * Renders V2 answers, saves local drafts, and submits validated forms over HTTP.
@@ -49,47 +59,48 @@ import java.util.Locale
 @AndroidEntryPoint
 class FormV2RenderingActivity : AppCompatActivity() {
 
+    @Inject
+    lateinit var networkStateManager: NetworkStateManager
+
     private val viewModel: FormV2RenderingViewModel by viewModels()
     private val disabledInputs = mutableMapOf<View, Boolean>()
+    private val questionErrors = mutableMapOf<String, TextView>()
+    private val questionInputs = mutableMapOf<String, View>()
+    private val inputTints = mutableMapOf<String, ColorStateList?>()
+    private var highlightedQuestionId: String? = null
     private var isLeavingForm = false
     private var submissionErrorDialog: AlertDialog? = null
+    private var navigationDialog: AlertDialog? = null
+    private var submissionModeDialog: android.app.AlertDialog? = null
+    private var draftDeleteDialog: android.app.AlertDialog? = null
     private val formBackCallback = object : OnBackPressedCallback(true) {
         override fun handleOnBackPressed() {
-            if (isLeavingForm) return
+            if (isLeavingForm || viewModel.draftDeleteState.value == FormV2DraftDeleteState.Deleting) return
             if (viewModel.submissionState.value == FormV2SubmissionState.Submitting) {
                 Toast.makeText(this@FormV2RenderingActivity, R.string.form_submitting, Toast.LENGTH_SHORT).show()
                 return
             }
-            if (intent.getStringExtra(FormTemplateListV2Activity.EXTRA_PATIENT_ID).isNullOrBlank()) {
-                isEnabled = false
-                onBackPressedDispatcher.onBackPressed()
-                return
+            if (viewModel.hasUnsavedChanges) {
+                showUnsavedChangesDialog()
+            } else {
+                isLeavingForm = true
+                finish()
             }
-
-            saveDraftAndLeave(returnToPatient = false)
         }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_form_v2_rendering)
+        supportActionBar?.title = getString(R.string.create_new_form)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         onBackPressedDispatcher.addCallback(this, formBackCallback)
 
-        findViewById<Button>(R.id.form_v2_save_draft_button).setOnClickListener {
-            saveDraftAndLeave(returnToPatient = true)
-        }
-        findViewById<Button>(R.id.form_v2_submit_button).setOnClickListener {
-            viewModel.submitForm()
-            updateSubmissionControls()
-            updateDraftSaveButton()
-        }
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
                     viewModel.state.collectLatest { state ->
                         render(state)
-                        updateDraftSaveButton()
                         updateSubmissionControls()
                     }
                 }
@@ -103,19 +114,136 @@ class FormV2RenderingActivity : AppCompatActivity() {
                 launch {
                     viewModel.submissionErrors.collectLatest { showSubmissionErrorDialog(it) }
                 }
+                launch {
+                    viewModel.draftDeleteState.collectLatest { state -> renderDraftDeleteState(state) }
+                }
             }
         }
     }
 
     override fun onStop() {
-        // Covers normal navigation, backgrounding, and rotation.
-        if (!isLeavingForm) viewModel.saveDraft()
+        // Rotation keeps the ViewModel; backgrounding still backs up the draft.
+        if (!isLeavingForm && !isChangingConfigurations) viewModel.saveDraft()
         super.onStop()
     }
 
     override fun onDestroy() {
         submissionErrorDialog?.dismiss()
+        navigationDialog?.dismiss()
+        submissionModeDialog?.dismiss()
+        draftDeleteDialog?.dismiss()
         super.onDestroy()
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.menu_forms_v2, menu)
+        return true
+    }
+
+    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
+        val patientId = intent.getStringExtra(FormTemplateListV2Activity.EXTRA_PATIENT_ID)
+        menu.findItem(R.id.formSubmit)?.apply {
+            isVisible = !patientId.isNullOrBlank()
+            isEnabled = viewModel.canSubmit && !isLeavingForm &&
+                viewModel.draftSaveState.value != FormV2DraftSaveState.Saving
+        }
+        menu.findItem(R.id.formDelete)?.apply {
+            isVisible = viewModel.hasSavedDraft
+            isEnabled = viewModel.canDeleteDraft && !isLeavingForm
+        }
+        return super.onPrepareOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
+        android.R.id.home -> {
+            onBackPressedDispatcher.onBackPressed()
+            true
+        }
+        R.id.formSubmit -> {
+            if (viewModel.canSubmit && !isLeavingForm) showFormSubmissionModeDialog()
+            true
+        }
+        R.id.formDelete -> {
+            if (viewModel.canDeleteDraft && !isLeavingForm) showDeleteFormDialog()
+            true
+        }
+        else -> super.onOptionsItemSelected(item)
+    }
+
+    private fun showFormSubmissionModeDialog() {
+        if (submissionModeDialog?.isShowing == true) return
+        val builder = android.app.AlertDialog.Builder(this)
+        builder.setTitle(R.string.how_to_submit)
+        builder.setMessage(R.string.choose_an_option)
+        val internetString = getInternetTypeString()
+        if (internetString.isEmpty()) {
+            builder.setPositiveButton(R.string.form_dialog_not_connected_internet) { _, _ ->
+                startActivity(Intent(Settings.ACTION_WIRELESS_SETTINGS))
+            }
+        } else {
+            builder.setPositiveButton(internetString) { _, _ ->
+                submitForm()
+            }
+        }
+
+        builder.setNeutralButton(R.string.form_v2_save_and_send_later) { _, _ ->
+            saveDraftAndLeave()
+        }
+        builder.setNegativeButton(R.string.SMS) { _, _ ->
+            // Placeholder until the V2 SMS submission path is implemented.
+            Toast.makeText(this, R.string.form_v2_sms_not_available, Toast.LENGTH_LONG).show()
+        }
+        submissionModeDialog = builder.show()
+    }
+
+    private fun getInternetTypeString(): String {
+        return when (networkStateManager.getConnectivity()) {
+            ConnectivityOptions.WIFI -> "Wifi"
+            ConnectivityOptions.CELLULAR_DATA -> "Cellular"
+            ConnectivityOptions.SMS -> "Sms"
+            ConnectivityOptions.NONE -> ""
+        }
+    }
+
+    private fun showDeleteFormDialog() {
+        if (draftDeleteDialog?.isShowing == true) return
+        draftDeleteDialog = android.app.AlertDialog.Builder(this)
+            .setTitle(R.string.form_v2_delete_title)
+            .setMessage(R.string.form_v2_delete_message)
+            .setPositiveButton(R.string.yes) { _, _ ->
+                viewModel.deleteDraft()
+                updateSubmissionControls()
+            }
+            .setNegativeButton(R.string.no, null)
+            .show()
+    }
+
+    private fun renderDraftDeleteState(state: FormV2DraftDeleteState) {
+        updateSubmissionControls()
+        when (state) {
+            FormV2DraftDeleteState.Deleted -> {
+                if (!isLeavingForm) {
+                    isLeavingForm = true
+                    finish()
+                }
+            }
+            FormV2DraftDeleteState.Error ->
+                Toast.makeText(this, R.string.form_v2_delete_error, Toast.LENGTH_LONG).show()
+            else -> Unit
+        }
+    }
+
+    private fun showUnsavedChangesDialog() {
+        if (navigationDialog?.isShowing == true) return
+        navigationDialog = MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.unsaved_changes_dialog_title)
+            .setMessage(R.string.unsaved_changes_dialog_message)
+            .setPositiveButton(R.string.action_leave) { _, _ ->
+                isLeavingForm = true
+                finish()
+            }
+            .setNegativeButton(R.string.action_stay, null)
+            .show()
     }
 
     private fun showSubmissionErrorDialog(errorType: FormV2SubmissionErrorType) {
@@ -133,11 +261,11 @@ class FormV2RenderingActivity : AppCompatActivity() {
         if (errorType == FormV2SubmissionErrorType.SERVER_ERROR ||
             errorType == FormV2SubmissionErrorType.NETWORK_ERROR
         ) {
-            builder.setPositiveButton(R.string.form_submission_retry) { _, _ -> viewModel.submitForm() }
+            builder.setPositiveButton(R.string.form_submission_retry) { _, _ -> submitForm() }
         }
         if (errorType != FormV2SubmissionErrorType.AUTH_ERROR) {
             builder.setNeutralButton(R.string.form_submission_save_draft) { _, _ ->
-                saveDraftAndLeave(returnToPatient = true)
+                saveDraftAndLeave()
             }
         }
         builder.setNegativeButton(R.string.cancel, null)
@@ -145,18 +273,16 @@ class FormV2RenderingActivity : AppCompatActivity() {
         submissionErrorDialog = builder.show()
     }
 
-    private fun saveDraftAndLeave(returnToPatient: Boolean) {
+    private fun saveDraftAndLeave() {
         if (isLeavingForm) return
         isLeavingForm = true
         updateSubmissionControls()
-        updateDraftSaveButton()
         lifecycleScope.launch {
             val saveJob = viewModel.saveDraft()
             saveJob?.join()
             if (saveJob != null && viewModel.draftSaveState.value == FormV2DraftSaveState.Error) {
                 isLeavingForm = false
                 updateSubmissionControls()
-                updateDraftSaveButton()
                 return@launch
             }
             if (saveJob != null && viewModel.draftSaveState.value == FormV2DraftSaveState.Saved) {
@@ -166,11 +292,7 @@ class FormV2RenderingActivity : AppCompatActivity() {
                     Toast.LENGTH_LONG
                 ).show()
             }
-            if (returnToPatient) {
-                returnToPatientProfile()
-            } else {
-                finish()
-            }
+            returnToPatientProfile()
         }
     }
 
@@ -182,31 +304,30 @@ class FormV2RenderingActivity : AppCompatActivity() {
             FormV2DraftSaveState.Saved -> getString(R.string.form_submission_saved_draft_success)
             FormV2DraftSaveState.Error -> getString(R.string.form_v2_draft_save_error)
         }
-        updateDraftSaveButton(state)
+        saveStatus.visibility = if (saveStatus.text.isEmpty()) View.GONE else View.VISIBLE
+        invalidateOptionsMenu()
     }
 
-    private fun updateDraftSaveButton(
-        saveState: FormV2DraftSaveState = viewModel.draftSaveState.value
-    ) {
-        findViewById<Button>(R.id.form_v2_save_draft_button).apply {
-            visibility = if (viewModel.canSaveDraft) View.VISIBLE else View.GONE
-            isEnabled = viewModel.canSaveDraft && !isLeavingForm && saveState != FormV2DraftSaveState.Saving &&
-                viewModel.submissionState.value != FormV2SubmissionState.Submitting
-        }
+    private fun submitForm() {
+        viewModel.submitForm()
+        // Validation is synchronous; reveal the result even when StateFlow has not changed.
+        highlightedQuestionId = null
+        renderSubmissionState(viewModel.submissionState.value)
     }
 
     private fun renderSubmissionState(state: FormV2SubmissionState) {
+        renderQuestionError(state)
         val status = findViewById<TextView>(R.id.form_v2_submission_status)
         status.text = when (state) {
             FormV2SubmissionState.Idle -> ""
             FormV2SubmissionState.Submitting -> getString(R.string.form_submitting)
             FormV2SubmissionState.Submitted -> getString(R.string.form_submission_success)
-            is FormV2SubmissionState.ValidationError -> validationMessage(state)
+            is FormV2SubmissionState.ValidationError ->
+                if (state.questionId in questionErrors) "" else validationMessage(state)
             is FormV2SubmissionState.Error -> state.message
         }
         status.visibility = if (status.text.isEmpty()) View.GONE else View.VISIBLE
         updateSubmissionControls()
-        updateDraftSaveButton()
         if (state == FormV2SubmissionState.Submitted && !isLeavingForm) {
             isLeavingForm = true
             Toast.makeText(this, R.string.form_submission_success, Toast.LENGTH_LONG).show()
@@ -222,12 +343,32 @@ class FormV2RenderingActivity : AppCompatActivity() {
             getString(R.string.form_v2_validation_error, label, error.message)
     }
 
-    private fun updateSubmissionControls() {
-        val patientId = intent.getStringExtra(FormTemplateListV2Activity.EXTRA_PATIENT_ID)
-        findViewById<Button>(R.id.form_v2_submit_button).apply {
-            visibility = if (patientId.isNullOrBlank()) View.GONE else View.VISIBLE
-            isEnabled = viewModel.canSubmit && !isLeavingForm
+    private fun renderQuestionError(state: FormV2SubmissionState) {
+        val error = state as? FormV2SubmissionState.ValidationError
+        questionErrors.forEach { (id, message) ->
+            val isInvalid = id == error?.questionId
+            message.text = if (isInvalid) error?.message else ""
+            message.visibility = if (isInvalid) View.VISIBLE else View.GONE
+            (questionInputs[id] as? EditText)?.backgroundTintList = if (isInvalid) {
+                ColorStateList.valueOf(getColor(R.color.error))
+            } else {
+                inputTints[id]
+            }
         }
+        if (error?.questionId != highlightedQuestionId) {
+            questionErrors[error?.questionId]?.let { message ->
+                message.post {
+                    if (message.visibility == View.VISIBLE) {
+                        message.requestRectangleOnScreen(Rect(0, 0, message.width, message.height), false)
+                    }
+                }
+            }
+        }
+        highlightedQuestionId = error?.questionId
+    }
+
+    private fun updateSubmissionControls() {
+        invalidateOptionsMenu()
         // Remember disabled controls (including unsupported TIME) when unlocking after an error
         val content = findViewById<LinearLayout>(R.id.form_v2_content)
         if (!viewModel.canEditAnswers || isLeavingForm) {
@@ -256,12 +397,19 @@ class FormV2RenderingActivity : AppCompatActivity() {
         val status = findViewById<TextView>(R.id.form_v2_status)
         content.removeAllViews()
         disabledInputs.clear()
+        questionErrors.clear()
+        questionInputs.clear()
+        inputTints.clear()
+        highlightedQuestionId = null
 
         when (state) {
             FormV2RenderingState.Loading -> status.text = getString(R.string.form_v2_rendering_loading)
             is FormV2RenderingState.Error -> status.text = state.message
             is FormV2RenderingState.Success -> {
+                supportActionBar?.title = state.template.classification.name.getTranslation(viewModel.language)
+                    ?: getString(R.string.create_new_form)
                 status.text = ""
+                var questionNumber = 0
                 state.template.questions.orEmpty().sortedBy { it.order }.forEach { question ->
                     val label = TextView(this).apply {
                         text = question.questionText.getTranslation(viewModel.language).orEmpty()
@@ -274,6 +422,11 @@ class FormV2RenderingActivity : AppCompatActivity() {
                         label.setTextColor(getColor(R.color.colorPrimaryDark))
                         return@forEach
                     }
+
+                    questionNumber++
+                    label.text = "$questionNumber. ${label.text}" + if (question.required) " *" else ""
+                    label.setTypeface(label.typeface, Typeface.BOLD)
+                    label.textSize = 18f
 
                     if (question.questionType == QuestionTypeEnum.MULTIPLE_CHOICE ||
                         question.questionType == QuestionTypeEnum.MULTIPLE_SELECT
@@ -342,6 +495,7 @@ class FormV2RenderingActivity : AppCompatActivity() {
                                         )
                                     }
                                 }
+                                viewModel.revalidateQuestion(question.id)
                             }
                         })
                     } else {
@@ -350,9 +504,23 @@ class FormV2RenderingActivity : AppCompatActivity() {
                             alpha = 0.65f
                         })
                     }
+                    question.id?.let { id ->
+                        val input = content.getChildAt(content.childCount - 1)
+                        questionInputs[id] = input
+                        inputTints[id] = input.backgroundTintList
+                        val error = TextView(this).apply {
+                            setTextColor(getColor(R.color.error))
+                            accessibilityLiveRegion = View.ACCESSIBILITY_LIVE_REGION_POLITE
+                            visibility = View.GONE
+                        }
+                        questionErrors[id] = error
+                        content.addView(error)
+                    }
                 }
             }
         }
+        status.visibility = if (status.text.isEmpty()) View.GONE else View.VISIBLE
+        renderSubmissionState(viewModel.submissionState.value)
     }
 
     private fun makeChoiceInput(question: FormTemplateQuestionV2): View {
@@ -380,6 +548,7 @@ class FormV2RenderingActivity : AppCompatActivity() {
                             AnswerV2.createMcAnswer(listOf(selectedIndex))
                         )
                     }
+                    viewModel.revalidateQuestion(question.id)
                 }
             }
         }
@@ -404,6 +573,7 @@ class FormV2RenderingActivity : AppCompatActivity() {
                                 AnswerV2.createMcAnswer(selectedIndices.sorted())
                             )
                         }
+                        viewModel.revalidateQuestion(question.id)
                     }
                 })
             }
@@ -430,6 +600,7 @@ class FormV2RenderingActivity : AppCompatActivity() {
                     if (question.questionType == QuestionTypeEnum.DATE) {
                         button.text = date
                         viewModel.answerState.setAnswer(question.id, AnswerV2.createDateAnswer(date))
+                        viewModel.revalidateQuestion(question.id)
                     } else {
                         TimePickerDialog(
                             this,
@@ -452,6 +623,7 @@ class FormV2RenderingActivity : AppCompatActivity() {
                                     button.error = getString(R.string.form_v2_rendering_datetime_not_allowed)
                                     viewModel.answerState.removeAnswer(question.id)
                                 }
+                                viewModel.revalidateQuestion(question.id)
                             },
                             now.get(Calendar.HOUR_OF_DAY),
                             now.get(Calendar.MINUTE),

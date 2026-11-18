@@ -8,6 +8,7 @@ import com.cradleplatform.neptune.http_sms_service.http.parseSyncErrors
 import com.cradleplatform.neptune.model.Patient
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 internal class SyncErrorsTest {
@@ -130,5 +131,23 @@ internal class SyncErrorsTest {
             emptyList<String>(),
             formatRecordSyncErrors("Reading", emptyList(), mapOf("abc-123" to "12345"))
         )
+    }
+
+    @Test
+    fun `syncResultData keeps a report that fits in WorkManager output`() {
+        val message = "Sync complete.\nErrors:\nReading for patient 12345: Not authorized."
+
+        val data = SyncAllWorker.syncResultData(message)
+
+        assertEquals(listOf(message), data.keyValueMap.values.toList())
+    }
+
+    @Test
+    fun `syncResultData leaves out a report too big for WorkManager output`() {
+        val message = "Reading for patient 12345: Not authorized to sync this patient.\n".repeat(200)
+
+        val data = SyncAllWorker.syncResultData(message)
+
+        assertTrue(data.keyValueMap.isEmpty())
     }
 }
