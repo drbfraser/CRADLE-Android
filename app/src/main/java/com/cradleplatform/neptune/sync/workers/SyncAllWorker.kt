@@ -7,6 +7,7 @@ import androidx.core.content.edit
 import androidx.hilt.work.HiltWorker
 import androidx.room.withTransaction
 import androidx.work.CoroutineWorker
+import androidx.work.Data
 import androidx.work.WorkInfo
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
@@ -225,6 +226,17 @@ class SyncAllWorker @AssistedInject constructor(
         fun getSyncResultMessage(workInfo: WorkInfo): String? = workInfo.outputData.getString(
             RESULT_MESSAGE
         )
+
+        /** WorkManager output is limited to 10 KB. */
+        private const val MAX_RESULT_MESSAGE_BYTES = 9000
+
+        /** If the report is too big, SyncActivity shows the copy in SharedPreferences instead. */
+        internal fun syncResultData(message: String): Data =
+            if (message.toByteArray().size <= MAX_RESULT_MESSAGE_BYTES) {
+                workDataOf(RESULT_MESSAGE to message)
+            } else {
+                Data.EMPTY
+            }
     }
 
     /**
@@ -488,30 +500,26 @@ class SyncAllWorker @AssistedInject constructor(
             workflowInstancesToUpload.associate { it.id to it.patientId }
         )
 
-        val syncResult = workDataOf(
-            RESULT_MESSAGE to getResultSuccessMessage(
-                patientResult,
-                totalPatientsRemoved,
-                healthFacilitiesResult,
-                readingResult,
-                referralResult,
-                assessmentResult,
-                formTemplateResult,
-                formTemplateV2Result,
-                workflowTemplateResult,
-                workflowInstanceResult,
-                recordSyncErrors
-            )
+        val resultMessage = getResultSuccessMessage(
+            patientResult,
+            totalPatientsRemoved,
+            healthFacilitiesResult,
+            readingResult,
+            referralResult,
+            assessmentResult,
+            formTemplateResult,
+            formTemplateV2Result,
+            workflowTemplateResult,
+            workflowInstanceResult,
+            recordSyncErrors
         )
 
         sharedPreferences.edit(commit = true) {
-            putString(LAST_SYNC_RESULT_MESSAGE, syncResult.getString(RESULT_MESSAGE))
+            putString(LAST_SYNC_RESULT_MESSAGE, resultMessage)
         }
 
         syncSucceeded = true
-        return Result.success(
-            syncResult
-        )
+        return Result.success(syncResultData(resultMessage))
     }
 
     /**
