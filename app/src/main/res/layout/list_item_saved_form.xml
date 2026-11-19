@@ -72,7 +72,7 @@
             android:layout_height="wrap_content"
             android:maxLines="1"
             android:textAppearance="@style/TextAppearance.Cradle.Body1"
-            android:text="@{formResponse.patientId}"
+            android:text="@{patient.patientNumber}"
             app:layout_constraintEnd_toStartOf="@+id/saved_form_info_guideline"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/list_item_saved_form_id_label_text_view"

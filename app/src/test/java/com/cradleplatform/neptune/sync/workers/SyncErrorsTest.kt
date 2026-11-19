@@ -3,7 +3,9 @@ package com.cradleplatform.neptune.sync.workers
 import com.cradleplatform.neptune.http_sms_service.http.READING_ID_FIELD
 import com.cradleplatform.neptune.http_sms_service.http.SyncError
 import com.cradleplatform.neptune.http_sms_service.http.WORKFLOW_INSTANCE_ID_FIELD
+import com.cradleplatform.neptune.http_sms_service.http.formatPatientSyncErrors
 import com.cradleplatform.neptune.http_sms_service.http.parseSyncErrors
+import com.cradleplatform.neptune.model.Patient
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -50,6 +52,45 @@ internal class SyncErrorsTest {
         assertEquals(
             emptyList<SyncError>(),
             parseSyncErrors(mapper.readTree("[]"), READING_ID_FIELD)
+        )
+    }
+
+    @Test
+    fun `formatPatientSyncErrors shows each patient by its patient number`() {
+        val errors = mapper.readTree(
+            """
+            [
+                {"patientId": "uuid-1", "errors": "['Not authorized to sync this patient.']"},
+                {"patientId": "uuid-2", "errors": "Some message."}
+            ]
+            """.trimIndent()
+        )
+        val uploadedPatients = listOf(
+            Patient(id = "uuid-1", patientNumber = "12345", name = "AA"),
+            Patient(id = "uuid-2", patientNumber = "67890", name = "BB")
+        )
+
+        assertEquals(
+            "Patient 12345: Not authorized to sync this patient.\nPatient 67890: Some message.",
+            formatPatientSyncErrors(errors, uploadedPatients)
+        )
+    }
+
+    @Test
+    fun `formatPatientSyncErrors falls back to the name, then to the ID`() {
+        val errors = mapper.readTree(
+            """
+            [
+                {"patientId": "uuid-1", "errors": "Some message."},
+                {"patientId": "uuid-2", "errors": "Some message."}
+            ]
+            """.trimIndent()
+        )
+        val uploadedPatients = listOf(Patient(id = "uuid-1", patientNumber = null, name = "AA"))
+
+        assertEquals(
+            "Patient AA: Some message.\nPatient uuid-2: Some message.",
+            formatPatientSyncErrors(errors, uploadedPatients)
         )
     }
 
