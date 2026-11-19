@@ -36,6 +36,7 @@ import com.cradleplatform.neptune.model.AnswerV2
 import com.cradleplatform.neptune.model.FormTemplateQuestionV2
 import com.cradleplatform.neptune.model.QuestionTypeEnum
 import com.cradleplatform.neptune.model.getTranslation
+import com.cradleplatform.neptune.utilities.Protocol
 import com.cradleplatform.neptune.utilities.connectivity.api24.ConnectivityOptions
 import com.cradleplatform.neptune.utilities.connectivity.api24.NetworkStateManager
 import com.cradleplatform.neptune.viewmodel.forms.FormTemplateDetailV2ViewModel
@@ -54,7 +55,7 @@ import java.util.Locale
 import javax.inject.Inject
 
 /**
- * Renders V2 answers, saves local drafts, and submits validated forms over HTTP.
+ * Renders V2 answers, saves local drafts, and submits validated forms over HTTP or SMS.
  */
 @AndroidEntryPoint
 class FormV2RenderingActivity : AppCompatActivity() {
@@ -182,7 +183,7 @@ class FormV2RenderingActivity : AppCompatActivity() {
             }
         } else {
             builder.setPositiveButton(internetString) { _, _ ->
-                submitForm()
+                submitForm(Protocol.HTTP)
             }
         }
 
@@ -190,8 +191,7 @@ class FormV2RenderingActivity : AppCompatActivity() {
             saveDraftAndLeave()
         }
         builder.setNegativeButton(R.string.SMS) { _, _ ->
-            // Placeholder until the V2 SMS submission path is implemented.
-            Toast.makeText(this, R.string.form_v2_sms_not_available, Toast.LENGTH_LONG).show()
+            submitForm(Protocol.SMS)
         }
         submissionModeDialog = builder.show()
     }
@@ -200,7 +200,7 @@ class FormV2RenderingActivity : AppCompatActivity() {
         return when (networkStateManager.getConnectivity()) {
             ConnectivityOptions.WIFI -> "Wifi"
             ConnectivityOptions.CELLULAR_DATA -> "Cellular"
-            ConnectivityOptions.SMS -> "Sms"
+            ConnectivityOptions.SMS -> ""
             ConnectivityOptions.NONE -> ""
         }
     }
@@ -308,8 +308,8 @@ class FormV2RenderingActivity : AppCompatActivity() {
         invalidateOptionsMenu()
     }
 
-    private fun submitForm() {
-        viewModel.submitForm()
+    private fun submitForm(protocol: Protocol = viewModel.lastSubmissionProtocol) {
+        viewModel.submitForm(protocol)
         // Validation is synchronous; reveal the result even when StateFlow has not changed.
         highlightedQuestionId = null
         renderSubmissionState(viewModel.submissionState.value)

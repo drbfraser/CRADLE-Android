@@ -18,6 +18,7 @@ import com.cradleplatform.neptune.model.FormTemplateV2
 import com.cradleplatform.neptune.model.FormV2AnswerState
 import com.cradleplatform.neptune.model.FormV2SubmissionValidationResult
 import com.cradleplatform.neptune.model.FormV2SubmissionValidator
+import com.cradleplatform.neptune.utilities.Protocol
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
@@ -253,9 +254,13 @@ class FormV2RenderingViewModel @Inject constructor(
         }
     }
 
+    var lastSubmissionProtocol: Protocol = Protocol.HTTP
+        private set
+
     /** Validates the current answers, saves a local draft, and submits the form. */
-    fun submitForm() {
+    fun submitForm(protocol: Protocol = Protocol.HTTP) {
         if (!canSubmit) return
+        lastSubmissionProtocol = protocol
         val patient = patientId?.takeIf { it.isNotBlank() } ?: return
         val template = loadedTemplate ?: return
         val draftAnswers = answerState.toFormAnswers()
@@ -287,7 +292,12 @@ class FormV2RenderingViewModel @Inject constructor(
                 return@launch
             }
             try {
-                val submissionLanguage = resolveSubmissionLanguage(template.id) ?: return@launch
+                val submissionLanguage = if (protocol == Protocol.SMS) {
+                    // The cached template/draft already records the chosen language.
+                    language
+                } else {
+                    resolveSubmissionLanguage(template.id) ?: return@launch
+                }
                 if (selectedLanguage != submissionLanguage) {
                     selectedLanguage = submissionLanguage
                     persistSubmissionDraft(patient, template, draftAnswers)
@@ -299,7 +309,7 @@ class FormV2RenderingViewModel @Inject constructor(
                     lang = submissionLanguage,
                     answers = answers
                 )
-                when (val result = restApi.postFormSubmissionV2(request)) {
+                when (val result = restApi.postFormSubmissionV2(request, protocol)) {
                     is NetworkResult.Success -> deleteSubmittedDraft(patient, template.id)
                     is NetworkResult.Failure -> reportHttpSubmissionError(result.statusCode)
                     is NetworkResult.NetworkException -> reportSubmissionError(

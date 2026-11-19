@@ -1,8 +1,11 @@
 package com.cradleplatform.neptune.http_sms_service.http
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
+import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.lifecycle.asFlow
 import com.cradleplatform.neptune.ext.jackson.forEachJackson
@@ -65,7 +68,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.SendChannel
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
+import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -107,7 +113,10 @@ class RestApi(
     companion object {
         private const val TAG = "RestApi"
         private const val EMPTY_JSON_ARRAY = "[]"
+        private const val SMS_SUBMISSION_TIMEOUT_MS = 180_000L
     }
+
+    private val smsRequestMutex = Mutex()
 
     private fun setupSmsReceiver() {
         smsReceiver.register()
@@ -117,19 +126,28 @@ class RestApi(
         smsReceiver.unregister()
     }
 
-    // TODO: This only handles the case for endpoints that return status code 200 when successful.
-    //       Additional logic is necessary for if an endpoint has multiple successful status codes
-    //       (e.g. 200 and 201)
+    // Legacy callers complete through their dialog; V2 supplies a decoder and completes
+    // directly on receipt, preserving the destination API's status and body.
     private suspend inline fun <reified T> handleSmsRequest(
         method: Http.Method,
         url: String,
         headers: Map<String, String> = mapOf(),
         body: ByteArray = Gson().toJson(JsonObject()).toByteArray(),
+        noinline responseDecoder: ((String) -> NetworkResult<T>)? = null,
     ): NetworkResult<T> = withContext(IO) {
-        val channel = Channel<NetworkResult<T>>()
-        setupSmsReceiver()
-
+        if (!smsRequestMutex.tryLock()) {
+            return@withContext NetworkResult.NetworkException(IOException("Another SMS request is in progress."))
+        }
+        val channel = Channel<NetworkResult<T>>(Channel.BUFFERED)
+        var receiverRegistered = false
         try {
+            smsStateReporter.resetRequestNumberRetries()
+            setupSmsReceiver()
+            receiverRegistered = true
+            withContext(Dispatchers.Main) {
+                smsStateReporter.stateToCollect.value = SmsTransmissionStates.GETTING_READY_TO_SEND
+                smsStateReporter.decryptedMsgLiveData.value = ""
+            }
             processAndSendSms(method, url, headers, body)
 
             /**
@@ -144,6 +162,17 @@ class RestApi(
                         SmsTransmissionStates.WAITING_FOR_USER_RESPONSE -> {
                             if (smsStateReporter.statusCode.value != SmsErrorHandler.REQUEST_NUMBER_MISMATCH) {
                                 smsStateReporter.incrementRequestNumber()
+                            }
+                            // V2 completes from the API response rather than a dialog button.
+                            if (responseDecoder != null) {
+                                val code = smsStateReporter.statusCodeToCollect.value ?: 0
+                                channel.send(if (code in 200..299) {
+                                    responseDecoder(smsStateReporter.decryptedMsgLiveData.value.orEmpty())
+                                } else {
+                                    NetworkResult.Failure(
+                                        smsStateReporter.errorMessageToCollect.value.orEmpty().toByteArray(), code
+                                    )
+                                })
                             }
                         }
 
@@ -196,7 +225,7 @@ class RestApi(
              * The flow is infinite, so the collect job will never complete. Therefore, we must
              * manually cancel it, otherwise the thread will be blocked forever.
              * */
-            flowCollectJob.cancel()
+            flowCollectJob.cancelAndJoin()
             return@withContext result
         } catch (e: IOException) {
             return@withContext NetworkResult.NetworkException(e)
@@ -205,7 +234,15 @@ class RestApi(
             smsStateReporter.stateToCollect.postValue(SmsTransmissionStates.GETTING_READY_TO_SEND)
             smsStateReporter.errorMessageToCollect.postValue("")
             smsStateReporter.statusCodeToCollect.postValue(0)
-            teardownSmsReceiver()
+            try {
+                if (receiverRegistered) teardownSmsReceiver()
+            } finally {
+                if (responseDecoder != null) {
+                    smsSender.reset()
+                    smsStateReporter.resetStateReporter()
+                }
+                smsRequestMutex.unlock()
+            }
         }
     }
 
@@ -222,6 +259,8 @@ class RestApi(
         smsSender.queueRelayContent(json).let { enqueueSuccessful ->
             if (enqueueSuccessful) {
                 smsSender.sendSmsMessage(false)
+            } else {
+                throw IOException("Unable to queue SMS. Check that an SMS key is available.")
             }
         }
     }
@@ -1010,17 +1049,39 @@ class RestApi(
         }
     }
 
-    /**
-     * V2: Creates a form submission. HTTP-only for now (basic connectivity validation
-     * pass);
-     * todo: sms support can be added the same way as postFormResponse once V2 is
-     * further along.
-     */
+    /** Creates a V2 submission over HTTP or the existing SMS relay. */
     suspend fun postFormSubmissionV2(
-        request: CreateFormSubmissionRequestV2
+        request: CreateFormSubmissionRequestV2,
+        protocol: Protocol = Protocol.HTTP
     ): NetworkResult<FormSubmissionV2> = withContext(IO) {
         val gson = GsonBuilder().excludeFieldsWithoutExposeAnnotation().create()
         val body = gson.toJson(request).toByteArray()
+
+        if (protocol == Protocol.SMS) {
+            if (sharedPreferences.getString(UserViewModel.RELAY_PHONE_NUMBER, null).isNullOrBlank()) {
+                return@withContext NetworkResult.NetworkException(
+                    IOException("Configure the SMS relay phone number first.")
+                )
+            }
+            if (ContextCompat.checkSelfPermission(context, Manifest.permission.SEND_SMS) !=
+                PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(context, Manifest.permission.RECEIVE_SMS) !=
+                PackageManager.PERMISSION_GRANTED) {
+                return@withContext NetworkResult.NetworkException(
+                    IOException("SMS sending and receiving permissions are required.")
+                )
+            }
+            return@withContext withTimeoutOrNull(SMS_SUBMISSION_TIMEOUT_MS) {
+                handleSmsRequest(
+                    method = Http.Method.POST,
+                    url = urlManager.formsV2Submissions,
+                    body = body,
+                    responseDecoder = { SmsFormSubmissionDecoder.decode(it, request) }
+                )
+            } ?: NetworkResult.NetworkException(SMSTimeoutException(
+                "No confirmed SMS response. Keep this draft and retry with the same submission ID."
+            ))
+        }
 
         http.makeRequest(
             method = Http.Method.POST,

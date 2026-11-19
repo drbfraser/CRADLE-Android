@@ -129,7 +129,7 @@ class SmsStateReporter @Inject constructor(
         updateRequestNumber(newRequestNumber)
     }
 
-    private fun resetRequestNumberRetries() {
+    internal fun resetRequestNumberRetries() {
         requestNumberRetries = 0
     }
 
@@ -167,13 +167,23 @@ class SmsStateReporter @Inject constructor(
                 setErrorStates(outerErrorCode, errorMsg)
             }
         } else {
-            val smsKey = smsKeyManager.retrieveSmsKey()!!
-            val decodedMessage = SMSFormatter.decodeMsg(msg, smsKey.key)
-
-            val innerRequestResponse =
-                Gson().fromJson(decodedMessage, DecryptedSmsResponse::class.java)
+            val decodedMessage: String
+            val innerRequestResponse: DecryptedSmsResponse
+            try {
+                val smsKey = smsKeyManager.retrieveSmsKey() ?: error("Missing SMS key")
+                decodedMessage = SMSFormatter.decodeMsg(msg, smsKey.key)
+                innerRequestResponse = Gson().fromJson(decodedMessage, DecryptedSmsResponse::class.java)
+                require(innerRequestResponse.code in 100..599)
+            } catch (exception: Exception) {
+                setErrorStates(502, "Invalid SMS response. Keep the draft; submission is not confirmed.")
+                return
+            }
             if (SmsErrorHandler.isErrorCode(innerRequestResponse.code)) {
-                val errorMsg = smsErrorHandler.handleInnerError(innerRequestResponse)
+                val errorMsg = try {
+                    smsErrorHandler.handleInnerError(innerRequestResponse)
+                } catch (exception: Exception) {
+                    "SMS API request failed (${innerRequestResponse.code})."
+                }
                 setErrorStates(innerRequestResponse.code, errorMsg)
                 return
             }

@@ -44,6 +44,23 @@ class SmsStateReporterTests {
     }
 
     @Test
+    fun `malformed encrypted response completes as a recoverable failure`() {
+        every { SMSFormatter.decodeMsg(any(), any()) } returns "{}"
+        smsStateReporter.handleResponse("reply", null)
+        Assertions.assertEquals(502, smsStateReporter.statusCodeToCollect.value)
+        Assertions.assertEquals(SmsTransmissionStates.WAITING_FOR_USER_RESPONSE, smsStateReporter.stateToCollect.value)
+    }
+
+    @Test
+    fun `malformed inner error body preserves API failure code`() {
+        every { SMSFormatter.decodeMsg(any(), any()) } returns
+            Gson().toJson(DecryptedSmsResponse(422, "not json"))
+        smsStateReporter.handleResponse("reply", null)
+        Assertions.assertEquals(422, smsStateReporter.statusCodeToCollect.value)
+        Assertions.assertEquals(SmsTransmissionStates.WAITING_FOR_USER_RESPONSE, smsStateReporter.stateToCollect.value)
+    }
+
+    @Test
     fun `handleResponse should identify outer error and update error state`() {
         val relayData =
             "Unable to verify message from (+15555215556). Either the App and server don't agree on the security key or the message was corrupted."

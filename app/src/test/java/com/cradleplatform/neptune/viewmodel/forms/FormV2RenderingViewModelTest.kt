@@ -44,6 +44,7 @@ import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import com.cradleplatform.neptune.utilities.Protocol
 import java.io.IOException
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -840,6 +841,44 @@ internal class FormV2RenderingViewModelTest {
             mcOptions = null,
         )),
     )
+
+    @Test
+    fun `SMS submission uses cached language without any HTTP language lookup`() = runTest(testDispatcher) {
+        coEvery { restApi.postFormSubmissionV2(any(), Protocol.SMS) } returns
+            NetworkResult.Success(submission(), 201)
+        val viewModel = createViewModel(language = "French")
+        runCurrent()
+        viewModel.answerState.setAnswer("q1", AnswerV2.createTextAnswer("answer"))
+
+        viewModel.submitForm(Protocol.SMS)
+        runCurrent()
+
+        coVerify(exactly = 0) { restApi.getFormTemplateLanguagesV2(any()) }
+        coVerify(exactly = 1) {
+            restApi.postFormSubmissionV2(match { it.lang == "French" && !it.id.isNullOrBlank() }, Protocol.SMS)
+        }
+        coVerify(exactly = 1) { draftDao.deleteDraft("patient-1", "template-1") }
+    }
+
+    @Test
+    fun `SMS validation failure retains draft and stable submission ID`() = runTest(testDispatcher) {
+        coEvery { restApi.postFormSubmissionV2(any(), Protocol.SMS) } returns
+            NetworkResult.Failure("invalid answers".toByteArray(), 422)
+        val viewModel = createViewModel()
+        runCurrent()
+        viewModel.answerState.setAnswer("q1", AnswerV2.createTextAnswer("answer"))
+        viewModel.submitForm(Protocol.SMS)
+        runCurrent()
+        viewModel.submitForm(Protocol.SMS)
+        runCurrent()
+
+        val requests = mutableListOf<CreateFormSubmissionRequestV2>()
+        coVerify(exactly = 2) { restApi.postFormSubmissionV2(capture(requests), Protocol.SMS) }
+        assertEquals(requests[0].id, requests[1].id)
+        assertFalse(requests[0].id.isNullOrBlank())
+        coVerify(exactly = 0) { draftDao.deleteDraft(any(), any()) }
+        assertTrue(viewModel.submissionState.value is FormV2SubmissionState.Error)
+    }
 
     private fun submission() = FormSubmissionV2(
         id = "submission-1",
