@@ -275,7 +275,7 @@ class UrlManager @Inject constructor(val settings: Settings) {
      * Endpoint for getting a list of all relay phone numbers.
      *
      */
-    fun getAllRelayPhoneNumbers() = "$base/phone/relays"
+    fun getAllRelayPhoneNumbers() = "$base/relay/server/phone"
 
     /**
      * Endpoint for Get/Post/Put the smsKey for the user

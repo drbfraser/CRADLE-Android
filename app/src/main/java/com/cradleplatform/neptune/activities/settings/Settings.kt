@@ -28,7 +28,7 @@ import com.cradleplatform.neptune.manager.LoginManager
 import com.cradleplatform.neptune.manager.LoginManager.Companion.RELAY_PHONE_NUMBER
 import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.manager.ReadingManager
-import com.cradleplatform.neptune.model.RelayPhoneNumberResponse
+import com.cradleplatform.neptune.model.RelayPhoneNumber
 import com.cradleplatform.neptune.sync.PeriodicSyncer
 import com.cradleplatform.neptune.utilities.Protocol
 import com.cradleplatform.neptune.utilities.validateHostname
@@ -267,9 +267,11 @@ class SettingsFragment : PreferenceFragmentCompat() {
      * Handles the result of fetching relay phone numbers from the API.
      * @param result The network result containing the result and relay phone numbers (if result is successful).
      */
-    private fun handleRelayPhoneNumbersResult(result: NetworkResult<RelayPhoneNumberResponse>) {
+    private fun handleRelayPhoneNumbersResult(result: NetworkResult<List<RelayPhoneNumber>>) {
         when (result) {
-            is NetworkResult.Success -> showRelayPhoneNumbersDialog(result.value.relayPhoneNumbers)
+            is NetworkResult.Success -> showRelayPhoneNumbersDialog(
+                result.value.map { it.phoneNumber }
+            )
             else -> showErrorToast("Failed to fetch relay phone numbers. Check your internet connection")
         }
     }
