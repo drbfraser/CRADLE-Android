@@ -12,6 +12,11 @@ import java.io.Serializable
 
 typealias MultiLangText = Map<String, String>
 
+fun FormTemplateV2.getAvailableLanguages(): List<String> =
+    availableLanguages ?: (classification.name.keys + questions.orEmpty().flatMap { question ->
+        question.questionText.keys + question.mcOptions.orEmpty().flatMap { it.translations.keys }
+    }).filter { it.isNotBlank() }.distinct().sorted()
+
 data class FormTemplateLanguagesV2Response(
     @SerializedName("langVersions") val languages: List<String>
 )
@@ -121,6 +126,8 @@ data class FormTemplateV2(
     @SerializedName("classification") val classification: FormClassificationV2,
     @SerializedName("dateCreated") val dateCreated: Long,
     @SerializedName("questions") val questions: List<FormTemplateQuestionV2>? = emptyList(),
+    // Cached from /languages: translation dictionary keys may have been camel-cased by Platform.
+    @SerializedName("availableLanguages") val availableLanguages: List<String>? = null,
 ) : Serializable
 
 /** returned by GET /forms/v2/templates (list). */
