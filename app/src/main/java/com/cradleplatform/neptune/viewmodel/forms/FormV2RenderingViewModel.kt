@@ -9,6 +9,8 @@ import com.cradleplatform.neptune.activities.forms.FormV2RenderingActivity
 import com.cradleplatform.neptune.database.daos.FormV2DraftDao
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
+import com.cradleplatform.neptune.manager.FormTemplateV2Manager
+import com.cradleplatform.neptune.model.AnswerV2
 import com.cradleplatform.neptune.model.CreateFormSubmissionRequestV2
 import com.cradleplatform.neptune.model.FormAnswerV2
 import com.cradleplatform.neptune.model.FormV2Draft
@@ -20,13 +22,16 @@ import com.cradleplatform.neptune.model.FormV2SubmissionValidator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import java.io.IOException
 import java.util.UUID
 import javax.inject.Inject
 
@@ -47,6 +52,13 @@ sealed class FormV2DraftSaveState {
     object Error : FormV2DraftSaveState()
 }
 
+sealed class FormV2DraftDeleteState {
+    object Idle : FormV2DraftDeleteState()
+    object Deleting : FormV2DraftDeleteState()
+    object Deleted : FormV2DraftDeleteState()
+    object Error : FormV2DraftDeleteState()
+}
+
 /** State of the V2 submission request, separate from template loading and draft saving */
 sealed class FormV2SubmissionState {
     object Idle : FormV2SubmissionState()
@@ -60,6 +72,7 @@ sealed class FormV2SubmissionState {
 class FormV2RenderingViewModel @Inject constructor(
     private val restApi: RestApi,
     private val formV2DraftDao: FormV2DraftDao,
+    private val formTemplateManager: FormTemplateV2Manager,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -82,24 +95,43 @@ class FormV2RenderingViewModel @Inject constructor(
     val answerState = FormV2AnswerState()
     private val _draftSaveState = MutableStateFlow<FormV2DraftSaveState>(FormV2DraftSaveState.Idle)
     val draftSaveState: StateFlow<FormV2DraftSaveState> = _draftSaveState.asStateFlow()
+    private val _draftDeleteState = MutableStateFlow<FormV2DraftDeleteState>(FormV2DraftDeleteState.Idle)
+    val draftDeleteState: StateFlow<FormV2DraftDeleteState> = _draftDeleteState.asStateFlow()
     private val _submissionState = MutableStateFlow<FormV2SubmissionState>(FormV2SubmissionState.Idle)
     val submissionState: StateFlow<FormV2SubmissionState> = _submissionState.asStateFlow()
+    private val _submissionErrors = Channel<FormV2SubmissionErrorType>(Channel.BUFFERED)
+    val submissionErrors = _submissionErrors.receiveAsFlow()
     private val draftSaveMutex = Mutex()
     private var clearSavedDraftStatusJob: Job? = null
     private var hasSubmitted = false
     private var submissionId: String? = null
+    private var savedAnswers: Map<String, AnswerV2> = emptyMap()
+    private var savedLanguage: String = selectedLanguage
+    var hasSavedDraft: Boolean = false
+        private set
+    private val hasFinishedForm: Boolean
+        get() = hasSubmitted || _draftDeleteState.value == FormV2DraftDeleteState.Deleted
+
+    val hasUnsavedChanges: Boolean
+        get() = !hasFinishedForm && _state.value is FormV2RenderingState.Success &&
+            (answerState.toFormAnswers().associate { it.questionId to it.answer } != savedAnswers ||
+                selectedLanguage != savedLanguage)
 
     val canSaveDraft: Boolean
-        get() = !hasSubmitted && !patientId.isNullOrBlank() &&
+        get() = !hasFinishedForm && _draftDeleteState.value != FormV2DraftDeleteState.Deleting &&
+            !patientId.isNullOrBlank() &&
             _state.value is FormV2RenderingState.Success
 
     val canSubmit: Boolean
-        get() = !hasSubmitted && !patientId.isNullOrBlank() &&
-            _state.value is FormV2RenderingState.Success &&
+        get() = canSaveDraft &&
             _submissionState.value != FormV2SubmissionState.Submitting
 
     val canEditAnswers: Boolean
-        get() = !hasSubmitted && _submissionState.value != FormV2SubmissionState.Submitting
+        get() = !hasFinishedForm && _draftDeleteState.value != FormV2DraftDeleteState.Deleting &&
+            _submissionState.value != FormV2SubmissionState.Submitting
+
+    val canDeleteDraft: Boolean
+        get() = hasSavedDraft && canSubmit && _draftSaveState.value != FormV2DraftSaveState.Saving
 
     init {
         loadTemplate()
@@ -107,10 +139,26 @@ class FormV2RenderingViewModel @Inject constructor(
 
     private fun loadTemplate() {
         viewModelScope.launch {
-            _state.value = when (val result = restApi.getFormTemplateV2(formTemplateId)) {
+            val savedDraft = try {
+                patientId?.let { formV2DraftDao.getDraft(it, formTemplateId) }
+            } catch (exception: CancellationException) {
+                throw exception
+            } catch (exception: Exception) {
+                Log.e(javaClass.simpleName, "Failed to load V2 draft", exception)
+                _state.value = FormV2RenderingState.Error("Unable to load saved form.")
+                return@launch
+            }
+
+            if (savedDraft != null) {
+                loadedTemplate = savedDraft.formTemplate
+                restoreDraft(savedDraft)
+                _state.value = FormV2RenderingState.Success(savedDraft.formTemplate)
+                return@launch
+            }
+
+            _state.value = when (val result = formTemplateManager.getTemplate(formTemplateId)) {
                 is NetworkResult.Success -> {
                     loadedTemplate = result.value
-                    restoreDraft(result.value)
                     FormV2RenderingState.Success(result.value)
                 }
                 is NetworkResult.Failure -> FormV2RenderingState.Error("Server error (${result.statusCode})")
@@ -121,38 +169,37 @@ class FormV2RenderingViewModel @Inject constructor(
         }
     }
 
-    private suspend fun restoreDraft(template: FormTemplateV2) {
-        val draft = patientId?.let { formV2DraftDao.getDraft(it, formTemplateId) }
-        // Do not apply answers to a newer template whose questions may have changed.
-        if (draft?.formTemplateVersion == template.version) {
-            answerState.replaceAnswers(draft.answers)
-            submissionId = draft.submissionId
-            // A fresh selection takes precedence when reopening an existing draft.
-            selectedLanguage = requestedLanguage ?: draft.language
-        }
+    private fun restoreDraft(draft: FormV2Draft) {
+        answerState.replaceAnswers(draft.answers)
+        submissionId = draft.submissionId
+        // Keep the saved language unless the user explicitly selected one for this form.
+        selectedLanguage = requestedLanguage ?: draft.language
+        rememberSavedDraft(draft)
     }
 
-    /** Saves only patient-based forms after their template has finished loading. */
-    fun saveDraft() {
+    /** Saves a patient draft and returns the write job so navigation can wait for it. */
+    fun saveDraft(): Job? {
         // Avoid overwriting a stored draft before its answers finish restoring
-        if (!canSaveDraft) return
-        val patient = patientId?.takeIf { it.isNotBlank() } ?: return
-        val template = loadedTemplate ?: return
+        if (!canSaveDraft) return null
+        val patient = patientId?.takeIf { it.isNotBlank() } ?: return null
+        val template = loadedTemplate ?: return null
         // Capture the answers at the save request, before a queued write or further edits
         val draft = createDraft(patient, template, answerState.toFormAnswers())
         clearSavedDraftStatusJob?.cancel()
         _draftSaveState.value = FormV2DraftSaveState.Saving
-        viewModelScope.launch {
+        return viewModelScope.launch {
             // Keep manual and lifecycle saves in order
             draftSaveMutex.withLock {
-                if (hasSubmitted) {
+                if (hasFinishedForm) {
                     _draftSaveState.value = FormV2DraftSaveState.Idle
                     return@withLock
                 }
                 _draftSaveState.value = FormV2DraftSaveState.Saving
                 try {
                     // The DAO preserves createdAt on updates. Success follows the completed transaction.
-                    formV2DraftDao.upsert(draft.copy(submissionId = submissionId))
+                    val currentDraft = draft.copy(submissionId = submissionId)
+                    formV2DraftDao.upsert(currentDraft)
+                    rememberSavedDraft(currentDraft)
                     _draftSaveState.value = FormV2DraftSaveState.Saved
                     clearSavedDraftStatusJob = viewModelScope.launch {
                         delay(DRAFT_SAVE_SUCCESS_VISIBLE_MILLIS)
@@ -170,9 +217,45 @@ class FormV2RenderingViewModel @Inject constructor(
         }
     }
 
-    /**
-     * Validates and posts the current V2 answers, only a successful response removes the draft
-     */
+    fun revalidateQuestion(questionId: String?) {
+        val error = _submissionState.value as? FormV2SubmissionState.ValidationError ?: return
+        if (questionId == null || error.questionId != questionId) return
+        val template = (_state.value as? FormV2RenderingState.Success)?.template ?: return
+        val question = template.questions.orEmpty().firstOrNull { it.id == questionId } ?: return
+        val result = FormV2SubmissionValidator.validate(
+            template.copy(questions = listOf(question)),
+            answerState.toFormAnswers().filter { it.questionId == questionId }
+        )
+        _submissionState.value = when (result) {
+            is FormV2SubmissionValidationResult.Success -> FormV2SubmissionState.Idle
+            is FormV2SubmissionValidationResult.Error ->
+                error.copy(questionId = result.questionId, message = result.message)
+        }
+    }
+
+    fun deleteDraft(): Job? {
+        if (!canDeleteDraft) return null
+        val patient = patientId ?: return null
+        _draftDeleteState.value = FormV2DraftDeleteState.Deleting
+        return viewModelScope.launch {
+            draftSaveMutex.withLock {
+                try {
+                    // Serialize deletion with saves so an older write cannot recreate the draft.
+                    formV2DraftDao.deleteDraft(patient, formTemplateId)
+                    hasSavedDraft = false
+                    clearSavedDraftStatusJob?.cancel()
+                    _draftDeleteState.value = FormV2DraftDeleteState.Deleted
+                } catch (exception: CancellationException) {
+                    throw exception
+                } catch (exception: Exception) {
+                    Log.e(javaClass.simpleName, "Failed to delete V2 draft", exception)
+                    _draftDeleteState.value = FormV2DraftDeleteState.Error
+                }
+            }
+        }
+    }
+
+    /** Validates the current answers, saves a local draft, and submits the form. */
     fun submitForm() {
         if (!canSubmit) return
         val patient = patientId?.takeIf { it.isNotBlank() } ?: return
@@ -195,7 +278,7 @@ class FormV2RenderingViewModel @Inject constructor(
                 return@launch
             }
             try {
-                val submissionLanguage = resolveSubmissionLanguage(template.id)
+                val submissionLanguage = resolveSubmissionLanguage(template.id) ?: return@launch
                 if (selectedLanguage != submissionLanguage) {
                     selectedLanguage = submissionLanguage
                     persistSubmissionDraft(patient, template, draftAnswers)
@@ -216,21 +299,21 @@ class FormV2RenderingViewModel @Inject constructor(
                         if (result.statusCode == HTTP_CONFLICT) {
                             verifyExistingSubmission(request, template)
                         } else {
-                            _submissionState.value = FormV2SubmissionState.Error(
-                                "Server error (${result.statusCode})"
-                            )
+                            reportHttpSubmissionError(result.statusCode)
                         }
                     }
-                    is NetworkResult.NetworkException -> _submissionState.value = FormV2SubmissionState.Error(
-                        result.cause.message ?: "Network error"
+                    is NetworkResult.NetworkException -> reportSubmissionError(
+                        result.cause.message ?: "Network error", FormV2SubmissionErrorType.NETWORK_ERROR
                     )
                 }
             } catch (exception: CancellationException) {
                 throw exception
+            } catch (exception: IOException) {
+                reportSubmissionError(exception.message ?: "Network error", FormV2SubmissionErrorType.NETWORK_ERROR)
             } catch (exception: Exception) {
                 Log.e(javaClass.simpleName, "Failed to submit V2 form", exception)
-                _submissionState.value = FormV2SubmissionState.Error(
-                    exception.message ?: "Unable to submit form."
+                reportSubmissionError(
+                    exception.message ?: "Unable to submit form.", FormV2SubmissionErrorType.SERVER_ERROR
                 )
             }
         }
@@ -273,30 +356,38 @@ class FormV2RenderingViewModel @Inject constructor(
             }
             is NetworkResult.Failure -> {
                 val canCreate = allowMissing && result.statusCode == HTTP_NOT_FOUND
-                if (!canCreate) {
-                    _submissionState.value = FormV2SubmissionState.Error(
-                        "Unable to check the submitted form (${result.statusCode}). Your draft was kept."
-                    )
-                }
+                if (!canCreate) reportHttpSubmissionError(result.statusCode)
                 !canCreate
             }
-            is NetworkResult.NetworkException -> {
-                _submissionState.value = FormV2SubmissionState.Error(
-                    "Unable to check the submitted form. Your draft was kept."
-                )
-                true
-            }
+            is NetworkResult.NetworkException -> throw result.cause
         }
 
-    private suspend fun resolveSubmissionLanguage(templateId: String): String {
+    private suspend fun resolveSubmissionLanguage(templateId: String): String? {
         val languages = when (val result = restApi.getFormTemplateLanguagesV2(templateId)) {
             is NetworkResult.Success -> result.value.languages
-            is NetworkResult.Failure -> error("Unable to load form languages (${result.statusCode}).")
+            is NetworkResult.Failure -> {
+                reportHttpSubmissionError(result.statusCode)
+                return null
+            }
             is NetworkResult.NetworkException -> throw result.cause
         }
         return languages.firstOrNull { it == language }
             ?: languages.firstOrNull { it.equals(language, ignoreCase = true) }
             ?: error("The selected language is no longer available for this form.")
+    }
+
+    private suspend fun reportHttpSubmissionError(statusCode: Int) {
+        val errorType = when (statusCode) {
+            401 -> FormV2SubmissionErrorType.AUTH_ERROR
+            403 -> FormV2SubmissionErrorType.PERMISSION_ERROR
+            else -> FormV2SubmissionErrorType.SERVER_ERROR
+        }
+        reportSubmissionError("Server error ($statusCode)", errorType)
+    }
+
+    private suspend fun reportSubmissionError(message: String, errorType: FormV2SubmissionErrorType) {
+        _submissionState.value = FormV2SubmissionState.Error(message)
+        _submissionErrors.send(errorType)
     }
 
     private suspend fun persistSubmissionDraft(
@@ -305,7 +396,9 @@ class FormV2RenderingViewModel @Inject constructor(
         answers: List<FormAnswerV2>
     ): String = draftSaveMutex.withLock {
         val requestId = submissionId ?: UUID.randomUUID().toString()
-        formV2DraftDao.upsert(createDraft(patientId, template, answers, requestId))
+        val draft = createDraft(patientId, template, answers, requestId)
+        formV2DraftDao.upsert(draft)
+        rememberSavedDraft(draft)
         submissionId = requestId
         requestId
     }
@@ -317,6 +410,7 @@ class FormV2RenderingViewModel @Inject constructor(
         try {
             draftSaveMutex.withLock {
                 formV2DraftDao.deleteDraft(patientId, formTemplateId)
+                hasSavedDraft = false
             }
             _submissionState.value = FormV2SubmissionState.Submitted
         } catch (exception: CancellationException) {
@@ -327,6 +421,12 @@ class FormV2RenderingViewModel @Inject constructor(
                 "Form submitted, but the local draft could not be removed."
             )
         }
+    }
+
+    private fun rememberSavedDraft(draft: FormV2Draft) {
+        hasSavedDraft = true
+        savedAnswers = draft.answers.associate { it.questionId to it.answer }
+        savedLanguage = draft.language
     }
 
     private fun createDraft(

@@ -20,10 +20,12 @@ import com.cradleplatform.neptune.manager.SmsKey
 import com.cradleplatform.neptune.manager.UrlManager
 import com.cradleplatform.neptune.model.Assessment
 import com.cradleplatform.neptune.model.CreateFormSubmissionRequestV2
+import com.cradleplatform.neptune.model.DeletedPatientsResponse
 import com.cradleplatform.neptune.model.FormAnswerV2
 import com.cradleplatform.neptune.model.FormClassification
 import com.cradleplatform.neptune.model.FormResponse
 import com.cradleplatform.neptune.model.FormSubmissionV2
+import com.cradleplatform.neptune.model.PatientFormSubmissionsV2Response
 import com.cradleplatform.neptune.model.FormSubmissionWithAnswersV2
 import com.cradleplatform.neptune.model.FormTemplate
 import com.cradleplatform.neptune.model.FormTemplateListV2Response
@@ -37,7 +39,7 @@ import com.cradleplatform.neptune.model.PatientAndReadings
 import com.cradleplatform.neptune.model.PatientAndReferrals
 import com.cradleplatform.neptune.model.Reading
 import com.cradleplatform.neptune.model.Referral
-import com.cradleplatform.neptune.model.RelayPhoneNumberResponse
+import com.cradleplatform.neptune.model.RelayPhoneNumber
 import com.cradleplatform.neptune.model.Statistics
 import com.cradleplatform.neptune.model.WorkflowInstance
 import com.cradleplatform.neptune.model.WorkflowTemplate
@@ -67,6 +69,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONArray
 import org.json.JSONObject
 import java.io.IOException
 import java.io.InputStream
@@ -1031,6 +1034,24 @@ class RestApi(
     }
 
     /**
+     * Retrieves the patient's V2 form submissions.
+     */
+    suspend fun getPatientFormSubmissionsV2(
+        patientId: String
+    ): NetworkResult<List<FormSubmissionV2>> = withContext(IO) {
+        http.makeRequest(
+            method = Http.Method.GET,
+            url = urlManager.getPatientFormSubmissionsV2(patientId),
+            headers = makeAuthorizationHeader(),
+            inputStreamReader = { input ->
+                val records = Gson().fromJson(input.bufferedReader(), PatientFormSubmissionsV2Response::class.java)
+                // Reject responses without a forms array.
+                requireNotNull(records.forms)
+            },
+        )
+    }
+
+    /**
      * V2: Retrieves a form submission with all answers and full question context.
      */
     suspend fun getFormSubmissionV2(
@@ -1136,6 +1157,7 @@ class RestApi(
         withContext(IO) {
             val jsonObject = JSONObject()
             jsonObject.put("id", patient.id)
+            jsonObject.put("patient_number", patient.patientNumber)
             jsonObject.put("name", patient.name)
             jsonObject.put("sex", patient.sex.name)
             jsonObject.put("date_of_birth", patient.dateOfBirth)
@@ -1475,7 +1497,7 @@ class RestApi(
         }
     }
 
-    suspend fun getAllRelayPhoneNumbers(protocol: Protocol): NetworkResult<RelayPhoneNumberResponse> =
+    suspend fun getAllRelayPhoneNumbers(protocol: Protocol): NetworkResult<List<RelayPhoneNumber>> =
         withContext(IO) {
             val method = Http.Method.GET
             val url = urlManager.getAllRelayPhoneNumbers()
@@ -1487,7 +1509,7 @@ class RestApi(
                         url = url,
                         headers = makeAuthorizationHeader(),
                         inputStreamReader = {
-                            JacksonMapper.readerForRelayPhoneNumberResponse.readValue(
+                            JacksonMapper.readerForRelayPhoneNumbers.readValue(
                                 it
                             )
                         })
@@ -1630,6 +1652,30 @@ class RestApi(
     }
 
     /**
+     * Asks the server which of the given patient IDs were deleted, so the device can
+     * remove them. The server only returns IDs of patients this user could access.
+     */
+    suspend fun syncDeletedPatients(patientIds: List<String>): NetworkResult<List<String>> =
+        withContext(IO) {
+            val body = JSONObject()
+                .put("patient_ids", JSONArray(patientIds))
+                .toString()
+                .toByteArray()
+
+            http.makeRequest(
+                method = Http.Method.POST,
+                url = urlManager.getDeletedPatientsSync(),
+                headers = makeAuthorizationHeader(),
+                requestBody = buildJsonRequestBody(body),
+                inputStreamReader = {
+                    JacksonMapper.readerForDeletedPatientsResponse
+                        .readValue<DeletedPatientsResponse>(it)
+                        .deletedPatientIds
+                }
+            )
+        }
+
+    /**
      * Syncs the patients on the device with the server, where [lastSyncTimestamp] is the last time
      * the patients have been synced with the server. The given [patientsToUpload] should be
      * new patients. Sync conflicts are handled by the server.
@@ -1690,9 +1736,10 @@ class RestApi(
                                     }
 
                                     PatientSyncField.ERRORS.text -> {
-                                        // TODO: Parse array of objects (refer to issue #62)
                                         nextToken()
-                                        errors = readValueAsTree<JsonNode>().toPrettyString()
+                                        errors = formatPatientSyncErrors(
+                                            readValueAsTree(), patientsToUpload
+                                        )
                                     }
                                 }
                             }
@@ -1810,6 +1857,7 @@ class RestApi(
         val url = urlManager.getReadingsSync(lastSyncTimestamp)
 
         var totalReadingsDownloaded = 0
+        var errors: List<SyncError> = emptyList()
 
         val result = when (protocol) {
             Protocol.HTTP -> {
@@ -1837,6 +1885,11 @@ class RestApi(
                                             reportProgressBlock(totalDownloaded, totalDownloaded)
                                         }
                                         readingChannel.close()
+                                    }
+
+                                    ReadingSyncField.ERRORS.text -> {
+                                        nextToken()
+                                        errors = parseSyncErrors(readValueAsTree(), READING_ID_FIELD)
                                     }
                                 }
                             }
@@ -1911,7 +1964,7 @@ class RestApi(
         }
 
         ReadingSyncResult(
-            result, readingsToUpload.size, totalReadingsDownloaded
+            result, readingsToUpload.size, totalReadingsDownloaded, errors
         )
     }
 
@@ -1947,7 +2000,7 @@ class RestApi(
         val url = urlManager.getReferralsSync(lastSyncTimestamp)
 
         var totalReferralsDownloaded = 0
-        var errors: String? = null
+        var errors: List<SyncError> = emptyList()
 
         val result = when (protocol) {
             Protocol.HTTP -> {
@@ -1976,9 +2029,8 @@ class RestApi(
                                     }
 
                                     ReferralSyncField.ERRORS.text -> {
-                                        // TODO: Parse array of objects (refer to issue #62)
                                         nextToken()
-                                        errors = readValueAsTree<JsonNode>().toPrettyString()
+                                        errors = parseSyncErrors(readValueAsTree(), REFERRAL_ID_FIELD)
                                     }
                                 }
                             }
@@ -2022,7 +2074,6 @@ class RestApi(
                         }
 
                         is NetworkResult.Failure -> {
-                            errors = networkResult.body.toString()
                             referralChannel.close(SyncException("failed to download all associated referrals"))
                             NetworkResult.Failure(
                                 networkResult.body, networkResult.statusCode
@@ -2030,7 +2081,6 @@ class RestApi(
                         }
 
                         is NetworkResult.NetworkException -> {
-                            errors = networkResult.cause.toString()
                             referralChannel.close(SyncException("failed to download all associated referrals"))
                             NetworkResult.NetworkException(networkResult.cause)
                         }
@@ -2039,7 +2089,6 @@ class RestApi(
                     newNetworkResult
                 } catch (e: Exception) {
                     val syncException = SyncException("failed to parse all associated referrals")
-                    errors = e.message
 
                     referralChannel.close(syncException)
 
@@ -2565,7 +2614,7 @@ class RestApi(
         val body = createWriter<List<WorkflowInstance>>().writeValueAsBytes(workflowInstancesToUpload)
         val url = urlManager.getWorkflowInstancesSync(lastSyncTimestamp)
         var totalWorkflowInstancesDownloaded = 0
-        var errors: String? = null
+        var errors: List<SyncError> = emptyList()
         var failedParse = false
 
         val result = http.makeRequest(
@@ -2593,7 +2642,7 @@ class RestApi(
 
                             WorkflowInstanceSyncField.ERRORS.text -> {
                                 nextToken()
-                                errors = readValueAsTree<JsonNode>().toPrettyString()
+                                errors = parseSyncErrors(readValueAsTree(), WORKFLOW_INSTANCE_ID_FIELD)
                             }
                         }
                     }
@@ -2696,6 +2745,41 @@ class RestApi(
         }
     }
 }
+
+/**
+ * Turns the `errors` array from the patient sync response, e.g.
+ * `[{"patientId": "abc-123", "errors": "['Some message.']"}]`, into one readable line per patient:
+ * `Patient 12345: Some message.` The patient ID means nothing to the user, so each patient is
+ * shown by its patient number, or by its name if it has no number. These come from
+ * [uploadedPatients], since the errors are about the patients that were just uploaded. The server
+ * sends each message as the string form of a list, so the `['...']` around it is removed.
+ */
+internal fun formatPatientSyncErrors(errors: JsonNode, uploadedPatients: List<Patient>): String =
+    errors.joinToString("\n") { error ->
+        val patientId = error.path("patientId").asText()
+        val patient = uploadedPatients.find { it.id == patientId }
+        val label = patient?.patientNumber?.takeIf { it.isNotBlank() }
+            ?: patient?.name?.takeIf { it.isNotBlank() }
+            ?: patientId
+        "Patient $label: ${syncErrorMessage(error)}"
+    }
+
+internal const val READING_ID_FIELD = "readingId"
+internal const val REFERRAL_ID_FIELD = "referralId"
+internal const val WORKFLOW_INSTANCE_ID_FIELD = "workflowInstanceId"
+
+/**
+ * Reads the `errors` array from a reading, referral or workflow instance sync response, e.g.
+ * `[{"readingId": "abc-123", "errors": "Not authorized to sync this patient."}]`. The [idField] is
+ * the name of the field holding the ID of the record that the server didn't accept.
+ */
+internal fun parseSyncErrors(errors: JsonNode, idField: String): List<SyncError> =
+    errors.map { error -> SyncError(error.path(idField).asText(), syncErrorMessage(error)) }
+
+private fun syncErrorMessage(error: JsonNode): String =
+    error.path("errors").asText()
+        .removeSurrounding("['", "']")
+        .removeSurrounding("[\"", "\"]")
 
 class SyncException(message: String) : IOException(message)
 

@@ -4,6 +4,8 @@ import androidx.lifecycle.SavedStateHandle
 import com.cradleplatform.neptune.activities.forms.FormTemplateListV2Activity
 import com.cradleplatform.neptune.database.FormV2DraftTypeConverters
 import com.cradleplatform.neptune.database.daos.FormV2DraftDao
+import com.cradleplatform.neptune.database.daos.FormTemplateV2Dao
+import com.cradleplatform.neptune.manager.FormTemplateV2Manager
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
 import com.cradleplatform.neptune.model.AnswerV2
@@ -26,6 +28,7 @@ import io.mockk.slot
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runCurrent
@@ -46,12 +49,16 @@ internal class FormV2SubmissionRecoveryTest {
     private val dispatcher = StandardTestDispatcher()
     private lateinit var restApi: RestApi
     private lateinit var drafts: FormV2DraftDao
+    private lateinit var templateDao: FormTemplateV2Dao
 
     @BeforeEach
     fun setUp() {
         Dispatchers.setMain(dispatcher)
         restApi = mockk()
         drafts = mockk()
+        templateDao = mockk()
+        coEvery { templateDao.getTemplate(any()) } returns null
+        coEvery { templateDao.saveTemplate(any()) } returns Unit
         coEvery { restApi.getFormTemplateV2("template-1") } returns NetworkResult.Success(template(), 200)
         coEvery { restApi.getFormTemplateLanguagesV2("template-1") } returns NetworkResult.Success(
             FormTemplateLanguagesV2Response(listOf("English", "French")), 200
@@ -245,12 +252,17 @@ internal class FormV2SubmissionRecoveryTest {
     fun `failed GET never proves that a submission is safe to delete`() = runTest(dispatcher) {
         val viewModel = viewModel()
         runCurrent()
-        for (status in listOf(403, 500)) {
+        for ((status, errorType) in listOf(
+            401 to FormV2SubmissionErrorType.AUTH_ERROR,
+            403 to FormV2SubmissionErrorType.PERMISSION_ERROR,
+            500 to FormV2SubmissionErrorType.SERVER_ERROR
+        )) {
             coEvery { restApi.getFormSubmissionV2("submission-1") } returns
                 NetworkResult.Failure(ByteArray(0), status)
             viewModel.submitForm()
             runCurrent()
             assertDraftKept(viewModel)
+            assertEquals(errorType, viewModel.submissionErrors.first())
         }
         coVerify(exactly = 0) { restApi.postFormSubmissionV2(any()) }
     }
@@ -264,11 +276,13 @@ internal class FormV2SubmissionRecoveryTest {
         viewModel.submitForm()
         runCurrent()
         assertDraftKept(viewModel)
+        assertEquals(FormV2SubmissionErrorType.NETWORK_ERROR, viewModel.submissionErrors.first())
 
         coEvery { restApi.getFormSubmissionV2("submission-1") } throws IllegalStateException("Invalid JSON")
         viewModel.submitForm()
         runCurrent()
         assertDraftKept(viewModel)
+        assertEquals(FormV2SubmissionErrorType.SERVER_ERROR, viewModel.submissionErrors.first())
     }
 
     @Test
@@ -472,10 +486,15 @@ internal class FormV2SubmissionRecoveryTest {
         coVerify(exactly = 0) { restApi.patchFormSubmissionV2(any(), any()) }
     }
 
-    private fun viewModel() = FormV2RenderingViewModel(restApi, drafts, SavedStateHandle(mapOf(
-        FormTemplateDetailV2ViewModel.EXTRA_TEMPLATE_ID to "template-1",
-        FormTemplateListV2Activity.EXTRA_PATIENT_ID to "patient-1"
-    )))
+    private fun viewModel() = FormV2RenderingViewModel(
+        restApi,
+        drafts,
+        FormTemplateV2Manager(restApi, templateDao),
+        SavedStateHandle(mapOf(
+            FormTemplateDetailV2ViewModel.EXTRA_TEMPLATE_ID to "template-1",
+            FormTemplateListV2Activity.EXTRA_PATIENT_ID to "patient-1"
+        ))
+    )
 
     private fun draft() = FormV2Draft(
         patientId = "patient-1", formTemplateId = "template-1", formTemplateVersion = 1,

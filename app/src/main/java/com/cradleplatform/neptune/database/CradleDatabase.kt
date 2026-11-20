@@ -11,6 +11,7 @@ import com.cradleplatform.neptune.database.daos.AssessmentDao
 import com.cradleplatform.neptune.database.daos.FormClassificationDao
 import com.cradleplatform.neptune.database.daos.FormResponseDao
 import com.cradleplatform.neptune.database.daos.FormV2DraftDao
+import com.cradleplatform.neptune.database.daos.FormTemplateV2Dao
 import com.cradleplatform.neptune.database.daos.HealthFacilityDao
 import com.cradleplatform.neptune.database.daos.PatientDao
 import com.cradleplatform.neptune.database.daos.ReadingDao
@@ -22,6 +23,7 @@ import com.cradleplatform.neptune.model.Assessment
 import com.cradleplatform.neptune.model.FormClassification
 import com.cradleplatform.neptune.model.FormResponse
 import com.cradleplatform.neptune.model.FormV2Draft
+import com.cradleplatform.neptune.model.FormTemplateV2Entity
 import com.cradleplatform.neptune.model.HealthFacility
 import com.cradleplatform.neptune.model.Patient
 import com.cradleplatform.neptune.model.Reading
@@ -29,7 +31,7 @@ import com.cradleplatform.neptune.model.Referral
 import com.cradleplatform.neptune.model.WorkflowInstance
 import com.cradleplatform.neptune.model.WorkflowTemplate
 
-const val CURRENT_DATABASE_VERSION = 5
+const val CURRENT_DATABASE_VERSION = 7
 
 /**
  * An interface for the local CRADLE database.
@@ -49,6 +51,7 @@ const val CURRENT_DATABASE_VERSION = 5
         FormClassification::class,
         FormResponse::class,
         FormV2Draft::class,
+        FormTemplateV2Entity::class,
         WorkflowInstance::class,
         WorkflowTemplate::class
     ],
@@ -66,6 +69,7 @@ abstract class CradleDatabase : RoomDatabase() {
     abstract fun formClassificationDao(): FormClassificationDao
     abstract fun formResponseDao(): FormResponseDao
     abstract fun formV2DraftDao(): FormV2DraftDao
+    abstract fun formTemplateV2Dao(): FormTemplateV2Dao
     abstract fun workflowInstanceDao(): WorkflowInstanceDao
     abstract fun workflowTemplateDao(): WorkflowTemplateDao
 
@@ -105,7 +109,10 @@ abstract class CradleDatabase : RoomDatabase() {
 @Suppress("MagicNumber", "NestedBlockDepth", "ObjectPropertyNaming")
 internal object Migrations {
     val ALL_MIGRATIONS: Array<Migration> by lazy {
-        arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
+        arrayOf(
+            MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6,
+            MIGRATION_6_7
+        )
     }
 
     /**
@@ -266,6 +273,63 @@ internal object Migrations {
     private val MIGRATION_4_5 = object : Migration(4, 5) {
         override fun migrate(database: SupportSQLiteDatabase) {
             database.execSQL("ALTER TABLE FormV2Draft ADD COLUMN `submissionId` TEXT")
+        }
+    }
+
+    /** Version 6: Cache full V2 templates without altering existing tables or drafts. */
+    private val MIGRATION_5_6 = object : Migration(5, 6) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            database.execSQL(
+                """
+                CREATE TABLE IF NOT EXISTS FormTemplateV2Entity (
+                    `id` TEXT NOT NULL PRIMARY KEY,
+                    `template` TEXT NOT NULL,
+                    `availableForNewForms` INTEGER NOT NULL
+                )
+                """.trimIndent()
+            )
+        }
+    }
+
+    /**
+     * Version 7: Add the user-entered patient number, which is separate from the patient's ID.
+     *
+     * Patients created on the phone have the ID the user typed in as their ID, so it becomes their
+     * patient number. Patients created on the web have a generated UUID as their ID and no
+     * user-entered number, so their patient number is left empty. Their IDs are left as they are,
+     * so that they still match the server.
+     */
+    private val MIGRATION_6_7 = object : Migration(6, 7) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            database.apply {
+                execSQL("ALTER TABLE Patient ADD COLUMN `patientNumber` TEXT")
+
+                val hex = "[0-9a-fA-F]"
+                val uuidPattern =
+                    "${hex.repeat(8)}-${hex.repeat(4)}-${hex.repeat(4)}-${hex.repeat(4)}-${hex.repeat(12)}"
+                execSQL("UPDATE Patient SET patientNumber = id WHERE id NOT GLOB ?", arrayOf(uuidPattern))
+
+                // The patient list view now includes the patient number. Room checks that the
+                // view's SQL is exactly the same as the SQL in LocalSearchPatient.
+                execSQL("DROP VIEW IF EXISTS `LocalSearchPatient`")
+                execSQL(
+                    "CREATE VIEW `LocalSearchPatient` AS SELECT\n" +
+                        "  p.name,\n" +
+                        "  p.id,\n" +
+                        "  p.patientNumber,\n" +
+                        "  p.villageNumber,\n" +
+                        "  r.bloodPressure as latestBloodPressure,\n" +
+                        "  MAX(r.dateTaken) as latestReadingDate,\n" +
+                        "  p.lastEdited,\n" +
+                        "  r.referral,\n" +
+                        "  r.dateRetestNeeded\n" +
+                        "FROM\n" +
+                        "  Patient as p\n" +
+                        "  LEFT JOIN Reading AS r ON p.id = r.patientId\n" +
+                        "GROUP BY \n" +
+                        "  IFNULL(r.patientId, p.id)"
+                )
+            }
         }
     }
 }

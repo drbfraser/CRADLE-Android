@@ -51,6 +51,8 @@ import com.cradleplatform.neptune.activities.newPatient.ReadingActivity.Companio
 import com.cradleplatform.neptune.activities.newPatient.ReadingActivity.Companion.makeIntentForNewReadingExistingPatient
 import com.cradleplatform.neptune.activities.newPatient.ReadingActivity.Companion.makeIntentForRecheck
 import com.cradleplatform.neptune.activities.forms.SavedFormsActivity
+import com.cradleplatform.neptune.activities.forms.DraftFormsV2Activity
+import com.cradleplatform.neptune.activities.forms.SubmittedFormsV2Activity
 import com.cradleplatform.neptune.adapters.patients.ReadingRecyclerViewAdapter
 import com.cradleplatform.neptune.viewmodel.patients.PatientProfileViewModel
 import com.cradleplatform.neptune.utilities.makeSuccessSnackbar
@@ -154,6 +156,8 @@ open class PatientProfileActivity : AppCompatActivity() {
                 populatePatientInfo(it)
                 setupEditPatient(it)
                 setupBtnPregnancy(it)
+                setupSeeSubmittedFormsV2Button()
+                setupSeeDraftFormsV2Button()
 
                 // Setup form buttons when patient is loaded
                 lifecycleScope.launch {
@@ -375,7 +379,7 @@ open class PatientProfileActivity : AppCompatActivity() {
     }
 
     fun populatePatientInfo(patient: Patient) {
-        patientID.text = patient.id
+        patientID.text = patient.patientNumber
         patientName.text = patient.name
         if (!Util.stringNullOrEmpty(patient.dateOfBirth)) {
             try {
@@ -659,6 +663,28 @@ open class PatientProfileActivity : AppCompatActivity() {
                     patient,
                     false,
                 )
+                startActivity(intent)
+            }
+        }
+    }
+
+    private fun setupSeeSubmittedFormsV2Button() {
+        currPatient?.let { patient ->
+            val button = findViewById<Button>(R.id.seeSubmittedFormsV2Button)
+            button.visibility = View.VISIBLE
+            button.setOnClickListener {
+                val intent = SubmittedFormsV2Activity.makeIntent(this@PatientProfileActivity, patient.id)
+                startActivity(intent)
+            }
+        }
+    }
+
+    private fun setupSeeDraftFormsV2Button() {
+        currPatient?.let { patient ->
+            val button = findViewById<Button>(R.id.seeDraftFormsV2Button)
+            button.visibility = View.VISIBLE
+            button.setOnClickListener {
+                val intent = DraftFormsV2Activity.makeIntent(this@PatientProfileActivity, patient.id)
                 startActivity(intent)
             }
         }

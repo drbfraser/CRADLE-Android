@@ -426,12 +426,10 @@
     <string name="fragment_vital_signs_cradle_vsa_fields_card_header">Cradle VSA Readings</string>
     <string name="activity_reading_next_button">Next</string>
     <string name="reading_bottom_nav_bar_checking_id">Checking patient ID…</string>
-    <string name="reading_activity_patient_id_exists_dialog_title_local_patient">Use existing patient?</string>
-    <string name="reading_activity_patient_id_exists_dialog_message_local_patient">A patient with the same ID already exists in your patients list. Would you like to use the patient with\n\nID: %1$s\nName: %2$s\nGender: %3$s\n\nThis will discard the information you\'ve entered here.</string>
-    <string name="reading_activity_patient_id_exists_dialog_title_server_patient">Patient ID already exists on server</string>
-    <string name="reading_activity_patient_id_exists_dialog_message_server_patient">A patient with the same ID already exists on the server. To add readings for this patient ID, you must add the existing patient to your patients list. Would you like to download and use the patient with\n\nID: %1$s\nName: %2$s\nGender: %3$s\n\nDownloading will discard the information you\'ve entered here.</string>
-    <string name="reading_activity_patient_id_exists_dialog_download_button_server_patient">Download and use</string>
-    <string name="reading_activity_patient_id_exists_dialog_use_button_local_patient">Use</string>
+    <string name="reading_activity_patient_number_exists_dialog_title">Use existing patient?</string>
+    <string name="reading_activity_patient_number_exists_dialog_message">A patient with the same ID already exists in your patients list:\n\nID: %1$s\nName: %2$s\nGender: %3$s\n\nIf this is the same patient, use the existing patient. This will discard the information you\'ve entered here. Otherwise, you can still create a new patient with this ID.</string>
+    <string name="reading_activity_patient_number_exists_dialog_use_button">Use existing</string>
+    <string name="reading_activity_patient_number_exists_dialog_create_button">Create new</string>
     <string name="reading_activity_title_new_patient">Creating new patient</string>
     <string name="reading_activity_title_editing_reading">Editing un-uploaded reading</string>
     <string name="reading_activity_title_create_new_reading">Creating new reading</string>
@@ -439,9 +437,6 @@
     <string name="reading_activity_subtitle_name_and_id">%1$s (ID %2$s)</string>
     <string name="reading_activity_errors_left_toast">There are still errors left to correct!</string>
     <string name="reading_activity_downloading_patient_id_toast">Downloading</string>
-    <string name="reading_activity_downloading_patient_failed_toast">Downloading failed</string>
-    <string name="reading_activity_downloading_patient_toast">Downloading patient…</string>
-    <string name="reading_activity_downloading_patient_successful_toast">Download successful</string>
 
     <string name="login_activity_device_is_outdated_dialog_title">Device is out of date</string>
     <string name="login_activity_device_is_outdated_dialog_message">Your device is unable to connect to the servers securely. Since Google Play services are unavailable on your device, we\'re unable to try to upgrade your device\'s security provider. Please ensure that your device supports TLS 1.2 or higher.</string>
@@ -602,6 +597,7 @@
     <string name="sync_worker_success">Last sync successful</string>
     <string name="sync_total_patients_uploaded_s">Number of patients uploaded: %1$d</string>
     <string name="sync_total_patients_downloaded_s">Number of patients downloaded: %1$d</string>
+    <string name="sync_total_patients_removed_s">Number of patients removed (deleted on the server): %1$d</string>
     <string name="sync_total_HealthFacilities_downloaded_s">Number of health facilities downloaded: %1$d</string>
     <string name="sync_total_readings_uploaded_s">Number of readings uploaded: %1$d</string>
     <string name="sync_total_readings_downloaded_s">Number of readings downloaded: %1$d</string>
@@ -612,6 +608,8 @@
     <string name="sync_total_referrals_uploaded_s">Number of referrals uploaded: %1$d</string>
     <string name="sync_total_referrals_downloaded_s">Number of referrals downloaded: %1$d</string>
     <string name="sync_total_form_templates_downloaded">Number of forms downloaded: %1$d</string>
+    <string name="sync_total_form_templates_v2_downloaded">Number of V2 forms downloaded: %1$d</string>
+    <string name="sync_form_templates_failure">Forms %1$s template sync failed: %2$s</string>
     <string name="sync_total_workflow_templates_downloaded_s">Number of workflow templates downloaded: %1$d</string>
     <string name="sync_total_workflow_instances_uploaded_s">Number of workflows uploaded: %1$d</string>
     <string name="sync_total_workflow_instances_downloaded_s">Number of workflows downloaded: %1$d</string>
@@ -835,11 +833,17 @@
     <string name="form_submission_server_error_message">The server encountered an error and could not process your form. Please try again later or save as a draft.</string>
     <string name="form_submission_network_error_message">Unable to reach the server. Please check your internet connection and try again, or save as a draft to submit later.</string>
     <string name="form_submission_auth_error_message">Your session has expired. Please log in again to submit this form.</string>
+    <string name="form_v2_submission_permission_error_message">You do not have permission to access this patient. You can save the form as a draft.</string>
     <string name="form_submission_retry">Retry</string>
     <string name="form_submission_save_draft">Save as Draft</string>
     <string name="form_submission_saved_draft_success">Form saved as draft. You can submit it later.</string>
     <string name="form_submitting">Submitting form\u2026</string>
     <string name="form_v2_submit">Submit form</string>
+    <string name="form_v2_save_and_send_later">SAVE AND SEND LATER</string>
+    <string name="form_v2_sms_not_available">SMS submission is not available for Forms V2 yet.</string>
+    <string name="form_v2_delete_title">Delete Form</string>
+    <string name="form_v2_delete_message">Are you sure you want to delete this form? This action cannot be undone.</string>
+    <string name="form_v2_delete_error">Unable to delete this draft. Please try again.</string>
     <string name="form_v2_validation_error">%1$s: %2$s</string>
     <string name="form_uncategorized">Uncategorized</string>
     <string name="form_current_section">Section %1$d/%2$d</string>
@@ -857,4 +861,17 @@
     <string name="form_dialog_not_connected_internet">Connect To Internet</string>
     <string name="default_text_view">TextView</string>
 
+    <string name="form_v2_submitted">Submitted form (V2)</string>
+    <string name="form_v2_unnamed">Unnamed form</string>
+    <string name="form_v2_records_load_error">Couldn\'t load V2 forms. Check your connection and try again.</string>
+    <string name="see_submitted_forms_v2">See Submitted Forms (V2)</string>
+    <string name="submitted_forms_v2_empty">No submitted V2 forms for this patient.</string>
+    <string name="form_submission_detail_v2_title">View Form (V2)</string>
+    <string name="form_submission_detail_v2_patient_title">View Form for: %1$s</string>
+    <string name="form_submission_detail_v2_error">Couldn\'t load this form. Check your connection and try again.</string>
+    <string name="see_draft_forms_v2">See Draft Forms (V2)</string>
+    <string name="draft_forms_v2_empty">No V2 draft forms saved for this patient.</string>
+    <string name="draft_forms_v2_empty_all">No V2 draft forms saved on this device.</string>
+    <string name="draft_forms_v2_load_error">Couldn\'t load V2 drafts. Please try again.</string>
+    <string name="form_v2_draft_last_edited">Last edited: %1$s</string>
 </resources>

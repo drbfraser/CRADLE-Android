@@ -182,6 +182,9 @@ class PatientReadingViewModel @Inject constructor(
                 }
 
                 if (reasonForLaunch == ReadingActivity.LaunchReason.LAUNCH_REASON_NEW) {
+                    // The user only enters the patient number. The ID is generated here, so that
+                    // patients created on different phones don't get the same ID.
+                    patientBuilder.set(Patient::id, UUID.randomUUID().toString())
                     // _isInitialized will be set to true via the finally branch.
                     return@launch
                 }
@@ -192,7 +195,7 @@ class PatientReadingViewModel @Inject constructor(
                     val patient = patientManager.getPatientById(patientId)
                         ?: error("no patient with given id")
                     originalPatient = patient
-                    updateActionBarSubtitle(patient.name, patient.id)
+                    updateActionBarSubtitle(patient.name, patient.patientNumber)
                     decompose(patient)
                     return@launch
                 }
@@ -207,7 +210,7 @@ class PatientReadingViewModel @Inject constructor(
                 val patient = patientManager.getPatientById(reading.patientId)
                     ?: error("no patient associated with given reading")
                 originalPatient = patient
-                updateActionBarSubtitle(patient.name, patient.id)
+                updateActionBarSubtitle(patient.name, patient.patientNumber)
 
                 when (reasonForLaunch) {
                     ReadingActivity.LaunchReason.LAUNCH_REASON_EDIT_READING -> {
@@ -403,7 +406,7 @@ class PatientReadingViewModel @Inject constructor(
                 // or not it succeeded. This is used to determine whether the Next button is enabled.
                 arrayOf(
                     patientName,
-                    patientId,
+                    patientNumber,
                     patientDob,
                     patientAge,
                     patientGestationalAge,
@@ -672,9 +675,27 @@ class PatientReadingViewModel @Inject constructor(
     }
 
     /* Patient Info */
-    /** Used in two-way Data Binding with PatientInfoFragment */
+    /** The patient's generated ID. Not shown to the user. */
     val patientId: MutableLiveData<String>
         get() = patientBuilder.get<String>(Patient::id)
+
+    /** Used in two-way Data Binding with PatientInfoFragment */
+    val patientNumber: MutableLiveData<String?>
+        get() = patientBuilder.get<String?>(Patient::patientNumber)
+
+    /**
+     * The patient number the user chose to keep after being warned that another patient already
+     * has it, so that they aren't warned again for the same number.
+     */
+    private var acceptedDuplicatePatientNumber: String? = null
+
+    /**
+     * Called when the user chooses to create a new patient even though another patient already
+     * has the same patient number.
+     */
+    fun acceptDuplicatePatientNumber() {
+        acceptedDuplicatePatientNumber = patientNumber.value
+    }
 
     /** Used in two-way Data Binding with PatientInfoFragment */
     val patientName: MutableLiveData<String>
@@ -968,32 +989,17 @@ class PatientReadingViewModel @Inject constructor(
                     val patient = attemptToBuildValidPatient()
                         ?: return@withContext ReadingFlowError.ERROR_INVALID_FIELDS to null
 
-                    // We need to make sure the user isn't making a patient with an ID already in use.
-                    // Check if a patient with the same ID already exists in their local patients list
-                    // in the phone's database.
-                    val existingLocalPatient = patientManager.getPatientById(patient.id)
-                    if (existingLocalPatient != null) {
-                        // Send bac
-                        return@withContext ReadingFlowError.ERROR_PATIENT_ID_IN_USE_LOCAL to
-                            existingLocalPatient
-                    }
-
-                    // Opportunistically check if a patient with the same ID exists on the server.
-                    // This only serves to lower the probability that a duplicate ID will be used,
-                    // as it obviously doesn't work when the user has no internet.
-                    if (isNetworkAvailable.value == true) {
-                        Log.d(TAG, "checking if patient ID is in use on the server")
-                        val existingOnServer =
-                            patientManager.downloadPatientInfoFromServer(patient.id)
-                        if (existingOnServer is NetworkResult.Success) {
-                            // Send back the patient to give the user an option to
-                            // download the patient with all of their readings.
-                            Log.d(TAG, "patient ID already in use on the server")
-                            return@withContext ReadingFlowError.ERROR_PATIENT_ID_IN_USE_ON_SERVER to
-                                existingOnServer.value
+                    // Two patients can have the same patient number, but it may be a mistake. Warn
+                    // the user if a patient in their local patients list already has it, unless
+                    // they already chose to keep this number.
+                    val patientNumber = patient.patientNumber
+                    if (patientNumber != null && patientNumber != acceptedDuplicatePatientNumber) {
+                        val existingLocalPatient =
+                            patientManager.getPatientByPatientNumber(patientNumber)
+                        if (existingLocalPatient != null) {
+                            return@withContext ReadingFlowError.WARNING_PATIENT_NUMBER_IN_USE_LOCAL to
+                                existingLocalPatient
                         }
-                    } else {
-                        Log.d(TAG, "skipping patient ID on server check due to no internet")
                     }
 
                     return@withContext ReadingFlowError.NO_ERROR to null
@@ -1073,7 +1079,7 @@ class PatientReadingViewModel @Inject constructor(
          */
         @MainThread
         fun onDestinationChange(@IdRes currentDestinationId: Int) {
-            updateActionBarSubtitle(patientName.value, patientId.value)
+            updateActionBarSubtitle(patientName.value, patientNumber.value)
             navigationManager.clearBottomNavBarMessage()
 
             viewModelScope.launch(Dispatchers.Main) {
@@ -1295,21 +1301,17 @@ class PatientReadingViewModel @Inject constructor(
         navigationManager.onDestinationChange(currentDestinationId)
     }
 
-    /**
-     * Triggers a download from the server when there is a patient ID conflict.
-     */
-    suspend fun downloadAssociateAndSavePatient(
-        patientId: String
-    ): NetworkResult<PatientAndReadings> = patientManager.downloadAssociateAndSavePatient(patientId)
-
-    private fun updateActionBarSubtitle(patientName: String?, patientId: String?) {
-        val subtitle = if (patientName == null || patientId == null) {
+    private fun updateActionBarSubtitle(patientName: String?, patientNumber: String?) {
+        val subtitle = if (patientName == null) {
             null
+        } else if (patientNumber.isNullOrBlank()) {
+            // Patients created on the web have no patient number.
+            patientName
         } else {
             app.getString(
                 R.string.reading_activity_subtitle_name_and_id,
                 patientName,
-                patientId
+                patientNumber
             )
         }
         val currentSubtitle: String? = _actionBarSubtitle.value
@@ -1870,10 +1872,10 @@ class PatientReadingViewModel @Inject constructor(
             // is that Data Binding doesn't support KProperty references like Patient::id.
             errorMap.apply {
                 value = arrayMapOf()
-                addSource(patientId) {
+                addSource(patientNumber) {
                     testValueForValidityAndSetErrorMapAsync(
                         value = it,
-                        propertyToCheck = Patient::id,
+                        propertyToCheck = Patient::patientNumber,
                         verifier = Patient.Companion
                     )
                 }
@@ -2070,21 +2072,11 @@ enum class ReadingFlowError {
     NO_ERROR,
 
     /**
-     * This error occurs when there is a patient from the app's local database whose ID is the same
-     * as the one being created.
+     * This warning occurs when there is a patient from the app's local database whose patient
+     * number is the same as the one being created. Patient numbers don't have to be unique, so the
+     * user can choose to create the new patient anyway.
      */
-    ERROR_PATIENT_ID_IN_USE_LOCAL,
-
-    /**
-     * This error occurs when there is a patient not in the user's local patients list but from the
-     * server whose ID is the same as the one being created. This error can only come up when the
-     * user has internet.
-     *
-     * It does not solve the conflict issue fully; it just lowers the probability of it happening.
-     * Even if we have internet, someone could have created a new patient with the same ID after
-     * this error is checked.
-     */
-    ERROR_PATIENT_ID_IN_USE_ON_SERVER,
+    WARNING_PATIENT_NUMBER_IN_USE_LOCAL,
 
     /**
      * This error occurs when there is am error in one of the fields for the current Fragment.

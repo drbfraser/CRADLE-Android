@@ -85,8 +85,8 @@ class EditPatientViewModel @Inject constructor(
 
     /** Patient Info */
     /** Used in two-way Data Binding with EditPatientInfoActivity */
-    val patientId: MutableLiveData<String>
-        get() = patientBuilder.get<String>(Patient::id)
+    val patientNumber: MutableLiveData<String?>
+        get() = patientBuilder.get<String?>(Patient::patientNumber)
 
     val patientName: MutableLiveData<String>
         get() = patientBuilder.get<String>(Patient::name)
@@ -285,6 +285,13 @@ class EditPatientViewModel @Inject constructor(
             // is that Data Binding doesn't support KProperty references like Patient::id.
             errorMap.apply {
                 value = arrayMapOf()
+                addSource(patientNumber) {
+                    testValueForValidityAndSetErrorMapAsync(
+                        value = it,
+                        propertyToCheck = Patient::patientNumber,
+                        verifier = Patient.Companion
+                    )
+                }
                 addSource(patientName) {
                     testValueForValidityAndSetErrorMapAsync(
                         value = it,

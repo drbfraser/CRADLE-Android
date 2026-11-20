@@ -38,7 +38,6 @@ data class FormV2Draft(
     val submissionId: String? = null
 ) {
     init {
-        // Keep the row identity and its serialized template snapshot from silently diverging.
         require(patientId.isNotBlank()) { "A draft requires a patient ID" }
         require(formTemplateId.isNotBlank() && formTemplateId == formTemplate.id) {
             "Draft template ID must match its snapshot"

@@ -8,7 +8,8 @@
     <TextView
         android:id="@+id/form_v2_status"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:visibility="gone" />
 
     <ScrollView
         android:layout_width="match_parent"
@@ -26,7 +27,8 @@
         android:id="@+id/form_v2_draft_save_status"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:accessibilityLiveRegion="polite" />
+        android:accessibilityLiveRegion="polite"
+        android:visibility="gone" />
 
     <TextView
         android:id="@+id/form_v2_submission_status"
@@ -35,19 +37,4 @@
         android:accessibilityLiveRegion="polite"
         android:visibility="gone" />
 
-    <Button
-        android:id="@+id/form_v2_save_draft_button"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:enabled="false"
-        android:visibility="gone"
-        android:text="@string/form_submission_save_draft" />
-
-    <Button
-        android:id="@+id/form_v2_submit_button"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:enabled="false"
-        android:visibility="gone"
-        android:text="@string/form_v2_submit" />
 </LinearLayout>

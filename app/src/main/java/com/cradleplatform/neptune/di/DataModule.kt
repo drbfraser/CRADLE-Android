@@ -9,6 +9,7 @@ import com.cradleplatform.neptune.database.daos.AssessmentDao
 import com.cradleplatform.neptune.database.daos.FormClassificationDao
 import com.cradleplatform.neptune.database.daos.FormResponseDao
 import com.cradleplatform.neptune.database.daos.FormV2DraftDao
+import com.cradleplatform.neptune.database.daos.FormTemplateV2Dao
 import com.cradleplatform.neptune.database.daos.HealthFacilityDao
 import com.cradleplatform.neptune.database.daos.PatientDao
 import com.cradleplatform.neptune.database.daos.ReadingDao
@@ -53,8 +54,9 @@ class DataModule {
         database: CradleDatabase,
         patientDao: PatientDao,
         readingDao: ReadingDao,
+        workflowInstanceDao: WorkflowInstanceDao,
         restApi: RestApi
-    ) = PatientManager(database, patientDao, readingDao, restApi)
+    ) = PatientManager(database, patientDao, readingDao, workflowInstanceDao, restApi)
 
     @Provides
     @Singleton
@@ -140,6 +142,9 @@ class DataModule {
     @Provides
     fun provideFormV2DraftDao(database: CradleDatabase): FormV2DraftDao =
         database.formV2DraftDao()
+
+    @Provides
+    fun provideFormTemplateV2Dao(database: CradleDatabase): FormTemplateV2Dao = database.formTemplateV2Dao()
 
     @Provides
     @Singleton

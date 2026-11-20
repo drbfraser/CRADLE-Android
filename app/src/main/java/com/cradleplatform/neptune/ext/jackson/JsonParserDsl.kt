@@ -5,6 +5,13 @@ import com.fasterxml.jackson.core.JsonToken
 import com.fasterxml.jackson.databind.ObjectReader
 import java.io.IOException
 
+/**
+ * Parses a JSON object, calling [block] on each of its fields with [JsonParser.currentToken]
+ * pointed to the [JsonToken.FIELD_NAME] token. [block] must read the value of each field it
+ * handles. The value of any field it doesn't handle is skipped, so that a new field in a server
+ * response doesn't break parsing. If [throwIfNotObject] is true, then an [IOException] is thrown
+ * if not parsing an object.
+ */
 inline fun JsonParser.parseObject(
     throwIfNotObject: Boolean = true,
     block: JsonParser.() -> Unit,
@@ -19,6 +26,12 @@ inline fun JsonParser.parseObject(
 
     while (nextToken() != JsonToken.END_OBJECT) {
         block()
+        // An unhandled field's value hasn't been read yet. Skip all of it, so that the end of a
+        // nested object inside it isn't taken as the end of this object.
+        if (currentToken == JsonToken.FIELD_NAME) {
+            nextToken()
+            skipChildren()
+        }
     }
 }
 

@@ -159,11 +159,18 @@ class AdviceFragment : Fragment() {
                 view.context,
                 getString(R.string.vital_recheck_notification_title, viewModel.patientName.value),
                 getString(R.string.vital_recheck_notification_body_msg),
-                it1.toLong(),
+                notificationIdForPatient(it1),
                 intent,
             )
         }
     }
+
+    /**
+     * New patients have a UUID as their ID, which isn't a number. Older patients keep using their
+     * numeric ID, so that reminders scheduled before the upgrade can still be cancelled.
+     */
+    private fun notificationIdForPatient(patientId: String): Long =
+        patientId.toLongOrNull() ?: patientId.hashCode().toLong()
 
     private fun scheduleVitalRecheckReminderNotification(view: View) {
         viewModel.patientId.value?.let { it1 ->
@@ -176,7 +183,7 @@ class AdviceFragment : Fragment() {
                 view.context,
                 getString(R.string.vital_recheck_notification_title, viewModel.patientName.value),
                 getString(R.string.vital_recheck_notification_body_msg),
-                it1.toLong(),
+                notificationIdForPatient(it1),
                 intent,
                 resources.getInteger(R.integer.recheck_duration)
             )

@@ -7,6 +7,7 @@ import androidx.core.content.edit
 import androidx.hilt.work.HiltWorker
 import androidx.room.withTransaction
 import androidx.work.CoroutineWorker
+import androidx.work.Data
 import androidx.work.WorkInfo
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
@@ -22,12 +23,14 @@ import com.cradleplatform.neptune.http_sms_service.http.PatientSyncResult
 import com.cradleplatform.neptune.http_sms_service.http.ReadingSyncResult
 import com.cradleplatform.neptune.http_sms_service.http.ReferralSyncResult
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
+import com.cradleplatform.neptune.http_sms_service.http.SyncError
 import com.cradleplatform.neptune.http_sms_service.http.SyncException
 import com.cradleplatform.neptune.http_sms_service.http.WorkflowInstanceSyncResult
 import com.cradleplatform.neptune.http_sms_service.http.WorkflowTemplateSyncResult
 import com.cradleplatform.neptune.manager.AssessmentManager
 import com.cradleplatform.neptune.manager.FormManager
 import com.cradleplatform.neptune.manager.FormResponseManager
+import com.cradleplatform.neptune.manager.FormTemplateV2Manager
 import com.cradleplatform.neptune.manager.HealthFacilityManager
 import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.manager.ReadingManager
@@ -76,6 +79,7 @@ class SyncAllWorker @AssistedInject constructor(
     private val healthFacilityManager: HealthFacilityManager,
     private val formManager: FormManager,
     private val formResponseManager: FormResponseManager,
+    private val formTemplateV2Manager: FormTemplateV2Manager,
     private val workflowManager: WorkflowManager,
     private val sharedPreferences: SharedPreferences,
     private val database: CradleDatabase
@@ -222,6 +226,17 @@ class SyncAllWorker @AssistedInject constructor(
         fun getSyncResultMessage(workInfo: WorkInfo): String? = workInfo.outputData.getString(
             RESULT_MESSAGE
         )
+
+        /** WorkManager output is limited to 10 KB. */
+        private const val MAX_RESULT_MESSAGE_BYTES = 9000
+
+        /** If the report is too big, SyncActivity shows the copy in SharedPreferences instead. */
+        internal fun syncResultData(message: String): Data =
+            if (message.toByteArray().size <= MAX_RESULT_MESSAGE_BYTES) {
+                workDataOf(RESULT_MESSAGE to message)
+            } else {
+                Data.EMPTY
+            }
     }
 
     /**
@@ -263,6 +278,10 @@ class SyncAllWorker @AssistedInject constructor(
         // edits a patient or adds a reading etc. during the sync; those changes will never the
         // phone if we only use a timestamp after the sync.
         val syncTimestampToSave: BigInteger = UnixTimestamp.now
+
+        // Remove patients deleted on the server first, so stale copies of them (and their
+        // readings and referrals) aren't uploaded again in the steps below.
+        val totalPatientsRemoved = removeDeletedPatients()
 
         val patientsToUpload: List<Patient> = patientManager.getPatientsToUpload()
         val patientResult = syncPatients(patientsToUpload, lastPatientSyncTime)
@@ -436,45 +455,109 @@ class SyncAllWorker @AssistedInject constructor(
             )
         }
 
-        val formTemplateResult = syncFormTemplates()
-        if (formTemplateResult.networkResult !is NetworkResult.Success) {
-            return Result.failure(
-                workDataOf(RESULT_MESSAGE to getResultErrorMessage(formTemplateResult.networkResult))
-            )
-        }
-
         val lastFormResponseSyncTime = BigInteger(
             sharedPreferences.getString(LAST_FORM_RESPONSE_SYNC, LAST_SYNC_DEFAULT)!!
         )
-        val formResponseResult = syncFormResponses(lastFormResponseSyncTime)
+        val formSyncStages = runFormSyncStages(
+            syncV2Templates = { syncFormTemplatesV2() },
+            syncV1Templates = { syncFormTemplates() },
+            syncFormResponses = { syncFormResponses(lastFormResponseSyncTime) }
+        )
+        val formTemplateV2Result = formSyncStages.v2Templates
+        val formTemplateResult = formSyncStages.v1Templates
+        val formTemplateErrors = listOf(
+            "V1" to formTemplateResult.networkResult,
+            "V2" to formTemplateV2Result.networkResult
+        ).filter { (_, result) -> result !is NetworkResult.Success }
+            .map { (version, result) ->
+                applicationContext.getString(
+                    R.string.sync_form_templates_failure, version, getResultErrorMessage(result)
+                )
+            }
+
+        // A template download failure must not skip the record download.
+        val formResponseResult = formSyncStages.formResponses
         if (formResponseResult.networkResult is NetworkResult.Success) {
             sharedPreferences.edit(commit = true) {
                 putString(LAST_FORM_RESPONSE_SYNC, syncTimestampToSave.toString())
             }
         }
         // Non-fatal: if form response sync fails, continue and log but don't fail the whole sync
-
-        val syncResult = workDataOf(
-            RESULT_MESSAGE to getResultSuccessMessage(
-                patientResult,
-                healthFacilitiesResult,
-                readingResult,
-                referralResult,
-                assessmentResult,
-                formTemplateResult,
-                workflowTemplateResult,
-                workflowInstanceResult
+        if (formTemplateErrors.isNotEmpty()) {
+            return Result.failure(
+                workDataOf(RESULT_MESSAGE to formTemplateErrors.joinToString("\n"))
             )
+        }
+
+        // Records that the server didn't accept. They stay unsent on this device, so tell the user.
+        val recordSyncErrors = describeSyncErrors(
+            "Reading", readingResult.errors, readingsToUpload.associate { it.id to it.patientId }
+        ) + describeSyncErrors(
+            "Referral", referralResult.errors, referralsToUpload.associate { it.id to it.patientId }
+        ) + describeSyncErrors(
+            "Workflow",
+            workflowInstanceResult.errors,
+            workflowInstancesToUpload.associate { it.id to it.patientId }
+        )
+
+        val resultMessage = getResultSuccessMessage(
+            patientResult,
+            totalPatientsRemoved,
+            healthFacilitiesResult,
+            readingResult,
+            referralResult,
+            assessmentResult,
+            formTemplateResult,
+            formTemplateV2Result,
+            workflowTemplateResult,
+            workflowInstanceResult,
+            recordSyncErrors
         )
 
         sharedPreferences.edit(commit = true) {
-            putString(LAST_SYNC_RESULT_MESSAGE, syncResult.getString(RESULT_MESSAGE))
+            putString(LAST_SYNC_RESULT_MESSAGE, resultMessage)
         }
 
         syncSucceeded = true
-        return Result.success(
-            syncResult
-        )
+        return Result.success(syncResultData(resultMessage))
+    }
+
+    /**
+     * Asks the server which of the patients synced to this device were deleted, and removes them
+     * locally. A failure here doesn't stop the sync: the server rejects uploads of deleted
+     * patients anyway, and the check is repeated on the next sync.
+     *
+     * @return the number of patients removed (0 if none, or if the check failed)
+     */
+    private suspend fun removeDeletedPatients(): Int {
+        val removed = patientManager.removePatientsDeletedOnServer()
+        if (removed == null) {
+            Log.e(TAG, "checking for deleted patients failed; will retry next sync")
+            return 0
+        }
+        Log.d(TAG, "removed $removed patients deleted on the server")
+        return removed
+    }
+
+    /**
+     * Describes the records in [errors], one line each. A reading or referral ID means nothing to
+     * the user, so each line names the record's patient instead: by patient number, or by name if
+     * the patient has no number. [patientIdByRecordId] has the patient of each uploaded record.
+     */
+    private suspend fun describeSyncErrors(
+        recordName: String,
+        errors: List<SyncError>,
+        patientIdByRecordId: Map<String, String?>
+    ): List<String> {
+        val patientLabelByRecordId = errors.mapNotNull { error ->
+            val patientId = patientIdByRecordId[error.recordId] ?: return@mapNotNull null
+            val patient = patientManager.getPatientById(patientId)
+            val label = patient?.patientNumber?.takeIf { it.isNotBlank() }
+                ?: patient?.name?.takeIf { it.isNotBlank() }
+                ?: patientId
+            error.recordId to label
+        }.toMap()
+        return formatRecordSyncErrors(recordName, errors, patientLabelByRecordId)
     }
 
     private suspend fun syncPatients(
@@ -786,6 +869,17 @@ class SyncAllWorker @AssistedInject constructor(
         }
     }
 
+    private suspend fun syncFormTemplatesV2(): FormSyncResult {
+        setProgress(workDataOf(PROGRESS_CURRENT_STATE to State.DOWNLOADING_FORM_TEMPLATES.name))
+        return formTemplateV2Manager.syncAvailableTemplates { current, total ->
+            reportProgress(
+                state = State.DOWNLOADING_FORM_TEMPLATES,
+                progress = current,
+                total = total
+            )
+        }
+    }
+
     private suspend fun syncFormResponses(
         lastSyncTime: BigInteger
     ): FormResponseSyncResult = withContext(Dispatchers.Default) {
@@ -869,13 +963,16 @@ class SyncAllWorker @AssistedInject constructor(
 
     private fun getResultSuccessMessage(
         patientSyncResult: PatientSyncResult,
+        totalPatientsRemoved: Int,
         healthFacilitySyncResult: HealthFacilitySyncResult,
         readingSyncResult: ReadingSyncResult,
         referralSyncResult: ReferralSyncResult,
         assessmentSyncResult: AssessmentSyncResult,
         formTemplateSyncResult: FormSyncResult,
+        formTemplateV2SyncResult: FormSyncResult,
         workflowTemplateSyncResult: WorkflowTemplateSyncResult,
-        workflowInstanceSyncResult: WorkflowInstanceSyncResult
+        workflowInstanceSyncResult: WorkflowInstanceSyncResult,
+        recordSyncErrors: List<String>
     ): String {
         val success = patientSyncResult.networkResult.getStatusMessage(applicationContext)
         val totalPatientsUploaded = applicationContext.getString(
@@ -883,6 +980,9 @@ class SyncAllWorker @AssistedInject constructor(
         )
         val totalPatientsDownloaded = applicationContext.getString(
             R.string.sync_total_patients_downloaded_s, patientSyncResult.totalPatientsDownloaded
+        )
+        val totalPatientsRemovedLine = applicationContext.getString(
+            R.string.sync_total_patients_removed_s, totalPatientsRemoved
         )
         val totalHealthFacilitiesDownloaded = applicationContext.getString(
             R.string.sync_total_HealthFacilities_downloaded_s,
@@ -912,6 +1012,10 @@ class SyncAllWorker @AssistedInject constructor(
             R.string.sync_total_form_templates_downloaded,
             formTemplateSyncResult.totalFormClassDownloaded
         )
+        val totalFormsV2Downloaded = applicationContext.getString(
+            R.string.sync_total_form_templates_v2_downloaded,
+            formTemplateV2SyncResult.totalFormClassDownloaded
+        )
 
         val totalWorkflowTemplatesDownloaded = applicationContext.getString(
             R.string.sync_total_workflow_templates_downloaded_s,
@@ -926,12 +1030,16 @@ class SyncAllWorker @AssistedInject constructor(
             workflowInstanceSyncResult.totalWorkflowInstancesDownloaded
         )
 
-        val errors = patientSyncResult.errors.let { if (it != "[ ]") "\nErrors:\n$it" else "" }
+        val errorLines =
+            listOfNotNull(patientSyncResult.errors?.takeIf { it.isNotBlank() }) + recordSyncErrors
+        val errors =
+            if (errorLines.isNotEmpty()) "\nErrors:\n${errorLines.joinToString("\n")}" else ""
 
         return """
             $success
             $totalPatientsUploaded
             $totalPatientsDownloaded
+            $totalPatientsRemovedLine
             $totalHealthFacilitiesDownloaded
             $totalReadingsUploaded
             $totalReadingsDownloaded
@@ -940,11 +1048,30 @@ class SyncAllWorker @AssistedInject constructor(
             $totalAssessmentsUploaded
             $totalAssessmentsDownloaded
             $totalFormsDownloaded
+            $totalFormsV2Downloaded
             $totalWorkflowTemplatesDownloaded
             $totalWorkflowInstancesUploaded
             $totalWorkflowInstancesDownloaded
             $errors
         """.trimIndent()
+    }
+}
+
+/**
+ * Turns the records the server didn't accept into one readable line each, e.g.
+ * `Reading for patient 12345: Not authorized to sync this patient.` The patient comes from
+ * [patientLabelByRecordId]; a record that isn't in it is shown by its own ID.
+ */
+internal fun formatRecordSyncErrors(
+    recordName: String,
+    errors: List<SyncError>,
+    patientLabelByRecordId: Map<String, String>
+): List<String> = errors.map { error ->
+    val patientLabel = patientLabelByRecordId[error.recordId]
+    if (patientLabel != null) {
+        "$recordName for patient $patientLabel: ${error.message}"
+    } else {
+        "$recordName ${error.recordId}: ${error.message}"
     }
 }
 
@@ -954,6 +1081,7 @@ enum class PatientSyncField(override val text: String) : Field {
 
 enum class ReadingSyncField(override val text: String) : Field {
     READINGS("readings"), NEW_REFERRALS("newReferrals"), NEW_FOLLOW_UPS("newFollowups"),
+    ERRORS("errors"),
 }
 
 enum class ReferralSyncField(override val text: String) : Field {

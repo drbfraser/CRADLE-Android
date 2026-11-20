@@ -104,17 +104,17 @@
                             app:layout_constraintHorizontal_weight="0.5"
                             app:layout_constraintStart_toEndOf="@+id/patient_name_layout"
                             app:layout_constraintTop_toBottomOf="@+id/patient_info_title"
-                            errorMessage='@{viewModel.errorMap["id"]}'>
+                            errorMessage='@{viewModel.errorMap["patientNumber"]}'>
 
                             <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/patient_id_text"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:inputType="number"
-                                android:maxLength="@{Patient.ID_MAX_LENGTH}"
+                                android:maxLength="@{Patient.PATIENT_NUMBER_MAX_LENGTH}"
                                 android:nextFocusUp="@id/patient_name_text"
                                 android:nextFocusDown="@id/zone_text"
-                                android:text="@={viewModel.patientId}"
+                                android:text="@={viewModel.patientNumber}"
                                 tools:text="12345678901234" />
                         </com.google.android.material.textfield.TextInputLayout>
 

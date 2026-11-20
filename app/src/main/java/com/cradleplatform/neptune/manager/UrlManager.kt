@@ -174,6 +174,9 @@ class UrlManager @Inject constructor(val settings: Settings) {
      */
     fun getPatientReadings(id: String) = "$base/patients/$id/readings"
 
+    fun getPatientFormSubmissionsV2(id: String): String =
+        "$base/patients/$id/get_all_records?readings=0&referrals=0&assessments=0&forms=1"
+
     /**
      * Endpoint for getting a single reading.
      *
@@ -195,6 +198,9 @@ class UrlManager @Inject constructor(val settings: Settings) {
 
     fun getPatientsSync(lastSyncTimestamp: BigInteger): String =
         "$base/sync/patients?since=$lastSyncTimestamp"
+
+    fun getDeletedPatientsSync(): String =
+        "$base/sync/deleted_patients"
 
     fun getReadingsSync(lastSyncTimestamp: BigInteger): String =
         "$base/sync/readings?since=$lastSyncTimestamp"
@@ -269,7 +275,7 @@ class UrlManager @Inject constructor(val settings: Settings) {
      * Endpoint for getting a list of all relay phone numbers.
      *
      */
-    fun getAllRelayPhoneNumbers() = "$base/phone/relays"
+    fun getAllRelayPhoneNumbers() = "$base/relay/server/phone"
 
     /**
      * Endpoint for Get/Post/Put the smsKey for the user
