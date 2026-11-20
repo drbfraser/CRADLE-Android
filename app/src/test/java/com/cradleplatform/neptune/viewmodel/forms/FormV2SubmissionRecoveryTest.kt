@@ -271,8 +271,7 @@ internal class FormV2SubmissionRecoveryTest {
     fun `network and parsing errors during GET keep the draft`() = runTest(dispatcher) {
         val viewModel = viewModel()
         runCurrent()
-        coEvery { restApi.getFormSubmissionV2("submission-1") } returns
-            NetworkResult.NetworkException(IOException("Disconnected"))
+        coEvery { restApi.getFormSubmissionV2("submission-1") } throws IOException("Disconnected")
         viewModel.submitForm()
         runCurrent()
         assertDraftKept(viewModel)
