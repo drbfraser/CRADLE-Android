@@ -56,7 +56,7 @@ internal class SubmittedFormsV2ViewModelTest {
     @Test
     fun `request failure remains an error until retry returns an empty list`() = runTest(dispatcher) {
         coEvery { submissionManager.syncPatientSubmissions("patient-1") } returnsMany listOf(
-            NetworkResult.Failure(ByteArray(0), 403),
+            NetworkResult.Failure(ByteArray(0), 503),
             NetworkResult.Success(Unit, 200)
         )
         val viewModel = createViewModel()
@@ -92,13 +92,13 @@ internal class SubmittedFormsV2ViewModelTest {
 
         response.complete(NetworkResult.Failure(ByteArray(0), 403))
         runCurrent()
-        assertEquals(SubmittedFormsV2State.Error, viewModel.state.value)
+        assertEquals(SubmittedFormsV2State.PermissionError, viewModel.state.value)
 
         coEvery { submissionManager.syncPatientSubmissions("patient-1") } returns
             NetworkResult.Failure(ByteArray(0), 401)
         viewModel.loadForms()
         runCurrent()
-        assertEquals(SubmittedFormsV2State.Error, viewModel.state.value)
+        assertEquals(SubmittedFormsV2State.AuthenticationError, viewModel.state.value)
     }
 
     @Test

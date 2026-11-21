@@ -864,6 +864,8 @@
     <string name="form_v2_submitted">Submitted form (V2)</string>
     <string name="form_v2_unnamed">Unnamed form</string>
     <string name="form_v2_records_load_error">Couldn\'t load V2 forms. Check your connection and try again.</string>
+    <string name="form_v2_records_authentication_error">Your session has expired. Please log in again to view these forms.</string>
+    <string name="form_v2_records_permission_error">You do not have permission to view these forms.</string>
     <string name="see_submitted_forms_v2">See Submitted Forms (V2)</string>
     <string name="submitted_forms_v2_empty">No submitted V2 forms for this patient.</string>
     <string name="form_submission_detail_v2_title">View Form (V2)</string>

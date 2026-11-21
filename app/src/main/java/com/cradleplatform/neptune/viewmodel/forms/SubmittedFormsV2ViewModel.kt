@@ -19,6 +19,8 @@ sealed class SubmittedFormsV2State {
     object Loading : SubmittedFormsV2State()
     data class Success(val forms: List<FormSubmissionV2>) : SubmittedFormsV2State()
     object Error : SubmittedFormsV2State()
+    object AuthenticationError : SubmittedFormsV2State()
+    object PermissionError : SubmittedFormsV2State()
 }
 
 @HiltViewModel
@@ -47,7 +49,8 @@ class SubmittedFormsV2ViewModel @Inject constructor(
                         submissionManager.getCachedSubmissions(patientId)
                     )
                     is NetworkResult.Failure -> when {
-                        result.statusCode == 401 || result.statusCode == 403 -> SubmittedFormsV2State.Error
+                        result.statusCode == 401 -> SubmittedFormsV2State.AuthenticationError
+                        result.statusCode == 403 -> SubmittedFormsV2State.PermissionError
                         cached.isNotEmpty() -> SubmittedFormsV2State.Success(cached)
                         else -> SubmittedFormsV2State.Error
                     }
