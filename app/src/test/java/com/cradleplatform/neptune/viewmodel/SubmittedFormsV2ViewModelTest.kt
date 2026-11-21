@@ -72,8 +72,40 @@ internal class SubmittedFormsV2ViewModelTest {
     @Test
     fun `offline refresh retains locally stored forms`() = runTest(dispatcher) {
         coEvery { submissionManager.getCachedSubmissions("patient-1") } returns listOf(submission())
+        val response = CompletableDeferred<NetworkResult<Unit>>()
+        coEvery { submissionManager.syncPatientSubmissions("patient-1") } coAnswers { response.await() }
+        val viewModel = createViewModel()
+        runCurrent()
+        response.complete(NetworkResult.NetworkException(java.io.IOException("Offline")))
+        runCurrent()
+        assertEquals(SubmittedFormsV2State.Success(listOf(submission())), viewModel.state.value)
+    }
+
+    @Test
+    fun `cached forms appear before refresh and are hidden when access is rejected`() = runTest(dispatcher) {
+        coEvery { submissionManager.getCachedSubmissions("patient-1") } returns listOf(submission())
+        val response = CompletableDeferred<NetworkResult<Unit>>()
+        coEvery { submissionManager.syncPatientSubmissions("patient-1") } coAnswers { response.await() }
+        val viewModel = createViewModel()
+        runCurrent()
+        assertEquals(SubmittedFormsV2State.Success(listOf(submission())), viewModel.state.value)
+
+        response.complete(NetworkResult.Failure(ByteArray(0), 403))
+        runCurrent()
+        assertEquals(SubmittedFormsV2State.Error, viewModel.state.value)
+
         coEvery { submissionManager.syncPatientSubmissions("patient-1") } returns
-            NetworkResult.NetworkException(java.io.IOException("Offline"))
+            NetworkResult.Failure(ByteArray(0), 401)
+        viewModel.loadForms()
+        runCurrent()
+        assertEquals(SubmittedFormsV2State.Error, viewModel.state.value)
+    }
+
+    @Test
+    fun `temporary server failure retains cached forms`() = runTest(dispatcher) {
+        coEvery { submissionManager.getCachedSubmissions("patient-1") } returns listOf(submission())
+        coEvery { submissionManager.syncPatientSubmissions("patient-1") } returns
+            NetworkResult.Failure(ByteArray(0), 503)
         val viewModel = createViewModel()
         runCurrent()
         assertEquals(SubmittedFormsV2State.Success(listOf(submission())), viewModel.state.value)

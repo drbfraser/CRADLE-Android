@@ -33,6 +33,20 @@ internal class FormSubmissionV2ManagerTest {
     private val detail = FormSubmissionWithAnswersV2("s1", "t1", "p1", 1, 100, 110, "English", false, emptyList())
 
     @Test
+    fun `forbidden response removes patient cache while expired login preserves it`() = runTest {
+        coEvery { restApi.getPatientFormSubmissionsV2("p1") } returnsMany listOf(
+            NetworkResult.Failure(ByteArray(0), 401),
+            NetworkResult.Failure(ByteArray(0), 403)
+        )
+        coEvery { dao.replacePatientSubmissions("p1", emptyList()) } returns Unit
+
+        assertEquals(401, (manager.syncPatientSubmissions("p1") as NetworkResult.Failure).statusCode)
+        coVerify(exactly = 0) { dao.replacePatientSubmissions(any(), any()) }
+        assertEquals(403, (manager.syncPatientSubmissions("p1") as NetworkResult.Failure).statusCode)
+        coVerify(exactly = 1) { dao.replacePatientSubmissions("p1", emptyList()) }
+    }
+
+    @Test
     fun `accepted submission caches payload and template without another HTTP request`() = runTest {
         val question = mockk<FormTemplateQuestionV2>(relaxed = true)
         every { question.id } returns "q1"
@@ -106,12 +120,14 @@ internal class FormSubmissionV2ManagerTest {
     @Test
     fun `failed detail or template download preserves previous records`() = runTest {
         coEvery { restApi.getPatientFormSubmissionsV2("p1") } returns NetworkResult.Success(listOf(summary), 200)
-        coEvery { restApi.getFormSubmissionV2("s1") } returns NetworkResult.Failure(ByteArray(0), 503)
-        assertTrue(manager.syncPatientSubmissions("p1") is NetworkResult.Failure)
+        for (status in listOf(503, 403)) {
+            coEvery { restApi.getFormSubmissionV2("s1") } returns NetworkResult.Failure(ByteArray(0), status)
+            assertEquals(status, (manager.syncPatientSubmissions("p1") as NetworkResult.Failure).statusCode)
 
-        coEvery { restApi.getFormSubmissionV2("s1") } returns NetworkResult.Success(detail, 200)
-        coEvery { templates.getTemplate("t1") } returns NetworkResult.Failure(ByteArray(0), 503)
-        assertTrue(manager.syncPatientSubmissions("p1") is NetworkResult.Failure)
+            coEvery { restApi.getFormSubmissionV2("s1") } returns NetworkResult.Success(detail, 200)
+            coEvery { templates.getTemplate("t1") } returns NetworkResult.Failure(ByteArray(0), status)
+            assertEquals(status, (manager.syncPatientSubmissions("p1") as NetworkResult.Failure).statusCode)
+        }
         coVerify(exactly = 0) { dao.replacePatientSubmissions(any(), any()) }
     }
 

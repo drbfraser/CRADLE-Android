@@ -73,6 +73,13 @@ class FormSubmissionV2Manager @Inject constructor(
     private suspend fun downloadPatientSubmissions(patientId: String): NetworkResult<Unit> {
         val revisionBeforeDownload = cacheMutex.withLock { cacheRevision }
         val result = restApi.getPatientFormSubmissionsV2(patientId)
+        if (result is NetworkResult.Failure && result.statusCode == 403) {
+            cacheMutex.withLock {
+                // Only the patient list endpoint confirms denial of all of this patient's records.
+                submissionDao.replacePatientSubmissions(patientId, emptyList())
+                cacheRevision++
+            }
+        }
         if (result !is NetworkResult.Success) return result.cast()
         val submissions = mutableListOf<FormSubmissionV2Entity>()
         for (summary in result.value.distinctBy { it.id }) {

@@ -42,10 +42,15 @@ class SubmittedFormsV2ViewModel @Inject constructor(
             _state.value = try {
                 val cached = submissionManager.getCachedSubmissions(patientId)
                 if (cached.isNotEmpty()) _state.value = SubmittedFormsV2State.Success(cached)
-                when (submissionManager.syncPatientSubmissions(patientId)) {
+                when (val result = submissionManager.syncPatientSubmissions(patientId)) {
                     is NetworkResult.Success -> SubmittedFormsV2State.Success(
                         submissionManager.getCachedSubmissions(patientId)
                     )
+                    is NetworkResult.Failure -> when {
+                        result.statusCode == 401 || result.statusCode == 403 -> SubmittedFormsV2State.Error
+                        cached.isNotEmpty() -> SubmittedFormsV2State.Success(cached)
+                        else -> SubmittedFormsV2State.Error
+                    }
                     else -> if (cached.isNotEmpty()) SubmittedFormsV2State.Success(cached)
                     else SubmittedFormsV2State.Error
                 }
