@@ -20,6 +20,8 @@ import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.flowOf
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -31,6 +33,50 @@ internal class FormSubmissionV2ManagerTest {
     private val manager = FormSubmissionV2Manager(restApi, dao, templates)
     private val summary = FormSubmissionV2("s1", "t1", "p1", 1, 100, 110, "English", false, "Form")
     private val detail = FormSubmissionWithAnswersV2("s1", "t1", "p1", 1, 100, 110, "English", false, emptyList())
+
+    @BeforeEach
+    fun setUp() {
+        every { dao.observeSubmissionsByPatientId("p1") } returns flowOf(emptyList())
+    }
+
+    @Test
+    fun `matching revision reuses answers and removes missing or archived records`() = runTest {
+        val current = summary.copy(revision = 2)
+        val cached = FormSubmissionV2Entity(current, emptyList())
+        every { dao.observeSubmissionsByPatientId("p1") } returns flowOf(listOf(
+            cached, cached.copy(submission = current.copy(id = "removed")),
+            cached.copy(submission = current.copy(id = "archived"))
+        ))
+        coEvery { restApi.getPatientFormSubmissionsV2("p1") } returns NetworkResult.Success(
+            listOf(current, current.copy(id = "archived", archived = true)), 200
+        )
+        coEvery { templates.getTemplate("t1") } returns NetworkResult.Success(mockk<FormTemplateV2>(), 200)
+        coEvery { dao.replacePatientSubmissions("p1", any()) } returns Unit
+
+        assertTrue(manager.syncPatientSubmissions("p1") is NetworkResult.Success)
+        coVerify { dao.replacePatientSubmissions("p1", listOf(cached)) }
+        coVerify(exactly = 0) { restApi.getFormSubmissionV2(any()) }
+    }
+
+    @Test
+    fun `same timestamp still refreshes changed or unknown revisions`() = runTest {
+        for ((localRevision, serverRevision) in listOf(1L to 2L, null to 2L, 2L to null, null to null)) {
+            val json = com.google.gson.Gson().toJson(summary.copy(revision = serverRevision))
+            val remote = com.google.gson.Gson().fromJson(json, FormSubmissionV2::class.java)
+            assertEquals(serverRevision, remote.revision)
+            every { dao.observeSubmissionsByPatientId("p1") } returns flowOf(listOf(
+                FormSubmissionV2Entity(summary.copy(revision = localRevision), emptyList())
+            ))
+            coEvery { restApi.getPatientFormSubmissionsV2("p1") } returns NetworkResult.Success(listOf(remote), 200)
+            coEvery { restApi.getFormSubmissionV2("s1") } returns
+                NetworkResult.Success(detail.copy(revision = serverRevision), 200)
+            coEvery { templates.getTemplate("t1") } returns NetworkResult.Success(mockk<FormTemplateV2>(), 200)
+            coEvery { dao.replacePatientSubmissions("p1", any()) } returns Unit
+            assertTrue(manager.syncPatientSubmissions("p1") is NetworkResult.Success)
+            coVerify { dao.replacePatientSubmissions("p1", listOf(FormSubmissionV2Entity(remote, emptyList()))) }
+        }
+        coVerify(exactly = 4) { restApi.getFormSubmissionV2("s1") }
+    }
 
     @Test
     fun `forbidden response removes patient cache while expired login preserves it`() = runTest {
@@ -108,13 +154,16 @@ internal class FormSubmissionV2ManagerTest {
 
     @Test
     fun `sync replaces records only after answers and template are available`() = runTest {
-        coEvery { restApi.getPatientFormSubmissionsV2("p1") } returns NetworkResult.Success(listOf(summary), 200)
-        coEvery { restApi.getFormSubmissionV2("s1") } returns NetworkResult.Success(detail, 200)
+        coEvery { restApi.getPatientFormSubmissionsV2("p1") } returns
+            NetworkResult.Success(listOf(summary.copy(revision = 1)), 200)
+        coEvery { restApi.getFormSubmissionV2("s1") } returns NetworkResult.Success(detail.copy(revision = 2), 200)
         coEvery { templates.getTemplate("t1") } returns NetworkResult.Success(mockk<FormTemplateV2>(), 200)
         coEvery { dao.replacePatientSubmissions("p1", any()) } returns Unit
 
         assertTrue(manager.syncPatientSubmissions("p1") is NetworkResult.Success)
-        coVerify { dao.replacePatientSubmissions("p1", listOf(FormSubmissionV2Entity(summary, emptyList()))) }
+        coVerify {
+            dao.replacePatientSubmissions("p1", listOf(FormSubmissionV2Entity(summary.copy(revision = 2), emptyList())))
+        }
     }
 
     @Test

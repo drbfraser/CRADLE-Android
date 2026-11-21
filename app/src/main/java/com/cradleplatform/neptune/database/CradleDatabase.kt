@@ -33,7 +33,7 @@ import com.cradleplatform.neptune.model.Referral
 import com.cradleplatform.neptune.model.WorkflowInstance
 import com.cradleplatform.neptune.model.WorkflowTemplate
 
-const val CURRENT_DATABASE_VERSION = 8
+const val CURRENT_DATABASE_VERSION = 9
 
 /**
  * An interface for the local CRADLE database.
@@ -115,7 +115,7 @@ internal object Migrations {
     val ALL_MIGRATIONS: Array<Migration> by lazy {
         arrayOf(
             MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6,
-            MIGRATION_6_7, MIGRATION_7_8
+            MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9
         )
     }
 
@@ -295,34 +295,6 @@ internal object Migrations {
         }
     }
 
-    /** Version 8: Cache submitted V2 forms separately from editable drafts and V1 responses. */
-    private val MIGRATION_7_8 = object : Migration(7, 8) {
-        override fun migrate(database: SupportSQLiteDatabase) {
-            database.execSQL(
-                """
-                CREATE TABLE IF NOT EXISTS FormSubmissionV2Entity (
-                    `id` TEXT NOT NULL PRIMARY KEY,
-                    `formTemplateId` TEXT NOT NULL,
-                    `patientId` TEXT NOT NULL,
-                    `userId` INTEGER NOT NULL,
-                    `dateSubmitted` INTEGER NOT NULL,
-                    `lastEdited` INTEGER NOT NULL,
-                    `lang` TEXT NOT NULL,
-                    `archived` INTEGER NOT NULL,
-                    `name` TEXT,
-                    `answers` TEXT NOT NULL,
-                    FOREIGN KEY(`patientId`) REFERENCES `Patient`(`id`)
-                        ON UPDATE CASCADE ON DELETE CASCADE
-                )
-                """.trimIndent()
-            )
-            database.execSQL(
-                "CREATE INDEX IF NOT EXISTS `index_FormSubmissionV2Entity_patientId` " +
-                    "ON FormSubmissionV2Entity (`patientId`)"
-            )
-        }
-    }
-
     /**
      * Version 7: Add the user-entered patient number, which is separate from the patient's ID.
      *
@@ -362,6 +334,40 @@ internal object Migrations {
                         "  IFNULL(r.patientId, p.id)"
                 )
             }
+        }
+    }
+
+    /** Version 8: Cache submitted V2 forms separately from editable drafts and V1 responses. */
+    private val MIGRATION_7_8 = object : Migration(7, 8) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            database.execSQL(
+                """
+                CREATE TABLE IF NOT EXISTS FormSubmissionV2Entity (
+                    `id` TEXT NOT NULL PRIMARY KEY,
+                    `formTemplateId` TEXT NOT NULL,
+                    `patientId` TEXT NOT NULL,
+                    `userId` INTEGER NOT NULL,
+                    `dateSubmitted` INTEGER NOT NULL,
+                    `lastEdited` INTEGER NOT NULL,
+                    `lang` TEXT NOT NULL,
+                    `archived` INTEGER NOT NULL,
+                    `name` TEXT,
+                    `answers` TEXT NOT NULL,
+                    FOREIGN KEY(`patientId`) REFERENCES `Patient`(`id`)
+                        ON UPDATE CASCADE ON DELETE CASCADE
+                )
+                """.trimIndent()
+            )
+            database.execSQL(
+                "CREATE INDEX IF NOT EXISTS `index_FormSubmissionV2Entity_patientId` " +
+                    "ON FormSubmissionV2Entity (`patientId`)"
+            )
+        }
+    }
+
+    private val MIGRATION_8_9 = object : Migration(8, 9) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            database.execSQL("ALTER TABLE FormSubmissionV2Entity ADD COLUMN `revision` INTEGER")
         }
     }
 }

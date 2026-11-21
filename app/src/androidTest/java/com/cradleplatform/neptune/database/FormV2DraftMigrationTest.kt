@@ -90,6 +90,29 @@ class FormV2DraftMigrationTest {
         migrated.close()
     }
 
+    @Test
+    fun migrate8To9PreservesSubmissionsWithUnknownRevision() {
+        val databaseName = "$DATABASE-8-to-9"
+        val oldDatabase = helper.createDatabase(databaseName, 8)
+        insertPatient(oldDatabase)
+        oldDatabase.execSQL(
+            """
+            INSERT INTO FormSubmissionV2Entity
+                (id, formTemplateId, patientId, userId, dateSubmitted, lastEdited, lang, archived, name, answers)
+            VALUES ('s1', 't1', 'patient-1', 1, 1000, 1000, 'English', 0, 'Form', '[]')
+            """.trimIndent()
+        )
+        oldDatabase.close()
+        val migrated = helper.runMigrationsAndValidate(databaseName, 9, true, *Migrations.ALL_MIGRATIONS)
+        assertEquals(1, count(migrated, "Patient"))
+        assertEquals("[]", value(migrated, "FormSubmissionV2Entity", "answers"))
+        migrated.query("SELECT revision FROM FormSubmissionV2Entity WHERE id = 's1'").use {
+            assertEquals(true, it.moveToFirst())
+            assertEquals(true, it.isNull(0))
+        }
+        migrated.close()
+    }
+
     private fun insertPatient(database: SupportSQLiteDatabase) {
         val values = ContentValues().apply {
             put("id", "patient-1")

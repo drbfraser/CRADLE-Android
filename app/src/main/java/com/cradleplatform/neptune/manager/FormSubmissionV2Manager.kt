@@ -81,10 +81,20 @@ class FormSubmissionV2Manager @Inject constructor(
             }
         }
         if (result !is NetworkResult.Success) return result.cast()
+        val cached = submissionDao.observeSubmissionsByPatientId(patientId).first()
+            .associateBy { it.submission.id }
         val submissions = mutableListOf<FormSubmissionV2Entity>()
         for (summary in result.value.distinctBy { it.id }) {
             require(summary.patientId == patientId) { "Submission belongs to another patient" }
             if (summary.archived) continue
+            val existing = cached[summary.id]
+            // Timestamps alone cannot distinguish two edits within the same second.
+            if (summary.revision != null && summary.revision > 0 && existing?.submission == summary) {
+                val template = templateManager.getTemplate(summary.formTemplateId)
+                if (template !is NetworkResult.Success) return template.cast()
+                submissions.add(requireNotNull(existing))
+                continue
+            }
             val detail = restApi.getFormSubmissionV2(summary.id)
             if (detail !is NetworkResult.Success) return detail.cast()
             require(detail.value.id == summary.id && detail.value.patientId == patientId &&
@@ -97,7 +107,8 @@ class FormSubmissionV2Manager @Inject constructor(
                     userId = detail.value.userId,
                     dateSubmitted = requireNotNull(detail.value.dateSubmitted),
                     lastEdited = requireNotNull(detail.value.lastEdited),
-                    lang = detail.value.lang
+                    lang = detail.value.lang,
+                    revision = detail.value.revision
                 ), answers))
             }
         }
@@ -128,7 +139,7 @@ class FormSubmissionV2Manager @Inject constructor(
     private fun FormSubmissionV2Entity.toDetail(): FormSubmissionWithAnswersV2 = submission.let {
         FormSubmissionWithAnswersV2(
             it.id, it.formTemplateId, it.patientId, it.userId,
-            it.dateSubmitted, it.lastEdited, it.lang, it.archived, answers
+            it.dateSubmitted, it.lastEdited, it.lang, it.archived, answers, it.revision
         )
     }
 }
