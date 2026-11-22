@@ -6,6 +6,7 @@ import com.cradleplatform.neptune.activities.forms.FormV2RenderingActivity
 import com.cradleplatform.neptune.database.daos.FormV2DraftDao
 import com.cradleplatform.neptune.database.daos.FormTemplateV2Dao
 import com.cradleplatform.neptune.manager.FormTemplateV2Manager
+import com.cradleplatform.neptune.manager.FormSubmissionV2Manager
 import com.cradleplatform.neptune.model.FormTemplateV2Entity
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
@@ -52,6 +53,7 @@ internal class FormV2RenderingViewModelTest {
     private lateinit var restApi: RestApi
     private lateinit var draftDao: FormV2DraftDao
     private lateinit var templateDao: FormTemplateV2Dao
+    private lateinit var submissionManager: FormSubmissionV2Manager
 
     @BeforeEach
     fun setUp() {
@@ -59,6 +61,8 @@ internal class FormV2RenderingViewModelTest {
         restApi = mockk()
         draftDao = mockk()
         templateDao = mockk()
+        submissionManager = mockk()
+        coEvery { submissionManager.cacheSubmittedForm(any(), any(), any()) } returns Unit
         coEvery { templateDao.getTemplate(any()) } returns null
         coEvery { templateDao.saveTemplate(any()) } returns Unit
         coEvery { restApi.getFormTemplateV2("template-1") } returns NetworkResult.Success(template(), 200)
@@ -297,6 +301,10 @@ internal class FormV2RenderingViewModelTest {
             })
         }
         coVerify { draftDao.deleteDraft("patient-1", "template-1") }
+
+        coVerify { submissionManager.cacheSubmittedForm(submission(), match {
+            it.answers.single().answer.textAnswer == "Headache"
+        }, any()) }
 
         viewModel.saveDraft()
         runCurrent()
@@ -547,9 +555,10 @@ internal class FormV2RenderingViewModelTest {
     }
 
     @Test
-    fun `language request failure retains draft and allows retry`() = runTest(testDispatcher) {
+    fun `submission uses cached template languages when language endpoint fails`() = runTest(testDispatcher) {
         coEvery { restApi.getFormTemplateLanguagesV2("template-1") } returns
             NetworkResult.Failure(ByteArray(0), 503)
+        coEvery { restApi.postFormSubmissionV2(any()) } returns NetworkResult.Failure(ByteArray(0), 503)
         val viewModel = createViewModel(language = "french")
         runCurrent()
         viewModel.answerState.setAnswer("q1", AnswerV2.createTextAnswer("Headache"))
@@ -560,14 +569,15 @@ internal class FormV2RenderingViewModelTest {
         assertTrue(viewModel.submissionState.value is FormV2SubmissionState.Error)
         assertTrue(viewModel.canSubmit)
         assertEquals(FormV2SubmissionErrorType.SERVER_ERROR, viewModel.submissionErrors.first())
-        coVerify { draftDao.upsert(match { it.language == "french" }) }
-        coVerify(exactly = 0) { restApi.postFormSubmissionV2(any()) }
+        coVerify { draftDao.upsert(match { it.language == "French" }) }
+        coVerify(exactly = 0) { restApi.getFormTemplateLanguagesV2(any()) }
+        coVerify(exactly = 1) { restApi.postFormSubmissionV2(match { it.lang == "French" }) }
         coVerify(exactly = 0) { draftDao.deleteDraft(any(), any()) }
     }
 
     @Test
-    fun `language connection failure offers a choice and permits retry with the same ID`() = runTest(testDispatcher) {
-        coEvery { restApi.getFormTemplateLanguagesV2("template-1") } throws IOException("Offline")
+    fun `connection failure offers a choice and permits retry with the same ID`() = runTest(testDispatcher) {
+        coEvery { restApi.postFormSubmissionV2(any()) } throws IOException("Offline")
         var queuedDraft: FormV2Draft? = null
         coEvery { draftDao.upsert(any()) } coAnswers {
             queuedDraft = firstArg<FormV2Draft>()
@@ -641,7 +651,7 @@ internal class FormV2RenderingViewModelTest {
 
     @Test
     fun `saving a draft after submission failure reports write errors and permits retry`() = runTest(testDispatcher) {
-        coEvery { restApi.getFormTemplateLanguagesV2("template-1") } throws IOException("Offline")
+        coEvery { restApi.postFormSubmissionV2(any()) } throws IOException("Offline")
         var writes = 0
         coEvery { draftDao.upsert(any()) } coAnswers {
             writes++
@@ -663,14 +673,24 @@ internal class FormV2RenderingViewModelTest {
     }
 
     @Test
-    fun `authentication failure while loading languages or posting requests login`() = runTest(testDispatcher) {
-        for (failLanguages in listOf(true, false)) {
-            coEvery { restApi.getFormTemplateLanguagesV2("template-1") } returns if (failLanguages) {
-                NetworkResult.Failure(ByteArray(0), 401)
-            } else {
-                NetworkResult.Success(FormTemplateLanguagesV2Response(listOf("English")), 200)
-            }
-            coEvery { restApi.postFormSubmissionV2(any()) } returns NetworkResult.Failure(ByteArray(0), 401)
+    fun `authentication failure while posting requests login`() = runTest(testDispatcher) {
+        coEvery { restApi.postFormSubmissionV2(any()) } returns NetworkResult.Failure(ByteArray(0), 401)
+        val viewModel = createViewModel()
+        runCurrent()
+        viewModel.answerState.setAnswer("q1", AnswerV2.createTextAnswer("Headache"))
+
+        viewModel.submitForm()
+        runCurrent()
+
+        assertEquals(FormV2SubmissionErrorType.AUTH_ERROR, viewModel.submissionErrors.first())
+        assertTrue(viewModel.canSaveDraft)
+        coVerify(exactly = 0) { draftDao.deleteDraft(any(), any()) }
+    }
+
+    @Test
+    fun `forbidden submission request reports a permission error and retains the draft`() =
+        runTest(testDispatcher) {
+            coEvery { restApi.postFormSubmissionV2(any()) } returns NetworkResult.Failure(ByteArray(0), 403)
             val viewModel = createViewModel()
             runCurrent()
             viewModel.answerState.setAnswer("q1", AnswerV2.createTextAnswer("Headache"))
@@ -678,36 +698,12 @@ internal class FormV2RenderingViewModelTest {
             viewModel.submitForm()
             runCurrent()
 
-            assertEquals(FormV2SubmissionErrorType.AUTH_ERROR, viewModel.submissionErrors.first())
+            assertEquals(FormV2SubmissionErrorType.PERMISSION_ERROR, viewModel.submissionErrors.first())
+            assertEquals(FormV2SubmissionState.Error("Server error (403)"), viewModel.submissionState.value)
             assertTrue(viewModel.canSaveDraft)
+            assertTrue(viewModel.canEditAnswers)
+            coVerify { draftDao.upsert(match { it.answers.single().answer.textAnswer == "Headache" }) }
             coVerify(exactly = 0) { draftDao.deleteDraft(any(), any()) }
-        }
-    }
-
-    @Test
-    fun `forbidden language or submission request reports a permission error and retains the draft`() =
-        runTest(testDispatcher) {
-            for (failLanguages in listOf(true, false)) {
-                coEvery { restApi.getFormTemplateLanguagesV2("template-1") } returns if (failLanguages) {
-                    NetworkResult.Failure(ByteArray(0), 403)
-                } else {
-                    NetworkResult.Success(FormTemplateLanguagesV2Response(listOf("English")), 200)
-                }
-                coEvery { restApi.postFormSubmissionV2(any()) } returns NetworkResult.Failure(ByteArray(0), 403)
-                val viewModel = createViewModel()
-                runCurrent()
-                viewModel.answerState.setAnswer("q1", AnswerV2.createTextAnswer("Headache"))
-
-                viewModel.submitForm()
-                runCurrent()
-
-                assertEquals(FormV2SubmissionErrorType.PERMISSION_ERROR, viewModel.submissionErrors.first())
-                assertEquals(FormV2SubmissionState.Error("Server error (403)"), viewModel.submissionState.value)
-                assertTrue(viewModel.canSaveDraft)
-                assertTrue(viewModel.canEditAnswers)
-                coVerify { draftDao.upsert(match { it.answers.single().answer.textAnswer == "Headache" }) }
-                coVerify(exactly = 0) { draftDao.deleteDraft(any(), any()) }
-            }
         }
 
     @Test
@@ -801,6 +797,21 @@ internal class FormV2RenderingViewModelTest {
         coVerify(exactly = 0) { draftDao.upsert(any()) }
     }
 
+    @Test
+    fun `cache failure after accepted POST does not enable resubmission`() = runTest(testDispatcher) {
+        coEvery { restApi.postFormSubmissionV2(any()) } returns NetworkResult.Success(submission(), 201)
+        coEvery { submissionManager.cacheSubmittedForm(any(), any(), any()) } throws IllegalStateException("Disk full")
+        val viewModel = createViewModel()
+        runCurrent()
+        viewModel.answerState.setAnswer("q1", AnswerV2.createTextAnswer("Headache"))
+        viewModel.submitForm()
+        runCurrent()
+        assertEquals(FormV2SubmissionState.Submitted, viewModel.submissionState.value)
+        assertFalse(viewModel.canSubmit)
+        viewModel.submitForm()
+        coVerify(exactly = 1) { restApi.postFormSubmissionV2(any()) }
+    }
+
     private fun createViewModel(
         patientId: String? = "patient-1",
         language: String? = null
@@ -808,6 +819,7 @@ internal class FormV2RenderingViewModelTest {
         restApi,
         draftDao,
         FormTemplateV2Manager(restApi, templateDao),
+        submissionManager,
         SavedStateHandle(mapOf(
             FormTemplateDetailV2ViewModel.EXTRA_TEMPLATE_ID to "template-1",
             FormTemplateListV2Activity.EXTRA_PATIENT_ID to patientId,
@@ -817,15 +829,18 @@ internal class FormV2RenderingViewModelTest {
 
     private fun template() = FormTemplateV2(
         id = "template-1",
+        availableLanguages = listOf("English", "French", "swahili"),
         version = 1,
-        classification = FormClassificationV2("class-1", mapOf("english" to "Antenatal"), null),
+        classification = FormClassificationV2(
+            "class-1", mapOf("English" to "Antenatal", "French" to "Antenatal", "swahili" to "Antenatal"), null
+        ),
         dateCreated = 1700000000L,
         questions = listOf(FormTemplateQuestionV2(
             id = "q1",
             formTemplateId = "template-1",
             questionType = QuestionTypeEnum.STRING,
             order = 0,
-            questionText = mapOf("english" to "Symptoms"),
+            questionText = mapOf("English" to "Symptoms", "French" to "Symptoms", "swahili" to "Symptoms"),
             questionStringId = null,
             categoryIndex = null,
             required = true,

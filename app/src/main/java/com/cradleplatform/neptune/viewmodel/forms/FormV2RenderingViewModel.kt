@@ -11,10 +11,12 @@ import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
 import com.cradleplatform.neptune.manager.FormTemplateV2Manager
 import com.cradleplatform.neptune.model.AnswerV2
+import com.cradleplatform.neptune.manager.FormSubmissionV2Manager
 import com.cradleplatform.neptune.model.CreateFormSubmissionRequestV2
 import com.cradleplatform.neptune.model.FormAnswerV2
 import com.cradleplatform.neptune.model.FormV2Draft
 import com.cradleplatform.neptune.model.FormTemplateV2
+import com.cradleplatform.neptune.model.FormSubmissionV2
 import com.cradleplatform.neptune.model.FormV2AnswerState
 import com.cradleplatform.neptune.model.FormV2SubmissionValidationResult
 import com.cradleplatform.neptune.model.FormV2SubmissionValidator
@@ -72,6 +74,7 @@ class FormV2RenderingViewModel @Inject constructor(
     private val restApi: RestApi,
     private val formV2DraftDao: FormV2DraftDao,
     private val formTemplateManager: FormTemplateV2Manager,
+    private val submissionManager: FormSubmissionV2Manager,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -287,7 +290,7 @@ class FormV2RenderingViewModel @Inject constructor(
                 return@launch
             }
             try {
-                val submissionLanguage = resolveSubmissionLanguage(template.id) ?: return@launch
+                val submissionLanguage = resolveSubmissionLanguage(template) ?: return@launch
                 if (selectedLanguage != submissionLanguage) {
                     selectedLanguage = submissionLanguage
                     persistSubmissionDraft(patient, template, draftAnswers)
@@ -300,7 +303,7 @@ class FormV2RenderingViewModel @Inject constructor(
                     answers = answers
                 )
                 when (val result = restApi.postFormSubmissionV2(request)) {
-                    is NetworkResult.Success -> deleteSubmittedDraft(patient, template.id)
+                    is NetworkResult.Success -> completeSubmission(result.value, request, template)
                     is NetworkResult.Failure -> reportHttpSubmissionError(result.statusCode)
                     is NetworkResult.NetworkException -> reportSubmissionError(
                         result.cause.message ?: "Network error", FormV2SubmissionErrorType.NETWORK_ERROR
@@ -319,9 +322,26 @@ class FormV2RenderingViewModel @Inject constructor(
         }
     }
 
-    private suspend fun resolveSubmissionLanguage(templateId: String): String? {
-        val languages = when (val result = restApi.getFormTemplateLanguagesV2(templateId)) {
-            is NetworkResult.Success -> result.value.languages
+    private suspend fun completeSubmission(
+        submission: FormSubmissionV2,
+        request: CreateFormSubmissionRequestV2,
+        template: FormTemplateV2
+    ) {
+        hasSubmitted = true
+        try {
+            submissionManager.cacheSubmittedForm(submission, request, template)
+        } catch (exception: CancellationException) {
+            throw exception
+        } catch (exception: Exception) {
+            // A local cache failure must not turn an accepted POST into a retry.
+            Log.e(javaClass.simpleName, "Failed to cache submitted V2 form", exception)
+        }
+        deleteSubmittedDraft(request.patientId, template.id)
+    }
+
+    private suspend fun resolveSubmissionLanguage(template: FormTemplateV2): String? {
+        val languages = when (val result = formTemplateManager.getSubmissionLanguages(template)) {
+            is NetworkResult.Success -> result.value
             is NetworkResult.Failure -> {
                 reportHttpSubmissionError(result.statusCode)
                 return null

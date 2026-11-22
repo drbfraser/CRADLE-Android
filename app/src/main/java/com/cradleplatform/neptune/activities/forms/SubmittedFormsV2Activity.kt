@@ -67,8 +67,14 @@ class SubmittedFormsV2Activity : AppCompatActivity() {
                     recyclerView.visibility = View.VISIBLE
                 }
             }
-            SubmittedFormsV2State.Error -> {
-                status.text = getString(R.string.form_v2_records_load_error)
+            SubmittedFormsV2State.Error,
+            SubmittedFormsV2State.AuthenticationError,
+            SubmittedFormsV2State.PermissionError -> {
+                status.text = getString(when (state) {
+                    SubmittedFormsV2State.AuthenticationError -> R.string.form_v2_records_authentication_error
+                    SubmittedFormsV2State.PermissionError -> R.string.form_v2_records_permission_error
+                    else -> R.string.form_v2_records_load_error
+                })
                 status.visibility = View.VISIBLE
                 retryButton.visibility = View.VISIBLE
             }

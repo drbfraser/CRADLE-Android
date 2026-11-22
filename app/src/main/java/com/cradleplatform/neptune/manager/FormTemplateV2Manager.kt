@@ -52,7 +52,11 @@ class FormTemplateV2Manager @Inject constructor(
                     downloadedTemplates++
                     downloadedTemplate
                 }
-                templates.add(FormTemplateV2Entity(template.id, template, availableForNewForms = true))
+                val completeTemplate = withLanguages(template)
+                if (completeTemplate !is NetworkResult.Success) {
+                    return@withContext FormSyncResult(completeTemplate.cast(), 0)
+                }
+                templates.add(FormTemplateV2Entity(template.id, completeTemplate.value, availableForNewForms = true))
                 reportProgress(templates.size, summaries.size)
             }
 
@@ -102,13 +106,50 @@ class FormTemplateV2Manager @Inject constructor(
                     "Incomplete V2 template response for $id"
                 }
                 // Only Sync replaces the catalog of templates available for new forms.
-                formTemplateDao.saveTemplate(FormTemplateV2Entity(id, result.value))
+                val completeTemplate = withLanguages(result.value)
+                val template = (completeTemplate as? NetworkResult.Success)?.value ?: result.value
+                formTemplateDao.saveTemplate(FormTemplateV2Entity(id, template))
+                NetworkResult.Success(template, result.statusCode)
+            } else {
+                result
             }
-            result
         }
     } catch (exception: CancellationException) {
         throw exception
     } catch (exception: Exception) {
         NetworkResult.NetworkException(exception)
     }
+
+    suspend fun cacheTemplate(template: FormTemplateV2) {
+        val languages = template.availableLanguages
+            ?: formTemplateDao.getTemplate(template.id)?.template?.availableLanguages
+        formTemplateDao.saveTemplate(FormTemplateV2Entity(template.id, template.copy(availableLanguages = languages)))
+    }
+
+    suspend fun getSubmissionLanguages(template: FormTemplateV2): NetworkResult<List<String>> = try {
+        val cached = formTemplateDao.getTemplate(template.id)?.template
+        val languages = template.availableLanguages ?: cached?.availableLanguages
+        if (languages != null) {
+            NetworkResult.Success(languages, HTTP_OK)
+        } else {
+            // Historical drafts need their own template's languages, not the current catalog.
+            withLanguages(template).map { enriched ->
+                cacheTemplate((cached ?: template).copy(availableLanguages = enriched.availableLanguages))
+                requireNotNull(enriched.availableLanguages)
+            }
+        }
+    } catch (exception: CancellationException) {
+        throw exception
+    } catch (exception: Exception) {
+        NetworkResult.NetworkException(exception)
+    }
+
+    private suspend fun withLanguages(template: FormTemplateV2): NetworkResult<FormTemplateV2> =
+        if (template.availableLanguages != null) {
+            NetworkResult.Success(template, HTTP_OK)
+        } else {
+            restApi.getFormTemplateLanguagesV2(template.id).map { response ->
+                template.copy(availableLanguages = response.languages.filter { it.isNotBlank() }.distinct())
+            }
+        }
 }
