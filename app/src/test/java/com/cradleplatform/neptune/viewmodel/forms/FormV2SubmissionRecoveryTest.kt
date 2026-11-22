@@ -5,6 +5,7 @@ import com.cradleplatform.neptune.activities.forms.FormTemplateListV2Activity
 import com.cradleplatform.neptune.database.FormV2DraftTypeConverters
 import com.cradleplatform.neptune.database.daos.FormV2DraftDao
 import com.cradleplatform.neptune.database.daos.FormTemplateV2Dao
+import com.cradleplatform.neptune.manager.FormSubmissionV2Manager
 import com.cradleplatform.neptune.manager.FormTemplateV2Manager
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
@@ -50,6 +51,7 @@ internal class FormV2SubmissionRecoveryTest {
     private lateinit var restApi: RestApi
     private lateinit var drafts: FormV2DraftDao
     private lateinit var templateDao: FormTemplateV2Dao
+    private lateinit var submissionManager: FormSubmissionV2Manager
 
     @BeforeEach
     fun setUp() {
@@ -57,6 +59,8 @@ internal class FormV2SubmissionRecoveryTest {
         restApi = mockk()
         drafts = mockk()
         templateDao = mockk()
+        submissionManager = mockk()
+        coEvery { submissionManager.cacheSubmittedForm(any(), any(), any()) } returns Unit
         coEvery { templateDao.getTemplate(any()) } returns null
         coEvery { templateDao.saveTemplate(any()) } returns Unit
         coEvery { restApi.getFormTemplateV2("template-1") } returns NetworkResult.Success(template(), 200)
@@ -489,6 +493,7 @@ internal class FormV2SubmissionRecoveryTest {
         restApi,
         drafts,
         FormTemplateV2Manager(restApi, templateDao),
+        submissionManager,
         SavedStateHandle(mapOf(
             FormTemplateDetailV2ViewModel.EXTRA_TEMPLATE_ID to "template-1",
             FormTemplateListV2Activity.EXTRA_PATIENT_ID to "patient-1"

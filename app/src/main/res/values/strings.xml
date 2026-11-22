@@ -525,7 +525,6 @@
     <string name="activity_patients_title">My patients</string>
     <string name="patient_list_item_last_reading_from">Last reading</string>
     <string name="list_item_patient_id_label">ID</string>
-    <string name="list_item_saved_form_id_label">Saved form ID</string>
     <string name="list_item_saved_form_date_last_edited_label">Last edited</string>
     <string name="saved_form_success_dialog">Successfully saved form.</string>
     <string name="list_item_patient_village_number_label">Village</string>
@@ -864,6 +863,8 @@
     <string name="form_v2_submitted">Submitted form (V2)</string>
     <string name="form_v2_unnamed">Unnamed form</string>
     <string name="form_v2_records_load_error">Couldn\'t load V2 forms. Check your connection and try again.</string>
+    <string name="form_v2_records_authentication_error">Your session has expired. Please log in again to view these forms.</string>
+    <string name="form_v2_records_permission_error">You do not have permission to view these forms.</string>
     <string name="see_submitted_forms_v2">See Submitted Forms (V2)</string>
     <string name="submitted_forms_v2_empty">No submitted V2 forms for this patient.</string>
     <string name="form_submission_detail_v2_title">View Form (V2)</string>

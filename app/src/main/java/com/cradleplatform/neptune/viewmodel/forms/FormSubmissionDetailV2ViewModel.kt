@@ -4,7 +4,8 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
-import com.cradleplatform.neptune.http_sms_service.http.RestApi
+import com.cradleplatform.neptune.manager.FormSubmissionV2Manager
+import com.cradleplatform.neptune.manager.FormTemplateV2Manager
 import com.cradleplatform.neptune.manager.PatientManager
 import com.cradleplatform.neptune.model.FormSubmissionWithAnswersV2
 import com.cradleplatform.neptune.model.FormTemplateV2
@@ -29,7 +30,8 @@ sealed class FormSubmissionDetailV2State {
 
 @HiltViewModel
 class FormSubmissionDetailV2ViewModel @Inject constructor(
-    private val restApi: RestApi,
+    private val submissionManager: FormSubmissionV2Manager,
+    private val templateManager: FormTemplateV2Manager,
     private val patientManager: PatientManager,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
@@ -58,14 +60,14 @@ class FormSubmissionDetailV2ViewModel @Inject constructor(
     }
 
     private suspend fun readSubmissionAndTemplate(): FormSubmissionDetailV2State {
-        val result = restApi.getFormSubmissionV2(submissionId)
+        val result = submissionManager.getSubmission(submissionId, patientId)
         if (result !is NetworkResult.Success) return FormSubmissionDetailV2State.Error
         val submission = result.value
         if (submission.id != submissionId || submission.patientId != patientId) {
             return FormSubmissionDetailV2State.Error
         }
         // Use the submission's exact template ID, including unanswered questions and categories.
-        return when (val template = restApi.getFormTemplateV2(submission.formTemplateId)) {
+        return when (val template = templateManager.getTemplate(submission.formTemplateId)) {
             is NetworkResult.Success -> FormSubmissionDetailV2State.Success(
                 submission, template.value, patientManager.getPatientById(patientId)?.name
             )

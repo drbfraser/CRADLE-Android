@@ -19,6 +19,7 @@ import com.cradleplatform.neptune.adapters.forms.FormTemplateListV2Adapter
 import com.cradleplatform.neptune.viewmodel.forms.FormTemplateDetailV2State
 import com.cradleplatform.neptune.viewmodel.forms.FormTemplateListV2State
 import com.cradleplatform.neptune.viewmodel.forms.FormTemplateListV2ViewModel
+import com.cradleplatform.neptune.model.getAvailableLanguages
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -66,11 +67,7 @@ class FormTemplateListV2Activity : AppCompatActivity() {
 
                         if (state is FormTemplateDetailV2State.Success) {
                             val template = state.template
-                            val languages = (template.classification.name.keys +
-                                template.questions.orEmpty().flatMap { question ->
-                                    question.questionText.keys +
-                                        question.mcOptions.orEmpty().flatMap { it.translations.keys }
-                                }).distinct().sorted()
+                            val languages = template.getAvailableLanguages()
                             language.setAdapter(ArrayAdapter(this@FormTemplateListV2Activity,
                                 R.layout.list_dropdown_menu_item, languages))
                             language.isEnabled = languages.isNotEmpty()
