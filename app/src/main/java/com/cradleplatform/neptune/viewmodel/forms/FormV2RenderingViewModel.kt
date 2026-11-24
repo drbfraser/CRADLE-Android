@@ -35,6 +35,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.io.IOException
+import java.util.TimeZone
 import java.util.UUID
 import javax.inject.Inject
 
@@ -109,6 +110,7 @@ class FormV2RenderingViewModel @Inject constructor(
     private var clearSavedDraftStatusJob: Job? = null
     private var hasSubmitted = false
     private var submissionId: String? = null
+    private var submissionTimeZoneId: String? = null
     private var savedAnswers: Map<String, AnswerV2> = emptyMap()
     private var savedLanguage: String = selectedLanguage
     var hasSavedDraft: Boolean = false
@@ -176,6 +178,7 @@ class FormV2RenderingViewModel @Inject constructor(
     private fun restoreDraft(draft: FormV2Draft) {
         answerState.replaceAnswers(draft.answers)
         submissionId = draft.submissionId
+        submissionTimeZoneId = draft.submissionTimeZoneId
         // Keep the saved language unless the user explicitly selected one for this form.
         selectedLanguage = requestedLanguage ?: draft.language
         rememberSavedDraft(draft)
@@ -201,7 +204,10 @@ class FormV2RenderingViewModel @Inject constructor(
                 _draftSaveState.value = FormV2DraftSaveState.Saving
                 try {
                     // The DAO preserves createdAt on updates. Success follows the completed transaction.
-                    val currentDraft = draft.copy(submissionId = submissionId)
+                    val currentDraft = draft.copy(
+                        submissionId = submissionId,
+                        submissionTimeZoneId = submissionTimeZoneId
+                    )
                     formV2DraftDao.upsert(currentDraft)
                     rememberSavedDraft(currentDraft)
                     _draftSaveState.value = FormV2DraftSaveState.Saved
@@ -228,7 +234,8 @@ class FormV2RenderingViewModel @Inject constructor(
         val question = template.questions.orEmpty().firstOrNull { it.id == questionId } ?: return
         val result = FormV2SubmissionValidator.validate(
             template.copy(questions = listOf(question)),
-            answerState.toFormAnswers().filter { it.questionId == questionId }
+            answerState.toFormAnswers().filter { it.questionId == questionId },
+            timeZone = submissionTimeZoneId?.let(TimeZone::getTimeZone) ?: TimeZone.getDefault()
         )
         _submissionState.value = when (result) {
             is FormV2SubmissionValidationResult.Success -> FormV2SubmissionState.Idle
@@ -266,12 +273,15 @@ class FormV2RenderingViewModel @Inject constructor(
         val template = loadedTemplate ?: return
         val draftAnswers = answerState.toFormAnswers()
         val retrying = submissionId != null
-        val newAnswers = if (!retrying) validateAnswers(template, draftAnswers) ?: return else null
+        val timeZone = submissionTimeZoneId?.let(TimeZone::getTimeZone) ?: TimeZone.getDefault()
+        val newAnswers = if (!retrying) validateAnswers(template, draftAnswers, timeZone) ?: return else null
 
         _submissionState.value = FormV2SubmissionState.Submitting
         viewModelScope.launch {
             val requestId = try {
-                persistSubmissionDraft(patient, template, draftAnswers)
+                persistSubmissionDraft(
+                    patient, template, draftAnswers, if (retrying) submissionTimeZoneId else timeZone.id
+                )
             } catch (exception: CancellationException) {
                 throw exception
             } catch (exception: Exception) {
@@ -295,15 +305,21 @@ class FormV2RenderingViewModel @Inject constructor(
                     answers = draftAnswers
                 )
                 // An accepted date can expire before a lost response is recovered.
-                if (retrying && verifyExistingSubmission(request, template, allowMissing = true)) return@launch
-                val answers = newAnswers ?: validateAnswers(template, draftAnswers) ?: return@launch
+                if (retrying && verifyExistingSubmission(request, template, timeZone, allowMissing = true)) {
+                    return@launch
+                }
+                val answers = newAnswers ?: validateAnswers(template, draftAnswers, timeZone) ?: return@launch
+                // A legacy draft can acquire a time zone once GET proves no submission exists.
+                if (submissionTimeZoneId == null) {
+                    persistSubmissionDraft(patient, template, draftAnswers, timeZone.id)
+                }
                 when (val result = restApi.postFormSubmissionV2(request.copy(answers = answers))) {
                     is NetworkResult.Success -> completeSubmission(
                         result.value, request.copy(answers = answers), template
                     )
                     is NetworkResult.Failure -> {
                         if (result.statusCode == HTTP_CONFLICT) {
-                            verifyExistingSubmission(request, template)
+                            verifyExistingSubmission(request, template, timeZone)
                         } else {
                             reportHttpSubmissionError(result.statusCode)
                         }
@@ -325,8 +341,12 @@ class FormV2RenderingViewModel @Inject constructor(
         }
     }
 
-    private fun validateAnswers(template: FormTemplateV2, answers: List<FormAnswerV2>): List<FormAnswerV2>? =
-        when (val validation = FormV2SubmissionValidator.validate(template, answers)) {
+    private fun validateAnswers(
+        template: FormTemplateV2,
+        answers: List<FormAnswerV2>,
+        timeZone: TimeZone
+    ): List<FormAnswerV2>? =
+        when (val validation = FormV2SubmissionValidator.validate(template, answers, timeZone = timeZone)) {
             is FormV2SubmissionValidationResult.Success -> validation.answers
             is FormV2SubmissionValidationResult.Error -> {
                 _submissionState.value = FormV2SubmissionState.ValidationError(
@@ -340,6 +360,7 @@ class FormV2RenderingViewModel @Inject constructor(
     private suspend fun verifyExistingSubmission(
         request: CreateFormSubmissionRequestV2,
         template: FormTemplateV2,
+        timeZone: TimeZone,
         allowMissing: Boolean = false
     ): Boolean =
         when (val result = restApi.getFormSubmissionV2(requireNotNull(request.id))) {
@@ -348,7 +369,7 @@ class FormV2RenderingViewModel @Inject constructor(
                 val comparisonTemplate = template.copy(questions = template.questions?.map {
                     it.copy(allowPastDates = null, allowFutureDates = null)
                 })
-                val answers = validateAnswers(comparisonTemplate, request.answers)
+                val answers = validateAnswers(comparisonTemplate, request.answers, timeZone)
                 if (answers != null &&
                     FormV2SubmissionComparison.matches(request.copy(answers = answers), result.value)
                 ) {
@@ -435,13 +456,17 @@ class FormV2RenderingViewModel @Inject constructor(
     private suspend fun persistSubmissionDraft(
         patientId: String,
         template: FormTemplateV2,
-        answers: List<FormAnswerV2>
+        answers: List<FormAnswerV2>,
+        timeZoneId: String? = submissionTimeZoneId
     ): String = draftSaveMutex.withLock {
         val requestId = submissionId ?: UUID.randomUUID().toString()
-        val draft = createDraft(patientId, template, answers, requestId)
+        val draft = createDraft(patientId, template, answers, requestId).copy(
+            submissionTimeZoneId = timeZoneId
+        )
         formV2DraftDao.upsert(draft)
         rememberSavedDraft(draft)
         submissionId = requestId
+        submissionTimeZoneId = timeZoneId
         requestId
     }
 
@@ -487,7 +512,8 @@ class FormV2RenderingViewModel @Inject constructor(
             language = selectedLanguage,
             createdAt = now,
             updatedAt = now,
-            submissionId = submissionId
+            submissionId = submissionId,
+            submissionTimeZoneId = submissionTimeZoneId
         )
     }
 

@@ -31,6 +31,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
@@ -44,6 +45,7 @@ import org.junit.jupiter.api.Test
 import java.io.IOException
 import java.time.LocalDate
 import java.time.ZoneId
+import java.util.TimeZone
 
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class FormV2SubmissionRecoveryTest {
@@ -339,6 +341,80 @@ internal class FormV2SubmissionRecoveryTest {
         assertEquals(3, writes.size)
         assertFalse(writes.last().submissionId.isNullOrBlank())
         assertEquals(writes[1].submissionId, writes.last().submissionId)
+        assertFalse(writes[1].submissionTimeZoneId.isNullOrBlank())
+        assertEquals(writes[1].submissionTimeZoneId, writes.last().submissionTimeZoneId)
+    }
+
+    @Test
+    fun `DATE recovery uses the persisted submission zone after recreation`() = runTest(dispatcher) {
+        checkRecoveryAcrossTimeZones(QuestionTypeEnum.DATE)
+    }
+
+    @Test
+    fun `DATETIME recovery uses the persisted submission zone after recreation`() = runTest(dispatcher) {
+        checkRecoveryAcrossTimeZones(QuestionTypeEnum.DATETIME)
+    }
+
+    @Test
+    fun `edited date stays in the draft after switching time zones`() = runTest(dispatcher) {
+        checkRecoveryAcrossTimeZones(QuestionTypeEnum.DATE, edited = true)
+    }
+
+    private suspend fun TestScope.checkRecoveryAcrossTimeZones(type: QuestionTypeEnum, edited: Boolean = false) {
+        val previousZone = TimeZone.getDefault()
+        try {
+            val originalZone = TimeZone.getTimeZone("America/Vancouver")
+            TimeZone.setDefault(originalZone)
+            val template = template().copy(questions = listOf(
+                template().questions.orEmpty().first().copy(questionType = type)
+            ))
+            val date = if (type == QuestionTypeEnum.DATE) "2000-01-01" else "2000-01-01 12:30"
+            var stored = draft().copy(
+                formTemplate = template,
+                submissionId = null,
+                answers = listOf(FormAnswerV2(questionId = "q1", answer = AnswerV2.createDateAnswer(date)))
+            )
+            coEvery { drafts.getDraft("patient-1", "template-1") } coAnswers { stored }
+            coEvery { drafts.upsert(any()) } coAnswers { stored = firstArg() }
+            val requests = mutableListOf<CreateFormSubmissionRequestV2>()
+            coEvery { restApi.postFormSubmissionV2(capture(requests)) } throws IOException("Response lost")
+            val original = viewModel()
+            runCurrent()
+            original.submitForm()
+            runCurrent()
+            assertDraftKept(original)
+            assertEquals(originalZone.id, stored.submissionTimeZoneId)
+            val request = requests.single()
+            val localDate = LocalDate.of(2000, 1, 1)
+            val expected = if (type == QuestionTypeEnum.DATE) {
+                localDate.atStartOfDay(originalZone.toZoneId()).toEpochSecond()
+            } else {
+                localDate.atTime(12, 30).atZone(originalZone.toZoneId()).toEpochSecond()
+            }
+            assertEquals(expected.toString(), request.answers.single().answer.dateAnswer)
+            coEvery { restApi.getFormSubmissionV2(requireNotNull(request.id)) } returns NetworkResult.Success(
+                saved().copy(id = request.id, answers = listOf(saved().answers.orEmpty().single().copy(
+                    questionType = type, answer = request.answers.single().answer
+                ))), 200
+            )
+            TimeZone.setDefault(TimeZone.getTimeZone("Asia/Tokyo"))
+            original.saveDraft()?.join()
+            assertEquals(originalZone.id, stored.submissionTimeZoneId)
+            val recreated = viewModel()
+            runCurrent()
+            if (edited) recreated.answerState.setAnswer("q1", AnswerV2.createDateAnswer("2000-01-02"))
+            recreated.submitForm()
+            runCurrent()
+            if (edited) {
+                assertDraftKept(recreated)
+            } else {
+                assertEquals(FormV2SubmissionState.Submitted, recreated.submissionState.value)
+                coVerify(exactly = 1) { drafts.deleteDraft("patient-1", "template-1") }
+            }
+            coVerify(exactly = 1) { restApi.postFormSubmissionV2(any()) }
+        } finally {
+            TimeZone.setDefault(previousZone)
+        }
     }
 
     @Test

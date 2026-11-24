@@ -62,13 +62,19 @@ class FormV2DraftDaoTests {
     }
 
     @Test
-    fun upsertPreservesPreparedSubmissionIdWhenALaterSaveHasNoId() = runBlocking {
+    fun upsertPreservesPreparedSubmissionContextWhenALaterSaveHasNone() = runBlocking {
         val dao = database.formV2DraftDao()
-        dao.upsert(draft().copy(submissionId = "submission-1"))
+        dao.upsert(draft().copy(submissionId = "submission-1", submissionTimeZoneId = "America/Vancouver"))
 
         dao.upsert(draft().copy(updatedAt = 2000L))
 
         assertEquals("submission-1", dao.getDraft("patient-1", "template-1")!!.submissionId)
+        assertEquals("America/Vancouver", dao.getDraft("patient-1", "template-1")!!.submissionTimeZoneId)
+        dao.upsert(draft().copy(submissionId = "submission-1", submissionTimeZoneId = "Asia/Tokyo"))
+        assertEquals("America/Vancouver", dao.getDraft("patient-1", "template-1")!!.submissionTimeZoneId)
+        database.close()
+        database = openDatabase()
+        assertEquals("America/Vancouver", database.formV2DraftDao().getDraft("patient-1", "template-1")!!.submissionTimeZoneId)
     }
 
     @Test
