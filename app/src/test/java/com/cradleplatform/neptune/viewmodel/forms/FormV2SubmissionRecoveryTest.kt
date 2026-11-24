@@ -61,6 +61,7 @@ internal class FormV2SubmissionRecoveryTest {
         templateDao = mockk()
         submissionManager = mockk()
         coEvery { submissionManager.cacheSubmittedForm(any(), any(), any()) } returns Unit
+        coEvery { submissionManager.cacheVerifiedSubmission(any(), any(), any()) } returns Unit
         coEvery { templateDao.getTemplate(any()) } returns null
         coEvery { templateDao.saveTemplate(any()) } returns Unit
         coEvery { restApi.getFormTemplateV2("template-1") } returns NetworkResult.Success(template(), 200)
@@ -150,6 +151,7 @@ internal class FormV2SubmissionRecoveryTest {
         assertEquals(null, storedDraft)
         coVerify(exactly = 1) { restApi.postFormSubmissionV2(any()) }
         coVerify(exactly = 1) { restApi.getFormSubmissionV2(persistedId) }
+        coVerify { submissionManager.cacheVerifiedSubmission(saved().copy(id = persistedId), any(), any()) }
         coVerify(exactly = 1) { drafts.deleteDraft("patient-1", "template-1") }
         coVerify(exactly = 0) { restApi.patchFormSubmissionV2(any(), any()) }
     }
@@ -182,6 +184,7 @@ internal class FormV2SubmissionRecoveryTest {
         coVerifyOrder {
             drafts.upsert(any())
             restApi.getFormSubmissionV2("submission-1")
+            submissionManager.cacheVerifiedSubmission(any(), any(), any())
             drafts.deleteDraft("patient-1", "template-1")
         }
         viewModel.saveDraft()

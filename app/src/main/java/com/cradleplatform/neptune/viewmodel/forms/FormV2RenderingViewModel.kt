@@ -16,6 +16,7 @@ import com.cradleplatform.neptune.model.CreateFormSubmissionRequestV2
 import com.cradleplatform.neptune.model.FormAnswerV2
 import com.cradleplatform.neptune.model.FormV2Draft
 import com.cradleplatform.neptune.model.FormSubmissionV2
+import com.cradleplatform.neptune.model.FormSubmissionWithAnswersV2
 import com.cradleplatform.neptune.model.FormTemplateV2
 import com.cradleplatform.neptune.model.FormV2AnswerState
 import com.cradleplatform.neptune.model.FormV2SubmissionComparison
@@ -351,7 +352,7 @@ class FormV2RenderingViewModel @Inject constructor(
                 if (answers != null &&
                     FormV2SubmissionComparison.matches(request.copy(answers = answers), result.value)
                 ) {
-                    deleteSubmittedDraft(request.patientId, request.formTemplateId)
+                    completeVerifiedSubmission(result.value, request, template)
                 } else if (answers != null) {
                     _submissionState.value = FormV2SubmissionState.Error(
                         "The server form differs from this draft. Your draft was kept; no update was sent."
@@ -380,6 +381,25 @@ class FormV2RenderingViewModel @Inject constructor(
         } catch (exception: Exception) {
             // A local cache failure must not turn an accepted POST into a retry.
             Log.e(javaClass.simpleName, "Failed to cache submitted V2 form", exception)
+        }
+        deleteSubmittedDraft(request.patientId, template.id)
+    }
+
+    private suspend fun completeVerifiedSubmission(
+        submission: FormSubmissionWithAnswersV2,
+        request: CreateFormSubmissionRequestV2,
+        template: FormTemplateV2
+    ) {
+        try {
+            submissionManager.cacheVerifiedSubmission(submission, request, template)
+        } catch (exception: CancellationException) {
+            throw exception
+        } catch (exception: Exception) {
+            Log.e(javaClass.simpleName, "Failed to cache verified V2 form", exception)
+            _submissionState.value = FormV2SubmissionState.Error(
+                "Form was submitted, but could not be saved locally."
+            )
+            return
         }
         deleteSubmittedDraft(request.patientId, template.id)
     }
