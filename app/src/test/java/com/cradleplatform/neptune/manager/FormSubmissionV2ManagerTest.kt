@@ -121,6 +121,26 @@ internal class FormSubmissionV2ManagerTest {
     }
 
     @Test
+    fun `verified submission is cached from the retrieved server detail`() = runTest {
+        val template = FormTemplateV2(
+            id = "t1", version = 1, dateCreated = 1,
+            classification = FormClassificationV2("c1", mapOf("english" to "Form"), null)
+        )
+        val request = CreateFormSubmissionRequestV2(
+            id = "s1", formTemplateId = "t1", patientId = "p1", answers = emptyList()
+        )
+        coEvery { templates.cacheTemplate(template) } returns Unit
+        coEvery { dao.upsert(any()) } returns Unit
+
+        manager.cacheVerifiedSubmission(detail, request, template)
+
+        coVerify { dao.upsert(FormSubmissionV2Entity(summary, emptyList())) }
+        coVerify { templates.cacheTemplate(template) }
+        coVerify(exactly = 0) { restApi.getFormSubmissionV2(any()) }
+        coVerify(exactly = 0) { restApi.getPatientFormSubmissionsV2(any()) }
+    }
+
+    @Test
     fun `accepted POST is cached while sync waits and stale sync cannot remove it`() = runTest {
         val downloading = CompletableDeferred<Unit>()
         val response = CompletableDeferred<NetworkResult<List<FormSubmissionV2>>>()

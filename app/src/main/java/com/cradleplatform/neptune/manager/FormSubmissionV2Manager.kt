@@ -58,6 +58,34 @@ class FormSubmissionV2Manager @Inject constructor(
         cacheRevision++
     }
 
+    /** Caches a verified submission returned while recovering from a lost POST response. */
+    suspend fun cacheVerifiedSubmission(
+        submission: FormSubmissionWithAnswersV2,
+        request: CreateFormSubmissionRequestV2,
+        template: FormTemplateV2
+    ): Unit = cacheMutex.withLock {
+        require(submission.id == request.id && submission.patientId == request.patientId &&
+            submission.formTemplateId == template.id && submission.lang == request.lang &&
+            !submission.archived) { "Unexpected V2 submission response" }
+        val cachedSubmission = FormSubmissionV2(
+            id = requireNotNull(submission.id),
+            formTemplateId = submission.formTemplateId,
+            patientId = submission.patientId,
+            userId = submission.userId,
+            dateSubmitted = requireNotNull(submission.dateSubmitted),
+            lastEdited = requireNotNull(submission.lastEdited),
+            lang = submission.lang,
+            archived = submission.archived,
+            name = template.classification.name.getTranslation(submission.lang),
+            revision = submission.revision
+        )
+        templateManager.cacheTemplate(template)
+        submissionDao.upsert(FormSubmissionV2Entity(
+            cachedSubmission, requireNotNull(submission.answers)
+        ))
+        cacheRevision++
+    }
+
     suspend fun getCachedSubmissions(patientId: String): List<FormSubmissionV2> =
         submissionDao.observeSubmissionsByPatientId(patientId).first().map { it.submission }
 

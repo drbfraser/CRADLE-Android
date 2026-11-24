@@ -9,15 +9,17 @@ import com.cradleplatform.neptune.activities.forms.FormV2RenderingActivity
 import com.cradleplatform.neptune.database.daos.FormV2DraftDao
 import com.cradleplatform.neptune.http_sms_service.http.NetworkResult
 import com.cradleplatform.neptune.http_sms_service.http.RestApi
+import com.cradleplatform.neptune.manager.FormSubmissionV2Manager
 import com.cradleplatform.neptune.manager.FormTemplateV2Manager
 import com.cradleplatform.neptune.model.AnswerV2
-import com.cradleplatform.neptune.manager.FormSubmissionV2Manager
 import com.cradleplatform.neptune.model.CreateFormSubmissionRequestV2
 import com.cradleplatform.neptune.model.FormAnswerV2
 import com.cradleplatform.neptune.model.FormV2Draft
-import com.cradleplatform.neptune.model.FormTemplateV2
 import com.cradleplatform.neptune.model.FormSubmissionV2
+import com.cradleplatform.neptune.model.FormSubmissionWithAnswersV2
+import com.cradleplatform.neptune.model.FormTemplateV2
 import com.cradleplatform.neptune.model.FormV2AnswerState
+import com.cradleplatform.neptune.model.FormV2SubmissionComparison
 import com.cradleplatform.neptune.model.FormV2SubmissionValidationResult
 import com.cradleplatform.neptune.model.FormV2SubmissionValidator
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -199,8 +201,9 @@ class FormV2RenderingViewModel @Inject constructor(
                 _draftSaveState.value = FormV2DraftSaveState.Saving
                 try {
                     // The DAO preserves createdAt on updates. Success follows the completed transaction.
-                    formV2DraftDao.upsert(draft)
-                    rememberSavedDraft(draft)
+                    val currentDraft = draft.copy(submissionId = submissionId)
+                    formV2DraftDao.upsert(currentDraft)
+                    rememberSavedDraft(currentDraft)
                     _draftSaveState.value = FormV2DraftSaveState.Saved
                     clearSavedDraftStatusJob = viewModelScope.launch {
                         delay(DRAFT_SAVE_SUCCESS_VISIBLE_MILLIS)
@@ -262,19 +265,8 @@ class FormV2RenderingViewModel @Inject constructor(
         val patient = patientId?.takeIf { it.isNotBlank() } ?: return
         val template = loadedTemplate ?: return
         val draftAnswers = answerState.toFormAnswers()
-        val answers = when (val validation = FormV2SubmissionValidator.validate(
-            template,
-            draftAnswers
-        )) {
-            is FormV2SubmissionValidationResult.Error -> {
-                _submissionState.value = FormV2SubmissionState.ValidationError(
-                    validation.questionId,
-                    validation.message
-                )
-                return
-            }
-            is FormV2SubmissionValidationResult.Success -> validation.answers
-        }
+        val retrying = submissionId != null
+        val newAnswers = if (!retrying) validateAnswers(template, draftAnswers) ?: return else null
 
         _submissionState.value = FormV2SubmissionState.Submitting
         viewModelScope.launch {
@@ -300,11 +292,22 @@ class FormV2RenderingViewModel @Inject constructor(
                     formTemplateId = template.id,
                     patientId = patient,
                     lang = submissionLanguage,
-                    answers = answers
+                    answers = draftAnswers
                 )
-                when (val result = restApi.postFormSubmissionV2(request)) {
-                    is NetworkResult.Success -> completeSubmission(result.value, request, template)
-                    is NetworkResult.Failure -> reportHttpSubmissionError(result.statusCode)
+                // An accepted date can expire before a lost response is recovered.
+                if (retrying && verifyExistingSubmission(request, template, allowMissing = true)) return@launch
+                val answers = newAnswers ?: validateAnswers(template, draftAnswers) ?: return@launch
+                when (val result = restApi.postFormSubmissionV2(request.copy(answers = answers))) {
+                    is NetworkResult.Success -> completeSubmission(
+                        result.value, request.copy(answers = answers), template
+                    )
+                    is NetworkResult.Failure -> {
+                        if (result.statusCode == HTTP_CONFLICT) {
+                            verifyExistingSubmission(request, template)
+                        } else {
+                            reportHttpSubmissionError(result.statusCode)
+                        }
+                    }
                     is NetworkResult.NetworkException -> reportSubmissionError(
                         result.cause.message ?: "Network error", FormV2SubmissionErrorType.NETWORK_ERROR
                     )
@@ -322,6 +325,49 @@ class FormV2RenderingViewModel @Inject constructor(
         }
     }
 
+    private fun validateAnswers(template: FormTemplateV2, answers: List<FormAnswerV2>): List<FormAnswerV2>? =
+        when (val validation = FormV2SubmissionValidator.validate(template, answers)) {
+            is FormV2SubmissionValidationResult.Success -> validation.answers
+            is FormV2SubmissionValidationResult.Error -> {
+                _submissionState.value = FormV2SubmissionState.ValidationError(
+                    validation.questionId, validation.message
+                )
+                null
+            }
+        }
+
+    /** False permits a fresh POST only after a preflight GET explicitly returns 404. */
+    private suspend fun verifyExistingSubmission(
+        request: CreateFormSubmissionRequestV2,
+        template: FormTemplateV2,
+        allowMissing: Boolean = false
+    ): Boolean =
+        when (val result = restApi.getFormSubmissionV2(requireNotNull(request.id))) {
+            is NetworkResult.Success -> {
+                // Normalize stored dates without applying today's restrictions to a historical submission.
+                val comparisonTemplate = template.copy(questions = template.questions?.map {
+                    it.copy(allowPastDates = null, allowFutureDates = null)
+                })
+                val answers = validateAnswers(comparisonTemplate, request.answers)
+                if (answers != null &&
+                    FormV2SubmissionComparison.matches(request.copy(answers = answers), result.value)
+                ) {
+                    completeVerifiedSubmission(result.value, request, template)
+                } else if (answers != null) {
+                    _submissionState.value = FormV2SubmissionState.Error(
+                        "The server form differs from this draft. Your draft was kept; no update was sent."
+                    )
+                }
+                true
+            }
+            is NetworkResult.Failure -> {
+                val canCreate = allowMissing && result.statusCode == HTTP_NOT_FOUND
+                if (!canCreate) reportHttpSubmissionError(result.statusCode)
+                !canCreate
+            }
+            is NetworkResult.NetworkException -> throw result.cause
+        }
+
     private suspend fun completeSubmission(
         submission: FormSubmissionV2,
         request: CreateFormSubmissionRequestV2,
@@ -335,6 +381,25 @@ class FormV2RenderingViewModel @Inject constructor(
         } catch (exception: Exception) {
             // A local cache failure must not turn an accepted POST into a retry.
             Log.e(javaClass.simpleName, "Failed to cache submitted V2 form", exception)
+        }
+        deleteSubmittedDraft(request.patientId, template.id)
+    }
+
+    private suspend fun completeVerifiedSubmission(
+        submission: FormSubmissionWithAnswersV2,
+        request: CreateFormSubmissionRequestV2,
+        template: FormTemplateV2
+    ) {
+        try {
+            submissionManager.cacheVerifiedSubmission(submission, request, template)
+        } catch (exception: CancellationException) {
+            throw exception
+        } catch (exception: Exception) {
+            Log.e(javaClass.simpleName, "Failed to cache verified V2 form", exception)
+            _submissionState.value = FormV2SubmissionState.Error(
+                "Form was submitted, but could not be saved locally."
+            )
+            return
         }
         deleteSubmittedDraft(request.patientId, template.id)
     }
@@ -428,5 +493,7 @@ class FormV2RenderingViewModel @Inject constructor(
 
     private companion object {
         const val DRAFT_SAVE_SUCCESS_VISIBLE_MILLIS = 3_000L
+        const val HTTP_CONFLICT = 409
+        const val HTTP_NOT_FOUND = 404
     }
 }
