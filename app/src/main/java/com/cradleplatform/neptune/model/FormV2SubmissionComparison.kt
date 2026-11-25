@@ -2,9 +2,7 @@ package com.cradleplatform.neptune.model
 
 object FormV2SubmissionComparison {
     fun matches(request: CreateFormSubmissionRequestV2, saved: FormSubmissionWithAnswersV2): Boolean {
-        val sameForm = request.id == saved.id && request.patientId == saved.patientId &&
-            request.formTemplateId == saved.formTemplateId
-        if (!sameForm || request.lang != saved.lang || saved.archived) {
+        if (!matchesIdentity(request, saved)) {
             return false
         }
 
@@ -17,6 +15,10 @@ object FormV2SubmissionComparison {
                 answersByQuestion[expected.questionId]?.answer?.let { sameAnswer(expected.answer, it) } == true
             }
     }
+
+    fun matchesIdentity(request: CreateFormSubmissionRequestV2, saved: FormSubmissionWithAnswersV2): Boolean =
+        request.id == saved.id && request.patientId == saved.patientId &&
+            request.formTemplateId == saved.formTemplateId && request.lang == saved.lang && !saved.archived
 
     private fun sameAnswer(first: AnswerV2, second: AnswerV2): Boolean =
         sameNumber(first.numericAnswer, second.numericAnswer) &&

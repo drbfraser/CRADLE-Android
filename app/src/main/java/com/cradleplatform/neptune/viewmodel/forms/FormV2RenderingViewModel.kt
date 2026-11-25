@@ -22,6 +22,8 @@ import com.cradleplatform.neptune.model.FormV2AnswerState
 import com.cradleplatform.neptune.model.FormV2SubmissionComparison
 import com.cradleplatform.neptune.model.FormV2SubmissionValidationResult
 import com.cradleplatform.neptune.model.FormV2SubmissionValidator
+import com.cradleplatform.neptune.model.ReplaceFormRequestBodyV2
+import com.cradleplatform.neptune.model.ReplacementFormAnswerV2
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
@@ -104,6 +106,8 @@ class FormV2RenderingViewModel @Inject constructor(
     val draftDeleteState: StateFlow<FormV2DraftDeleteState> = _draftDeleteState.asStateFlow()
     private val _submissionState = MutableStateFlow<FormV2SubmissionState>(FormV2SubmissionState.Idle)
     val submissionState: StateFlow<FormV2SubmissionState> = _submissionState.asStateFlow()
+    private val _submissionConflict = MutableStateFlow<FormV2SubmissionConflict?>(null)
+    val submissionConflict: StateFlow<FormV2SubmissionConflict?> = _submissionConflict.asStateFlow()
     private val _submissionErrors = Channel<FormV2SubmissionErrorType>(Channel.BUFFERED)
     val submissionErrors = _submissionErrors.receiveAsFlow()
     private val draftSaveMutex = Mutex()
@@ -246,6 +250,7 @@ class FormV2RenderingViewModel @Inject constructor(
 
     fun deleteDraft(): Job? {
         if (!canDeleteDraft) return null
+        _submissionConflict.value = null
         val patient = patientId ?: return null
         _draftDeleteState.value = FormV2DraftDeleteState.Deleting
         return viewModelScope.launch {
@@ -269,6 +274,7 @@ class FormV2RenderingViewModel @Inject constructor(
     /** Validates the current answers, saves a local draft, and submits the form. */
     fun submitForm() {
         if (!canSubmit) return
+        _submissionConflict.value = null
         val patient = patientId?.takeIf { it.isNotBlank() } ?: return
         val template = loadedTemplate ?: return
         val draftAnswers = answerState.toFormAnswers()
@@ -376,6 +382,14 @@ class FormV2RenderingViewModel @Inject constructor(
                 ) {
                     completeVerifiedSubmission(result.value, request, template)
                 } else if (answers != null) {
+                    val server = result.value
+                    if (FormV2SubmissionComparison.matchesIdentity(request, server) &&
+                        server.answers != null && (server.revision ?: 0) > 0
+                    ) {
+                        _submissionConflict.value = FormV2SubmissionConflict(
+                            request, request.copy(answers = answers), server, timeZone.id
+                        )
+                    }
                     _submissionState.value = FormV2SubmissionState.Error(
                         "The server form differs from this draft. Your draft was kept; no update was sent."
                     )
@@ -389,6 +403,64 @@ class FormV2RenderingViewModel @Inject constructor(
             }
             is NetworkResult.NetworkException -> throw result.cause
         }
+
+    fun cancelSubmissionUpdate() {
+        _submissionConflict.value = null
+    }
+
+    /** Sends only the answers reviewed against this server revision. */
+    fun confirmSubmissionUpdate() {
+        val conflict = _submissionConflict.value ?: return
+        if (!canSubmit) return
+        val template = loadedTemplate ?: return
+        _submissionConflict.value = null
+        if (answerState.toFormAnswers() != conflict.draftRequest.answers || language != conflict.draftRequest.lang) {
+            _submissionState.value = FormV2SubmissionState.Error("Answers changed. Submit again to review the changes.")
+            return
+        }
+        val timeZone = TimeZone.getTimeZone(conflict.timeZoneId)
+        val answers = validateAnswers(conflict.validationTemplate(template), conflict.draftRequest.answers, timeZone)
+            ?: return
+        _submissionState.value = FormV2SubmissionState.Submitting
+        viewModelScope.launch {
+            try {
+                val request = conflict.draftRequest.copy(answers = answers)
+                persistSubmissionDraft(request.patientId, template, conflict.draftRequest.answers, timeZone.id)
+                val replacement = ReplaceFormRequestBodyV2(
+                    requireNotNull(conflict.server.revision),
+                    answers.map { ReplacementFormAnswerV2(it.questionId, it.answer) }
+                )
+                when (val result = restApi.putFormSubmissionV2(requireNotNull(request.id), replacement)) {
+                    is NetworkResult.Success -> {
+                        require(FormV2SubmissionComparison.matchesIdentity(request, conflict.server) &&
+                            result.value.id == request.id && result.value.patientId == request.patientId &&
+                            result.value.formTemplateId == request.formTemplateId &&
+                            result.value.lang == request.lang && !result.value.archived &&
+                            (result.value.revision ?: 0) > replacement.expectedRevision)
+                        // Keep the draft if the accepted update cannot be cached locally.
+                        submissionManager.cacheSubmittedForm(result.value, request, template)
+                        deleteSubmittedDraft(request.patientId, template.id)
+                    }
+                    is NetworkResult.Failure -> {
+                        if (result.statusCode == HTTP_CONFLICT) {
+                            verifyExistingSubmission(conflict.draftRequest, template, timeZone)
+                        } else {
+                            reportHttpSubmissionError(result.statusCode)
+                        }
+                    }
+                    is NetworkResult.NetworkException -> throw result.cause
+                }
+            } catch (exception: CancellationException) {
+                throw exception
+            } catch (exception: IOException) {
+                reportSubmissionError(exception.message ?: "Network error", FormV2SubmissionErrorType.NETWORK_ERROR)
+            } catch (exception: Exception) {
+                Log.e(javaClass.simpleName, "Failed to update V2 form", exception)
+                reportSubmissionError("Unable to complete the update. Your draft was kept.",
+                    FormV2SubmissionErrorType.SERVER_ERROR)
+            }
+        }
+    }
 
     private suspend fun completeSubmission(
         submission: FormSubmissionV2,

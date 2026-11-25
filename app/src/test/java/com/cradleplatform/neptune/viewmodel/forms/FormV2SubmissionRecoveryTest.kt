@@ -537,6 +537,179 @@ internal class FormV2SubmissionRecoveryTest {
         coVerify(exactly = 1) { drafts.deleteDraft("patient-1", "template-1") }
     }
 
+    @Test
+    fun `confirmed update sends complete answers and caches before deleting`() = runTest(dispatcher) {
+        val viewModel = prepareUpdate()
+        coVerify(exactly = 0) { restApi.putFormSubmissionV2(any(), any()) }
+        viewModel.confirmSubmissionUpdate()
+        runCurrent()
+        assertEquals(FormV2SubmissionState.Submitted, viewModel.submissionState.value)
+        coVerifyOrder {
+            drafts.upsert(any())
+            restApi.putFormSubmissionV2("submission-1", match {
+                it.expectedRevision == 1L && it.answers.single().answer.textAnswer == "Fever"
+            })
+            submissionManager.cacheSubmittedForm(any(), match {
+                it.answers.single().answer.textAnswer == "Fever"
+            }, any())
+            drafts.deleteDraft("patient-1", "template-1")
+        }
+        coVerify(exactly = 0) { restApi.postFormSubmissionV2(any()) }
+    }
+
+    @Test
+    fun `cancelled or outdated confirmation cannot update the server`() = runTest(dispatcher) {
+        val viewModel = prepareUpdate()
+        viewModel.cancelSubmissionUpdate()
+        viewModel.confirmSubmissionUpdate()
+        runCurrent()
+        viewModel.submitForm()
+        runCurrent()
+        viewModel.answerState.setAnswer("q1", AnswerV2.createTextAnswer("Changed again"))
+        viewModel.confirmSubmissionUpdate()
+        runCurrent()
+        assertDraftKept(viewModel)
+        coVerify(exactly = 0) { restApi.putFormSubmissionV2(any(), any()) }
+    }
+
+    @Test
+    fun `PUT conflict refreshes revision and requires another confirmation`() = runTest(dispatcher) {
+        val viewModel = prepareUpdate()
+        coEvery { restApi.putFormSubmissionV2(any(), any()) } returns NetworkResult.Failure(ByteArray(0), 409)
+        coEvery { restApi.getFormSubmissionV2("submission-1") } returns
+            NetworkResult.Success(saved().copy(revision = 2), 200)
+        viewModel.confirmSubmissionUpdate()
+        runCurrent()
+        assertDraftKept(viewModel)
+        assertEquals(2L, viewModel.submissionConflict.value?.server?.revision)
+        coVerify(exactly = 1) { restApi.putFormSubmissionV2(any(), any()) }
+    }
+
+    @Test
+    fun `lost PUT response is recovered by GET without another update`() = runTest(dispatcher) {
+        val viewModel = prepareUpdate()
+        coEvery { restApi.putFormSubmissionV2(any(), any()) } throws IOException("Response lost")
+        viewModel.confirmSubmissionUpdate()
+        runCurrent()
+        assertDraftKept(viewModel)
+        coEvery { restApi.getFormSubmissionV2("submission-1") } returns NetworkResult.Success(
+            saved().copy(revision = 2, answers = saved().answers!!.map {
+                it.copy(answer = AnswerV2.createTextAnswer("Fever"))
+            }), 200
+        )
+        viewModel.submitForm()
+        runCurrent()
+        assertEquals(FormV2SubmissionState.Submitted, viewModel.submissionState.value)
+        coVerify(exactly = 1) { restApi.putFormSubmissionV2(any(), any()) }
+        coVerify(exactly = 0) { restApi.postFormSubmissionV2(any()) }
+    }
+
+    @Test
+    fun `update cache failure keeps the draft`() = runTest(dispatcher) {
+        val viewModel = prepareUpdate()
+        coEvery { submissionManager.cacheSubmittedForm(any(), any(), any()) } throws IllegalStateException("Disk full")
+        viewModel.confirmSubmissionUpdate()
+        runCurrent()
+        assertDraftKept(viewModel)
+    }
+
+    @Test
+    fun `archived mismatched and unversioned forms cannot be updated`() = runTest(dispatcher) {
+        for (server in listOf(saved().copy(archived = true), saved().copy(patientId = "other"),
+            saved().copy(lang = "French"), saved().copy(revision = null))) {
+            coEvery { restApi.getFormSubmissionV2("submission-1") } returns NetworkResult.Success(server, 200)
+            val viewModel = viewModel()
+            runCurrent()
+            viewModel.answerState.setAnswer("q1", AnswerV2.createTextAnswer("Fever"))
+            viewModel.submitForm()
+            runCurrent()
+            assertEquals(null, viewModel.submissionConflict.value)
+            viewModel.confirmSubmissionUpdate()
+            runCurrent()
+            assertDraftKept(viewModel)
+        }
+        coVerify(exactly = 0) { restApi.putFormSubmissionV2(any(), any()) }
+    }
+
+    @Test
+    fun `replacement omits cleared optional answers`() = runTest(dispatcher) {
+        val original = saved()
+        coEvery { restApi.getFormSubmissionV2("submission-1") } returns NetworkResult.Success(
+            original.copy(answers = original.answers!! + original.answers.single().copy(
+                questionId = "q2", answer = AnswerV2.createTextAnswer("Old note")
+            )), 200
+        )
+        val viewModel = prepareUpdate()
+        viewModel.confirmSubmissionUpdate()
+        runCurrent()
+        coVerify { restApi.putFormSubmissionV2(any(), match { it.answers.map { answer -> answer.questionId } ==
+            listOf("q1") }) }
+    }
+
+    @Test
+    fun `draft write failure prevents PUT`() = runTest(dispatcher) {
+        val viewModel = prepareUpdate()
+        coEvery { drafts.upsert(any()) } throws IllegalStateException("Disk full")
+        viewModel.confirmSubmissionUpdate()
+        runCurrent()
+        assertDraftKept(viewModel)
+        coVerify(exactly = 0) { restApi.putFormSubmissionV2(any(), any()) }
+    }
+
+    @Test
+    fun `unchanged historical date can be retained while adding an optional answer`() = runTest(dispatcher) {
+        val original = template()
+        val template = original.copy(questions = listOf(
+            original.questions!!.first().copy(questionType = QuestionTypeEnum.DATE, allowPastDates = false),
+            original.questions.last()
+        ))
+        coEvery { drafts.getDraft("patient-1", "template-1") } returns draft().copy(
+            formTemplate = template, answers = listOf(
+                FormAnswerV2(questionId = "q1", answer = AnswerV2.createDateAnswer("2000-01-01"))
+            )
+        )
+        val seconds = LocalDate.of(2000, 1, 1).atStartOfDay(ZoneId.systemDefault()).toEpochSecond().toString()
+        coEvery { restApi.getFormSubmissionV2("submission-1") } returns NetworkResult.Success(saved().copy(
+            answers = saved().answers!!.map { it.copy(questionType = QuestionTypeEnum.DATE,
+                answer = AnswerV2.createDateAnswer(seconds)) }
+        ), 200)
+        coEvery { restApi.putFormSubmissionV2(any(), any()) } returns NetworkResult.Failure(ByteArray(0), 422)
+        val viewModel = viewModel()
+        runCurrent()
+        viewModel.answerState.setAnswer("q2", AnswerV2.createTextAnswer("New note"))
+        viewModel.submitForm()
+        runCurrent()
+        viewModel.confirmSubmissionUpdate()
+        runCurrent()
+        coVerify(exactly = 1) { restApi.putFormSubmissionV2(any(), match {
+            it.answers.size == 2 && it.answers.first().answer.dateAnswer == seconds
+        }) }
+        assertDraftKept(viewModel)
+
+        // A changed historical date must still pass the current date restriction.
+        viewModel.answerState.setAnswer("q1", AnswerV2.createDateAnswer("2000-01-02"))
+        viewModel.submitForm()
+        runCurrent()
+        viewModel.confirmSubmissionUpdate()
+        runCurrent()
+        assertTrue(viewModel.submissionState.value is FormV2SubmissionState.ValidationError)
+        coVerify(exactly = 1) { restApi.putFormSubmissionV2(any(), any()) }
+    }
+
+    private fun TestScope.prepareUpdate(): FormV2RenderingViewModel {
+        coEvery { restApi.putFormSubmissionV2(any(), any()) } returns NetworkResult.Success(FormSubmissionV2(
+            id = "submission-1", formTemplateId = "template-1", patientId = "patient-1", userId = 1,
+            dateSubmitted = 0, lastEdited = 1, lang = "English", archived = false, revision = 2
+        ), 200)
+        val viewModel = viewModel()
+        runCurrent()
+        viewModel.answerState.setAnswer("q1", AnswerV2.createTextAnswer("Fever"))
+        viewModel.submitForm()
+        runCurrent()
+        assertEquals(1L, viewModel.submissionConflict.value?.server?.revision)
+        return viewModel
+    }
+
     private fun mockExpiredDate(type: QuestionTypeEnum, submissionId: String? = "submission-1") {
         val template = template().copy(questions = listOf(
             template().questions.orEmpty().first().copy(questionType = type, allowPastDates = false)
@@ -591,7 +764,7 @@ internal class FormV2SubmissionRecoveryTest {
 
     private fun saved() = FormSubmissionWithAnswersV2(
         id = "submission-1", patientId = "patient-1", formTemplateId = "template-1", userId = 1,
-        lang = "English", archived = false, dateSubmitted = 0, lastEdited = 0,
+        lang = "English", archived = false, dateSubmitted = 0, lastEdited = 0, revision = 1,
         answers = listOf(AnswerWithQuestionV2(
             id = "answer-1", questionId = "q1", formSubmissionId = "submission-1",
             answer = AnswerV2.createTextAnswer("Headache"), questionType = QuestionTypeEnum.STRING,
