@@ -292,22 +292,23 @@ class FormV2RenderingViewModel @Inject constructor(
                 return@launch
             }
             try {
+                val recoveryRequest = CreateFormSubmissionRequestV2(
+                    id = requestId,
+                    formTemplateId = template.id,
+                    patientId = patient,
+                    lang = selectedLanguage,
+                    answers = draftAnswers
+                )
+                // A saved submission may use a language that is no longer in the current template.
+                if (retrying && verifyExistingSubmission(recoveryRequest, template, timeZone, allowMissing = true)) {
+                    return@launch
+                }
                 val submissionLanguage = resolveSubmissionLanguage(template) ?: return@launch
                 if (selectedLanguage != submissionLanguage) {
                     selectedLanguage = submissionLanguage
                     persistSubmissionDraft(patient, template, draftAnswers)
                 }
-                val request = CreateFormSubmissionRequestV2(
-                    id = requestId,
-                    formTemplateId = template.id,
-                    patientId = patient,
-                    lang = submissionLanguage,
-                    answers = draftAnswers
-                )
-                // An accepted date can expire before a lost response is recovered.
-                if (retrying && verifyExistingSubmission(request, template, timeZone, allowMissing = true)) {
-                    return@launch
-                }
+                val request = recoveryRequest.copy(lang = submissionLanguage)
                 val answers = newAnswers ?: validateAnswers(template, draftAnswers, timeZone) ?: return@launch
                 // A legacy draft can acquire a time zone once GET proves no submission exists.
                 if (submissionTimeZoneId == null) {

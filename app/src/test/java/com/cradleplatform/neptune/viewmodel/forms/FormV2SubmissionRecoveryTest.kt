@@ -83,19 +83,21 @@ internal class FormV2SubmissionRecoveryTest {
     }
 
     @Test
-    fun `restored draft language is normalized before confirming a saved submission`() = runTest(dispatcher) {
-        coEvery { drafts.getDraft("patient-1", "template-1") } returns draft().copy(language = "french")
+    fun `restored draft language confirms a saved submission before querying template languages`() = runTest(dispatcher) {
+        coEvery { drafts.getDraft("patient-1", "template-1") } returns draft().copy(language = "French")
         coEvery { restApi.getFormSubmissionV2("submission-1") } returns
             NetworkResult.Success(saved().copy(lang = "French"), 200)
+        coEvery { restApi.getFormTemplateLanguagesV2("template-1") } returns
+            NetworkResult.NetworkException(IOException("Disconnected"))
         val viewModel = viewModel()
         runCurrent()
-        assertEquals("french", viewModel.language)
+        assertEquals("French", viewModel.language)
         viewModel.submitForm()
         runCurrent()
 
         assertEquals("French", viewModel.language)
         assertEquals(FormV2SubmissionState.Submitted, viewModel.submissionState.value)
-        coVerify { drafts.upsert(match { it.language == "French" && it.submissionId == "submission-1" }) }
+        coVerify(exactly = 0) { restApi.getFormTemplateLanguagesV2("template-1") }
         coVerify(exactly = 0) { restApi.postFormSubmissionV2(any()) }
         coVerify(exactly = 1) { drafts.deleteDraft("patient-1", "template-1") }
     }
@@ -110,6 +112,7 @@ internal class FormV2SubmissionRecoveryTest {
 
         assertDraftKept(viewModel)
         coVerify { drafts.upsert(match { it.language == "French" }) }
+        coVerify(exactly = 0) { restApi.getFormTemplateLanguagesV2("template-1") }
         coVerify(exactly = 0) { restApi.postFormSubmissionV2(any()) }
     }
 
