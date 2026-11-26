@@ -103,6 +103,67 @@ internal class FormV2SubmissionRecoveryTest {
     }
 
     @Test
+    fun `legacy language casing recovers using server spelling without template languages`() = runTest(dispatcher) {
+        coEvery { drafts.getDraft("patient-1", "template-1") } returns draft().copy(language = "english")
+        coEvery { restApi.getFormTemplateLanguagesV2(any()) } throws IOException("Disconnected")
+        val viewModel = viewModel()
+        runCurrent()
+        viewModel.submitForm()
+        runCurrent()
+
+        assertEquals("English", viewModel.language)
+        assertEquals(FormV2SubmissionState.Submitted, viewModel.submissionState.value)
+        coVerifyOrder {
+            drafts.upsert(match { it.language == "English" && it.submissionId == "submission-1" })
+            submissionManager.cacheVerifiedSubmission(any(), match { it.lang == "English" }, any())
+            drafts.deleteDraft("patient-1", "template-1")
+        }
+        coVerify(exactly = 0) { restApi.getFormTemplateLanguagesV2(any()) }
+        coVerify(exactly = 0) { restApi.postFormSubmissionV2(any()) }
+    }
+
+    @Test
+    fun `case-only language changes allow confirmed answer updates`() = runTest(dispatcher) {
+        coEvery { drafts.getDraft("patient-1", "template-1") } returns draft().copy(language = "english")
+        val viewModel = prepareUpdate()
+        assertEquals("English", viewModel.submissionConflict.value?.draftRequest?.lang)
+        assertEquals("English", viewModel.language)
+        viewModel.confirmSubmissionUpdate()
+        runCurrent()
+        assertEquals(FormV2SubmissionState.Submitted, viewModel.submissionState.value)
+        coVerify { submissionManager.cacheSubmittedForm(any(), match { it.lang == "English" }, any()) }
+        coVerify(exactly = 1) { restApi.putFormSubmissionV2(any(), any()) }
+        coVerify(exactly = 0) { restApi.getFormTemplateLanguagesV2(any()) }
+    }
+
+    @Test
+    fun `failed canonical language save keeps the draft without confirming recovery`() = runTest(dispatcher) {
+        coEvery { drafts.getDraft("patient-1", "template-1") } returns draft().copy(language = "english")
+        coEvery { drafts.upsert(match { it.language == "English" }) } throws IllegalStateException("Disk full")
+        val viewModel = viewModel()
+        runCurrent()
+        viewModel.submitForm()
+        runCurrent()
+        assertDraftKept(viewModel)
+        coVerify(exactly = 0) { submissionManager.cacheVerifiedSubmission(any(), any(), any()) }
+        coVerify(exactly = 0) { restApi.putFormSubmissionV2(any(), any()) }
+    }
+
+    @Test
+    fun `unrelated server identity does not normalize draft language`() = runTest(dispatcher) {
+        coEvery { drafts.getDraft("patient-1", "template-1") } returns draft().copy(language = "english")
+        coEvery { restApi.getFormSubmissionV2("submission-1") } returns
+            NetworkResult.Success(saved().copy(patientId = "other"), 200)
+        val viewModel = viewModel()
+        runCurrent()
+        viewModel.submitForm()
+        runCurrent()
+        assertEquals("english", viewModel.language)
+        assertEquals(null, viewModel.submissionConflict.value)
+        assertDraftKept(viewModel)
+    }
+
+    @Test
     fun `a changed language does not discard a draft even when answers match`() = runTest(dispatcher) {
         coEvery { drafts.getDraft("patient-1", "template-1") } returns draft().copy(language = "French")
         val viewModel = viewModel()
@@ -111,6 +172,8 @@ internal class FormV2SubmissionRecoveryTest {
         runCurrent()
 
         assertDraftKept(viewModel)
+        assertEquals("French", viewModel.language)
+        assertEquals(null, viewModel.submissionConflict.value)
         coVerify { drafts.upsert(match { it.language == "French" }) }
         coVerify(exactly = 0) { restApi.getFormTemplateLanguagesV2("template-1") }
         coVerify(exactly = 0) { restApi.postFormSubmissionV2(any()) }

@@ -372,22 +372,31 @@ class FormV2RenderingViewModel @Inject constructor(
     ): Boolean =
         when (val result = restApi.getFormSubmissionV2(requireNotNull(request.id))) {
             is NetworkResult.Success -> {
+                val server = result.value
+                val serverLanguageRequest = request.copy(lang = server.lang)
+                // Recover old language casing without depending on the current template language list.
+                val recoveryRequest = if (request.lang.equals(server.lang, ignoreCase = true) &&
+                    FormV2SubmissionComparison.matchesIdentity(serverLanguageRequest, server)
+                ) serverLanguageRequest else request
+                if (selectedLanguage != recoveryRequest.lang) {
+                    selectedLanguage = recoveryRequest.lang
+                    persistSubmissionDraft(request.patientId, template, request.answers)
+                }
                 // Normalize stored dates without applying today's restrictions to a historical submission.
                 val comparisonTemplate = template.copy(questions = template.questions?.map {
                     it.copy(allowPastDates = null, allowFutureDates = null)
                 })
                 val answers = validateAnswers(comparisonTemplate, request.answers, timeZone)
                 if (answers != null &&
-                    FormV2SubmissionComparison.matches(request.copy(answers = answers), result.value)
+                    FormV2SubmissionComparison.matches(recoveryRequest.copy(answers = answers), server)
                 ) {
-                    completeVerifiedSubmission(result.value, request, template)
+                    completeVerifiedSubmission(server, recoveryRequest, template)
                 } else if (answers != null) {
-                    val server = result.value
-                    if (FormV2SubmissionComparison.matchesIdentity(request, server) &&
+                    if (FormV2SubmissionComparison.matchesIdentity(recoveryRequest, server) &&
                         server.answers != null && (server.revision ?: 0) > 0
                     ) {
                         _submissionConflict.value = FormV2SubmissionConflict(
-                            request, request.copy(answers = answers), server, timeZone.id
+                            recoveryRequest, recoveryRequest.copy(answers = answers), server, timeZone.id
                         )
                     }
                     _submissionState.value = FormV2SubmissionState.Error(
