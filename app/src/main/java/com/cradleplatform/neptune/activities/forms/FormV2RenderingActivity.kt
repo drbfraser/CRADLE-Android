@@ -47,6 +47,7 @@ import com.cradleplatform.neptune.viewmodel.forms.FormV2RenderingViewModel
 import com.cradleplatform.neptune.viewmodel.forms.FormV2SubmissionState
 import com.cradleplatform.neptune.viewmodel.forms.FormV2SubmissionErrorType
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.cradleplatform.neptune.http_sms_service.sms.ui.SmsTransmissionDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -62,7 +63,6 @@ class FormV2RenderingActivity : AppCompatActivity() {
 
     @Inject
     lateinit var networkStateManager: NetworkStateManager
-
     private val viewModel: FormV2RenderingViewModel by viewModels()
     private val disabledInputs = mutableMapOf<View, Boolean>()
     private val questionErrors = mutableMapOf<String, TextView>()
@@ -74,6 +74,7 @@ class FormV2RenderingActivity : AppCompatActivity() {
     private var navigationDialog: AlertDialog? = null
     private var submissionModeDialog: android.app.AlertDialog? = null
     private var draftDeleteDialog: android.app.AlertDialog? = null
+    private var smsTransmissionDialog: SmsTransmissionDialogFragment? = null
     private val formBackCallback = object : OnBackPressedCallback(true) {
         override fun handleOnBackPressed() {
             if (isLeavingForm || viewModel.draftDeleteState.value == FormV2DraftDeleteState.Deleting) return
@@ -133,6 +134,7 @@ class FormV2RenderingActivity : AppCompatActivity() {
         navigationDialog?.dismiss()
         submissionModeDialog?.dismiss()
         draftDeleteDialog?.dismiss()
+        smsTransmissionDialog?.dismiss()
         super.onDestroy()
     }
 
@@ -312,6 +314,10 @@ class FormV2RenderingActivity : AppCompatActivity() {
         viewModel.submitForm(protocol)
         // Validation is synchronous; reveal the result even when StateFlow has not changed.
         highlightedQuestionId = null
+        val state = viewModel.submissionState.value
+        if (protocol == Protocol.SMS && state == FormV2SubmissionState.Submitting) {
+            openSmsTransmissionDialog()
+        }
         renderSubmissionState(viewModel.submissionState.value)
     }
 
@@ -689,6 +695,13 @@ class FormV2RenderingActivity : AppCompatActivity() {
         }
     }
 
+    private fun openSmsTransmissionDialog() {
+        if (smsTransmissionDialog?.isAdded == true) return
+        val dialog = SmsTransmissionDialogFragment()
+        dialog.show(supportFragmentManager, "$TAG::${SmsTransmissionDialogFragment.TAG}")
+        smsTransmissionDialog = dialog
+    }
+
     @Suppress("DEPRECATION")
     override fun onSupportNavigateUp(): Boolean {
         onBackPressedDispatcher.onBackPressed()
@@ -696,6 +709,7 @@ class FormV2RenderingActivity : AppCompatActivity() {
     }
 
     companion object {
+        private const val TAG = "FormV2RenderingActivity"
         const val EXTRA_LANGUAGE = "form_v2_language"
 
         fun makeIntent(
