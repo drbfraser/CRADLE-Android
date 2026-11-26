@@ -875,4 +875,11 @@
     <string name="draft_forms_v2_empty_all">No V2 draft forms saved on this device.</string>
     <string name="draft_forms_v2_load_error">Couldn\'t load V2 drafts. Please try again.</string>
     <string name="form_v2_draft_last_edited">Last edited: %1$s</string>
+    <string name="form_v2_conflict_title">Review form changes</string>
+    <string name="form_v2_conflict_message">This form is already submitted with different answers. Updating replaces its answers with your draft, including any cleared optional answers. Review the changes below.</string>
+    <string name="form_v2_conflict_answer_pair">%1$s\nServer: %2$s\nYour draft: %3$s</string>
+    <string name="form_v2_conflict_unanswered">No answer</string>
+    <string name="form_v2_conflict_answer_comment">%1$s\nComment: %2$s</string>
+    <string name="form_v2_conflict_update">Update submitted form</string>
+    <string name="form_v2_conflict_keep_draft">Keep draft</string>
 </resources>

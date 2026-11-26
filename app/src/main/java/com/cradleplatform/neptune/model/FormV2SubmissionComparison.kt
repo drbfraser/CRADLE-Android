@@ -20,7 +20,7 @@ object FormV2SubmissionComparison {
         request.id == saved.id && request.patientId == saved.patientId &&
             request.formTemplateId == saved.formTemplateId && request.lang == saved.lang && !saved.archived
 
-    private fun sameAnswer(first: AnswerV2, second: AnswerV2): Boolean =
+    fun sameAnswer(first: AnswerV2, second: AnswerV2): Boolean =
         sameNumber(first.numericAnswer, second.numericAnswer) &&
             first.textAnswer == second.textAnswer && first.dateAnswer == second.dateAnswer &&
             first.comment == second.comment &&
