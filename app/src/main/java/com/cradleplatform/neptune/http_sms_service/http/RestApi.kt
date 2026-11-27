@@ -32,6 +32,7 @@ import com.cradleplatform.neptune.model.FormTemplateListV2Response
 import com.cradleplatform.neptune.model.FormTemplateLanguagesV2Response
 import com.cradleplatform.neptune.model.FormTemplateV2
 import com.cradleplatform.neptune.model.UpdateFormRequestBodyV2
+import com.cradleplatform.neptune.model.ReplaceFormRequestBodyV2
 import com.cradleplatform.neptune.model.GlobalPatient
 import com.cradleplatform.neptune.model.HealthFacility
 import com.cradleplatform.neptune.model.Patient
@@ -1079,6 +1080,25 @@ class RestApi(
 
         http.makeRequest(
             method = Http.Method.PATCH,
+            url = urlManager.formsV2Submission(formSubmissionId),
+            headers = makeAuthorizationHeader(),
+            requestBody = buildJsonRequestBody(body),
+            inputStreamReader = { input ->
+                Gson().fromJson(input.bufferedReader(), FormSubmissionV2::class.java)
+            },
+        )
+    }
+
+    /** Replaces the complete answer set if the submission revision still matches. */
+    suspend fun putFormSubmissionV2(
+        formSubmissionId: String,
+        request: ReplaceFormRequestBodyV2
+    ): NetworkResult<FormSubmissionV2> = withContext(IO) {
+        val gson = GsonBuilder().excludeFieldsWithoutExposeAnnotation().create()
+        val body = gson.toJson(request).toByteArray()
+
+        http.makeRequest(
+            method = Http.Method.PUT,
             url = urlManager.formsV2Submission(formSubmissionId),
             headers = makeAuthorizationHeader(),
             requestBody = buildJsonRequestBody(body),

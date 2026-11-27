@@ -22,10 +22,16 @@ abstract class FormV2DraftDao {
         if (existing == null) {
             insertDraft(draft)
         } else {
-            // A later lifecycle save must not erase an ID prepared for a retryable submission
+            // A later lifecycle save must not erase the prepared submission context.
+            val submissionId = draft.submissionId ?: existing.submissionId
             updateDraft(draft.copy(
                 createdAt = existing.createdAt,
-                submissionId = draft.submissionId ?: existing.submissionId
+                submissionId = submissionId,
+                submissionTimeZoneId = if (submissionId == existing.submissionId) {
+                    existing.submissionTimeZoneId ?: draft.submissionTimeZoneId
+                } else {
+                    draft.submissionTimeZoneId
+                }
             ))
         }
     }

@@ -113,6 +113,27 @@ class FormV2DraftMigrationTest {
         migrated.close()
     }
 
+    @Test
+    fun migrate9To10PreservesDraftsAndAddsAnUnknownSubmissionTimeZone() {
+        val databaseName = "$DATABASE-9-to-10"
+        val oldDatabase = helper.createDatabase(databaseName, 9)
+        insertPatient(oldDatabase)
+        oldDatabase.execSQL(
+            """
+            INSERT INTO FormV2Draft VALUES
+                ('patient-1', 'template-1', 1, '{}', '[]', 'French', 1000, 2000, 'stable-id')
+            """.trimIndent()
+        )
+        oldDatabase.close()
+
+        val migrated = helper.runMigrationsAndValidate(databaseName, 10, true, *Migrations.ALL_MIGRATIONS)
+        assertEquals(1, count(migrated, "Patient"))
+        assertEquals("stable-id", value(migrated, "FormV2Draft", "submissionId"))
+        assertEquals("French", value(migrated, "FormV2Draft", "language"))
+        assertEquals(null, value(migrated, "FormV2Draft", "submissionTimeZoneId"))
+        migrated.close()
+    }
+
     private fun insertPatient(database: SupportSQLiteDatabase) {
         val values = ContentValues().apply {
             put("id", "patient-1")
@@ -173,10 +194,10 @@ class FormV2DraftMigrationTest {
             }
         }
 
-    private fun value(database: SupportSQLiteDatabase, table: String, column: String): String =
+    private fun value(database: SupportSQLiteDatabase, table: String, column: String): String? =
         database.query("SELECT `$column` FROM `$table`").use { cursor ->
             cursor.moveToFirst()
-            cursor.getString(0)
+            if (cursor.isNull(0)) null else cursor.getString(0)
         }
 
     companion object {

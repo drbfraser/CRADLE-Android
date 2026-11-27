@@ -22,6 +22,8 @@ import com.cradleplatform.neptune.model.FormV2AnswerState
 import com.cradleplatform.neptune.model.FormV2SubmissionComparison
 import com.cradleplatform.neptune.model.FormV2SubmissionValidationResult
 import com.cradleplatform.neptune.model.FormV2SubmissionValidator
+import com.cradleplatform.neptune.model.ReplaceFormRequestBodyV2
+import com.cradleplatform.neptune.model.ReplacementFormAnswerV2
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
@@ -35,6 +37,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.io.IOException
+import java.util.TimeZone
 import java.util.UUID
 import javax.inject.Inject
 
@@ -103,12 +106,15 @@ class FormV2RenderingViewModel @Inject constructor(
     val draftDeleteState: StateFlow<FormV2DraftDeleteState> = _draftDeleteState.asStateFlow()
     private val _submissionState = MutableStateFlow<FormV2SubmissionState>(FormV2SubmissionState.Idle)
     val submissionState: StateFlow<FormV2SubmissionState> = _submissionState.asStateFlow()
+    private val _submissionConflict = MutableStateFlow<FormV2SubmissionConflict?>(null)
+    val submissionConflict: StateFlow<FormV2SubmissionConflict?> = _submissionConflict.asStateFlow()
     private val _submissionErrors = Channel<FormV2SubmissionErrorType>(Channel.BUFFERED)
     val submissionErrors = _submissionErrors.receiveAsFlow()
     private val draftSaveMutex = Mutex()
     private var clearSavedDraftStatusJob: Job? = null
     private var hasSubmitted = false
     private var submissionId: String? = null
+    private var submissionTimeZoneId: String? = null
     private var savedAnswers: Map<String, AnswerV2> = emptyMap()
     private var savedLanguage: String = selectedLanguage
     var hasSavedDraft: Boolean = false
@@ -176,6 +182,7 @@ class FormV2RenderingViewModel @Inject constructor(
     private fun restoreDraft(draft: FormV2Draft) {
         answerState.replaceAnswers(draft.answers)
         submissionId = draft.submissionId
+        submissionTimeZoneId = draft.submissionTimeZoneId
         // Keep the saved language unless the user explicitly selected one for this form.
         selectedLanguage = requestedLanguage ?: draft.language
         rememberSavedDraft(draft)
@@ -201,7 +208,10 @@ class FormV2RenderingViewModel @Inject constructor(
                 _draftSaveState.value = FormV2DraftSaveState.Saving
                 try {
                     // The DAO preserves createdAt on updates. Success follows the completed transaction.
-                    val currentDraft = draft.copy(submissionId = submissionId)
+                    val currentDraft = draft.copy(
+                        submissionId = submissionId,
+                        submissionTimeZoneId = submissionTimeZoneId
+                    )
                     formV2DraftDao.upsert(currentDraft)
                     rememberSavedDraft(currentDraft)
                     _draftSaveState.value = FormV2DraftSaveState.Saved
@@ -228,7 +238,8 @@ class FormV2RenderingViewModel @Inject constructor(
         val question = template.questions.orEmpty().firstOrNull { it.id == questionId } ?: return
         val result = FormV2SubmissionValidator.validate(
             template.copy(questions = listOf(question)),
-            answerState.toFormAnswers().filter { it.questionId == questionId }
+            answerState.toFormAnswers().filter { it.questionId == questionId },
+            timeZone = submissionTimeZoneId?.let(TimeZone::getTimeZone) ?: TimeZone.getDefault()
         )
         _submissionState.value = when (result) {
             is FormV2SubmissionValidationResult.Success -> FormV2SubmissionState.Idle
@@ -239,6 +250,7 @@ class FormV2RenderingViewModel @Inject constructor(
 
     fun deleteDraft(): Job? {
         if (!canDeleteDraft) return null
+        _submissionConflict.value = null
         val patient = patientId ?: return null
         _draftDeleteState.value = FormV2DraftDeleteState.Deleting
         return viewModelScope.launch {
@@ -262,16 +274,20 @@ class FormV2RenderingViewModel @Inject constructor(
     /** Validates the current answers, saves a local draft, and submits the form. */
     fun submitForm() {
         if (!canSubmit) return
+        _submissionConflict.value = null
         val patient = patientId?.takeIf { it.isNotBlank() } ?: return
         val template = loadedTemplate ?: return
         val draftAnswers = answerState.toFormAnswers()
         val retrying = submissionId != null
-        val newAnswers = if (!retrying) validateAnswers(template, draftAnswers) ?: return else null
+        val timeZone = submissionTimeZoneId?.let(TimeZone::getTimeZone) ?: TimeZone.getDefault()
+        val newAnswers = if (!retrying) validateAnswers(template, draftAnswers, timeZone) ?: return else null
 
         _submissionState.value = FormV2SubmissionState.Submitting
         viewModelScope.launch {
             val requestId = try {
-                persistSubmissionDraft(patient, template, draftAnswers)
+                persistSubmissionDraft(
+                    patient, template, draftAnswers, if (retrying) submissionTimeZoneId else timeZone.id
+                )
             } catch (exception: CancellationException) {
                 throw exception
             } catch (exception: Exception) {
@@ -282,28 +298,35 @@ class FormV2RenderingViewModel @Inject constructor(
                 return@launch
             }
             try {
+                val recoveryRequest = CreateFormSubmissionRequestV2(
+                    id = requestId,
+                    formTemplateId = template.id,
+                    patientId = patient,
+                    lang = selectedLanguage,
+                    answers = draftAnswers
+                )
+                // A saved submission may use a language that is no longer in the current template.
+                if (retrying && verifyExistingSubmission(recoveryRequest, template, timeZone, allowMissing = true)) {
+                    return@launch
+                }
                 val submissionLanguage = resolveSubmissionLanguage(template) ?: return@launch
                 if (selectedLanguage != submissionLanguage) {
                     selectedLanguage = submissionLanguage
                     persistSubmissionDraft(patient, template, draftAnswers)
                 }
-                val request = CreateFormSubmissionRequestV2(
-                    id = requestId,
-                    formTemplateId = template.id,
-                    patientId = patient,
-                    lang = submissionLanguage,
-                    answers = draftAnswers
-                )
-                // An accepted date can expire before a lost response is recovered.
-                if (retrying && verifyExistingSubmission(request, template, allowMissing = true)) return@launch
-                val answers = newAnswers ?: validateAnswers(template, draftAnswers) ?: return@launch
+                val request = recoveryRequest.copy(lang = submissionLanguage)
+                val answers = newAnswers ?: validateAnswers(template, draftAnswers, timeZone) ?: return@launch
+                // A legacy draft can acquire a time zone once GET proves no submission exists.
+                if (submissionTimeZoneId == null) {
+                    persistSubmissionDraft(patient, template, draftAnswers, timeZone.id)
+                }
                 when (val result = restApi.postFormSubmissionV2(request.copy(answers = answers))) {
                     is NetworkResult.Success -> completeSubmission(
                         result.value, request.copy(answers = answers), template
                     )
                     is NetworkResult.Failure -> {
                         if (result.statusCode == HTTP_CONFLICT) {
-                            verifyExistingSubmission(request, template)
+                            verifyExistingSubmission(request, template, timeZone)
                         } else {
                             reportHttpSubmissionError(result.statusCode)
                         }
@@ -325,8 +348,12 @@ class FormV2RenderingViewModel @Inject constructor(
         }
     }
 
-    private fun validateAnswers(template: FormTemplateV2, answers: List<FormAnswerV2>): List<FormAnswerV2>? =
-        when (val validation = FormV2SubmissionValidator.validate(template, answers)) {
+    private fun validateAnswers(
+        template: FormTemplateV2,
+        answers: List<FormAnswerV2>,
+        timeZone: TimeZone
+    ): List<FormAnswerV2>? =
+        when (val validation = FormV2SubmissionValidator.validate(template, answers, timeZone = timeZone)) {
             is FormV2SubmissionValidationResult.Success -> validation.answers
             is FormV2SubmissionValidationResult.Error -> {
                 _submissionState.value = FormV2SubmissionState.ValidationError(
@@ -340,20 +367,38 @@ class FormV2RenderingViewModel @Inject constructor(
     private suspend fun verifyExistingSubmission(
         request: CreateFormSubmissionRequestV2,
         template: FormTemplateV2,
+        timeZone: TimeZone,
         allowMissing: Boolean = false
     ): Boolean =
         when (val result = restApi.getFormSubmissionV2(requireNotNull(request.id))) {
             is NetworkResult.Success -> {
+                val server = result.value
+                val serverLanguageRequest = request.copy(lang = server.lang)
+                // Recover old language casing without depending on the current template language list.
+                val recoveryRequest = if (request.lang.equals(server.lang, ignoreCase = true) &&
+                    FormV2SubmissionComparison.matchesIdentity(serverLanguageRequest, server)
+                ) serverLanguageRequest else request
+                if (selectedLanguage != recoveryRequest.lang) {
+                    selectedLanguage = recoveryRequest.lang
+                    persistSubmissionDraft(request.patientId, template, request.answers)
+                }
                 // Normalize stored dates without applying today's restrictions to a historical submission.
                 val comparisonTemplate = template.copy(questions = template.questions?.map {
                     it.copy(allowPastDates = null, allowFutureDates = null)
                 })
-                val answers = validateAnswers(comparisonTemplate, request.answers)
+                val answers = validateAnswers(comparisonTemplate, request.answers, timeZone)
                 if (answers != null &&
-                    FormV2SubmissionComparison.matches(request.copy(answers = answers), result.value)
+                    FormV2SubmissionComparison.matches(recoveryRequest.copy(answers = answers), server)
                 ) {
-                    completeVerifiedSubmission(result.value, request, template)
+                    completeVerifiedSubmission(server, recoveryRequest, template)
                 } else if (answers != null) {
+                    if (FormV2SubmissionComparison.matchesIdentity(recoveryRequest, server) &&
+                        server.answers != null && (server.revision ?: 0) > 0
+                    ) {
+                        _submissionConflict.value = FormV2SubmissionConflict(
+                            recoveryRequest, recoveryRequest.copy(answers = answers), server, timeZone.id
+                        )
+                    }
                     _submissionState.value = FormV2SubmissionState.Error(
                         "The server form differs from this draft. Your draft was kept; no update was sent."
                     )
@@ -367,6 +412,64 @@ class FormV2RenderingViewModel @Inject constructor(
             }
             is NetworkResult.NetworkException -> throw result.cause
         }
+
+    fun cancelSubmissionUpdate() {
+        _submissionConflict.value = null
+    }
+
+    /** Sends only the answers reviewed against this server revision. */
+    fun confirmSubmissionUpdate() {
+        val conflict = _submissionConflict.value ?: return
+        if (!canSubmit) return
+        val template = loadedTemplate ?: return
+        _submissionConflict.value = null
+        if (answerState.toFormAnswers() != conflict.draftRequest.answers || language != conflict.draftRequest.lang) {
+            _submissionState.value = FormV2SubmissionState.Error("Answers changed. Submit again to review the changes.")
+            return
+        }
+        val timeZone = TimeZone.getTimeZone(conflict.timeZoneId)
+        val answers = validateAnswers(conflict.validationTemplate(template), conflict.draftRequest.answers, timeZone)
+            ?: return
+        _submissionState.value = FormV2SubmissionState.Submitting
+        viewModelScope.launch {
+            try {
+                val request = conflict.draftRequest.copy(answers = answers)
+                persistSubmissionDraft(request.patientId, template, conflict.draftRequest.answers, timeZone.id)
+                val replacement = ReplaceFormRequestBodyV2(
+                    requireNotNull(conflict.server.revision),
+                    answers.map { ReplacementFormAnswerV2(it.questionId, it.answer) }
+                )
+                when (val result = restApi.putFormSubmissionV2(requireNotNull(request.id), replacement)) {
+                    is NetworkResult.Success -> {
+                        require(FormV2SubmissionComparison.matchesIdentity(request, conflict.server) &&
+                            result.value.id == request.id && result.value.patientId == request.patientId &&
+                            result.value.formTemplateId == request.formTemplateId &&
+                            result.value.lang == request.lang && !result.value.archived &&
+                            (result.value.revision ?: 0) > replacement.expectedRevision)
+                        // Keep the draft if the accepted update cannot be cached locally.
+                        submissionManager.cacheSubmittedForm(result.value, request, template)
+                        deleteSubmittedDraft(request.patientId, template.id)
+                    }
+                    is NetworkResult.Failure -> {
+                        if (result.statusCode == HTTP_CONFLICT) {
+                            verifyExistingSubmission(conflict.draftRequest, template, timeZone)
+                        } else {
+                            reportHttpSubmissionError(result.statusCode)
+                        }
+                    }
+                    is NetworkResult.NetworkException -> throw result.cause
+                }
+            } catch (exception: CancellationException) {
+                throw exception
+            } catch (exception: IOException) {
+                reportSubmissionError(exception.message ?: "Network error", FormV2SubmissionErrorType.NETWORK_ERROR)
+            } catch (exception: Exception) {
+                Log.e(javaClass.simpleName, "Failed to update V2 form", exception)
+                reportSubmissionError("Unable to complete the update. Your draft was kept.",
+                    FormV2SubmissionErrorType.SERVER_ERROR)
+            }
+        }
+    }
 
     private suspend fun completeSubmission(
         submission: FormSubmissionV2,
@@ -435,13 +538,17 @@ class FormV2RenderingViewModel @Inject constructor(
     private suspend fun persistSubmissionDraft(
         patientId: String,
         template: FormTemplateV2,
-        answers: List<FormAnswerV2>
+        answers: List<FormAnswerV2>,
+        timeZoneId: String? = submissionTimeZoneId
     ): String = draftSaveMutex.withLock {
         val requestId = submissionId ?: UUID.randomUUID().toString()
-        val draft = createDraft(patientId, template, answers, requestId)
+        val draft = createDraft(patientId, template, answers, requestId).copy(
+            submissionTimeZoneId = timeZoneId
+        )
         formV2DraftDao.upsert(draft)
         rememberSavedDraft(draft)
         submissionId = requestId
+        submissionTimeZoneId = timeZoneId
         requestId
     }
 
@@ -487,7 +594,8 @@ class FormV2RenderingViewModel @Inject constructor(
             language = selectedLanguage,
             createdAt = now,
             updatedAt = now,
-            submissionId = submissionId
+            submissionId = submissionId,
+            submissionTimeZoneId = submissionTimeZoneId
         )
     }
 

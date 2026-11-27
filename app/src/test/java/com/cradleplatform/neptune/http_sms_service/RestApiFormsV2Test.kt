@@ -6,6 +6,8 @@ import com.cradleplatform.neptune.http_sms_service.http.RestApi
 import com.cradleplatform.neptune.model.AnswerV2
 import com.cradleplatform.neptune.model.CreateFormSubmissionRequestV2
 import com.cradleplatform.neptune.model.FormAnswerV2
+import com.cradleplatform.neptune.model.ReplaceFormRequestBodyV2
+import com.cradleplatform.neptune.model.ReplacementFormAnswerV2
 import com.cradleplatform.neptune.testutils.MockDependencyUtils
 import com.cradleplatform.neptune.testutils.MockWebServerUtils
 import com.cradleplatform.neptune.viewmodel.UserViewModel
@@ -68,6 +70,12 @@ internal class RestApiFormsV2Test {
                         // end point for updating a submission by id
                         path == "/api/forms/v2/submissions/sub-1" && request.method == "PATCH" ->
                             MockResponse().setResponseCode(200).setBody(SUBMISSION_JSON)
+
+                        path == "/api/forms/v2/submissions/sub-1" && request.method == "PUT" ->
+                            MockResponse().setResponseCode(200).setBody(SUBMISSION_JSON)
+                        path == "/api/forms/v2/submissions/stale" && request.method == "PUT" ->
+                            MockResponse().setResponseCode(409)
+                                .setBody("""{"message":"Form changed. Reload it before updating."}""")
 
                         // end point for getting a submission by id that does not exist
                         path == "/api/forms/v2/submissions/does-not-exist" && request.method == "GET" ->
@@ -227,6 +235,62 @@ internal class RestApiFormsV2Test {
 
 
     @Test
+    fun putFormSubmissionV2() {
+        val request = ReplaceFormRequestBodyV2(
+            expectedRevision = 1,
+            answers = listOf(
+                ReplacementFormAnswerV2("q1", AnswerV2.createTextAnswer("updated")),
+                ReplacementFormAnswerV2("q2", AnswerV2.createMcAnswer(listOf(0, 2))),
+            )
+        )
+        val result = runBlocking { restApi.putFormSubmissionV2("sub-1", request) }
+
+        check(result is NetworkResult.Success) { "got $result" }
+        assertEquals(200, result.statusCode)
+        assertEquals("sub-1", result.value.id)
+        assertEquals(2L, result.value.revision)
+        assertEquals("PUT", lastRequest!!.method)
+        assertEquals("/api/forms/v2/submissions/sub-1", lastRequest!!.path)
+        assertEquals("Bearer $testAccessToken", lastRequest!!.getHeader("Authorization"))
+        val body = JSONObject(lastRequest!!.body.readString(Charsets.UTF_8))
+        assertEquals(2, body.length())
+        assertEquals(1L, body.getLong("expectedRevision"))
+        val answers = body.getJSONArray("answers")
+        assertEquals(2, answers.length())
+        val first = answers.getJSONObject(0)
+        assertEquals(2, first.length())
+        assertEquals("q1", first.getString("questionId"))
+        assertEquals("updated", first.getJSONObject("answer").getString("text"))
+        assertFalse(first.has("id"))
+        assertFalse(first.has("formSubmissionId"))
+        assertEquals("q2", answers.getJSONObject(1).getString("questionId"))
+        val choices = answers.getJSONObject(1).getJSONObject("answer").getJSONArray("mcIdArray")
+        assertEquals(2, choices.length())
+        assertEquals(0, choices.getInt(0))
+        assertEquals(2, choices.getInt(1))
+    }
+
+    @Test
+    fun putFormSubmissionV2SendsEmptyAnswerSet() {
+        val result = runBlocking {
+            restApi.putFormSubmissionV2("sub-1", ReplaceFormRequestBodyV2(1, emptyList()))
+        }
+        check(result is NetworkResult.Success) { "got $result" }
+        val body = JSONObject(lastRequest!!.body.readString(Charsets.UTF_8))
+        assertEquals(0, body.getJSONArray("answers").length())
+    }
+
+    @Test
+    fun putFormSubmissionV2ReturnsConflictWithoutRetrying() {
+        val result = runBlocking {
+            restApi.putFormSubmissionV2("stale", ReplaceFormRequestBodyV2(1, emptyList()))
+        }
+        check(result is NetworkResult.Failure) { "got $result" }
+        assertEquals(409, result.statusCode)
+        assertEquals(1, mockServer.requestCount)
+    }
+
+    @Test
     fun getAllFormTemplatesV2() {
         val result = runBlocking { restApi.getAllFormTemplatesV2() }
 
@@ -271,6 +335,7 @@ internal class RestApiFormsV2Test {
             {
                 "id": "sub-1",
                 "name": "Antenatal",
+                "revision": 2,
                 "formTemplateId": "template-1",
                 "patientId": "patient-1",
                 "userId": 3,

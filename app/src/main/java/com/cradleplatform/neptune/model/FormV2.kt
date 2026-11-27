@@ -167,6 +167,18 @@ data class UpdateFormRequestBodyV2(
     @Expose @SerializedName("answers") val answers: List<FormAnswerV2>
 ) : Serializable
 
+/** PUT accepts question IDs and values; answer record IDs remain server-owned. */
+data class ReplacementFormAnswerV2(
+    @Expose @SerializedName("questionId") val questionId: String,
+    @Expose @SerializedName("answer") val answer: AnswerV2,
+) : Serializable
+
+/** Complete answer set: omitted optional answers are removed by Platform. */
+data class ReplaceFormRequestBodyV2(
+    @Expose @SerializedName("expectedRevision") val expectedRevision: Long,
+    @Expose @SerializedName("answers") val answers: List<ReplacementFormAnswerV2>,
+) : Serializable
+
 data class FormSubmissionV2(
     @SerializedName("id") val id: String,
     @SerializedName("formTemplateId") val formTemplateId: String,

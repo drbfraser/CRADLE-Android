@@ -33,7 +33,7 @@ import com.cradleplatform.neptune.model.Referral
 import com.cradleplatform.neptune.model.WorkflowInstance
 import com.cradleplatform.neptune.model.WorkflowTemplate
 
-const val CURRENT_DATABASE_VERSION = 9
+const val CURRENT_DATABASE_VERSION = 10
 
 /**
  * An interface for the local CRADLE database.
@@ -115,7 +115,7 @@ internal object Migrations {
     val ALL_MIGRATIONS: Array<Migration> by lazy {
         arrayOf(
             MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6,
-            MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9
+            MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10
         )
     }
 
@@ -368,6 +368,13 @@ internal object Migrations {
     private val MIGRATION_8_9 = object : Migration(8, 9) {
         override fun migrate(database: SupportSQLiteDatabase) {
             database.execSQL("ALTER TABLE FormSubmissionV2Entity ADD COLUMN `revision` INTEGER")
+        }
+    }
+
+    /** Version 10: Preserve the time zone used for retryable V2 date submissions. */
+    private val MIGRATION_9_10 = object : Migration(9, 10) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            database.execSQL("ALTER TABLE FormV2Draft ADD COLUMN `submissionTimeZoneId` TEXT")
         }
     }
 }

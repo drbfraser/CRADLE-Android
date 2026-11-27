@@ -35,7 +35,9 @@ data class FormV2Draft(
     val createdAt: Long,
     val updatedAt: Long,
     /** Stable client-generated ID reused if a POST response is lost and the user retries */
-    val submissionId: String? = null
+    val submissionId: String? = null,
+    /** Time zone used to normalize dates for this submission attempt; absent on older drafts. */
+    val submissionTimeZoneId: String? = null
 ) {
     init {
         require(patientId.isNotBlank()) { "A draft requires a patient ID" }

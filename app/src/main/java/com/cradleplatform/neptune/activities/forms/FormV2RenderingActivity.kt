@@ -45,6 +45,7 @@ import com.cradleplatform.neptune.viewmodel.forms.FormV2RenderingState
 import com.cradleplatform.neptune.viewmodel.forms.FormV2RenderingViewModel
 import com.cradleplatform.neptune.viewmodel.forms.FormV2SubmissionState
 import com.cradleplatform.neptune.viewmodel.forms.FormV2SubmissionErrorType
+import com.cradleplatform.neptune.viewmodel.forms.FormV2SubmissionConflict
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
@@ -70,6 +71,7 @@ class FormV2RenderingActivity : AppCompatActivity() {
     private var highlightedQuestionId: String? = null
     private var isLeavingForm = false
     private var submissionErrorDialog: AlertDialog? = null
+    private var submissionConflictDialog: AlertDialog? = null
     private var navigationDialog: AlertDialog? = null
     private var submissionModeDialog: android.app.AlertDialog? = null
     private var draftDeleteDialog: android.app.AlertDialog? = null
@@ -115,6 +117,9 @@ class FormV2RenderingActivity : AppCompatActivity() {
                     viewModel.submissionErrors.collectLatest { showSubmissionErrorDialog(it) }
                 }
                 launch {
+                    viewModel.submissionConflict.collectLatest { showSubmissionConflict(it) }
+                }
+                launch {
                     viewModel.draftDeleteState.collectLatest { state -> renderDraftDeleteState(state) }
                 }
             }
@@ -128,6 +133,7 @@ class FormV2RenderingActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
+        submissionConflictDialog?.dismiss()
         submissionErrorDialog?.dismiss()
         navigationDialog?.dismiss()
         submissionModeDialog?.dismiss()
@@ -271,6 +277,26 @@ class FormV2RenderingActivity : AppCompatActivity() {
         builder.setNegativeButton(R.string.cancel, null)
         submissionErrorDialog?.dismiss()
         submissionErrorDialog = builder.show()
+    }
+
+    private fun showSubmissionConflict(conflict: FormV2SubmissionConflict?) {
+        submissionConflictDialog?.dismiss()
+        submissionConflictDialog = null
+        if (conflict == null || isLeavingForm || isFinishing) return
+        val template = (viewModel.state.value as? FormV2RenderingState.Success)?.template ?: return
+        submissionConflictDialog = MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.form_v2_conflict_title)
+            .setMessage(FormV2ConflictMessage.build(this, conflict, template))
+            .setPositiveButton(R.string.form_v2_conflict_update) { _, _ ->
+                viewModel.confirmSubmissionUpdate()
+                highlightedQuestionId = null
+                renderSubmissionState(viewModel.submissionState.value)
+            }
+            .setNegativeButton(R.string.form_v2_conflict_keep_draft) { _, _ ->
+                viewModel.cancelSubmissionUpdate()
+            }
+            .setOnCancelListener { viewModel.cancelSubmissionUpdate() }
+            .show()
     }
 
     private fun saveDraftAndLeave() {
